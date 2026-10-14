@@ -29,7 +29,7 @@ dotnet run --project tests/CSharp.UI.Integration.Tests
 dotnet run --project tests/CSharp.UI.OpenTK.Tests
 
 # 只跑图形类测试（按 Trait 过滤）
-dotnet run --project tests/CSharp.UI.OpenTK.Tests -- --filter-trait "Category=Graphics"
+dotnet run --project tests/CSharp.UI.OpenTK.Tests -- -trait "Category=Graphics"
 ```
 
 也可以使用 `dotnet test CSharp.UI.slnx`；若需要按名称筛选，可用运行器的 `--help` 查看当前支持的过滤器（`--filter-class`、`--filter-method` 等）。
@@ -39,6 +39,21 @@ dotnet run --project tests/CSharp.UI.OpenTK.Tests -- --filter-trait "Category=Gr
 - 核心与文本测试不依赖图形环境，可直接在 CI 容器中运行。
 - 图形测试需要 OpenGL 3.3 上下文（Linux 上可用 Mesa + Xvfb）。**图形测试失败不会被标记为跳过**：缺少上下文时会如实失败并输出诊断，避免把“没跑”当成“通过”。
 - Windows 与 macOS 的真机输入/DPI 验证结果记录在 [../task/14-cross-platform-validation.md](../task/14-cross-platform-validation.md)。
+
+## 真实窗口冒烟测试
+
+除离屏图形测试外，三个示例都支持无人值守的真实窗口验证：
+
+```bash
+CSHARPUI_SMOKE_FRAMES=5 dotnet run --project samples/CSharp.UI.Samples.Counter --no-build
+```
+
+渲染指定帧数后打印逻辑视口、framebuffer、DPI、最小化状态与 GL 上下文描述并自动退出（退出码 0）。
+未设置该环境变量时行为与普通运行一致。发布产物同样支持：
+
+```bash
+CSHARPUI_SMOKE_FRAMES=5 ./artifacts/publish/win-x64/ControlGallery.exe
+```
 
 ## 断言与验证要点
 

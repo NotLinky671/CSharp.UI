@@ -35,6 +35,8 @@ public static class SmokeTestHook
             rendered++;
             if (rendered < target)
             {
+                // 主动请求下一帧，使冒烟测试不依赖窗口系统事件（否则静止窗口可能一直停在第一帧）。
+                context.RequestRedraw();
                 return;
             }
 

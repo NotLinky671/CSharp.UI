@@ -46,4 +46,8 @@
 - 状态：**已完成**（2026-10-14）。
 - 交付：`Environment/EnvironmentValues.cs` 与修饰符的环境传播；三个示例（Counter/TodoList/ControlGallery）；`docs/guide/` 八篇文档与根 `README.md`；`samples/Shared/Assets/logo.png`（`tools/CSharp.UI.AssetGenerator` 生成）。
 - 实际执行：`dotnet run --project tests/CSharp.UI.Tests` → `ThemeTests` 5 项全部通过：主题子树继承与局部覆盖、字体继承、主题切换更新控件视觉、设计文档计数器写法（`.Spacing(12).Padding(24)`）可编译运行、环境默认值。
-- 资源许可：不重新分发第三方字体二进制文件，示例使用系统字体回退并附许可说明；示例图片由仓库自带工具绘制生成（`docs/guide/platform-notes.md`）。
+- 资源许可：示例图片由仓库自带工具 `tools/CSharp.UI.AssetGenerator` 绘制生成，可随仓库分发；**未随仓库分发任何第三方字体二进制文件**。
+- 已记录的偏差：原计划要求“示例携带许可允许分发的中英文字体，保证示例与截图可复现”。本次实现选择不分发字体文件，原因是本机与离线环境无法获取可分发的中英文（CJK）字体并附带完整许可文本；替代方案与影响：
+  - 示例与文档改用系统字体 + 缺字回退（Windows: Microsoft YaHei / Segoe UI；macOS: PingFang SC；Linux: Noto Sans CJK），并在 `docs/guide/platform-notes.md` 写明如何用 `FontFamily.FromFile` 指定自带字体。
+  - 因此“跨机器截图完全可复现”不成立：不同平台的系统字体不同，字形与度量会有差异；需要完全可复现时，请按文档把许可允许分发的字体放入应用资源目录并显式指定。
+  - 中英文显示与排版能力本身已通过测试与示例验证（含中文回退实测与中文输入/粘贴）。

@@ -63,10 +63,10 @@
 
 | 场景 | 命令 | 结果 |
 |---|---|---|
-| 计数器示例 | `CSHARPUI_SMOKE_FRAMES=30 dotnet run --project samples/CSharp.UI.Samples.Counter --no-build` | exit 0；逻辑视口 480×320、framebuffer 480×320、DPI 1；GL `3.3.0 - Build 32.0.101.6790 / Intel(R) RaptorLake-S Mobile Graphics Controller` |
+| 计数器示例 | `CSHARPUI_SMOKE_FRAMES=5 dotnet run --project samples/CSharp.UI.Samples.Counter --no-build` | exit 0；逻辑视口 480×320、framebuffer 480×320、DPI 1；GL `3.3.0 - Build 32.0.101.6790 / Intel(R) RaptorLake-S Mobile Graphics Controller`（同一命令用 30 帧亦通过） |
 | 待办示例 | 同上（TodoList） | exit 0；760×480、DPI 1、30 帧 |
 | 控件展示示例 | 同上（ControlGallery） | exit 0；900×700、DPI 1、30 帧 |
-| 发布产物运行 | `artifacts/publish/win-x64/ControlGallery.exe`（`CSHARPUI_SMOKE_FRAMES=20`） | exit 0；20 帧；窗口标题与 GL 上下文正常 |
+| 发布产物运行 | `artifacts/publish/win-x64/ControlGallery.exe`（`CSHARPUI_SMOKE_FRAMES=5`） | exit 0；5 帧；窗口标题、GL 上下文、DPI 与视口正常；资源自检通过（`shared/Assets/logo.png` 已随发布输出复制） |
 | 剪贴板 | `GlTextureTests`/宿主测试中的 GLFW 剪贴板往返 | 通过（读写并恢复原内容） |
 | 最小化跳过渲染 | 宿主测试（`HostingTests`/`UiApplicationTests`） | 通过（最小化期间不渲染，恢复后重算视口并重绘） |
 | 关闭清理 | 宿主测试 + 冒烟测试退出 | 通过（先释放 GL 资源再销毁窗口；纹理计数回落） |
