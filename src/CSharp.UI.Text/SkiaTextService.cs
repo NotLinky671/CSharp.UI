@@ -230,7 +230,9 @@ public sealed class SkiaTextService : ITextService, IDisposable
             return;
         }
 
-        var offset = 0.0;
+        var spacing = (float)layout.LetterSpacing;
+        var advanceX = 0.0;
+        var runBaseOrdinal = 0;
         FontInstance? current = null;
         var runStart = line.Start;
         var runEnd = line.Start;
@@ -248,12 +250,24 @@ public sealed class SkiaTextService : ITextService, IDisposable
             {
                 var ids = new ushort[glyphs.Count];
                 var points = new SKPoint[glyphs.Count];
-                var x = 0.0;
+
+                // 字形位置与 TextLayoutBuilder 的 xAt 同源：推进量之和 + 每个字素簇的字距。
+                // 只累计 advance 会让字距只影响测量宽度而不影响实际绘制。
+                var ordinal = runBaseOrdinal;
+                var cursor = Graphemes.BoundaryAtOrBefore(graphemeStarts, runStart);
                 for (var i = 0; i < glyphs.Count; i++)
                 {
+                    while (cursor + 1 < graphemeStarts.Length && graphemeStarts[cursor + 1] <= glyphs[i].Cluster)
+                    {
+                        cursor++;
+                        ordinal++;
+                    }
+
                     ids[i] = glyphs[i].Glyph;
-                    points[i] = new SKPoint((float)(x + glyphs[i].OffsetX), (float)glyphs[i].OffsetY);
-                    x += glyphs[i].Advance;
+                    points[i] = new SKPoint(
+                        (float)(advanceX + (spacing * ordinal) + glyphs[i].OffsetX),
+                        (float)glyphs[i].OffsetY);
+                    advanceX += glyphs[i].Advance;
                 }
 
                 using var builder = new SKTextBlobBuilder();
@@ -261,14 +275,13 @@ public sealed class SkiaTextService : ITextService, IDisposable
                 using var blob = builder.Build();
                 if (blob is not null)
                 {
-                    canvas.DrawText(blob, (float)(line.Bounds.X + offset), (float)line.Baseline, paint);
+                    canvas.DrawText(blob, (float)line.Bounds.X, (float)line.Baseline, paint);
                 }
-
-                offset += x;
             }
         }
 
         var index = Graphemes.BoundaryAtOrBefore(graphemeStarts, line.Start);
+        var clusterOrdinal = 0;
         for (; index + 1 < graphemeStarts.Length; index++)
         {
             var clusterStart = graphemeStarts[index];
@@ -282,15 +295,18 @@ public sealed class SkiaTextService : ITextService, IDisposable
             if (current is null)
             {
                 runStart = clusterStart;
+                runBaseOrdinal = clusterOrdinal;
             }
             else if (!ReferenceEquals(current, instance))
             {
                 DrawCurrent();
                 runStart = clusterStart;
+                runBaseOrdinal = clusterOrdinal;
             }
 
             current = instance;
             runEnd = clusterEnd;
+            clusterOrdinal++;
         }
 
         DrawCurrent();

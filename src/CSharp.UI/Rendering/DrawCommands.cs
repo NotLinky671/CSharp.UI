@@ -156,6 +156,21 @@ public interface ITextureService
     /// </summary>
     TextureHandle GetOrCreate(object key, Func<PixelBuffer> factory);
 
+    /// <summary>
+    /// 标记“开始生成新的一帧”。实现应清除上上帧的引用保护，并在容量超限时只淘汰不受保护的纹理。
+    /// </summary>
+    /// <remarks>
+    /// 必要性：一帧的全部绘制命令先生成、之后才提交渲染；若生成后续纹理时就淘汰前面命令引用的纹理，
+    /// 会造成当前帧内容缺失（例如同一帧内文本数量超过缓存容量时前面的文本不绘制）。
+    /// <para>
+    /// 保护策略：实现至少应把“本帧引用过的纹理”和“上一帧引用过的纹理”都视为受保护，
+    /// 这样同一帧内不会互相挤掉、也不会在下一帧重新上传；停止引用后的第一个帧边界才回收。
+    /// 容量因此是长期上限：帧内引用可临时超出，随后回落。
+    /// </para>
+    /// 未实现该语义的服务可忽略调用（退化为普通 LRU，但可能丢掉当前帧内容）。
+    /// </remarks>
+    void BeginFrame();
+
     /// <summary>释放并移除指定键的纹理。</summary>
     void Release(object key);
 

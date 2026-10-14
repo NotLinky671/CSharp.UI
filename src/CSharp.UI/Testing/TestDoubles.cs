@@ -280,7 +280,7 @@ public sealed class StubTextService : ITextService
         }
 
         var size = new Size(maxWidth, Math.Max(lineHeight, lines.Count * lineHeight));
-        return new TextLayoutResult(visibleText, request.Font, request.PixelScale, size, lineInfos, stops, caretXs, isTrimmed);
+        return new TextLayoutResult(visibleText, request.Font, request.PixelScale, size, lineInfos, stops, caretXs, isTrimmed, request.LetterSpacing);
     }
 
     private static List<(int Start, int End)> WrapClusters(string text, List<int> clusters, double glyphWidth, double maxWidth)
@@ -338,6 +338,10 @@ public sealed class RecordingTextureService : ITextureService
     // 键按 Equals 比较：值类型键（例如文本纹理键）按键值，引用类型键（例如图片资源）按引用。
     private readonly Dictionary<object, TextureHandle> _map = new(EqualityComparer<object>.Default);
     private readonly Queue<object> _order = new();
+
+    // 帧保护分两代（本帧 / 上一帧），与 GlTextureService 的语义一致：避免同帧内互相挤掉导致重复上传。
+    private HashSet<object> _frameReferenced = new(EqualityComparer<object>.Default);
+    private HashSet<object> _previousFrameReferenced = new(EqualityComparer<object>.Default);
     private long _nextId;
     private int _created;
     private int _released;
@@ -366,13 +370,7 @@ public sealed class RecordingTextureService : ITextureService
         set
         {
             _capacity = Math.Max(1, value);
-            while (_map.Count > _capacity && _order.Count > 0)
-            {
-                if (_map.Remove(_order.Dequeue()))
-                {
-                    _released++;
-                }
-            }
+            Trim();
         }
     }
 
@@ -383,6 +381,7 @@ public sealed class RecordingTextureService : ITextureService
         ArgumentNullException.ThrowIfNull(factory);
         if (_map.TryGetValue(key, out var existing))
         {
+            _frameReferenced.Add(key);
             return existing;
         }
 
@@ -397,23 +396,53 @@ public sealed class RecordingTextureService : ITextureService
         _created++;
         _map[key] = handle;
         _order.Enqueue(key);
+        _frameReferenced.Add(key);
+        Trim();
+        return handle;
+    }
 
+    /// <inheritdoc />
+    /// <remarks>清除上一帧的引用保护并尝试回落容量；随后本帧引用的纹理存活到下一次调用。</remarks>
+    public void BeginFrame()
+    {
+        _previousFrameReferenced = _frameReferenced;
+        _frameReferenced = new HashSet<object>(EqualityComparer<object>.Default);
+        Trim();
+    }
+
+    private bool IsProtected(object key) => _frameReferenced.Contains(key) || _previousFrameReferenced.Contains(key);
+
+    private void Trim()
+    {
+        // 只淘汰未被保护的键：容量是长期上限，帧内引用可临时超出，在后续帧边界回收。
+        var pending = new Queue<object>();
         while (_map.Count > Capacity && _order.Count > 0)
         {
             var oldest = _order.Dequeue();
+            if (IsProtected(oldest))
+            {
+                pending.Enqueue(oldest);
+                continue;
+            }
+
             if (_map.Remove(oldest))
             {
                 _released++;
             }
         }
 
-        return handle;
+        while (pending.Count > 0)
+        {
+            _order.Enqueue(pending.Dequeue());
+        }
     }
 
     /// <inheritdoc />
     public void Release(object key)
     {
         ArgumentNullException.ThrowIfNull(key);
+        _frameReferenced.Remove(key);
+        _previousFrameReferenced.Remove(key);
         if (_map.Remove(key))
         {
             _released++;

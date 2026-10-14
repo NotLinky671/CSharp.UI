@@ -88,7 +88,7 @@ CSHARPUI_SMOKE_FRAMES=5 ./artifacts/publish/win-x64/ControlGallery.exe
 
 | 计数 | 位置 |
 |---|---|
-| 纹理创建/释放/存活 | `ITextureService.LiveTextureCount`；OpenGL 实现还提供创建与释放计数 |
+| 纹理创建/释放/存活 | `ITextureService.LiveTextureCount`；OpenGL 实现还提供创建与释放计数（帧内引用受保护，容量在帧边界回收） |
 | 排版/栅格缓存 | `ITextService.CachedLayoutCount`、`CachedRasterCount` |
 | 图片缓存 | `IImageService.CachedImageCount` |
 | 布局轮数 / 构建次数 | `UiRuntime.LayoutPassCount`、`BuildCount` |

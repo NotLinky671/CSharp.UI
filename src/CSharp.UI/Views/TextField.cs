@@ -17,6 +17,9 @@ namespace CSharp.UI;
 /// </remarks>
 public sealed class TextField : View
 {
+    /// <summary>未显式指定宽度时的首选最小宽度（逻辑像素）；父级可用宽度更小时以父级为准。</summary>
+    private const double DefaultMinimumWidth = 140;
+
     /// <summary>由字符串绑定创建。</summary>
     public TextField(Binding<string> text, string? placeholder = null)
     {
@@ -78,9 +81,14 @@ public sealed class TextField : View
         var font = node.Environment.Font ?? FontDescription.Default;
         var layout = TextPainter.Layout(context, text, font, double.PositiveInfinity, context.PixelScale);
         node.ViewCache = new TextFieldCache(text, font, layout);
+
+        // 默认最小宽度不得突破父级上限：把 140 与可用宽度取较小值，保证 Clamp 的上下限始终合法。
+        var available = constraints.HasBoundedWidth ? Math.Max(0, constraints.MaxWidth) : double.PositiveInfinity;
+        var preferred = layout.Size.Width + (HorizontalPadding * 2);
+        var minimum = Math.Min(DefaultMinimumWidth, available);
         var width = Width ?? (constraints.IsWidthTight
             ? constraints.MaxWidth
-            : Math.Clamp(layout.Size.Width + (HorizontalPadding * 2), 140, constraints.HasBoundedWidth ? constraints.MaxWidth : double.PositiveInfinity));
+            : Math.Clamp(preferred, minimum, available));
         node.DesiredSize = constraints.Constrain(new Size(width, Height));
     }
 
@@ -274,10 +282,14 @@ public sealed class TextField : View
         else
         {
             var caret = ClampIndex(node, state.Caret, text);
-            if (text.Length + inserted.Length > MaxLength)
+            // 容量按“新增内容的可用长度”计算，并在字素边界上截断插入内容：
+            // 既不拆开代理对/组合字符，也不会挤出未选中的前后文本。
+            var capacity = Math.Max(0, MaxLength - text.Length);
+            inserted = FitInsertion(inserted, capacity);
+            if (inserted.Length == 0)
             {
-                var allowed = Math.Max(0, MaxLength - text.Length);
-                inserted = inserted[..Math.Min(allowed, inserted.Length)];
+                context.MarkHandled();
+                return true;
             }
 
             text = string.Concat(text.AsSpan(0, caret), inserted, text.AsSpan(caret));
@@ -369,7 +381,13 @@ public sealed class TextField : View
 
         var elapsed = now.Ticks - GetState(node).BlinkEpoch.Ticks;
         var phase = ((elapsed % period) + period) % period;
-        return TimeSpan.FromTicks(period - phase);
+
+        // 返回距离下一个“亮/灭切换边界”的时间：0—半周期为亮，半周期—整周期为灭。
+        // 用整周期计算会让宿主在灭灯边界不重绘，光标就不会闪烁。
+        var remaining = phase < BlinkInterval.Ticks
+            ? BlinkInterval.Ticks - phase
+            : period - phase;
+        return TimeSpan.FromTicks(Math.Max(1, remaining));
     }
 
     internal override void OnMount(ViewNode node)
@@ -532,15 +550,48 @@ public sealed class TextField : View
     {
         var start = Math.Clamp(state.SelectionStart, 0, text.Length);
         var end = Math.Clamp(state.SelectionEnd, 0, text.Length);
-        var result = string.Concat(text.AsSpan(0, start), inserted, text.AsSpan(end));
-        if (result.Length > MaxLength)
-        {
-            result = result[..MaxLength];
-        }
 
+        // 长度上限只约束新增内容：替换掉 [start,end) 后剩余可用容量由保留的前后文本决定，
+        // 超出容量时按字素边界截断插入内容，绝不截断未选中的文本。
+        var capacity = Math.Max(0, MaxLength - (text.Length - (end - start)));
+        inserted = FitInsertion(inserted, capacity);
+
+        var result = string.Concat(text.AsSpan(0, start), inserted, text.AsSpan(end));
         state.Caret = Math.Min(start + inserted.Length, result.Length);
         state.Anchor = state.Caret;
         return result;
+    }
+
+    /// <summary>
+    /// 按字素边界把插入内容截断到 <paramref name="capacity"/> 个 UTF-16 码元之内。
+    /// 无法完整放入的字素会被整个拒绝，避免拆开代理对或组合字符。
+    /// </summary>
+    private static string FitInsertion(string inserted, int capacity)
+    {
+        if (inserted.Length == 0 || capacity <= 0)
+        {
+            return string.Empty;
+        }
+
+        if (inserted.Length <= capacity)
+        {
+            return inserted;
+        }
+
+        var best = 0;
+        var enumerator = System.Globalization.StringInfo.GetTextElementEnumerator(inserted);
+        while (enumerator.MoveNext())
+        {
+            var next = enumerator.ElementIndex + ((string)enumerator.Current).Length;
+            if (next > capacity)
+            {
+                break;
+            }
+
+            best = next;
+        }
+
+        return best == 0 ? string.Empty : inserted[..best];
     }
 
     private void CopySelection(ViewNode node, TextFieldState state, string text, bool cut)
@@ -590,13 +641,14 @@ public sealed class TextField : View
         else
         {
             var caret = Math.Clamp(state.Caret, 0, text.Length);
-            var next = string.Concat(text.AsSpan(0, caret), pasted, text.AsSpan(caret));
-            if (next.Length > MaxLength)
+            pasted = FitInsertion(pasted, Math.Max(0, MaxLength - text.Length));
+            if (pasted.Length == 0)
             {
-                next = next[..MaxLength];
+                return;
             }
 
-            state.Caret = Math.Min(caret + pasted.Length, next.Length);
+            var next = string.Concat(text.AsSpan(0, caret), pasted, text.AsSpan(caret));
+            state.Caret = caret + pasted.Length;
             state.Anchor = state.Caret;
             Text.Value = next;
         }

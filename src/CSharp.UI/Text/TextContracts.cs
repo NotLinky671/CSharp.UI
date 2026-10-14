@@ -57,7 +57,8 @@ public sealed class TextLayoutResult
         IReadOnlyList<TextLineInfo> lines,
         IReadOnlyList<int> caretStops,
         IReadOnlyList<double> caretXs,
-        bool isTrimmed = false)
+        bool isTrimmed = false,
+        double letterSpacing = 0)
     {
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(lines);
@@ -91,6 +92,7 @@ public sealed class TextLayoutResult
         CaretStops = caretStops;
         CaretXs = caretXs;
         IsTrimmed = isTrimmed;
+        LetterSpacing = letterSpacing;
     }
 
     /// <summary>
@@ -119,6 +121,12 @@ public sealed class TextLayoutResult
 
     /// <summary>是否因为省略而隐藏了部分文本。</summary>
     public bool IsTrimmed { get; }
+
+    /// <summary>
+    /// 字距（逻辑像素）：每个字素簇之后附加的水平推进量。
+    /// 栅格化必须使用同一数值，否则测量宽度与实际字形间距会不一致。
+    /// </summary>
+    public double LetterSpacing { get; }
 
     /// <summary>把任意 UTF-16 索引吸附到最近的合法字素边界；<paramref name="roundUp"/> 为 true 时向上取。</summary>
     public int SnapToCaretStop(int index, bool roundUp = false)

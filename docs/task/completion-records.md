@@ -6,6 +6,26 @@
 
 ---
 
+## 任务 01—13 的返修记录（2026-10-14）
+
+Codex 审核（[docs/return/2026-10-14-code-review.md](../return/2026-10-14-code-review.md)）提出 9 个问题（R01—R09，含 3 个 P1），已全部修复并为每项补充回归测试：
+
+| 编号 | 修复位置 | 回归测试 |
+|---|---|---|
+| R01 | `Runtime/UiRuntime.cs`（按同一组件的重复重建次数检测循环） | `R01_ManyComponents_UpdateInOnePass_WithoutFalseLoopDiagnostic`、`R01_RealUpdateLoop_IsStillDetectedWithNodeDiagnostic` |
+| R02 | `Views/TextField.cs`（最小宽度服从父级上限） | `R02_TextFieldWithoutWidth_HandlesNarrowLayouts` 等 3 项 |
+| R03 | `Rendering/DrawCommands.cs`（`ITextureService.BeginFrame`）、`Runtime/UiRuntime.cs`、`Rendering/GlTextureService.cs`（两代帧保护） | `R03_TexturesReferencedByCurrentFrame_SurviveEviction`、`R03_FrameWithMoreTexturesThanCapacity_RendersEveryText`、`R03_RepeatedFrames_DoNotGrowResources` |
+| R04 | `Runtime/Reconciler.cs`（未带键子项按结构位置匹配、结构变化使父级测量失效） | `R04_UnkeyedNodes_MatchByStructuralPosition`、`R04_SameTypeSamePosition_KeepsState` |
+| R05 | `Views/TextField.cs`（按字素边界截断插入内容） | `R05_*` 共 4 项 |
+| R06 | `Runtime/UiRuntime.cs`、`Input/InputRouter.cs`（布局后校验焦点与交互状态） | `R06_DisablingFocusedControl_ClearsFocusAndBlink`、`R06_DisablingCapturedControl_ReleasesPointerCaptureAndPress` |
+| R07 | `Views/TextField.cs`（返回下一个亮灭边界） | `R07_BlinkWakeupCoversBothToggleBoundaries` |
+| R08 | `Runtime/Reconciler.cs`（隐式容器布局 + 多子项组件包裹） | `R08_RootForEach_LaysOutAllChildren`、`R08_RootForEach_HandlesEmptySingleAndReorder` |
+| R09 | `Text/TextContracts.cs`、`SkiaTextService.cs`（字距参与栅格化） | `R09_*` 共 3 项 |
+
+返修后实测：`dotnet build CSharp.UI.slnx -m:1 -nodeReuse:false` 0 错误；四个测试工程合计 **265 项通过 / 0 失败**（核心 111、文本 58、集成 3、图形 93）；三个示例窗口冒烟 5 帧 exit 0。变更语义与未验证项见审核文档的《返修后的验证结果》一节。
+
+---
+
 ## 任务 01：工程初始化与版本管理 —— 已完成
 
 交付物：

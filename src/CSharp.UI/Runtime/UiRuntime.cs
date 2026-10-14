@@ -36,7 +36,7 @@ public sealed record UiRuntimeServices
 /// </remarks>
 public sealed class UiRuntime : IDisposable
 {
-    private const int MaxBuildIterations = 100;
+    private const int MaxRebuildsPerNode = 100;
 
     private readonly List<ViewNode> _componentQueue = [];
     private readonly HashSet<ViewNode> _componentSet = [];
@@ -225,16 +225,11 @@ public sealed class UiRuntime : IDisposable
             return;
         }
 
-        var iterations = 0;
+        // 循环检测按“同一组件在一轮调度内被重复重建的次数”计算，而不是按待更新组件总数：
+        // 批量刷新任意数量的组件都是正常场景，只有在 Build() 期间修改状态才会让同一节点反复入队。
+        var rebuildCounts = new Dictionary<ViewNode, int>();
         while (_componentQueue.Count > 0)
         {
-            if (++iterations > MaxBuildIterations)
-            {
-                throw new InvalidOperationException(
-                    $"组件重建在 {MaxBuildIterations} 轮后仍未收敛，可能存在“构建期间修改状态”的更新循环；" +
-                    "请在事件处理中修改状态，而不是在 Build() 内。");
-            }
-
             var node = _componentQueue[0];
             _componentQueue.RemoveAt(0);
             _componentSet.Remove(node);
@@ -242,6 +237,17 @@ public sealed class UiRuntime : IDisposable
             if (!node.IsMounted || node.View is not Component component)
             {
                 continue;
+            }
+
+            var rebuilds = rebuildCounts.TryGetValue(node, out var count) ? count + 1 : 1;
+            rebuildCounts[node] = rebuilds;
+            if (rebuilds > MaxRebuildsPerNode)
+            {
+                ReportDiagnostic(
+                    $"检测到更新循环：组件 {node.DebugPath} 在单轮更新中被重复重建 {rebuilds} 次，已中止以避免无限更新。");
+                throw new InvalidOperationException(
+                    $"组件 {node.DebugPath} 在单轮更新中被重复重建 {rebuilds} 次（上限 {MaxRebuildsPerNode}），" +
+                    "可能存在“构建期间修改状态”的更新循环；请在事件处理中修改状态，而不是在 Build() 内。");
             }
 
             BuildCount++;
@@ -261,6 +267,10 @@ public sealed class UiRuntime : IDisposable
             RunLayout();
         }
 
+        // 环境（Disable 等）在布局阶段解析，因此布局完成后校验焦点与指针交互状态。
+        _focus.Validate();
+        _router.ValidateInteractionState();
+
         if (_renderDirty)
         {
             _needsDraw = true;
@@ -272,6 +282,10 @@ public sealed class UiRuntime : IDisposable
     public RenderFrame BuildFrame()
     {
         ProcessPendingWork();
+
+        // 帧边界：纹理服务据此保护本帧引用的纹理，避免生成后续命令时淘汰前面命令仍在引用的纹理。
+        Services.TextureService?.BeginFrame();
+
         var options = new RenderFrameOptions(ViewportSize, PixelScale, ClearColor);
         var context = new DrawContext(this, Services.TextService, Services.TextureService, Services.ImageService, PixelScale, options);
         Root.View.Emit(Root, context);

@@ -296,6 +296,29 @@ internal sealed class InputRouter
         _pressedChain.RemoveAll(n => IsSelfOrDescendant(node, n));
     }
 
+    /// <summary>
+    /// 协调更新与布局之后校验交互状态：被禁用或已卸载的节点不再保留悬停、按下与指针捕获。
+    /// </summary>
+    /// <remarks>禁用变化通过环境传播，只有布局完成后才能判定，因此由运行时在更新流程末尾调用。</remarks>
+    public void ValidateInteractionState()
+    {
+        if (_captured is { } captured && (!captured.IsMounted || captured.IsEffectivelyDisabled))
+        {
+            // 通知控件中止拖动/按下状态，避免禁用后仍继续响应移动或释放。
+            var context = new InputContext(_runtime);
+            captured.View.OnPointerCancel(context, captured);
+            ClearPressState(context);
+        }
+
+        if (_hovered is { } hovered && (!hovered.IsMounted || hovered.IsEffectivelyDisabled))
+        {
+            ClearHover(new InputContext(_runtime));
+        }
+
+        _hoverChain.RemoveAll(n => !n.IsMounted);
+        _pressedChain.RemoveAll(n => !n.IsMounted);
+    }
+
     /// <summary>命中测试：按逆绘制顺序查找最上层可见、未被裁剪、未被禁用的目标。</summary>
     public ViewNode? HitTest(Point position)
     {

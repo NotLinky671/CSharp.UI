@@ -74,6 +74,23 @@
 - 原因：如果父级紧约束覆盖子项期望尺寸，子项就无法报告自然尺寸（例如 `HStack` 里的固定尺寸矩形会被拉伸到父级高度）。
 - 约定：`ScrollView` 在**滚动轴**上声明 `FlexGrow = 1`（fill 语义），否则放进不定尺寸的 `VStack` 时会撑到内容高度而永远无法滚动。
 
+### 2.6 结构变化必须让父级测量缓存失效
+
+- 现象：往容器/组件里新增子项后，新子项一直是 `0×0`（尤其是从“空集合”变为“有内容”，或根是 `ForEach` 的情况）。
+- 原因：只有经过属性更新的节点才会调用 `InvalidateLayout()`；**新建子项**与**卸载子项**都不走那条路径，于是父级命中旧的测量缓存。
+- 处理：`Reconciler.ReconcileDescriptors` 在“子项数量变化、有创建/卸载、顺序变化”时统一调用 `parent.InvalidateLayout()`。回归测试见 `R04`/`R08`。
+
+### 2.7 隐式容器与多子项组件
+
+- 约定：根视图展开为多个同级条目时，`MountRoot` 会包一层 `ImplicitRootContainer`；**组件 `Build()` 返回多子项（例如直接返回 `ForEach`）时同样包裹**。
+- 原因：`Component.Measure` 只测量 `Children[0]`，否则其余子项永远不参与布局。
+- 语义：隐式容器按**垂直堆叠**（间距 0、交叉轴拉伸）排列，等价于 `VStack`；`ImplicitRootContainer.IsLayoutEquivalent` 恒为 `false`（其内容由描述列表携带，无法参与结构比较）。
+
+### 2.8 长度上限只能截断“新增内容”
+
+- 现象：`MaxLength` 截断会写入半个代理项（😀 → `D83D`），或在替换选区时把未选中的尾部文本删掉。
+- 处理：统一“先算可用容量（替换范围扣除后），再按 `StringInfo` 字素边界截断**插入内容**”；放不下的字素整体拒绝，绝不截断结果字符串的尾部。
+
 ---
 
 ## 3. OpenGL / GLFW 环境坑
@@ -83,6 +100,9 @@
 3. 纹理参数必须在纹理仍绑定时、且在 level 0 上传之后设置，否则默认的 mipmap min filter 会让纹理“不完整”，采样恒为 `(0,0,0,1)`（表现为纹理全黑）。
 4. 图形测试在 xunit worker 线程运行，夹具需调用 `GlOffscreenSurface.AllowNonMainThreadCreation()` 放开 GLFW 的主线程检查；**macOS 仍要求 GLFW 在主线程**，在 macOS 上需要主线程测试宿主。
 5. 像素约定（不要改）：CPU 侧位图预乘 alpha（`Rgba8888Premultiplied`/`Bgra8888Premultiplied`），文本遮罩为 `Alpha8`；GPU 侧统一 `glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)`；`PushClipCommand`/`PopClipCommand` 维护 scissor 栈，逻辑坐标 → framebuffer 需要乘 DPI 并翻转 Y。
+6. 纹理缓存的帧语义：一帧的全部命令先生成、之后才提交。淘汰若在命令生成期间发生，会把前面命令引用的纹理删掉（表现为“同帧内文本数量超过容量时前面的文本不绘制”）。`ITextureService.BeginFrame()` 是帧边界，实现要对**本帧与上一帧引用**的纹理做保护（两代保护可同时避免“每帧重复上传”的抖动），容量在帧边界回收；显式 `Capacity` 变更立即生效。
+7. 字距（`LetterSpacing`）必须同时进入**测量**与**栅格化**：`TextLayoutResult` 暴露 `LetterSpacing`，`SkiaTextService.DrawLine` 按字素簇序号附加字距并使用行内绝对位置。只累计 `glyph.Advance` 会让字距只改变测量宽度。
+8. GLFW 剪贴板是进程间共享资源：`OpenClipboard` 被其他进程短暂占用时会读回空串。测试应重试读回并把环境信息写进失败消息，**不要跳过**。
 
 ---
 

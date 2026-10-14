@@ -229,22 +229,39 @@ public sealed class GlTextureTests
     {
         _fixture.Surface.MakeCurrent();
         using var service = new GlTextureService(2);
+
+        // 帧内引用受保护：即使超出容量也不会淘汰当前帧尚未提交的纹理。
         var first = service.GetOrCreate("a", () => OpaqueRgba(1, 1, Color.Red));
         var second = service.GetOrCreate("b", () => OpaqueRgba(1, 1, Color.Green));
         var third = service.GetOrCreate("c", () => OpaqueRgba(1, 1, Color.Blue));
 
         Assert.Equal(3, service.CreatedTextureCount);
+        Assert.Equal(0, service.ReleasedTextureCount);
+        Assert.Equal(3, service.LiveTextureCount);
+        Assert.True(service.TryGetTextureName(first, out _));
+        Assert.True(service.TryGetTextureName(second, out _));
+        Assert.True(service.TryGetTextureName(third, out _));
+
+        // 停止引用后的帧边界回收：上一帧引用的条目在下一帧边界按 LRU 淘汰回容量。
+        service.BeginFrame();
+        Assert.Equal(3, service.LiveTextureCount);
+
+        service.BeginFrame();
         Assert.Equal(1, service.ReleasedTextureCount);
         Assert.Equal(2, service.LiveTextureCount);
         Assert.False(service.TryGetTextureName(first, out _));
         Assert.True(service.TryGetTextureName(second, out _));
         Assert.True(service.TryGetTextureName(third, out _));
 
-        // 淘汰后重新请求同一键会重新上传并得到新句柄。
+        // 淘汰后重新请求同一键会重新上传并得到新句柄；
+        // 新建条目受帧保护，但同一帧内不受保护的 b 会被立即回收，容量保持长期有界。
         var again = service.GetOrCreate("a", () => OpaqueRgba(1, 1, Color.Red));
         Assert.NotEqual(first, again);
         Assert.Equal(4, service.CreatedTextureCount);
+        Assert.Equal(2, service.ReleasedTextureCount);
         Assert.Equal(2, service.LiveTextureCount);
+        Assert.True(service.TryGetTextureName(again, out _));
+        Assert.True(service.TryGetTextureName(third, out _));
     }
 
     [Fact]

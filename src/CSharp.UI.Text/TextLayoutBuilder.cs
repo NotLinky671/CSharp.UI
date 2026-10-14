@@ -139,7 +139,8 @@ internal sealed class TextLayoutBuilder
             lineInfos,
             caretStops,
             caretXs,
-            isTrimmed: visibleText.Length < text.Length);
+            isTrimmed: visibleText.Length < text.Length,
+            letterSpacing: request.LetterSpacing);
     }
 
     /// <summary>把文本切分为段落：[内容起点, 内容终点) 与含换行符的 [起点, 终点)。</summary>

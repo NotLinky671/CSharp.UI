@@ -314,7 +314,9 @@ public sealed class UiApplicationTests
     {
         GlOffscreenSurface.AllowNonMainThreadCreation();
         var roundTrip = string.Empty;
+        var original = string.Empty;
         Exception? failure = null;
+        const string payload = "CSharp.UI 剪贴板往返测试";
 
         var result = UiApplication.Run(new Rectangle(Color.Red), new UiApplicationOptions
         {
@@ -327,11 +329,14 @@ public sealed class UiApplicationTests
                 var host = UiApplication.CurrentHost;
                 Assert.NotNull(host);
                 var clipboard = new GlfwClipboardService(host!.Window);
-                var original = clipboard.GetText();
+                original = clipboard.GetText() ?? string.Empty;
                 try
                 {
-                    clipboard.SetText("CSharp.UI 剪贴板往返测试");
-                    roundTrip = clipboard.GetText() ?? string.Empty;
+                    clipboard.SetText(payload);
+
+                    // 剪贴板是进程间共享资源：其他进程可能短暂占用（Windows 的 OpenClipboard 会失败并返回空），
+                    // 因此按“读回目标内容”重试若干次，而不是只读一次。
+                    roundTrip = ReadClipboardUntil(clipboard, payload);
                 }
                 catch (Exception ex)
                 {
@@ -340,7 +345,7 @@ public sealed class UiApplicationTests
                 finally
                 {
                     // 尽力恢复原有文本内容。
-                    clipboard.SetText(original ?? string.Empty);
+                    clipboard.SetText(original);
                 }
 
                 context.RequestExit(0);
@@ -349,7 +354,29 @@ public sealed class UiApplicationTests
 
         Assert.Equal(0, result);
         Assert.Null(failure);
-        Assert.Equal("CSharp.UI 剪贴板往返测试", roundTrip);
+        Assert.True(
+            roundTrip == payload,
+            $"GLFW 剪贴板往返失败：写入 \"{payload}\"，读回 \"{roundTrip}\"。" +
+            $"环境：{Environment.OSVersion} / {System.Runtime.InteropServices.RuntimeInformation.OSArchitecture}。" +
+            "剪贴板可能被其他进程占用或系统未提供剪贴板访问；该失败不应被当作通过。");
+    }
+
+    /// <summary>读取剪贴板直到得到期望内容或重试耗尽（返回最后一次读到的内容）。</summary>
+    private static string ReadClipboardUntil(GlfwClipboardService clipboard, string expected, int attempts = 20)
+    {
+        var value = string.Empty;
+        for (var i = 0; i < attempts; i++)
+        {
+            value = clipboard.GetText() ?? string.Empty;
+            if (value == expected)
+            {
+                return value;
+            }
+
+            Thread.Sleep(15);
+        }
+
+        return value;
     }
 
     private static void StartBackgroundDriver(Action driver)

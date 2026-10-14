@@ -104,7 +104,11 @@ internal static class Reconciler
         }
     }
 
-    /// <summary>执行组件 Build 并把结果协调为组件的唯一子节点。</summary>
+    /// <summary>执行组件 Build 并把结果协调为组件的子节点。</summary>
+    /// <remarks>
+    /// 组件返回的描述若展开为多个同级条目（例如直接返回 <c>ForEach</c>），会包裹一层隐式容器，
+    /// 保证组件的子项同样被测量与排列（否则只有第一个子项参与布局）。
+    /// </remarks>
     public static void BuildComponent(ViewNode node, Component component)
     {
         var state = node.ComponentState ??= new ComponentState(node);
@@ -121,7 +125,15 @@ internal static class Reconciler
             state.EndBuild();
         }
 
-        ReconcileChildren(node, [built]);
+        var descriptors = Expand(built);
+        if (descriptors.Count == 1)
+        {
+            ReconcileDescriptors(node, descriptors);
+            return;
+        }
+
+        // 多个（或零个）同级条目：包裹隐式容器，保证组件仍然只有一个子项并获得布局。
+        ReconcileDescriptors(node, [new ChildDescriptor(new ImplicitRootContainer(descriptors), null, false)]);
     }
 
     /// <summary>用新描述更新已存在的节点。</summary>
@@ -145,6 +157,7 @@ internal static class Reconciler
     }
 
     /// <summary>协调子节点列表：复用、创建、卸载并重新排序。</summary>
+    /// <remarks>展开结果多于一个同级条目时由调用方（<see cref="BuildComponent"/>、<see cref="MountRoot"/>）包裹隐式容器。</remarks>
     public static void ReconcileChildren(ViewNode parent, IReadOnlyList<View> children)
     {
         var descriptors = new List<ChildDescriptor>(children.Count);
@@ -165,6 +178,7 @@ internal static class Reconciler
         var oldNodes = parent.ChildList.ToArray();
         var used = new bool[oldNodes.Length];
         var result = new ViewNode?[descriptors.Count];
+        var structureChanged = oldNodes.Length != descriptors.Count;
 
         // 第一遍：按 (键, 类型) 匹配显式键条目。
         for (var i = 0; i < descriptors.Count; i++)
@@ -192,25 +206,24 @@ internal static class Reconciler
         }
 
         // 第二遍：未指定键的条目按类型与结构位置顺序匹配。
+        // 第二遍：未指定键的条目按“结构位置 + 类型”匹配。
+        // 只与同一索引上的旧节点匹配：跨位置保留身份必须使用显式 Key，否则状态会迁移到不对应的视图上。
         for (var i = 0; i < descriptors.Count; i++)
         {
             var descriptor = descriptors[i];
-            if (descriptor.HasKey || result[i] is not null)
+            if (descriptor.HasKey || result[i] is not null || i >= oldNodes.Length)
             {
                 continue;
             }
 
-            for (var j = 0; j < oldNodes.Length; j++)
+            var candidate = oldNodes[i];
+            if (used[i] || candidate.HasIdentityKey || candidate.IdentityType != descriptor.View.GetType())
             {
-                if (used[j] || oldNodes[j].HasIdentityKey || oldNodes[j].IdentityType != descriptor.View.GetType())
-                {
-                    continue;
-                }
-
-                used[j] = true;
-                result[i] = oldNodes[j];
-                break;
+                continue;
             }
+
+            used[i] = true;
+            result[i] = candidate;
         }
 
         // 更新或创建。
@@ -222,6 +235,7 @@ internal static class Reconciler
             {
                 node = CreateNode(runtime, descriptor);
                 result[i] = node;
+                structureChanged = true;
             }
             else if (!ReferenceEquals(node.View, descriptor.View))
             {
@@ -237,16 +251,33 @@ internal static class Reconciler
             if (!used[j])
             {
                 Unmount(oldNodes[j]);
+                structureChanged = true;
             }
         }
 
         // 重新排序并修正父子关系。
+        for (var i = 0; i < result.Length; i++)
+        {
+            if (!ReferenceEquals(i < oldNodes.Length ? oldNodes[i] : null, result[i]))
+            {
+                structureChanged = true;
+                break;
+            }
+        }
+
         parent.ChildList.Clear();
         foreach (var node in result)
         {
             var child = node!;
             child.Parent = parent;
             parent.ChildList.Add(child);
+        }
+
+        // 子项增删或顺序变化时父级的测量缓存必然失效：新增子项不会经过 UpdateNode，
+        // 若不在这里失效，父级会命中旧的测量缓存，新子项停留在 0×0。
+        if (structureChanged)
+        {
+            parent.InvalidateLayout();
         }
     }
 
@@ -332,9 +363,12 @@ internal static class Reconciler
 }
 
 /// <summary>
-/// 隐式根容器：当根视图展开为多个同级条目（例如根为 <c>ForEach</c>）时包裹它们，
-/// 直接携带已展开的子项描述，避免丢失键信息。
+/// 隐式根容器：当根视图展开为多个同级条目（例如根为 <c>ForEach</c>）时包裹它们。
 /// </summary>
+/// <remarks>
+/// 布局语义：按垂直堆叠排列子项（间距 0、交叉轴拉伸），与 <see cref="VStack"/> 一致，
+/// 因此根 <c>ForEach</c> 的多个子项都会获得合理布局而不是静默变成空界面。
+/// </remarks>
 internal sealed class ImplicitRootContainer : View
 {
     private readonly List<ChildDescriptor> _descriptors;
@@ -344,4 +378,16 @@ internal sealed class ImplicitRootContainer : View
     public override string DebugName => "Root";
 
     internal List<ChildDescriptor> Descriptors => _descriptors;
+
+    // 内容由描述列表携带（不经过 View.Children），无法参与结构比较：保守地要求重新布局。
+    internal sealed override bool IsLayoutEquivalent(View other) => false;
+
+    internal override void Measure(ViewNode node, LayoutConstraints constraints, LayoutContext context)
+        => StackLayout.Measure(node, constraints, context, StackOrientation.Vertical, 0, Alignment.Stretch);
+
+    internal override void Arrange(ViewNode node, Rect bounds, LayoutContext context)
+    {
+        node.Frame = bounds;
+        StackLayout.Arrange(node, bounds, context, StackOrientation.Vertical, 0, Alignment.Stretch);
+    }
 }

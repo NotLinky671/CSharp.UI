@@ -44,6 +44,11 @@ public sealed class GlTextureService : ITextureService, IGlTextureProvider, IDis
     private readonly Dictionary<object, LinkedListNode<Entry>> _map = new(EqualityComparer<object>.Default);
     private readonly Dictionary<long, uint> _namesById = [];
     private readonly LinkedList<Entry> _order = [];
+
+    // 帧保护分两代：本帧引用与上一帧引用。两代都受保护，避免“本帧尚未用到的纹理被本帧新建的纹理挤掉，
+    // 随后又要重新上传”的抖动；上一帧未被再次引用的条目会在下一次帧边界回收。
+    private HashSet<Entry> _frameReferenced = [];
+    private HashSet<Entry> _previousFrameReferenced = [];
     private long _nextId;
     private int _capacity;
     private int _created;
@@ -82,6 +87,10 @@ public sealed class GlTextureService : ITextureService, IGlTextureProvider, IDis
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
             _capacity = value;
+
+            // 显式调整容量属于管理操作：立即生效（不受帧保护影响）。
+            _frameReferenced.Clear();
+            _previousFrameReferenced.Clear();
             Trim();
         }
     }
@@ -97,6 +106,7 @@ public sealed class GlTextureService : ITextureService, IGlTextureProvider, IDis
         {
             _order.Remove(existing);
             _order.AddLast(existing);
+            _frameReferenced.Add(existing.Value);
             return existing.Value.Handle;
         }
 
@@ -121,6 +131,7 @@ public sealed class GlTextureService : ITextureService, IGlTextureProvider, IDis
         _namesById[id] = name;
         _created++;
         _liveBytes += entry.ByteCount;
+        _frameReferenced.Add(entry);
         Trim();
         return handle;
     }
@@ -136,6 +147,8 @@ public sealed class GlTextureService : ITextureService, IGlTextureProvider, IDis
 
         if (_map.Remove(key, out var node))
         {
+            _frameReferenced.Remove(node.Value);
+            _previousFrameReferenced.Remove(node.Value);
             RemoveEntry(node);
         }
     }
@@ -158,6 +171,22 @@ public sealed class GlTextureService : ITextureService, IGlTextureProvider, IDis
 
         _map.Clear();
         _order.Clear();
+        _frameReferenced.Clear();
+        _previousFrameReferenced.Clear();
+    }
+
+    /// <inheritdoc />
+    /// <remarks>清除上一帧的引用保护并尝试回落容量；随后本帧引用到的纹理会一直存活到下一次调用。</remarks>
+    public void BeginFrame()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _previousFrameReferenced = _frameReferenced;
+        _frameReferenced = [];
+        Trim();
     }
 
     /// <inheritdoc />
@@ -186,12 +215,23 @@ public sealed class GlTextureService : ITextureService, IGlTextureProvider, IDis
 
     private void Trim()
     {
-        while (_map.Count > _capacity && _order.First is { } first)
+        // 只淘汰未被保护的条目：容量是长期上限，帧内引用可临时超出，在后续帧边界回收。
+        var node = _order.First;
+        while (_map.Count > _capacity && node is not null)
         {
-            _map.Remove(first.Value.Key);
-            RemoveEntry(first);
+            var next = node.Next;
+            if (!IsProtected(node.Value))
+            {
+                _map.Remove(node.Value.Key);
+                RemoveEntry(node);
+            }
+
+            node = next;
         }
     }
+
+    private bool IsProtected(Entry entry)
+        => _frameReferenced.Contains(entry) || _previousFrameReferenced.Contains(entry);
 
     private void RemoveEntry(LinkedListNode<Entry> node)
     {
