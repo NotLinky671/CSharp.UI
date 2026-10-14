@@ -33,7 +33,8 @@ public class CodeReviewRegressionTests
             Assert.Equal(1, node.GetStateValue<int>("value")));
 
         // 一轮内多次修改仍然合并为一次重建。
-        var builds = host.Items[0].State!.Owner.Runtime.BuildCount;
+        var owner = Assert.IsType<ViewNode>(host.Items[0].State!.Owner);
+        var builds = owner.Runtime.BuildCount;
         foreach (var item in host.Items)
         {
             item.State!.Value = 2;
@@ -45,7 +46,8 @@ public class CodeReviewRegressionTests
 
         Assert.Equal(3, host.Items[0].State!.Value);
         Assert.Equal(120, host.Items.Count(i => i.State!.Value == 3));
-        Assert.True(host.Items[0].State.Owner.Runtime.BuildCount >= builds);
+        var ownerBuilds = host.Items[0].State!.Owner?.Runtime.BuildCount ?? 0;
+        Assert.True(ownerBuilds >= builds);
     }
 
     [Fact]

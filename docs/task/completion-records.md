@@ -24,6 +24,17 @@ Codex 审核（[docs/return/2026-10-14-code-review.md](../return/2026-10-14-code
 
 返修后实测：`dotnet build CSharp.UI.slnx -m:1 -nodeReuse:false` 0 错误；四个测试工程合计 **265 项通过 / 0 失败**（核心 111、文本 58、集成 3、图形 93）；三个示例窗口冒烟 5 帧 exit 0。变更语义与未验证项见审核文档的《返修后的验证结果》一节。
 
+### 复审第二轮（R10、R11）
+
+Codex 复审（[2026-10-14 返修代码复审记录](../return/2026-10-14-code-review-follow-up.md)）确认原 R01—R09 复现用例已通过，并新增两项问题，均已修复：
+
+| 编号 | 修复位置 | 回归测试 |
+|---|---|---|
+| R10 | `Runtime/Reconciler.cs`（集合视图 `ForEach` 无论 0/1/多项都保留同一层隐式容器，容器边界与条目数量无关） | `R10_KeyedCollection_SingleToManyAndBack_KeepsItemNodeAndState`、`R10_KeyedCollection_RemoveAddAndReorder_KeepPerItemIdentity`、`R10_KeyedCollection_FocusAndEditState_SurviveAddRemove`、`R10_KeyedCollection_EmptySingleAndMany_LayoutCorrectly`、`R10_PlainSingleViewComponent_HasNoExtraContainerLayer` |
+| R11 | `Views/TextField.cs`（容量拒绝时原样保留文本、光标与选区） | `R11_*` 共 5 项（输入/粘贴/组合字符/首中末选区/部分可放入与显式删除） |
+
+第二轮实测（Windows x64 交互式会话）：0 错误、0 条 C# 警告；四个测试工程合计 **277 项通过 / 0 失败**（核心 123、文本 58、集成 3、图形 93）；示例冒烟 5 帧 exit 0。GLFW 剪贴板用例在本机通过、在 Codex 沙箱环境读回空串（环境限制），两处结果均已记录，未计入通过。
+
 ---
 
 ## 任务 01：工程初始化与版本管理 —— 已完成

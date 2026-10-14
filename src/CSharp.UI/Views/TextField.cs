@@ -554,10 +554,17 @@ public sealed class TextField : View
         // 长度上限只约束新增内容：替换掉 [start,end) 后剩余可用容量由保留的前后文本决定，
         // 超出容量时按字素边界截断插入内容，绝不截断未选中的文本。
         var capacity = Math.Max(0, MaxLength - (text.Length - (end - start)));
-        inserted = FitInsertion(inserted, capacity);
+        var fitted = FitInsertion(inserted, capacity);
 
-        var result = string.Concat(text.AsSpan(0, start), inserted, text.AsSpan(end));
-        state.Caret = Math.Min(start + inserted.Length, result.Length);
+        if (fitted.Length == 0)
+        {
+            // 因容量限制被整体拒绝：保留文本、光标与选区。
+            // 这与用户显式删除不同（Backspace/Delete/剪切走各自的路径），不能等价于删掉选区。
+            return text;
+        }
+
+        var result = string.Concat(text.AsSpan(0, start), fitted, text.AsSpan(end));
+        state.Caret = Math.Min(start + fitted.Length, result.Length);
         state.Anchor = state.Caret;
         return result;
     }

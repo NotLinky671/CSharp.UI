@@ -27,9 +27,10 @@ internal static class Reconciler
     {
         ArgumentNullException.ThrowIfNull(root);
         var descriptors = Expand(root);
-        if (descriptors.Count != 1)
+        if (IsCollectionView(root) || descriptors.Count != 1)
         {
-            // 根视图展开为多个同级条目（例如根为 ForEach）：包一层隐式容器，保证只有一个根节点。
+            // 根为集合视图（ForEach）或多条目：包一层隐式容器，保证只有一个根节点。
+            // 集合视图即使只有 0/1 个条目也包裹，避免条目数量变化时改变节点层级。
             var container = new ImplicitRootContainer(descriptors);
             descriptors = Expand(container);
         }
@@ -126,15 +127,33 @@ internal static class Reconciler
         }
 
         var descriptors = Expand(built);
-        if (descriptors.Count == 1)
+        if (!IsCollectionView(built) && descriptors.Count == 1)
         {
+            // 普通单视图组件：保持既有行为，不引入额外层级。
             ReconcileDescriptors(node, descriptors);
             return;
         }
 
-        // 多个（或零个）同级条目：包裹隐式容器，保证组件仍然只有一个子项并获得布局。
+        // 集合视图（ForEach）或多条目：包裹隐式容器，保证组件只有一个子项并获得布局。
+        // 集合视图在 0/1/多项时都包裹，使节点层级稳定；否则数量跨越 1 的边界会卸载整棵子树，
+        // 带键项目的状态、焦点与编辑状态都会丢失（稳定键只在同一父级内匹配）。
         ReconcileDescriptors(node, [new ChildDescriptor(new ImplicitRootContainer(descriptors), null, false)]);
     }
+
+    /// <summary>取出被 Key 包装的最内层视图（<c>KeyedView</c> 只影响身份，不影响结构判定）。</summary>
+    private static View UnwrapKey(View view)
+    {
+        var current = view;
+        while (current is KeyedView keyed)
+        {
+            current = keyed.Child;
+        }
+
+        return current;
+    }
+
+    /// <summary>是否为集合视图（<c>ForEach</c>）：这类视图的条目数量可变，需要稳定的容器边界。</summary>
+    private static bool IsCollectionView(View view) => UnwrapKey(view) is ForEachView;
 
     /// <summary>用新描述更新已存在的节点。</summary>
     public static void UpdateNode(ViewNode node, ChildDescriptor descriptor)
