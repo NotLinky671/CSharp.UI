@@ -15,6 +15,7 @@
 - guide：本项目的使用指南。
 - plan：`Codex` 将计划放在本文件夹下，文件名字要求加上日期。
 - task：`Codex` 将拆分 `plan` 中一个计划到本文件夹下，`Deepseek Harness` 根据这里面的 task 完成代码与测试。`Codex` 拆分 `plan` 之前需要把里面之前的 task 都删除再添加新的 task 和 README.md。
+- return：当 `Codex` 审核完代码之后，如代码有问题，将发现的问题写在本文件夹下，文件名字中需要带时间。`DeepSeek Harness` 根据里面的文件来修改代码，这个文件夹下的文件不需要删除。
 
 ## 完整工作流
 我(linky) -> Codex -> 我(linky) -> Deepseek Harness -> 我(linky)
