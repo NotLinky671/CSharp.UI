@@ -1,0 +1,32 @@
+<Project>
+
+  <!--
+    集中式包版本管理（任务 01）。
+    固定版本来自原计划：OpenTK 4.9.4、SkiaSharp 3.119.4、SkiaSharp.HarfBuzz 3.119.4。
+    不引用 OpenTK 5 预览包。
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 桌面宿主与 OpenGL 绑定 -->
+    <PackageVersion Include="OpenTK" Version="4.9.4" />
+
+    <!-- CPU 文本排版与图片解码（仅 CSharp.UI.Text 引用） -->
+    <PackageVersion Include="SkiaSharp" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="3.119.4" />
+    <PackageVersion Include="HarfBuzzSharp" Version="8.3.1.5" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Win32" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.macOS" Version="3.119.4" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Win32" Version="8.3.1.5" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.5" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.macOS" Version="8.3.1.5" />
+
+    <!-- 测试：xunit.v3 自带 Microsoft.Testing.Platform 进程内运行器 -->
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CSharp.UI.IntegrationTests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <!--
+      跨模块集成测试：真实 SkiaSharp/HarfBuzz 排版 + 核心运行时/控件，不需要 OpenGL 上下文。
+      刻意与 tests/CSharp.UI.Text.Tests 分开：该项目的命名空间 CSharp.UI.Text.Tests 会让
+      简单名 Text 解析为命名空间（CS0435），无法在同一编译单元里使用 Text 视图。
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CSharp.UI\CSharp.UI.csproj" />
+    <ProjectReference Include="..\..\src\CSharp.UI.Text\CSharp.UI.Text.csproj" />
+    <ProjectReference Include="..\..\src\CSharp.UI.OpenTK\CSharp.UI.OpenTK.csproj" />
+  </ItemGroup>
+
+</Project>

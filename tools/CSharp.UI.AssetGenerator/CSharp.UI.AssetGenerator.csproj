@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CSharp.UI.AssetGenerator</RootNamespace>
+    <AssemblyName>assetgen</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <Description>生成示例所需的图片资源（samples/Shared/Assets/logo.png），保证资源可复现且许可无争议。</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CSharp.UI.Text\CSharp.UI.Text.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CSharp.UI.Samples.TodoList</RootNamespace>
+    <AssemblyName>TodoList</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CSharp.UI.OpenTK\CSharp.UI.OpenTK.csproj" />
+    <ProjectReference Include="..\..\src\CSharp.UI.Text\CSharp.UI.Text.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\SmokeTestHook.cs" Link="SmokeTestHook.cs" />
+  </ItemGroup>
+
+</Project>

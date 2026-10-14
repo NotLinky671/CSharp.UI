@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CSharp.UI</RootNamespace>
+    <AssemblyName>CSharp.UI</AssemblyName>
+    <IsPackable>true</IsPackable>
+    <PackageId>CSharp.UI</PackageId>
+    <Description>平台无关的声明式 UI 核心：视图描述、组件、状态、协调更新、布局、控件与绘制命令。不依赖 OpenTK 或 SkiaSharp。</Description>
+    <PackageTags>ui;declarative;desktop;headless</PackageTags>
+  </PropertyGroup>
+
+  <!-- 后端与测试需要访问内部布局/协调实现，但公开 API 不暴露它们。 -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="CSharp.UI.Text" />
+    <InternalsVisibleTo Include="CSharp.UI.OpenTK" />
+    <InternalsVisibleTo Include="CSharp.UI.Tests" />
+    <InternalsVisibleTo Include="CSharp.UI.Text.Tests" />
+    <InternalsVisibleTo Include="CSharp.UI.OpenTK.Tests" />
+  </ItemGroup>
+
+</Project>

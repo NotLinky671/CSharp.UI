@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CSharp.UI.Skia</RootNamespace>
+    <AssemblyName>CSharp.UI.Text</AssemblyName>
+    <IsPackable>true</IsPackable>
+    <PackageId>CSharp.UI.Text</PackageId>
+    <Description>基于 SkiaSharp/HarfBuzz 的 CPU 字体解析、文本排版、测量、栅格化与图片解码。实现 CSharp.UI 的文本与图片资源契约。</Description>
+    <PackageTags>ui;text;shaping;skia</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CSharp.UI\CSharp.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" />
+    <PackageReference Include="HarfBuzzSharp" />
+  </ItemGroup>
+
+  <!--
+    原生资产随库分发，保证 Windows x64、Linux x64、macOS x64/arm64 发布输出包含
+    GLFW（由 OpenTK 提供）、SkiaSharp 与 HarfBuzz 的原生依赖。
+  -->
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.macOS" />
+  </ItemGroup>
+
+</Project>

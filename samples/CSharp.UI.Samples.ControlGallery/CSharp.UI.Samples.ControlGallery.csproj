@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CSharp.UI.Samples.ControlGallery</RootNamespace>
+    <AssemblyName>ControlGallery</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CSharp.UI.OpenTK\CSharp.UI.OpenTK.csproj" />
+    <ProjectReference Include="..\..\src\CSharp.UI.Text\CSharp.UI.Text.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Shared\Assets\**\*" LinkBase="shared\Assets" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\SmokeTestHook.cs" Link="SmokeTestHook.cs" />
+  </ItemGroup>
+
+</Project>

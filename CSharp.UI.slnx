@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CSharp.UI/CSharp.UI.csproj" />
+    <Project Path="src/CSharp.UI.Text/CSharp.UI.Text.csproj" />
+    <Project Path="src/CSharp.UI.OpenTK/CSharp.UI.OpenTK.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/CSharp.UI.Samples.Counter/CSharp.UI.Samples.Counter.csproj" />
+    <Project Path="samples/CSharp.UI.Samples.TodoList/CSharp.UI.Samples.TodoList.csproj" />
+    <Project Path="samples/CSharp.UI.Samples.ControlGallery/CSharp.UI.Samples.ControlGallery.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CSharp.UI.Tests/CSharp.UI.Tests.csproj" />
+    <Project Path="tests/CSharp.UI.Text.Tests/CSharp.UI.Text.Tests.csproj" />
+    <Project Path="tests/CSharp.UI.Integration.Tests/CSharp.UI.Integration.Tests.csproj" />
+    <Project Path="tests/CSharp.UI.OpenTK.Tests/CSharp.UI.OpenTK.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/CSharp.UI.AssetGenerator/CSharp.UI.AssetGenerator.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CSharp.UI.OpenTK</RootNamespace>
+    <AssemblyName>CSharp.UI.OpenTK</AssemblyName>
+    <IsPackable>true</IsPackable>
+    <PackageId>CSharp.UI.OpenTK</PackageId>
+    <Description>OpenTK 桌面宿主：窗口、按需事件循环、输入适配、OpenGL 3.3 命令渲染、GPU 资源与文本/图片服务组装。</Description>
+    <PackageTags>ui;opentk;opengl;desktop</PackageTags>
+    <!-- GLFW 剪贴板等少量 API 需要窗口指针；其余代码不使用 unsafe。 -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CSharp.UI\CSharp.UI.csproj" />
+    <!--
+      宿主负责组装平台服务：未显式注入文本/图片服务时，默认使用 CSharp.UI.Text 程序集里的 SkiaSharp 实现
+      （命名空间 CSharp.UI.Skia；计划中“OpenTK 引用 Core 并在宿主中组装 Text 服务”的落地位置）。
+    -->
+    <ProjectReference Include="..\CSharp.UI.Text\CSharp.UI.Text.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTK" />
+  </ItemGroup>
+
+</Project>

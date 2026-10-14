@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CSharp.UI.OpenTK.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <!-- 图形集成测试需要 OpenGL 上下文，与核心单元测试分开运行。 -->
+    <DefineConstants>$(DefineConstants);CSHARPUI_GRAPHICS_TESTS</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CSharp.UI\CSharp.UI.csproj" />
+    <ProjectReference Include="..\..\src\CSharp.UI.Text\CSharp.UI.Text.csproj" />
+    <ProjectReference Include="..\..\src\CSharp.UI.OpenTK\CSharp.UI.OpenTK.csproj" />
+  </ItemGroup>
+
+</Project>
