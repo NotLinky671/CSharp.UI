@@ -73,7 +73,8 @@ Add-Report "- 配置：$Configuration"
 Add-Report ''
 
 Invoke-Step '还原与构建（dotnet build CSharp.UI.slnx）' {
-    dotnet build CSharp.UI.slnx -c $Configuration
+    # -m:1 -nodeReuse:false：受限环境（无命名管道）下 MSBuild 多节点会静默失败，单节点最稳。
+    dotnet build CSharp.UI.slnx -c $Configuration -m:1 -nodeReuse:false
 }
 
 Invoke-Step '核心单元测试（无图形上下文）' {
@@ -105,7 +106,7 @@ if (-not $SkipPublish) {
     foreach ($rid in $rids) {
         $outDir = Join-Path $repoRoot "artifacts/publish/$rid"
         Invoke-Step "发布 $rid" {
-            dotnet publish samples/CSharp.UI.Samples.ControlGallery -c $Configuration -r $rid --self-contained false -o $outDir
+            dotnet publish samples/CSharp.UI.Samples.ControlGallery -c $Configuration -r $rid --self-contained false -o $outDir -m:1 -nodeReuse:false
         } -Optional
 
         Add-Report "### 原生资产检查 $rid"

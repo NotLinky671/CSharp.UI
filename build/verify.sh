@@ -58,7 +58,8 @@ step() {
   log ""
 }
 
-step "构建（dotnet build CSharp.UI.slnx）" dotnet build CSharp.UI.slnx -c "$configuration"
+# -m:1 -nodeReuse:false：受限环境（无命名管道）下 MSBuild 多节点会静默失败，单节点最稳。
+step "构建（dotnet build CSharp.UI.slnx）" dotnet build CSharp.UI.slnx -c "$configuration" -m:1 -nodeReuse:false
 step "核心单元测试（无图形上下文）" dotnet run --project tests/CSharp.UI.Tests -c "$configuration" --no-build
 step "文本测试（SkiaSharp/HarfBuzz）" dotnet run --project tests/CSharp.UI.Text.Tests -c "$configuration" --no-build
 step "跨模块集成测试（真实排版 + 运行时/控件）" dotnet run --project tests/CSharp.UI.Integration.Tests -c "$configuration" --no-build
@@ -74,7 +75,7 @@ fi
 
 for rid in win-x64 linux-x64 osx-x64 osx-arm64; do
   out="$repo_root/artifacts/publish/$rid"
-  step "发布 $rid" dotnet publish samples/CSharp.UI.Samples.ControlGallery -c "$configuration" -r "$rid" --self-contained false -o "$out"
+  step "发布 $rid" dotnet publish samples/CSharp.UI.Samples.ControlGallery -c "$configuration" -r "$rid" --self-contained false -o "$out" -m:1 -nodeReuse:false
 
   log "### 原生资产检查 $rid"
   native=$(find "$out" -type f \( -iname '*glfw*' -o -iname '*skia*' -o -iname '*harfbuzz*' \) 2>/dev/null | xargs -r -n1 basename | sort -u | tr '\n' ' ')
