@@ -57,7 +57,18 @@ internal static class TextPainter
             PixelScale = pixelScale,
         };
 
-    /// <summary>把排版结果作为纹理绘制到指定矩形（按 <paramref name="alignment"/> 水平对齐）。</summary>
+    /// <summary>
+    /// 文本块在给定矩形内垂直居中后的顶边 Y（逻辑像素）。
+    /// </summary>
+    /// <remarks>
+    /// 文本纹理、光标、选择高亮与点击命中必须共用这一原点：文本框高度或字号变化时，
+    /// 若光标/选区仍以内容区顶边为原点，就会与垂直居中的文字行错位。
+    /// 高度小于文本时偏移为负，由调用方的裁剪负责截断。
+    /// </remarks>
+    public static double VerticalOrigin(Rect bounds, Size textSize)
+        => bounds.Y + ((bounds.Height - textSize.Height) / 2);
+
+    /// <summary>把排版结果作为纹理绘制到指定矩形（按 <paramref name="alignment"/> 水平对齐，垂直居中）。</summary>
     public static void Paint(
         DrawContext context,
         ViewNode node,
@@ -84,7 +95,7 @@ internal static class TextPainter
             TextAlignment.Right => bounds.Right - layout.Size.Width,
             _ => bounds.X,
         };
-        var y = bounds.Y + ((bounds.Height - layout.Size.Height) / 2);
+        var y = VerticalOrigin(bounds, layout.Size);
         var destination = new Rect(Math.Round(x, 3), Math.Round(y, 3), layout.Size.Width, layout.Size.Height);
 
         var key = new TextPaintKey(layout.Text, layout.Font, layout.PixelScale, layout.Size, alignment);

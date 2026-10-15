@@ -134,8 +134,10 @@ public sealed class TextField : View
             return;
         }
 
+        // 文字纹理在内容区内垂直居中，因此光标、选区与点击命中都必须从同一个文本原点出发；
+        // 直接用 inner.Y 会让光标随输入框变高/字号变大而向上错位。
         var originX = inner.X - state.ScrollX;
-        var originY = inner.Y;
+        var originY = TextPainter.VerticalOrigin(inner, layout.Size);
 
         // 选择高亮。
         if (state.HasSelection && node.IsFocused)
@@ -156,7 +158,10 @@ public sealed class TextField : View
         var textColor = disabled
             ? theme.DisabledForeground
             : theme.Foreground;
-        var textBounds = new Rect(originX, originY, layout.Size.Width, inner.Height);
+
+        // 传入已居中的文本原点（高度取排版高度，Paint 的垂直居中偏移因此为 0），
+        // 保证纹理、光标与选区使用同一坐标约定。
+        var textBounds = new Rect(originX, originY, layout.Size.Width, layout.Size.Height);
         TextPainter.Paint(context, node, layout, textColor, textBounds, TextAlignment.Left);
 
         // 光标。
@@ -451,7 +456,11 @@ public sealed class TextField : View
         var layout = GetLayout(node, node.Runtime.Services.TextService);
         var inner = InnerRect(node.Frame);
         var state = GetState(node);
-        var local = new Point(position.X - inner.X + state.ScrollX, position.Y - inner.Y);
+
+        // 命中坐标与绘制共用同一文本原点（纵向居中），横向再加上滚动偏移。
+        var local = new Point(
+            position.X - inner.X + state.ScrollX,
+            position.Y - TextPainter.VerticalOrigin(inner, layout.Size));
         return layout.SnapToCaretStop(layout.HitTestIndex(local));
     }
 
