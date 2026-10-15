@@ -65,12 +65,14 @@ public sealed class GalleryApp : Component
                             new Text(File.Exists(logoPath) ? $"资源：{Path.GetFileName(logoPath)}" : "未找到 shared/Assets/logo.png，示例使用占位图形。")
                                 .WithFont(FontDescription.Default.WithSize(12)))
                         .Spacing(4)).Spacing(12)),
-                    Section("滚动容器", new VStack(
-                        new Text($"多行内容用于演示单轴滚动；下面共 {40} 行。"),
-                        new ForEach<int>(Enumerable.Range(1, 40), i => new Text($"第 {i} 行：滚动内容"), i => i))
-                        .Spacing(4)
-                        .Frame(height: 120)
-                        .Clip()),
+                    // 真实内层滚动视图：120 逻辑像素的视口由外层 Frame 约束，内容保持自然高度；
+                    // 视口外的行由 ScrollView 自身裁剪，滚轮先把事件交给内层、到边界后由整页外层接手。
+                    Section("滚动容器", new ScrollView(
+                        new VStack(
+                            new Text($"多行内容用于演示单轴滚动；下面共 {40} 行。"),
+                            new ForEach<int>(Enumerable.Range(1, 40), i => new Text($"第 {i} 行：滚动内容"), i => i))
+                        .Spacing(4))
+                        .Frame(height: 120)),
                     Section("状态与绑定", new VStack(
                         new Text($"开关状态：{(enabled.Value ? "开" : "关")}，滑块值：{volume.Value:0.00}，按钮点击：{clicks.Value} 次"),
                         new TextField(notes.ToBinding(), "试试中文输入法与 Ctrl+V 粘贴"),

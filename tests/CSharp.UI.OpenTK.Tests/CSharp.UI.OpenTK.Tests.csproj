@@ -18,6 +18,8 @@
     <ProjectReference Include="..\..\src\CSharp.UI\CSharp.UI.csproj" />
     <ProjectReference Include="..\..\src\CSharp.UI.Text\CSharp.UI.Text.csproj" />
     <ProjectReference Include="..\..\src\CSharp.UI.OpenTK\CSharp.UI.OpenTK.csproj" />
+    <!-- R15：嵌套滚动回归必须实例化真实的控件展示示例，而不是复制一棵简化视图树。 -->
+    <ProjectReference Include="..\..\samples\CSharp.UI.Samples.ControlGallery\CSharp.UI.Samples.ControlGallery.csproj" />
   </ItemGroup>
 
 </Project>
