@@ -14,12 +14,21 @@ public enum ScrollAxis
 /// 单轴滚动容器：在滚动方向测量内容、在交叉方向使用视口约束，并把内容裁剪到视口。
 /// </summary>
 /// <remarks>
+/// <para>
 /// 滚动偏移保存在运行时节点上，因此组件重新构建后位置保持不变；内容或视口变化后偏移会被重新限制到有效范围。
 /// 首版不显示滚动条、不做列表虚拟化。
+/// </para>
+/// <para>
+/// 滚轮事件默认以归一化步数（一格为 1）表示，本视图按
+/// <see cref="WheelScrollSettings"/>（系统每格行数/字符数）换算为逻辑像素距离：每行 16、每字符 8 个逻辑像素，
+/// 单个滚轮步的距离按视口大小封顶；单位是逻辑像素，因此 DPI 不影响滚动距离。触摸板等设备的小数步数会被保留。
+/// 显式标记为 <see cref="WheelDeltaMode.Pixels"/> 的事件按逻辑像素直接使用，不再换算。
+/// </para>
 /// </remarks>
 public sealed class ScrollView : View
 {
     private readonly View[] _children;
+    private readonly double _wheelSensitivity = 1.0;
 
     /// <summary>由内容与滚动轴创建。</summary>
     public ScrollView(View content, ScrollAxis axis = ScrollAxis.Vertical)
@@ -35,6 +44,16 @@ public sealed class ScrollView : View
 
     /// <summary>滚动轴。</summary>
     public ScrollAxis Axis { get; init; }
+
+    /// <summary>
+    /// 滚轮灵敏度：乘在换算后的滚动距离上。
+    /// </summary>
+    /// <remarks>必须为有限非负值；<see cref="double.NaN"/>、无穷大或负数回退为默认值 1，不会产生反向滚动。</remarks>
+    public double WheelSensitivity
+    {
+        get => _wheelSensitivity;
+        init => _wheelSensitivity = NormalizeSensitivity(value);
+    }
 
     /// <inheritdoc />
     public override string DebugName => $"ScrollView({Axis})";
@@ -103,9 +122,12 @@ public sealed class ScrollView : View
 
     internal override bool OnWheel(InputContext context, ViewNode node, WheelEvent e)
     {
-        var axis = Axis == ScrollAxis.Vertical
-            ? e.DeltaY
-            : (Math.Abs(e.DeltaX) > 0 ? e.DeltaX : e.DeltaY);
+        var horizontal = Axis == ScrollAxis.Horizontal;
+
+        // 单轴容器：垂直轴只消费纵向增量；水平轴优先横向增量，没有横向倾斜时回退到纵向（普通鼠标没有横向滚轮）。
+        var axis = horizontal
+            ? (Math.Abs(e.DeltaX) > 0 ? e.DeltaX : e.DeltaY)
+            : e.DeltaY;
 
         if (Math.Abs(axis) < 0.0001)
         {
@@ -114,9 +136,9 @@ public sealed class ScrollView : View
 
         var child = node.ChildList.Count > 0 ? node.ChildList[0] : null;
         var contentSize = child?.DesiredSize ?? Size.Zero;
-        var maxOffset = Axis == ScrollAxis.Vertical
-            ? Math.Max(0, contentSize.Height - node.Frame.Height)
-            : Math.Max(0, contentSize.Width - node.Frame.Width);
+        var viewportExtent = horizontal ? node.Frame.Width : node.Frame.Height;
+        var contentExtent = horizontal ? contentSize.Width : contentSize.Height;
+        var maxOffset = Math.Max(0, contentExtent - viewportExtent);
 
         if (maxOffset <= 0)
         {
@@ -124,21 +146,28 @@ public sealed class ScrollView : View
             return false;
         }
 
-        var offset = Axis == ScrollAxis.Vertical ? node.ScrollOffsetY : node.ScrollOffsetX;
-        var next = Math.Clamp(offset - axis, 0, maxOffset);
+        var distance = ResolveScrollDistance(context, e, horizontal, viewportExtent, axis);
+        if (distance == 0 || !double.IsFinite(distance))
+        {
+            // 系统设置禁用该方向（步距离为 0）：不消费事件。
+            return false;
+        }
+
+        var offset = horizontal ? node.ScrollOffsetX : node.ScrollOffsetY;
+        var next = Math.Clamp(offset - distance, 0, maxOffset);
         if (Math.Abs(next - offset) < 0.0001)
         {
             // 已到达边界：如果还有其它方向可以利用空间则由外层处理。
             return false;
         }
 
-        if (Axis == ScrollAxis.Vertical)
+        if (horizontal)
         {
-            node.ScrollOffsetY = next;
+            node.ScrollOffsetX = next;
         }
         else
         {
-            node.ScrollOffsetX = next;
+            node.ScrollOffsetY = next;
         }
 
         // 滚动只改变偏移，需要重新排列子项与重绘。
@@ -146,6 +175,32 @@ public sealed class ScrollView : View
         context.MarkHandled();
         return true;
     }
+
+    /// <summary>
+    /// 把一次滚轮事件的增量换算为带符号的逻辑像素距离（正值表示内容向上/向左滚动）。
+    /// </summary>
+    /// <remarks>
+    /// 步数单位：单个滚轮步的距离由系统设置换算并按视口封顶，再乘以实际（可含小数的）步数；
+    /// 像素单位：增量已是逻辑像素，直接使用。两者最后都乘以 <see cref="WheelSensitivity"/>，保留小数不取整。
+    /// </remarks>
+    private double ResolveScrollDistance(
+        InputContext context,
+        WheelEvent e,
+        bool horizontal,
+        double viewportExtent,
+        double axis)
+    {
+        if (e.Mode == WheelDeltaMode.Pixels)
+        {
+            return axis * _wheelSensitivity;
+        }
+
+        var stepDistance = context.Runtime.Services.WheelScrollSettings.Settings.StepDistance(horizontal, viewportExtent);
+        return stepDistance * axis * _wheelSensitivity;
+    }
+
+    private static double NormalizeSensitivity(double value)
+        => double.IsFinite(value) && value >= 0 ? value : 1.0;
 
     internal override bool LayoutPropertiesEquivalent(View other)
         => other is ScrollView scroll && scroll.Axis == Axis;

@@ -149,11 +149,20 @@ public readonly record struct PointerEvent(
     int ClickCount = 1);
 
 /// <summary>滚轮事件；坐标为逻辑像素。<see cref="DeltaY"/> 为正表示向上滚动。</summary>
+/// <param name="Position">指针位置（逻辑像素）。</param>
+/// <param name="DeltaX">水平增量，单位见 <paramref name="Mode"/>。</param>
+/// <param name="DeltaY">垂直增量，单位为归一化步数时正值表示向上滚动；单位见 <paramref name="Mode"/>。</param>
+/// <param name="Modifiers">修饰键。</param>
+/// <param name="Mode">
+/// 增量单位；默认 <see cref="WheelDeltaMode.Steps"/>（归一化步数，一格为 1）。
+/// 只有在明确知道增量是逻辑像素时才使用 <see cref="WheelDeltaMode.Pixels"/>，不要根据数值大小猜测单位。
+/// </param>
 public readonly record struct WheelEvent(
     Point Position,
     double DeltaX,
     double DeltaY,
-    KeyModifiers Modifiers = KeyModifiers.None);
+    KeyModifiers Modifiers = KeyModifiers.None,
+    WheelDeltaMode Mode = WheelDeltaMode.Steps);
 
 /// <summary>键盘按键事件种类。</summary>
 public enum KeyEventKind

@@ -74,6 +74,9 @@ CSHARPUI_SMOKE_FRAMES=5 ./artifacts/publish/win-x64/ControlGallery.exe
 - 重叠节点命中顶层；裁剪外、禁用内容不可点击；拖动越界仍有捕获并限制数值。
 - Tab/Shift+Tab 顺序稳定；节点复用保持焦点；节点删除或禁用后焦点有效。
 - 已提交文本与控制键区分，不把键名当输入字符。
+- 滚轮默认单位是归一化步数（`WheelEvent.Mode` 为 `Steps`）：一格按系统设置换算为逻辑像素（当前设置 3 行 → 48）。
+  直接用像素距离的测试必须显式传 `WheelDeltaMode.Pixels`，不能靠增量大小猜测；真实适配器的普通一格 `±1` 另用
+  `OpenTkInputAdapter` 路径覆盖。
 
 文本编辑：
 

@@ -26,7 +26,7 @@
 | `Component` | 组件基类，`protected abstract View Build()`；`protected State<T> UseState<T>(string name, T initialValue)`、`UseBinding<T>(...)` |
 | `VStack` / `HStack` / `ZStack` | 垂直 / 水平 / 层叠布局；`.Spacing(...)`、`.Align(...)` |
 | `Spacer` / `Spacer(double fixedSize)` | 吸收剩余空间 / 固定空隙 |
-| `ScrollView(View content, ScrollAxis axis)` | 单轴滚动容器，保留滚动位置 |
+| `ScrollView(View content, ScrollAxis axis)` | 单轴滚动容器，保留滚动位置；`WheelSensitivity`（有限非负，默认 1）缩放滚轮距离 |
 | `Text` | 文本；`.WithFont(...)`、`.Wrap(maxLines)`、`.Align(...)`、`.Ellipsis()`、`.WithLineHeight(...)` |
 | `Rectangle` | 纯色/圆角/描边矩形 |
 | `Image(string source)` | 图片；`.Resize(ImageResizeMode)` |
@@ -54,7 +54,9 @@
 | 类型 | 说明 |
 |---|---|
 | `PointerEvent` / `PointerEventKind` / `PointerButton` | 指针按下、移动、释放与取消（窗口失焦） |
-| `WheelEvent` | 滚轮，`DeltaY > 0` 表示向上滚动 |
+| `WheelEvent` | 滚轮，`DeltaY > 0` 表示向上滚动；`Mode`（`WheelDeltaMode.Steps` 默认 / `Pixels`）显式声明增量单位 |
+| `WheelDeltaMode` | `Steps`：归一化步数，一格为 1（触摸板可为小数）；`Pixels`：增量已是逻辑像素。单位必须显式标记，不能按数值大小猜测 |
+| `WheelScrollSettings` / `IWheelScrollSettingsService` | 系统每格行数/字符数与步数→逻辑距离换算（每行 16、每字符 8 个逻辑像素；`0` 禁用、`uint.MaxValue` 整页） |
 | `KeyEvent` / `UiKey` / `KeyModifiers` / `KeyEventKind` | 控制键与修饰键；字符输入不通过键盘事件传递 |
 | `TextInputEvent` | 宿主提交的 Unicode 文本；`TextInputEvent.SanitizeSingleLine(...)` 按单行规则过滤 |
 
@@ -72,10 +74,11 @@
 | `ITextureService` | 按稳定键缓存 GPU 纹理、有界淘汰（实现：`CSharp.UI.OpenTK` 的 OpenGL 纹理服务）。`BeginFrame()` 由运行时在每帧生成命令前调用，用于保护当前帧与上一帧引用的纹理、在帧边界回收容量 |
 | `IImageService` | 图片解码与缓存（实现：`CSharp.UI.Skia.SkiaImageService`） |
 | `IClipboardService` | 剪贴板读写（宿主默认使用 GLFW 剪贴板） |
+| `IWheelScrollSettingsService` | 系统滚轮设置来源（Windows 宿主只读 `SPI_GETWHEELSCROLLLINES/CHARS`；默认每格 3 行/3 字符） |
 | `IUiDispatcher` / `IUiClock` | 调度与时钟 |
 | `UiRuntime` / `UiRuntimeServices` / `ViewNode` | 运行时：节点树、布局、输入分发与诊断；无窗口测试可直接驱动 |
 
 ## 无窗口测试替身
 
-`CSharp.UI.Testing` 命名空间提供 `HeadlessUiDispatcher`、`StubTextService`、`RecordingTextureService`、`StubImageService`、`StubClipboardService`、`TestUiClock`。
+`CSharp.UI.Testing` 命名空间提供 `HeadlessUiDispatcher`、`StubTextService`、`RecordingTextureService`、`StubImageService`、`StubClipboardService`、`StubWheelScrollSettingsService`、`TestUiClock`。
 它们不依赖窗口、字体原生库或 OpenGL 上下文，供核心布局/状态/交互测试使用。

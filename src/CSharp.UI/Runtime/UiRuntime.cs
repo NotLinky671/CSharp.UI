@@ -22,6 +22,12 @@ public sealed record UiRuntimeServices
 
     /// <summary>时钟；默认使用 <see cref="StopwatchUiClock"/>。</summary>
     public IUiClock Clock { get; init; } = new StopwatchUiClock();
+
+    /// <summary>
+    /// 系统滚轮设置服务；默认每格 3 行/3 字符（非 Windows 或查询失败的回退值）。
+    /// <see cref="ScrollView"/> 用它把归一化滚轮步数换算为逻辑像素距离。
+    /// </summary>
+    public IWheelScrollSettingsService WheelScrollSettings { get; init; } = DefaultWheelScrollSettingsService.Instance;
 }
 
 /// <summary>

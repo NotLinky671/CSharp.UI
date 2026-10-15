@@ -15,7 +15,7 @@ public class ScrollImageTests
         app.Frame();
 
         var scroll = app.Runtime.Root.Require<ScrollView>();
-        app.Wheel(scroll.Frame.Center, -120);
+        app.Wheel(scroll.Frame.Center, -120, WheelDeltaMode.Pixels);
 
         Assert.Equal(0, scroll.ScrollOffsetY, 3);
     }
@@ -31,7 +31,7 @@ public class ScrollImageTests
         var maxOffset = content.DesiredSize.Height - scroll.Frame.Height;
         Assert.True(maxOffset > 0);
 
-        app.Wheel(scroll.Frame.Center, -100);
+        app.Wheel(scroll.Frame.Center, -100, WheelDeltaMode.Pixels);
         app.Runtime.ProcessPendingWork();
         app.Frame();
         var first = scroll.ScrollOffsetY;
@@ -40,7 +40,7 @@ public class ScrollImageTests
         // 一直滚动到末端后不再越界。
         for (var i = 0; i < 50; i++)
         {
-            app.Wheel(scroll.Frame.Center, -100);
+            app.Wheel(scroll.Frame.Center, -100, WheelDeltaMode.Pixels);
             app.Runtime.ProcessPendingWork();
         }
 
@@ -50,7 +50,7 @@ public class ScrollImageTests
         // 向上滚回起点。
         for (var i = 0; i < 80; i++)
         {
-            app.Wheel(scroll.Frame.Center, 100);
+            app.Wheel(scroll.Frame.Center, 100, WheelDeltaMode.Pixels);
             app.Runtime.ProcessPendingWork();
         }
 
@@ -68,7 +68,7 @@ public class ScrollImageTests
         var scroll = app.Runtime.Root.Require<ScrollView>();
         for (var i = 0; i < 10; i++)
         {
-            app.Wheel(scroll.Frame.Center, -100);
+            app.Wheel(scroll.Frame.Center, -100, WheelDeltaMode.Pixels);
             app.Runtime.ProcessPendingWork();
         }
 
@@ -90,7 +90,7 @@ public class ScrollImageTests
         app.Frame();
         for (var i = 0; i < 10; i++)
         {
-            app.Wheel(scroll.Frame.Center, -100);
+            app.Wheel(scroll.Frame.Center, -100, WheelDeltaMode.Pixels);
             app.Runtime.ProcessPendingWork();
         }
 
@@ -113,7 +113,7 @@ public class ScrollImageTests
         var scroll = app.Runtime.Root.Require<ScrollView>();
         for (var i = 0; i < 5; i++)
         {
-            app.Wheel(scroll.Frame.Center, -100);
+            app.Wheel(scroll.Frame.Center, -100, WheelDeltaMode.Pixels);
             app.Runtime.ProcessPendingWork();
         }
 
@@ -152,7 +152,7 @@ public class ScrollImageTests
         // 滚动到按钮可见后可以点击，命中位置与视觉位置一致。
         for (var i = 0; i < 30 && button.Frame.Bottom > scroll.Frame.Bottom; i++)
         {
-            app.Wheel(scroll.Frame.Center, -100);
+            app.Wheel(scroll.Frame.Center, -100, WheelDeltaMode.Pixels);
             app.Runtime.ProcessPendingWork();
             app.Frame();
         }
@@ -176,7 +176,8 @@ public class ScrollImageTests
         var innerNode = app.Runtime.All<ScrollView>().Last();
 
         // 在内部容器上滚动：内部先消费。
-        app.Wheel(innerNode.Frame.Center, -100);
+        // 真实适配器的普通一格是 ±1 步，这里沿用像素式的辅助调用，必须显式声明像素单位。
+        app.Wheel(innerNode.Frame.Center, -100, WheelDeltaMode.Pixels);
         app.Runtime.ProcessPendingWork();
         app.Frame();
         Assert.True(innerNode.ScrollOffsetY > 0);
@@ -184,7 +185,7 @@ public class ScrollImageTests
         // 内部滚到末端后，继续滚动由外层消费。
         for (var i = 0; i < 60; i++)
         {
-            app.Wheel(innerNode.Frame.Center, -100);
+            app.Wheel(innerNode.Frame.Center, -100, WheelDeltaMode.Pixels);
             app.Runtime.ProcessPendingWork();
         }
 

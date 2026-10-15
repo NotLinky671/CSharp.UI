@@ -109,6 +109,7 @@ internal sealed class OpenTkHost : IDisposable
                 ImageService = imageService,
                 Clipboard = options.ClipboardService ?? _clipboard,
                 Clock = options.Clock ?? new StopwatchUiClock(),
+                WheelScrollSettings = options.WheelScrollSettingsService ?? WindowsWheelScrollSettingsService.Instance,
             });
 
             _runtime.SetEnvironment(new EnvironmentValues

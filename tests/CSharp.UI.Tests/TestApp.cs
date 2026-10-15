@@ -13,7 +13,8 @@ internal sealed class TestApp : IDisposable
         Size? viewport = null,
         double pixelScale = 1.0,
         Theme? theme = null,
-        Action<StubImageService>? configureImages = null)
+        Action<StubImageService>? configureImages = null,
+        WheelScrollSettings? wheelScrollSettings = null)
     {
         Dispatcher = new HeadlessUiDispatcher();
         Text = new StubTextService();
@@ -21,6 +22,7 @@ internal sealed class TestApp : IDisposable
         Images = new StubImageService();
         Clipboard = new StubClipboardService();
         Clock = new TestUiClock();
+        WheelScroll = new StubWheelScrollSettingsService(wheelScrollSettings ?? WheelScrollSettings.Default);
         configureImages?.Invoke(Images);
         Runtime = new UiRuntime(root, new UiRuntimeServices
         {
@@ -30,6 +32,7 @@ internal sealed class TestApp : IDisposable
             ImageService = Images,
             Clipboard = Clipboard,
             Clock = Clock,
+            WheelScrollSettings = WheelScroll,
         });
 
         Runtime.SetEnvironment(new EnvironmentValues { Theme = theme ?? Theme.Light });
@@ -50,6 +53,9 @@ internal sealed class TestApp : IDisposable
 
     public TestUiClock Clock { get; }
 
+    /// <summary>滚轮设置服务替身；测试可替换设置值。</summary>
+    public StubWheelScrollSettingsService WheelScroll { get; }
+
     public UiRuntime Runtime { get; }
 
     /// <summary>生成一帧并返回绘制命令。</summary>
@@ -63,8 +69,16 @@ internal sealed class TestApp : IDisposable
         Runtime.DispatchPointer(new PointerEvent(PointerEventKind.Up, position, PointerButton.Left));
     }
 
-    /// <summary>分发一次滚轮。</summary>
-    public void Wheel(Point position, double deltaY) => Runtime.DispatchWheel(new WheelEvent(position, 0, deltaY));
+    /// <summary>
+    /// 分发一次滚轮。默认单位是归一化步数；像素式的辅助调用必须显式传 <see cref="WheelDeltaMode.Pixels"/>，
+    /// 不能依赖增量大小猜测单位。
+    /// </summary>
+    public void Wheel(Point position, double deltaY, WheelDeltaMode mode = WheelDeltaMode.Steps)
+        => Runtime.DispatchWheel(new WheelEvent(position, 0, deltaY, KeyModifiers.None, mode));
+
+    /// <summary>分发一次横向滚轮；单位语义同 <see cref="Wheel"/>。</summary>
+    public void WheelX(Point position, double deltaX, WheelDeltaMode mode = WheelDeltaMode.Steps)
+        => Runtime.DispatchWheel(new WheelEvent(position, deltaX, 0, KeyModifiers.None, mode));
 
     /// <summary>分发按键按下 + 释放。</summary>
     public void Key(UiKey key, KeyModifiers modifiers = KeyModifiers.None)

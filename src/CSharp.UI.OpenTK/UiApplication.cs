@@ -127,6 +127,12 @@ public sealed record UiApplicationOptions
     /// <summary>UI 时钟；null 时使用 <see cref="StopwatchUiClock"/>。</summary>
     public IUiClock? Clock { get; init; }
 
+    /// <summary>
+    /// 系统滚轮设置服务；null 时宿主使用只读查询 <c>SPI_GETWHEELSCROLLLINES/CHARS</c> 的 Windows 实现，
+    /// 非 Windows 或查询失败回退到每格 3 行/3 字符。注入自定义实现可覆盖滚轮步长（测试或特殊设备）。
+    /// </summary>
+    public IWheelScrollSettingsService? WheelScrollSettingsService { get; init; }
+
     /// <summary>纹理缓存容量上限（超出后按最近最少使用淘汰）。</summary>
     public int TextureCacheCapacity { get; init; } = 128;
 

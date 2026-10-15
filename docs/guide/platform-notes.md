@@ -35,11 +35,24 @@
   再按实际内容缩放反推客户区，因此 Windows 150% 下 400×300 逻辑会得到约 600×450 物理客户区，
   运行时仍是 400×300、`PixelScale` 为 1.5；macOS Retina（窗口坐标 = 点、framebuffer = 2×）不会二次放大。
 - 鼠标：逻辑坐标 = 窗口坐标 × R ÷ D（R = framebuffer ÷ 窗口内容区）。Windows 150% 时除以 1.5，
-  macOS Retina 时保持原值；滚轮增量是行/格语义，不随 DPI 缩放。
+  macOS Retina 时保持原值；滚轮增量是行/格语义，不随 DPI 缩放（见下节）。
 - 系统缩放变化或跨屏移动由 GLFW 窗口内容缩放回调处理：更新 D、逻辑视口与输入换算，失效文本/纹理缓存并重绘，
   并把客户区调整到仍覆盖原逻辑尺寸；窗口管理器已按新 DPI 调整过时不会重复放大。不逐帧轮询。
 - 逻辑尺寸保留小数（不取整），保证渲染器由逻辑视口推导的 framebuffer 与真实 framebuffer 逐像素一致。
 - 原始内容缩放不可用（零/非有限数）时按轴回退，最后才用 framebuffer÷窗口比，不把无效值传给布局与纹理服务。
+
+## 滚轮单位与系统滚动设置
+
+滚轮增量是**归一化步数**（GLFW 在 Windows 上把原生 `WM_MOUSEWHEEL` 的 120 除以 `WHEEL_DELTA`，普通一格为 ±1），
+不是逻辑像素，也不随 DPI 缩放。`WheelEvent.Mode` 显式声明单位，默认 `WheelDeltaMode.Steps`；
+只有明确知道增量是逻辑像素时才用 `WheelDeltaMode.Pixels`，命令式不按增量大小猜测单位。
+
+- `ScrollView` 把归一化步数换算为逻辑像素：每行 16、每字符 8 个逻辑像素，单个滚轮步的距离按对应视口大小封顶，
+  再乘实际（可含小数的）步数与 `ScrollView.WheelSensitivity`（有限非负，默认 1），最后夹紧内容边界。
+  距离是逻辑像素，因此 DPI 100%/150%/200% 下同一格滚动的逻辑距离一致。
+- 步长来自平台无关服务 `IWheelScrollSettingsService`：Windows 宿主只读查询 `SPI_GETWHEELSCROLLLINES` /
+  `SPI_GETWHEELSCROLLCHARS`，**不修改任何系统设置**；设置值 0 表示该方向禁用滚轮，`uint.MaxValue` 表示每格一页，
+  查询失败或非 Windows 回退到每格 3 行/3 字符。核心不引用任何 Windows 或窗口类型。
 
 ## 字体与回退
 

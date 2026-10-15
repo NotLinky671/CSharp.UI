@@ -577,3 +577,13 @@ public sealed class StubClipboardService : IClipboardService
         SetCount++;
     }
 }
+
+/// <summary>测试用滚轮设置服务：返回可替换的固定设置，不读取任何系统或平台 API。</summary>
+public sealed class StubWheelScrollSettingsService : IWheelScrollSettingsService
+{
+    /// <summary>由设置值创建。</summary>
+    public StubWheelScrollSettingsService(WheelScrollSettings settings) => Settings = settings;
+
+    /// <inheritdoc />
+    public WheelScrollSettings Settings { get; set; }
+}
