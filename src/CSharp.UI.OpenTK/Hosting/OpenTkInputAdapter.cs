@@ -8,7 +8,15 @@ namespace CSharp.UI.OpenTK;
 /// 把 OpenTK 窗口事件转换为框架输入事件并分发到 <see cref="UiRuntime"/>。
 /// </summary>
 /// <remarks>
-/// <para>坐标使用逻辑像素（GLFW 光标坐标即内容区左上原点的屏幕坐标，与逻辑像素一致）。</para>
+/// <para>
+/// GLFW 光标坐标是窗口内容区坐标（Windows/X11 为物理像素，macOS 为点），框架内部一律使用逻辑像素。
+/// 宿主通过 <see cref="UpdatePointerTransform"/> 提供换算系数 R/D（framebuffer/窗口比 ÷ 内容缩放），
+/// 因此 Windows 150% 下鼠标坐标除以 1.5，macOS Retina 下保持原值。
+/// </para>
+/// <para>
+/// 适配器只缓存原始窗口坐标，逻辑坐标在每次使用时换算：系统缩放变化后，先前缓存的位置会按新比例重新解释，
+/// 滚轮等不携带坐标的事件也不会拿到过期坐标。
+/// </para>
 /// <para>
 /// 修饰键在每个键盘事件上刷新；鼠标事件沿用最近一次键盘事件的修饰键状态（GLFW 的鼠标移动事件不携带修饰键）。
 /// 窗口失焦时派发 <see cref="PointerEventKind.Cancel"/> 清理指针捕获与按下状态。
@@ -27,7 +35,9 @@ internal sealed class OpenTkInputAdapter
     private KeyModifiers _modifiers;
     private PointerButton _pressedButton;
     private PointerButton _lastDownButton;
-    private Point _pointerPosition;
+    private Point _pointerWindowPosition;
+    private double _pointerScaleX = 1.0;
+    private double _pointerScaleY = 1.0;
     private Point _lastDownPosition;
     private long _lastDownTimestamp;
     private int _clickCount = 1;
@@ -77,36 +87,57 @@ internal sealed class OpenTkInputAdapter
     /// <summary>当前修饰键状态。</summary>
     internal KeyModifiers Modifiers => _modifiers;
 
+    /// <summary>最近一次鼠标移动的原始窗口内容区坐标（未换算）。</summary>
+    internal Point PointerWindowPosition => _pointerWindowPosition;
+
+    /// <summary>最近一次鼠标位置换算得到的逻辑坐标。</summary>
+    internal Point PointerPosition => LogicalPointerPosition;
+
+    /// <summary>当前指针换算系数（窗口坐标 → 逻辑坐标）。</summary>
+    internal (double X, double Y) PointerScale => (_pointerScaleX, _pointerScaleY);
+
+    /// <summary>
+    /// 更新指针换算系数（窗口坐标 × 系数 = 逻辑坐标，即 R/D）。
+    /// </summary>
+    /// <remarks>非有限或非正的系数视为 1（等价于窗口坐标即逻辑坐标），不把无效值传入布局与命中测试。</remarks>
+    internal void UpdatePointerTransform(double scaleX, double scaleY)
+    {
+        _pointerScaleX = NormalizeScale(scaleX);
+        _pointerScaleY = NormalizeScale(scaleY);
+    }
+
     /// <summary>处理鼠标移动。</summary>
     internal void HandleMouseMove(MouseMoveEventArgs e)
     {
-        _pointerPosition = new Point(e.X, e.Y);
-        DispatchPointer(new PointerEvent(PointerEventKind.Move, _pointerPosition, _pressedButton, _modifiers, _clickCount));
+        _pointerWindowPosition = new Point(e.X, e.Y);
+        var logical = LogicalPointerPosition;
+        DispatchPointer(new PointerEvent(PointerEventKind.Move, logical, _pressedButton, _modifiers, _clickCount));
     }
 
     /// <summary>处理鼠标按下。</summary>
     internal void HandleMouseDown(MouseButtonEventArgs e)
     {
         var button = OpenTkInputMapping.ToPointerButton(e.Button);
+        var logical = LogicalPointerPosition;
         var now = Stopwatch.GetTimestamp();
         var isDoubleClick = button != PointerButton.None
             && button == _lastDownButton
             && (now - _lastDownTimestamp) <= DoubleClickMilliseconds * (Stopwatch.Frequency / 1000)
-            && _pointerPosition.DistanceTo(_lastDownPosition) <= DoubleClickDistance;
+            && logical.DistanceTo(_lastDownPosition) <= DoubleClickDistance;
 
         _clickCount = isDoubleClick ? Math.Min(_clickCount + 1, 3) : 1;
         _lastDownButton = button;
         _lastDownTimestamp = now;
-        _lastDownPosition = _pointerPosition;
+        _lastDownPosition = logical;
         _pressedButton = button;
-        DispatchPointer(new PointerEvent(PointerEventKind.Down, _pointerPosition, button, _modifiers, _clickCount));
+        DispatchPointer(new PointerEvent(PointerEventKind.Down, logical, button, _modifiers, _clickCount));
     }
 
     /// <summary>处理鼠标释放。</summary>
     internal void HandleMouseUp(MouseButtonEventArgs e)
     {
         var button = OpenTkInputMapping.ToPointerButton(e.Button);
-        DispatchPointer(new PointerEvent(PointerEventKind.Up, _pointerPosition, button, _modifiers, _clickCount));
+        DispatchPointer(new PointerEvent(PointerEventKind.Up, LogicalPointerPosition, button, _modifiers, _clickCount));
         if (button == _pressedButton)
         {
             _pressedButton = PointerButton.None;
@@ -116,7 +147,7 @@ internal sealed class OpenTkInputAdapter
     /// <summary>处理指针离开窗口。</summary>
     internal void HandleMouseLeave()
     {
-        DispatchPointer(new PointerEvent(PointerEventKind.Cancel, _pointerPosition, PointerButton.None, _modifiers));
+        DispatchPointer(new PointerEvent(PointerEventKind.Cancel, LogicalPointerPosition, PointerButton.None, _modifiers));
     }
 
     /// <summary>处理窗口焦点变化；失去焦点时取消指针捕获与按下状态。</summary>
@@ -130,7 +161,7 @@ internal sealed class OpenTkInputAdapter
 
         DispatchPointer(new PointerEvent(
             PointerEventKind.Cancel,
-            _pointerPosition,
+            LogicalPointerPosition,
             _pressedButton == PointerButton.None ? PointerButton.Left : _pressedButton,
             _modifiers));
         _pressedButton = PointerButton.None;
@@ -138,10 +169,11 @@ internal sealed class OpenTkInputAdapter
         _clickCount = 1;
     }
 
-    /// <summary>处理滚轮；位置使用最近一次鼠标移动的位置（GLFW 滚轮回调不提供坐标）。</summary>
+    /// <summary>处理滚轮；位置使用最近一次鼠标移动的位置换算后的逻辑坐标（GLFW 滚轮回调不提供坐标）。</summary>
     internal void HandleWheel(MouseWheelEventArgs e)
     {
-        var wheel = new WheelEvent(_pointerPosition, e.OffsetX, e.OffsetY, _modifiers);
+        // 滚轮增量是“行/格”语义，不随 DPI 缩放。
+        var wheel = new WheelEvent(LogicalPointerPosition, e.OffsetX, e.OffsetY, _modifiers);
         LastWheelEvent = wheel;
         WheelEventCount++;
         _runtime.DispatchWheel(wheel);
@@ -194,6 +226,12 @@ internal sealed class OpenTkInputAdapter
         _runtime.DispatchTextInput(textEvent);
         _runtime.InvalidateRender();
     }
+
+    private Point LogicalPointerPosition
+        => new(_pointerWindowPosition.X * _pointerScaleX, _pointerWindowPosition.Y * _pointerScaleY);
+
+    private static double NormalizeScale(double scale)
+        => double.IsFinite(scale) && scale > 0 ? scale : 1.0;
 
     private void DispatchPointer(PointerEvent pointerEvent)
     {

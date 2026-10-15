@@ -81,6 +81,7 @@ public sealed class UiApplicationTests
     public void 窗口尺寸变化更新逻辑尺寸与framebuffer()
     {
         GlOffscreenSurface.AllowNonMainThreadCreation();
+        var windowSize = Size.Zero;
         var logical = Size.Zero;
         var framebuffer = Size.Zero;
         var scale = 0.0;
@@ -103,6 +104,7 @@ public sealed class UiApplicationTests
                     Thread.Sleep(300);
                     context.Dispatcher.Post(() =>
                     {
+                        windowSize = new Size(host!.Window.ClientSize.X, host.Window.ClientSize.Y);
                         logical = context.LogicalSize;
                         framebuffer = context.FramebufferSize;
                         scale = context.PixelScale;
@@ -116,11 +118,266 @@ public sealed class UiApplicationTests
 
         Assert.Equal(0, result);
         Assert.True(resizeObserved, "尺寸变化后应能在 UI 线程读取到新的视口状态。");
-        Assert.Equal(new Size(200, 150), logical);
-        Assert.True(
-            Math.Abs((logical.Width * scale) - framebuffer.Width) < 0.5,
-            $"framebuffer 宽度应与逻辑宽度 × DPI 一致：逻辑 {logical}、缩放 {scale}、framebuffer {framebuffer}");
+
+        // 设置的是 GLFW 窗口内容区尺寸（Windows/X11 为物理像素，macOS 为点）；
+        // 逻辑视口按窗口当前内容缩放换算，不再等于原始 ClientSize。
+        Assert.Equal(200, windowSize.Width, 6);
+        Assert.Equal(150, windowSize.Height, 6);
+        Assert.True(scale > 0, $"DPI 缩放应为正，实际 {scale}");
+
+        // 逻辑视口 = framebuffer / D（小数，不取整）；窗口坐标按 R/D 换算。
+        Assert.Equal(framebuffer.Width / scale, logical.Width, 9);
+        Assert.Equal(framebuffer.Height / scale, logical.Height, 9);
+        Assert.Equal(
+            windowSize.Width * (framebuffer.Width / windowSize.Width) / scale,
+            logical.Width,
+            9);
+
+        // 渲染器由逻辑视口推导的 framebuffer 必须与真实 framebuffer 完全相同（不允许差 1 像素）。
+        Assert.Equal(framebuffer, GlCoordinateMath.ToFramebufferSize(logical, scale));
         Assert.True(framebuffer.Width >= 200, $"framebuffer 应随 DPI 放大，实际 {framebuffer}");
+    }
+
+    [Fact]
+    public void 初始尺寸回退分支会调整客户区并刷新视口()
+    {
+        GlOffscreenSurface.AllowNonMainThreadCreation();
+        var forcedClient = Size.Zero;
+        var client = Size.Zero;
+        var logical = Size.Zero;
+        var framebuffer = Size.Zero;
+        var scale = 0.0;
+
+        var result = UiApplication.Run(new Rectangle(Color.Red), new UiApplicationOptions
+        {
+            Title = "CSharp.UI 初始尺寸回退测试",
+            Width = 400,
+            Height = 300,
+            VSync = false,
+            StartVisible = false,
+            Started = context =>
+            {
+                var host = UiApplication.CurrentHost;
+                Assert.NotNull(host);
+                scale = context.PixelScale;
+
+                // 模拟平台忽略 ScaleToMonitor（或创建期间被窗口管理器钳制）：客户区停在错误的物理尺寸。
+                host!.Window.ClientSize = new global::OpenTK.Mathematics.Vector2i(200, 100);
+                forcedClient = ReadWindowSize(host);
+
+                // 走与构造函数完全相同的初始调整分支：必须把客户区调回逻辑尺寸并立即刷新视口，
+                // 该分支内部会调用 UpdateViewport，因此服务必须已经全部初始化（构造函数顺序已保证）。
+                host.ApplyInitialLogicalSize();
+
+                client = ReadWindowSize(host);
+                logical = context.LogicalSize;
+                framebuffer = context.FramebufferSize;
+                context.RequestExit(0);
+            },
+        });
+
+        Assert.Equal(0, result);
+        var diagnostics =
+            $"强制错误尺寸 {forcedClient}、调整后客户区 {client}、逻辑 {logical}、framebuffer {framebuffer}、DPI {scale}";
+
+        // 先确认确实进入了调整分支（客户区被改成与目标不同的尺寸）。
+        Assert.True(
+            Math.Abs(forcedClient.Width - client.Width) > 1,
+            $"测试前置条件不成立：客户区未真正偏离目标尺寸。{diagnostics}");
+
+        // 初始调整后回到请求的逻辑尺寸，且渲染器 framebuffer 与真实 framebuffer 完全一致。
+        Assert.True(Math.Abs(logical.Width - 400) <= 2, $"初始调整后逻辑宽度应约为 400：{diagnostics}");
+        Assert.True(Math.Abs(logical.Height - 300) <= 2, $"初始调整后逻辑高度应约为 300：{diagnostics}");
+        Assert.Equal(framebuffer, GlCoordinateMath.ToFramebufferSize(logical, scale));
+        Assert.True(client.Width > forcedClient.Width, $"客户区应被调大：{diagnostics}");
+    }
+
+    private static Size ReadWindowSize(OpenTkHost host)
+        => new(host.Window.ClientSize.X, host.Window.ClientSize.Y);
+
+    [Fact]
+    public void 系统缩放变化时保持逻辑尺寸且不重复放大()
+    {
+        GlOffscreenSurface.AllowNonMainThreadCreation();
+        var logicalAtStart = Size.Zero;
+        var windowAtStart = Size.Zero;
+        var framebufferAtStart = Size.Zero;
+        var scaleAtStart = 0.0;
+        var simulatedScale = 0.0;
+        var changedLogical = Size.Zero;
+        var changedWindow = Size.Zero;
+        var changedFramebuffer = Size.Zero;
+        var changedScale = 0.0;
+        var repeatedWindow = Size.Zero;
+        var repeatedLogical = Size.Zero;
+        var restoredLogical = Size.Zero;
+        var restoredWindow = Size.Zero;
+        var restoredScale = 0.0;
+        var changedObserved = false;
+
+        var result = UiApplication.Run(new Rectangle(Color.Red), new UiApplicationOptions
+        {
+            Title = "CSharp.UI 动态 DPI 测试",
+            Width = 400,
+            Height = 300,
+            VSync = false,
+            StartVisible = false,
+            Started = context =>
+            {
+                var host = UiApplication.CurrentHost;
+                Assert.NotNull(host);
+                logicalAtStart = context.LogicalSize;
+                windowAtStart = ReadWindowSize(host!);
+                framebufferAtStart = context.FramebufferSize;
+                scaleAtStart = context.PixelScale;
+
+                // 用与 GLFW 回调完全相同的路径模拟一次系统缩放变化（不改系统设置）：
+                // 目标比例与当前不同，才能验证客户区确实按新比例调整。
+                simulatedScale = Math.Abs(scaleAtStart - 2.0) < 0.01 ? 1.0 : 2.0;
+                host.SimulateContentScaleChange(simulatedScale, simulatedScale);
+                changedLogical = context.LogicalSize;
+                changedWindow = ReadWindowSize(host);
+                changedFramebuffer = context.FramebufferSize;
+                changedScale = context.PixelScale;
+                changedObserved = true;
+
+                // 再收到一次同样的通知（或窗口管理器已按新 DPI 调整过）：不得重复放大。
+                host.SimulateContentScaleChange(simulatedScale, simulatedScale);
+                repeatedWindow = ReadWindowSize(host);
+                repeatedLogical = context.LogicalSize;
+
+                // 恢复真实缩放：逻辑尺寸与客户区都回到初始状态。
+                host.SimulateContentScaleChange(scaleAtStart, scaleAtStart);
+                restoredLogical = context.LogicalSize;
+                restoredWindow = ReadWindowSize(host);
+                restoredScale = context.PixelScale;
+
+                context.RequestExit(0);
+            },
+        });
+
+        Assert.Equal(0, result);
+        Assert.True(changedObserved, "应在启动回调中完成动态 DPI 模拟。");
+
+        var diagnostics =
+            $"起始 逻辑 {logicalAtStart}、窗口 {windowAtStart}、framebuffer {framebufferAtStart}、DPI {scaleAtStart}；" +
+            $"变化后 逻辑 {changedLogical}、窗口 {changedWindow}、DPI {changedScale}；" +
+            $"重复后 窗口 {repeatedWindow}；恢复后 逻辑 {restoredLogical}、窗口 {restoredWindow}、DPI {restoredScale}";
+
+        // 初始状态：渲染器推导的 framebuffer 与真实 framebuffer 完全一致。
+        Assert.Equal(framebufferAtStart, GlCoordinateMath.ToFramebufferSize(logicalAtStart, scaleAtStart));
+
+        // 缩放变化：客户区按“新 D / 旧 D”等比调整，逻辑尺寸保持不变。
+        Assert.True(
+            Math.Abs(changedScale - simulatedScale) < 0.0001,
+            $"模拟缩放后 PixelScale 应更新为新内容缩放：{diagnostics}");
+        Assert.True(
+            Math.Abs(changedLogical.Width - logicalAtStart.Width) <= 1
+            && Math.Abs(changedLogical.Height - logicalAtStart.Height) <= 1,
+            $"DPI 变化后逻辑尺寸必须保持：{diagnostics}");
+        var expectedWindowWidth = windowAtStart.Width * (simulatedScale / scaleAtStart);
+        var expectedWindowHeight = windowAtStart.Height * (simulatedScale / scaleAtStart);
+        Assert.True(
+            Math.Abs(changedWindow.Width - expectedWindowWidth) <= 1
+            && Math.Abs(changedWindow.Height - expectedWindowHeight) <= 1,
+            $"客户区应按新比例调整：{diagnostics}");
+        Assert.Equal(
+            changedFramebuffer,
+            GlCoordinateMath.ToFramebufferSize(changedLogical, changedScale));
+
+        // 重复通知不产生二次放大。
+        Assert.Equal(changedWindow, repeatedWindow);
+        Assert.True(
+            Math.Abs(repeatedLogical.Width - logicalAtStart.Width) <= 1,
+            $"重复通知后逻辑尺寸仍应保持：{diagnostics}");
+
+        // 恢复真实缩放后回到初始状态。
+        Assert.True(
+            Math.Abs(restoredScale - scaleAtStart) < 0.0001,
+            $"恢复后 PixelScale 应回到真实内容缩放：{diagnostics}");
+        Assert.True(
+            Math.Abs(restoredWindow.Width - windowAtStart.Width) <= 1
+            && Math.Abs(restoredWindow.Height - windowAtStart.Height) <= 1,
+            $"恢复后客户区应回到初始尺寸：{diagnostics}");
+        Assert.True(
+            Math.Abs(restoredLogical.Width - logicalAtStart.Width) <= 1,
+            $"恢复后逻辑尺寸应回到初始值：{diagnostics}");
+    }
+
+    [Fact]
+    public void 初始逻辑尺寸按系统内容缩放解释()
+    {
+        GlOffscreenSurface.AllowNonMainThreadCreation();
+        var requestedWidth = 400.0;
+        var requestedHeight = 300.0;
+        var windowSize = Size.Zero;
+        var framebuffer = Size.Zero;
+        var logical = Size.Zero;
+        var scale = 0.0;
+        var contentScale = (X: 0f, Y: 0f);
+        var glContext = string.Empty;
+
+        var result = UiApplication.Run(new Rectangle(Color.Red), new UiApplicationOptions
+        {
+            Title = "CSharp.UI DPI 初始尺寸测试",
+            Width = requestedWidth,
+            Height = requestedHeight,
+            VSync = false,
+            StartVisible = false,
+            Started = context =>
+            {
+                var host = UiApplication.CurrentHost;
+                Assert.NotNull(host);
+                contentScale = GlWindowFactory.GetWindowContentScale(host!.Window);
+                windowSize = new Size(host.Window.ClientSize.X, host.Window.ClientSize.Y);
+                framebuffer = new Size(host.Window.FramebufferSize.X, host.Window.FramebufferSize.Y);
+                logical = context.LogicalSize;
+                scale = context.PixelScale;
+                glContext = context.GlContextDescription;
+                context.RequestExit(0);
+            },
+        });
+
+        Assert.Equal(0, result);
+        var diagnostics =
+            $"内容缩放 {contentScale.X}/{contentScale.Y}、窗口 {windowSize}、framebuffer {framebuffer}、" +
+            $"逻辑 {logical}、DPI {scale}、GL {glContext}";
+
+        // 请求的逻辑尺寸必须被完整解释：逻辑视口 ≈ 400×300（窗口系统可能对最小尺寸做钳制）。
+        Assert.True(Math.Abs(logical.Width - requestedWidth) <= 2, $"逻辑宽度应约为 400：{diagnostics}");
+        Assert.True(Math.Abs(logical.Height - requestedHeight) <= 2, $"逻辑高度应约为 300：{diagnostics}");
+
+        // UI 缩放来自窗口内容缩放（系统 DPI），不是 framebuffer/window 比例。
+        Assert.True(scale > 0, $"DPI 缩放应为正：{diagnostics}");
+        if (contentScale.X > 0 && contentScale.Y > 0)
+        {
+            Assert.True(
+                Math.Abs(scale - contentScale.X) < 0.01,
+                $"PixelScale 应等于 GLFW 窗口内容缩放：{diagnostics}");
+        }
+
+        // framebuffer 覆盖 400×300 逻辑像素 × 内容缩放，既没漏缩放也没有二次放大。
+        Assert.True(
+            Math.Abs(framebuffer.Width - (requestedWidth * scale)) <= 2,
+            $"framebuffer 宽度应约为 400 × DPI：{diagnostics}");
+        Assert.True(
+            Math.Abs(framebuffer.Height - (requestedHeight * scale)) <= 2,
+            $"framebuffer 高度应约为 300 × DPI：{diagnostics}");
+
+        // 渲染器由逻辑视口推导的 framebuffer 必须与真实 framebuffer 逐像素一致，不用容差掩盖错位。
+        Assert.Equal(framebuffer, GlCoordinateMath.ToFramebufferSize(logical, scale));
+
+        // 指针换算与视口同源：逻辑视口 × D 还原为真实物理范围，鼠标窗口坐标 × R/D 落在同一逻辑范围。
+        Assert.Equal(framebuffer.Width, logical.Width * scale, 9);
+        Assert.Equal(framebuffer.Height, logical.Height * scale, 9);
+        var pointer = ViewportMetrics.Create(
+            (int)windowSize.Width,
+            (int)windowSize.Height,
+            (int)framebuffer.Width,
+            (int)framebuffer.Height,
+            contentScale.X,
+            contentScale.Y);
+        Assert.Equal(logical.Width, pointer.ToLogicalPoint(windowSize.Width, windowSize.Height).X, 6);
     }
 
     [Fact]

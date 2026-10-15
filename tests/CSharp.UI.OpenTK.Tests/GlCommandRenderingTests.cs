@@ -305,6 +305,47 @@ public sealed class GlCommandRenderingTests
         Assert.Equal(1, stats.UnbalancedClipPops);
     }
 
+    [Fact]
+    public void 一百五十百分比下一百逻辑像素占一百五十物理像素()
+    {
+        using var scope = _fixture.CreateScope();
+        var frame = Frame(
+            new Size(120, 120),
+            1.5,
+            new RectangleCommand(new Rect(10, 10, 100, 100), Color.Red));
+
+        scope.Render(frame);
+
+        // 逻辑视口 120×120 × 1.5 = framebuffer 180×180。
+        Assert.Equal(180, scope.Surface.Size.Width);
+        Assert.Equal(180, scope.Surface.Size.Height);
+
+        // 逻辑 (10,10)+(100,100) → framebuffer (15,15)+(150,150)，左闭右开覆盖像素 15..164。
+        AssertColor.Equal(Background, scope.GetPixel(14, 14));
+        AssertColor.Equal(Color.Red, scope.GetPixel(15, 15));
+        AssertColor.Equal(Color.Red, scope.GetPixel(164, 164));
+        AssertColor.Equal(Background, scope.GetPixel(165, 165));
+    }
+
+    [Fact]
+    public void 不可整除视口下framebuffer与真实尺寸逐像素一致()
+    {
+        using var scope = _fixture.CreateScope();
+
+        // framebuffer 535×401 与 D=1.5 不可整除：宿主给出的逻辑视口必须让渲染器算出完全相同的 framebuffer，
+        // 否则会出现“逻辑视口与实际 framebuffer 差 1 像素”的错位。
+        var metrics = ViewportMetrics.Create(535, 401, 535, 401, 1.5, 1.5);
+        var frame = Frame(
+            metrics.LogicalSize,
+            metrics.PixelScale,
+            new RectangleCommand(new Rect(0, 0, metrics.LogicalSize.Width, metrics.LogicalSize.Height), Color.Red));
+
+        scope.Render(frame);
+
+        Assert.Equal(new Size(535, 401), scope.Surface.Size);
+        Assert.Equal(new Size(535, 401), scope.Renderer.FramebufferSize);
+    }
+
     private RenderFrame Frame(Size viewport, double scale, params DrawCommand[] commands)
         => new(commands, viewport, scale, Background);
 }

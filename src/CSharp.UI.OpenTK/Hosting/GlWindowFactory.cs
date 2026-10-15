@@ -130,12 +130,22 @@ internal static class GlWindowFactory
 
     /// <summary>创建窗口；失败时抛出带平台与异常信息的 <see cref="UiHostException"/>。</summary>
     /// <param name="title">窗口标题。</param>
-    /// <param name="clientWidth">客户区宽度（逻辑像素）。</param>
+    /// <param name="clientWidth">客户区宽度（逻辑像素；<paramref name="scaleToMonitor"/> 为 true 时按当前显示器缩放放大）。</param>
     /// <param name="clientHeight">客户区高度（逻辑像素）。</param>
     /// <param name="resizable">是否可调整大小。</param>
     /// <param name="vsync">是否启用垂直同步。</param>
     /// <param name="visible">是否可见（测试使用隐藏窗口）。</param>
     /// <param name="purpose">用途描述，写入诊断信息。</param>
+    /// <param name="scaleToMonitor">
+    /// 是否启用 GLFW <c>ScaleToMonitor</c> 提示：Windows/X11 上把请求尺寸按显示器内容缩放放大，
+    /// 使客户区的物理像素覆盖请求的逻辑像素；macOS 本身按点创建，该提示不起作用。
+    /// 只有桌面宿主窗口应传 true；离屏/测试窗口必须保持 false。
+    /// </param>
+    /// <remarks>
+    /// OpenTK 4.9.4 的 <c>NativeWindowSettings</c> 没有该属性，也不会调用 <c>DefaultWindowHints</c>，
+    /// 因此这里在 <c>NativeWindow</c> 构造前直接设置 GLFW 提示，并在创建后立刻恢复 false，
+    /// 避免全局 hint 泄漏到随后创建的离屏窗口。
+    /// </remarks>
     internal static NativeWindow CreateWindow(
         string title,
         int clientWidth,
@@ -143,7 +153,8 @@ internal static class GlWindowFactory
         bool resizable,
         bool vsync,
         bool visible,
-        string purpose)
+        string purpose,
+        bool scaleToMonitor = false)
     {
         NativeWindowSettings? settings = null;
         try
@@ -152,7 +163,18 @@ internal static class GlWindowFactory
             EnsureErrorCallback();
             ClearGlfwError();
             settings = CreateSettings(title, clientWidth, clientHeight, resizable, vsync, visible);
-            var window = new NativeWindow(settings);
+
+            // GLFW 提示是全局状态：只影响这一次窗口创建，创建后立即恢复默认。
+            GLFW.WindowHint(WindowHintBool.ScaleToMonitor, scaleToMonitor);
+            NativeWindow window;
+            try
+            {
+                window = new NativeWindow(settings);
+            }
+            finally
+            {
+                GLFW.WindowHint(WindowHintBool.ScaleToMonitor, false);
+            }
 
             // 上下文可用性校验：能读到 GL 版本才认为创建成功。
             var version = GL.GetString(StringName.Version);
@@ -244,6 +266,28 @@ internal static class GlWindowFactory
         catch (Exception ex)
         {
             return $"无法读取 GL 信息（{ex.GetType().Name}：{ex.Message}）";
+        }
+    }
+
+    /// <summary>
+    /// 读取窗口当前内容缩放（<c>glfwGetWindowContentScale</c>）：Windows/X11 为系统 DPI 缩放；
+    /// macOS 在 Retina 上通常为 2，接普通显示器时同样可能是 1，不能假定固定值。
+    /// </summary>
+    /// <remarks>
+    /// 不可用（窗口已销毁、GLFW 未初始化、平台未提供）时返回零，由 <see cref="ViewportMetrics"/> 走确定性回退；
+    /// 不使用“只读一次主屏缩放”的做法，窗口移动到其他显示器后重新读取即可得到新值。
+    /// </remarks>
+    internal static unsafe (float X, float Y) GetWindowContentScale(NativeWindow window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        try
+        {
+            GLFW.GetWindowContentScale(window.WindowPtr, out var xScale, out var yScale);
+            return (xScale, yScale);
+        }
+        catch (Exception)
+        {
+            return (0f, 0f);
         }
     }
 

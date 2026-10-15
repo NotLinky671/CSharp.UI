@@ -21,6 +21,26 @@
 发布检查覆盖 Windows x64、Linux x64、macOS x64/arm64 四种架构（命令与结果见 [../task/14-cross-platform-validation.md](../task/14-cross-platform-validation.md)）。
 核心库 `CSharp.UI` **不引用** OpenTK、SkiaSharp 或任何原生库，因此核心单元测试不需要图形上下文。
 
+## DPI 与三个坐标空间
+
+宿主严格区分三个空间，框架内部的尺寸、布局、字体大小、光标与输入事件全部使用**逻辑像素**：
+
+| 空间 | 来源 | 说明 |
+|---|---|---|
+| GLFW 窗口内容区坐标 | `window.ClientSize` | Windows/X11 与物理像素 1:1；macOS 为点（point） |
+| UI 逻辑像素 | `UiHostContext.LogicalSize`、布局与命中测试 | = framebuffer ÷ 内容缩放 D |
+| framebuffer 像素 | `window.FramebufferSize` | = 逻辑尺寸 × D（渲染器据此设置 `glViewport`） |
+
+- `UiApplicationOptions.Width/Height` 是**逻辑尺寸**：宿主在创建窗口时启用 GLFW `ScaleToMonitor`，
+  再按实际内容缩放反推客户区，因此 Windows 150% 下 400×300 逻辑会得到约 600×450 物理客户区，
+  运行时仍是 400×300、`PixelScale` 为 1.5；macOS Retina（窗口坐标 = 点、framebuffer = 2×）不会二次放大。
+- 鼠标：逻辑坐标 = 窗口坐标 × R ÷ D（R = framebuffer ÷ 窗口内容区）。Windows 150% 时除以 1.5，
+  macOS Retina 时保持原值；滚轮增量是行/格语义，不随 DPI 缩放。
+- 系统缩放变化或跨屏移动由 GLFW 窗口内容缩放回调处理：更新 D、逻辑视口与输入换算，失效文本/纹理缓存并重绘，
+  并把客户区调整到仍覆盖原逻辑尺寸；窗口管理器已按新 DPI 调整过时不会重复放大。不逐帧轮询。
+- 逻辑尺寸保留小数（不取整），保证渲染器由逻辑视口推导的 framebuffer 与真实 framebuffer 逐像素一致。
+- 原始内容缩放不可用（零/非有限数）时按轴回退，最后才用 framebuffer÷窗口比，不把无效值传给布局与纹理服务。
+
 ## 字体与回退
 
 字体解析顺序：
