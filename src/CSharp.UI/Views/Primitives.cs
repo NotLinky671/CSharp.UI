@@ -145,6 +145,10 @@ public sealed class Text : View
         // 并按“1 纹素 = 1 物理像素”映射（含 ceil 余量），否则整张遮罩会被线性过滤二次采样。
         var origin = TextPainter.ResolveOrigin(frame, layout.Size, Alignment, layout.PixelScale);
 
+        var color = node.Environment.ResolvedForeground;
+
+        // 遮罩依赖文字颜色，颜色必须进入 GPU 纹理缓存键；只保留 RGB，透明度由 tint/opacity 统一乘一次。
+        var maskColor = color.WithAlpha(255);
         var key = new TextTextureKey(
             layout.Text,
             layout.Font,
@@ -155,15 +159,15 @@ public sealed class Text : View
             Alignment,
             LineHeight,
             context.PixelScale,
-            LetterSpacing);
+            LetterSpacing,
+            maskColor);
 
-        var handle = textureService.GetOrCreate(key, () => context.TextService.Rasterize(layout));
+        var handle = textureService.GetOrCreate(key, () => context.TextService.Rasterize(layout, maskColor));
         if (!handle.IsValid)
         {
             return;
         }
 
-        var color = node.Environment.ResolvedForeground;
         context.Commands.Add(new TextureCommand(
             handle,
             TextPainter.ResolveTextureBounds(handle, origin, layout.PixelScale),
@@ -173,7 +177,7 @@ public sealed class Text : View
     }
 }
 
-/// <summary>文本纹理缓存键：包含一切影响栅格化结果的输入。</summary>
+/// <summary>文本纹理缓存键：包含一切影响栅格化结果的输入，含文字颜色 RGB（alpha 由绘制端统一处理）。</summary>
 internal readonly record struct TextTextureKey(
     string Text,
     FontDescription Font,
@@ -184,7 +188,8 @@ internal readonly record struct TextTextureKey(
     TextAlignment Alignment,
     double LineHeight,
     double PixelScale,
-    double LetterSpacing);
+    double LetterSpacing,
+    Color Color);
 
 /// <summary>纯色矩形视图；可作为背景、分隔线或色块。</summary>
 /// <remarks>

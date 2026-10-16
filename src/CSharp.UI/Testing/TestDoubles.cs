@@ -95,7 +95,7 @@ public sealed class TestUiClock : IUiClock
 public sealed class StubTextService : ITextService
 {
     private readonly LruCache<TextLayoutRequest, TextLayoutResult> _layouts = new(64);
-    private readonly LruCache<TextLayoutResult, PixelBuffer> _rasters = new(32);
+    private readonly LruCache<StubRasterKey, PixelBuffer> _rasters = new(32);
     private int _layoutMisses;
     private int _rasterMisses;
 
@@ -163,10 +163,15 @@ public sealed class StubTextService : ITextService
         => new(font.Size * 0.8, font.Size * 0.2, font.Size * 0.25);
 
     /// <inheritdoc />
-    public PixelBuffer Rasterize(TextLayoutResult layout)
+    public PixelBuffer Rasterize(TextLayoutResult layout) => Rasterize(layout, Color.White);
+
+    /// <inheritdoc />
+    /// <remarks>与真实实现一致：颜色只以 RGB 参与缓存键，alpha 不参与（由绘制端统一乘一次）。</remarks>
+    public PixelBuffer Rasterize(TextLayoutResult layout, Color color)
     {
         ArgumentNullException.ThrowIfNull(layout);
-        var hadValue = _rasters.TryGet(layout, out var cached);
+        var key = new StubRasterKey(layout, color.WithAlpha(255));
+        var hadValue = _rasters.TryGet(key, out var cached);
         if (hadValue)
         {
             return cached!;
@@ -177,7 +182,7 @@ public sealed class StubTextService : ITextService
         var height = Math.Max(1, (int)Math.Ceiling(layout.Size.Height * layout.PixelScale));
         var buffer = new PixelBuffer(width, height, PixelFormat.Alpha8);
         Array.Fill(buffer.Pixels, (byte)200);
-        _rasters.GetOrAdd(layout, _ => buffer, out _);
+        _rasters.GetOrAdd(key, _ => buffer, out _);
         return buffer;
     }
 
@@ -187,6 +192,9 @@ public sealed class StubTextService : ITextService
         _layouts.Clear();
         _rasters.Clear();
     }
+
+    /// <summary>替身栅格缓存键：排版结果实例 + 文字颜色 RGB。</summary>
+    private readonly record struct StubRasterKey(TextLayoutResult Layout, Color Color);
 
     private TextLayoutResult Build(TextLayoutRequest request)
     {

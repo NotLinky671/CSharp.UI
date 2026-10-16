@@ -143,8 +143,12 @@ internal static class TextPainter
         }
 
         var origin = ResolveOrigin(bounds, layout.Size, alignment, layout.PixelScale);
-        var key = new TextPaintKey(layout.Text, layout.Font, layout.PixelScale, layout.Size, alignment);
-        var handle = textureService.GetOrCreate(key, () => context.TextService.Rasterize(layout));
+
+        // 遮罩依赖文字颜色（Skia 的颜色相关 gamma/对比度处理），因此颜色必须进入 GPU 纹理缓存键；
+        // 只保留 RGB：透明度由 TextureCommand 的 tint alpha / opacity 在 GPU 统一乘一次。
+        var maskColor = color.WithAlpha(255);
+        var key = new TextPaintKey(layout.Text, layout.Font, layout.PixelScale, layout.Size, alignment, maskColor);
+        var handle = textureService.GetOrCreate(key, () => context.TextService.Rasterize(layout, maskColor));
         if (!handle.IsValid)
         {
             return;
@@ -161,8 +165,8 @@ internal static class TextPainter
     private static double NormalizeScale(double pixelScale)
         => pixelScale is > 0 and < double.PositiveInfinity ? pixelScale : 1.0;
 
-    /// <summary>控件文本纹理缓存键。</summary>
-    private readonly record struct TextPaintKey(string Text, FontDescription Font, double PixelScale, Size Size, TextAlignment Alignment);
+    /// <summary>控件文本纹理缓存键（<see cref="Color"/> 只以 RGB 参与，alpha 由绘制端统一处理）。</summary>
+    private readonly record struct TextPaintKey(string Text, FontDescription Font, double PixelScale, Size Size, TextAlignment Alignment, Color Color);
 }
 
 /// <summary>

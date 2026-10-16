@@ -102,7 +102,7 @@ service.DiagnosticReported += (_, d) => log(d.ToString());
 | 缓存 | 键 | 默认容量 | 释放 |
 |---|---|---|---|
 | 排版缓存 | `TextLayoutRequest`（记录值相等：文本、字体、`MaxWidth`、`MaxLines`、换行、省略、对齐、`LineHeight`、`PixelScale`、`LetterSpacing`） | `LayoutCacheCapacity = 128` | 无需释放（纯托管结果） |
-| 栅格缓存 | `TextLayoutResult` **实例引用** | `RasterCacheCapacity = 64` | 无需释放（`PixelBuffer` 为托管数组） |
+| 栅格缓存 | `TextLayoutResult` **实例引用** + 文字 RGB（不含 alpha） | `RasterCacheCapacity = 64` | 无需释放（`PixelBuffer` 为托管数组） |
 | 首选字体缓存 | 文件路径/家族名 + 粗细 + 斜体 + 回退名列表 | 32 | 淘汰/清空时释放 `SKTypeface` |
 | 缺字回退缓存 | 码点 + 粗细 + 斜体（失败也缓存 null） | 256 | 淘汰/清空时释放 `SKTypeface` |
 | 字体实例缓存 | `SKTypeface` 引用 + 字号 | 64 | 淘汰/清空时释放 `SKFont` 与 `SKShaper`，并释放字体族引用 |
@@ -118,10 +118,12 @@ service.DiagnosticReported += (_, d) => log(d.ToString());
 
 ## 四、像素格式约定
 
-- **文本栅格化**：`Rasterize(TextLayoutResult)` 返回 `PixelFormat.Alpha8` 的灰度覆盖率遮罩，
-  尺寸为 `max(1, ceil(逻辑尺寸 × PixelScale))`；绘制时由渲染器通过 `TextureCommand.Tint` 着色。
-  栅格化使用 `SKColorType.Alpha8` + `SKAlphaType.Premul` + 字形灰度抗锯齿（`SKFontEdging.Antialias`，关闭子像素渲染以避免彩边），
-  字形位置与光标位置同源（同一份 shaping 结果）。
+- **文本栅格化**：`Rasterize(TextLayoutResult, Color)` 按实际文字 RGB 生成 `PixelFormat.Alpha8` 遮罩；
+  旧的单参数重载等价于传入白色。遮罩边缘可受颜色影响，缓存必须包含 RGB；alpha 不进入遮罩和缓存键，
+  由渲染器通过 `TextureCommand.Tint` 与 `Opacity` 统一应用一次。
+  尺寸为 `max(1, ceil(逻辑尺寸 × PixelScale))`，按一纹素对应一物理像素绘制。
+  栅格化使用 `SKColorType.Alpha8` + `SKAlphaType.Premul` + 灰度抗锯齿（`SKFontEdging.Antialias`）；
+  `SKFont.Subpixel=false` 控制字形小数像素定位，与 LCD 子像素抗锯齿不同。字形与光标位置同源（同一份 shaping 结果）。
 - **图片解码**：`SkiaImageService` 统一输出 `PixelFormat.Rgba8888Premultiplied`
   （核心文档中“纹理与图片统一使用”的格式）。不同平台的 Skia 原生顺序不同（Windows 为 Bgra8888），
   这里统一转换，并且**始终为预乘 alpha**，避免透明边缘在合成时出现色晕。

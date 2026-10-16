@@ -12,7 +12,9 @@ namespace CSharp.UI.Skia;
 /// <list type="bullet">
 /// <item>排版缓存：键为 <see cref="TextLayoutRequest"/>（record 值相等；文本、字体、宽度、换行、省略、对齐、行高、DPI、字距都在键里），
 /// 容量由 <see cref="LayoutCacheCapacity"/> 控制。</item>
-/// <item>栅格缓存：键为 <see cref="TextLayoutResult"/> 实例引用，容量由 <see cref="RasterCacheCapacity"/> 控制。</item>
+/// <item>栅格缓存：键为 <see cref="TextLayoutResult"/> 实例引用 + 文字颜色 RGB，
+/// 容量由 <see cref="RasterCacheCapacity"/> 控制。颜色参与键是正确性要求：同一排版在不同前景色下
+/// 的 Skia 字形遮罩边缘值不同；alpha 不参与键，它在绘制端统一乘一次。</item>
 /// <item>字体缓存：SKTypeface/SKFont/SKShaper 在内部按容量缓存，淘汰或 <see cref="ClearCaches"/> 时释放。</item>
 /// </list>
 /// </para>
@@ -31,7 +33,7 @@ public sealed class SkiaTextService : ITextService, IDisposable
     private const int MaxDiagnostics = 64;
 
     private readonly LruCache<TextLayoutRequest, TextLayoutResult> _layouts;
-    private readonly LruCache<TextLayoutResult, PixelBuffer> _rasters;
+    private readonly LruCache<TextRasterKey, PixelBuffer> _rasters;
     private readonly SkiaFontResolver _fonts;
     private readonly TextLayoutBuilder _builder;
     private readonly List<TextDiagnostic> _diagnostics = [];
@@ -48,7 +50,7 @@ public sealed class SkiaTextService : ITextService, IDisposable
     public SkiaTextService(int layoutCacheCapacity = DefaultLayoutCacheCapacity, int rasterCacheCapacity = DefaultRasterCacheCapacity)
     {
         _layouts = new LruCache<TextLayoutRequest, TextLayoutResult>(Math.Max(1, layoutCacheCapacity));
-        _rasters = new LruCache<TextLayoutResult, PixelBuffer>(Math.Max(1, rasterCacheCapacity));
+        _rasters = new LruCache<TextRasterKey, PixelBuffer>(Math.Max(1, rasterCacheCapacity));
         _fonts = new SkiaFontResolver(ReportDiagnostic);
         _builder = new TextLayoutBuilder(_fonts);
     }
@@ -131,21 +133,33 @@ public sealed class SkiaTextService : ITextService, IDisposable
     }
 
     /// <inheritdoc />
-    public PixelBuffer Rasterize(TextLayoutResult layout)
+    public PixelBuffer Rasterize(TextLayoutResult layout) => Rasterize(layout, Color.White);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// 颜色只使用 RGB，并固定按不透明绘制（alpha=255）：Skia 的 Alpha8 字形遮罩会随绘制颜色
+    /// 应用颜色相关的 gamma/对比度处理，只有用实际颜色绘制才能得到与同一路径直接颜色绘制一致的覆盖率；
+    /// 若同时传入 paint alpha，遮罩会被 alpha 预先乘一次，绘制端再乘 tint alpha 就成了双重混合。
+    /// </remarks>
+    public PixelBuffer Rasterize(TextLayoutResult layout, Color color)
     {
         ArgumentNullException.ThrowIfNull(layout);
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_rasters.TryGet(layout, out var cached))
+        var key = new TextRasterKey(layout, MaskColor(color));
+        if (_rasters.TryGet(key, out var cached))
         {
             _rasterHits++;
             return cached;
         }
 
         _rasterMisses++;
-        var buffer = BuildRaster(layout);
-        _rasters.GetOrAdd(layout, _ => buffer, out _);
+        var buffer = BuildRaster(layout, color);
+        _rasters.GetOrAdd(key, _ => buffer, out _);
         return buffer;
     }
+
+    /// <summary>遮罩颜色键：只保留 RGB。</summary>
+    private static Color MaskColor(Color color) => color.WithAlpha(255);
 
     /// <inheritdoc />
     public void ClearCaches()
@@ -185,7 +199,7 @@ public sealed class SkiaTextService : ITextService, IDisposable
         _fonts.Dispose();
     }
 
-    private PixelBuffer BuildRaster(TextLayoutResult layout)
+    private PixelBuffer BuildRaster(TextLayoutResult layout, Color color)
     {
         var scale = layout.PixelScale <= 0 ? 1.0 : layout.PixelScale;
         var width = Math.Max(1, (int)Math.Ceiling(layout.Size.Width * scale));
@@ -197,8 +211,15 @@ public sealed class SkiaTextService : ITextService, IDisposable
         {
             canvas.Clear(SKColors.Transparent);
             canvas.Scale((float)scale, (float)scale);
-            // Alpha8 只需要覆盖率：白色 + 抗锯齿即可得到灰度遮罩，绘制端再按 tint 着色。
-            using var paint = new SKPaint { Color = SKColors.White, IsAntialias = true, Style = SKPaintStyle.Fill };
+            // Alpha8 只保存覆盖率，但 Skia 的字形遮罩带颜色相关的 gamma/对比度处理：
+            // 必须传入实际不透明 RGB，得到的边缘值与同一路径直接颜色绘制一致，绘制端再按同一 tint 着色。
+            // alpha 固定 255：透明度由绘制端 tint 统一乘一次，避免双重混合。
+            using var paint = new SKPaint
+            {
+                Color = new SKColor(color.R, color.G, color.B, 255),
+                IsAntialias = true,
+                Style = SKPaintStyle.Fill,
+            };
             foreach (var line in layout.Lines)
             {
                 DrawLine(canvas, paint, layout, line, graphemeStarts, primary);
@@ -328,4 +349,10 @@ public sealed class SkiaTextService : ITextService, IDisposable
         _diagnostics.Add(diagnostic);
         DiagnosticReported?.Invoke(this, diagnostic);
     }
+
+    /// <summary>
+    /// 栅格缓存键：同一排版结果 + 参与遮罩生成的颜色。
+    /// 排版结果按实例引用比较（<see cref="Layout"/> 会复用缓存实例）；颜色只含 RGB，alpha 已被归一化为 255。
+    /// </summary>
+    private readonly record struct TextRasterKey(TextLayoutResult Layout, Color Color);
 }

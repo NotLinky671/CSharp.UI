@@ -62,7 +62,10 @@ public sealed class TextRasterSamplingTests
             ?? throw new InvalidOperationException("未找到 Text 节点。");
         var command = Assert.Single(runtime.BuildFrame().Commands.OfType<TextureCommand>());
         var layout = Assert.IsType<TextLayoutResult>(textNode.ViewCache);
-        var mask = textService.Rasterize(layout);
+
+        // R17：遮罩按实际文字颜色栅格化，因此这里必须用命令的 tint（RGB）取同一张颜色感知遮罩，
+        // 否则帧缓冲的 alpha（覆盖率 × tint alpha）会与白色遮罩不一致。
+        var mask = textService.Rasterize(layout, command.Tint);
 
         // 1 纹素 = 1 物理像素；原点落在整数物理像素上（含小数逻辑原点的情况）。
         Assert.Equal(0, Math.IEEERemainder(command.Bounds.X * pixelScale, 1), 6);

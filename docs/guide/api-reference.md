@@ -70,7 +70,7 @@
 |---|---|
 | `DrawCommand`（`RectangleCommand`、`TextureCommand`、`PushClipCommand`、`PopClipCommand`） | 有序绘制命令；由布局/绘制阶段生成，渲染器按顺序消费 |
 | `RenderFrame` | 一帧的命令、视口逻辑尺寸、DPI 与清屏色 |
-| `ITextService` | 排版、测量、字体度量与 CPU 栅格化（实现：`CSharp.UI.Skia.SkiaTextService`） |
+| `ITextService` | 排版、测量、字体度量与 CPU 栅格化（实现：`CSharp.UI.Skia.SkiaTextService`）。`Rasterize(layout)` 返回白色遮罩；`Rasterize(layout, color)` 按实际文字颜色 RGB 栅格化（alpha 由绘制端 tint 统一乘一次），外部实现可只实现旧方法，颜色重载有默认实现 |
 | `ITextureService` | 按稳定键缓存 GPU 纹理、有界淘汰（实现：`CSharp.UI.OpenTK` 的 OpenGL 纹理服务）。`BeginFrame()` 由运行时在每帧生成命令前调用，用于保护当前帧与上一帧引用的纹理、在帧边界回收容量 |
 | `IImageService` | 图片解码与缓存（实现：`CSharp.UI.Skia.SkiaImageService`） |
 | `IClipboardService` | 剪贴板读写（宿主默认使用 GLFW 剪贴板） |

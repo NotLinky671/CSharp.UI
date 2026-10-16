@@ -318,9 +318,31 @@ public interface ITextService
     FontMetrics GetFontMetrics(FontDescription font);
 
     /// <summary>
-    /// 把排版结果栅格化为文本遮罩（<see cref="PixelFormat.Alpha8"/>），尺寸为逻辑尺寸 × <see cref="TextLayoutResult.PixelScale"/>。
+    /// 把排版结果栅格化为白色文字遮罩；等价于 <see cref="Rasterize(TextLayoutResult, Color)"/> 传 <see cref="Color.White"/>。
     /// </summary>
     PixelBuffer Rasterize(TextLayoutResult layout);
+
+    /// <summary>
+    /// 按实际文字颜色把排版结果栅格化为文本遮罩（<see cref="PixelFormat.Alpha8"/>），
+    /// 尺寸为逻辑尺寸 × <see cref="TextLayoutResult.PixelScale"/>。
+    /// </summary>
+    /// <param name="layout">排版结果；布局、换行与字形位置必须与测量阶段共用同一个结果。</param>
+    /// <param name="color">
+    /// 文字颜色。只使用 RGB：栅格化按不透明颜色（alpha=255）进行，透明度由绘制端 tint 统一乘一次，
+    /// 避免半透明文字发生双重 alpha 混合。
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// 契约要求：遮罩必须与“用同一排版和同一颜色直接绘制到颜色表面”得到的覆盖率一致。
+    /// Skia 的字形遮罩带与绘制颜色相关的 gamma/对比度处理（见 The Raster Tragedy in Skia），
+    /// 因此同一排版在不同前景色下可能得到不同边缘值，不能把一份白字遮罩染色后复用于所有颜色。
+    /// </para>
+    /// <para>
+    /// 兼容性：默认实现忽略颜色并返回 <see cref="Rasterize(TextLayoutResult)"/>，使既有外部实现保持可编译、
+    /// 并沿用其原有栅格化行为；框架自带的 <c>CSharp.UI.Skia.SkiaTextService</c> 会实现颜色相关版本。
+    /// </para>
+    /// </remarks>
+    PixelBuffer Rasterize(TextLayoutResult layout, Color color) => Rasterize(layout);
 
     /// <summary>当前缓存的排版结果数量。</summary>
     int CachedLayoutCount { get; }

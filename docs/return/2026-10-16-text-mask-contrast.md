@@ -62,3 +62,89 @@
 - TextField 光标、选区、点击定位和横向滚动保持一致；Gallery 内外滚动继续满足 R16 像素映射。
 - 完整四套测试，三个示例 Debug/Release 重新构建，并在本机 150% 下完成 Release 启动检查；额外提供与用户原句相同的原尺寸修复前后图，不把放大图当作最终观感验收。
 - 字形外伸裁剪仍是 R16 已知限制，未在本次颜色诊断中解决。没有 macOS/Linux 真机结果时，不宣称全平台主观观感通过。
+
+## Codex 实现期间复查（2026-10-16）
+
+发现新增 GPU 测试 `TextColorMaskTests.AssertLegacyWhiteMaskFails` 的颜色相关性判定有误：当前把直接白字 RGB 与直接实际色文字 RGB 比较，前景色本身就会造成差异，不能证明遮罩覆盖率随颜色变化。必须固定最终 tint 来比较，或比较独立 `RenderCoverage(..., Color.White)` 和 `RenderCoverage(..., command.Tint.WithAlpha(255))` 的 alpha。实际本机浅字深底的遮罩与白字相同，不能要求这类负对照也必然失败。正向最终 RGB 验证应继续覆盖深浅主题。
+
+Codex 独立基线位于 `artifacts/font-color-independent/`：384 组（四档 DPI × 四字号 × 两主题 × 三类文本 × 四类控件），旧实现 188 组超出最大 RGB 差 3 的阈值，最大 RGB 差 84，平均每组 MAE 4.91334/255；几何均正确。原尺寸修复前图为 `before.png`。后续使用同一程序复测。
+
+### 实现期间复查补充：透明度参考必须按整段文字分组合成
+
+主修复已经通过 Codex 独立 384 组最终 RGB 检查：0 组超标，最大差 2/255，各组平均 MAE 0.10419/255，原尺寸 `artifacts/font-color-independent/after.png` 已查看，边缘明显不同于旧图。
+
+额外 384 组有色半透明/Opacity 组合检查中，若参考直接把 alpha 传给每次 DrawLine 的 SKPaint，在 DPI 1.25、14 号中英文混排处出现差异。框架的既有契约是把整个不透明文字遮罩合成为纹理，再统一应用 tint alpha × opacity；逐字形/字体 run source-over 的透明度不能作为该契约的通用参考。Codex 改用独立 Skia SaveLayer 在整段不透明颜色绘制后统一应用 alpha，384 组全部通过，最大差 3/255，各组平均 MAE 0.11035/255（`extended-group-after.txt`）。这不是生产路径仍有 8 项失败；它是参考图分组合成语义不一致，初次结果保留在 `extended-after.txt`。
+
+建议 DSH 将测试参考 `TextDirectReference.RenderOnBackground` 的透明颜色分支改成“按实际不透明 RGB 直接绘制到层，Restore 时统一乘 alpha”，并加入至少一项 `中文边缘 English 123`、14 号、DPI 1.25、前景 alpha 128 与 Opacity 0.63 的组合回归，防止未来用逐 glyph 透明度参考误判本框架纹理整体透明度。保持正向最终 RGB 阈值与原有源码行为，不放宽阈值。
+
+## 实现记录（DeepSeek Harness，待 Codex 复审）
+
+### 策略：按实际文字颜色栅格化同一份遮罩（未采用 pow / 全局 sRGB / 假粗体 / Nearest）
+
+先在本机用独立探针（`artifacts/font-quality-review/exp`）验证报告建议的假设，再改生产代码：
+
+- Alpha8 遮罩确实随 `SKPaint` 颜色变化：A8(白) 与 A8(深色 30,31,35) 平均差 12.03、最大 99、626 像素相差超过 1。
+- A8(color) 与“同一 `DrawLine` 路径直接绘制到 BGRA 透明表面”的 alpha 通道**逐像素完全一致**（mean 0、max 0）。
+- A8 遮罩会被 paint alpha 预先乘一次（a=128 vs 255：mean 15.36、max 127）。因此遮罩只处理 RGB，
+  固定按 alpha=255 绘制，透明度只在 GPU tint 乘一次。
+
+字体 hinting/subpixel 策略、R16 的 1 纹素=1 物理像素与原点吸附、LCD 与字形外伸裁剪范围均未改动。
+
+### API 与缓存变化
+
+- `ITextService.Rasterize(TextLayoutResult, Color)`：新增颜色重载，只用 RGB。为兼容外部实现，
+  接口提供默认实现 `=> Rasterize(layout)`；旧 `Rasterize(layout)` 保留且等价 `Color.White`（本机输出与修复前逐像素一致）。
+- `SkiaTextService`：`BuildRaster` 用 `new SKColor(R,G,B,255)` 绘制 Alpha8；栅格缓存键为 `(排版结果引用, RGB)`，
+  颜色条目仍受 `RasterCacheCapacity` 约束；排版（测量）缓存键不变，颜色不触发重新排版。
+- `TextPainter.TextPaintKey`、`Text.Emit` 的 `TextTextureKey` 增加归一化 RGB 并调用 `Rasterize(layout, maskColor)`；
+  Button/Toggle 标签与 TextField 共用 `TextPainter`，自动生效。`StubTextService` 同步为颜色感知键。
+
+### 测试与实测（四套 432 全绿：核心 172、文本 67、集成 14、图形 179；baseline 408，新增 24）
+
+`tests/CSharp.UI.Text.Tests/TextMaskColorTests.cs`（9 例，CPU 契约）：遮罩覆盖率与同色直接绘制逐像素一致（≤1）、
+白字遮罩复用于深色文字确实超阈值、缓存按 RGB 复用且忽略 alpha、颜色变化不触发重新排版、
+颜色条目受容量约束、尺寸/几何不受颜色影响。
+
+`tests/CSharp.UI.OpenTK.Tests/TextColorMaskTests.cs`（15 例，真实 CPU→GL 最终 RGB）。
+参考由共享 `tests/Shared/TextDirectReference.cs` 生成：复用生产同款 `DrawLine` 定位，但直接绘制到颜色表面，
+不调用 `Rasterize`。阈值 mean ≤ 0.75、max ≤ 4（0—255）：
+
+| 场景 | 颜色感知遮罩 | 旧白字遮罩（同一 GPU 路径负对照） |
+|---|---|---|
+| 原句 14px DPI1.5 深字浅底 | mean 0.1015 / max 2 | mean 10.1257 / max 84 |
+| 原句 12px DPI1.0 深字浅底 | mean 0.1201 / max 2 | mean 10.0368 / max 84 |
+| 原句 28px DPI2.0 深字浅底 | mean 0.0339 / max 2 | mean 3.4801 / max 84 |
+| 中英混排 14px DPI1.5 深字浅底 | mean 0.1141 / max 2 | mean 10.3365 / max 84 |
+| 重复细竖线 14px DPI1.5 深字浅底 | mean 0.2581 / max 2 | mean 17.6221 / max 82 |
+| 浅字深底（原句/中英/细竖线） | mean ≤ 0.19 / max 2 | 参考遮罩与白字遮罩逐像素一致（max 0），不构成错误场景 |
+
+对 Codex 复查（颜色相关性判定）的处理：负对照改为比较**独立参考覆盖率本身**
+（`RenderCoverage(Color.White)` vs `RenderCoverage(Tint.WithAlpha(255))`），不再用前景色不同的两幅 RGB 比较；
+浅字深底遮罩与白字一致时按独立参考自动跳过，不再要求其必然失败。
+
+对 Codex 复查（透明度参考语义）的处理：`TextDirectReference.RenderOnBackground` 在 `color.A < 255` 时
+改为把整段文字按不透明 RGB 画进图层、Restore 时统一乘 alpha；并新增
+`中文边缘 English 123`、14 号、DPI 1.25、前景 alpha 128 与 `Opacity 0.63` 的组合回归。
+该组实测 mean 0.1016 / max 2；原先逐 run 传 alpha 的写法在该组会偏大（mean 0.27 / max 3），已不再使用。
+
+半透明与禁用：`alpha=128` mean 0.22 / max 2、`Opacity 0.5` mean 0.23 / max 2、两者叠加 mean 0.16 / max 2，
+均与整体合成参考一致，未出现双重 alpha 混合；禁用按钮标签（`DisabledForeground`）mean 0.057 / max 2。
+主题前景色动态切换：新色产生新纹理、切回复用旧纹理、`LayoutMisses` 不变。
+R16 的 `TextRasterSamplingTests` 改为用命令实际 tint 取遮罩（`Rasterize(layout, command.Tint)`），继续通过。
+
+### 验收证据
+
+- 用户原句原尺寸（156×28 物理像素，Segoe UI 14，DPI1.5，笔画 `#1B1D21`，背景 `#F5F6F8`）：
+  `artifacts/font-quality-review/r17-before.png`、`r17-after.png`、`r17-before-after-original.png`（未放大）。
+  相对同一直接参考的红通道绝对差：修复前 mean 10.1671 / max 84，修复后 mean 0.1037 / max 1。
+- 三个示例 Debug/Release 全部重新构建、退出码 0；Release 在真机 DPI 1.5 下用 `CSHARPUI_SMOKE_FRAMES=5`
+  冒烟，三条均渲染 5 帧后退出码 0（GL 3.3 Intel RaptorLake-S）。
+
+### 未解决限制
+
+- 本机是 Windows/Segoe UI。颜色相关性来自 Skia 的字形遮罩处理；若某平台遮罩与颜色无关，
+  颜色感知契约仍成立（结果与白字遮罩相同），负对照按独立参考自动跳过；没有 macOS/Linux 真机结论。
+- 只在 Skia 灰度 AA 下验证；LCD/ClearType 仍需单独设计背景、透明表面与 RGB/BGR 约束。
+- 字形外伸裁剪仍是 R16 已知限制，本次未处理。
+- 颜色进入 GPU 纹理键后，同一文字的不同前景色各占一个纹理条目，容量语义由既有 LRU 保证；
+  未做“同一遮罩多色复用”，因为那正是本次要消除的错误来源。

@@ -17,4 +17,9 @@
     <ProjectReference Include="..\..\src\CSharp.UI.Text\CSharp.UI.Text.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- R17：与 OpenTK 图形测试共用的“同一 DrawLine 直接颜色绘制”参考实现。 -->
+    <Compile Include="..\Shared\TextDirectReference.cs" Link="TextDirectReference.cs" />
+  </ItemGroup>
+
 </Project>
