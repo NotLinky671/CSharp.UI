@@ -57,16 +57,16 @@
 | 命令 | 结果 |
 |---|---|
 | `dotnet build CSharp.UI.slnx` | exit 0，0 错误（仅既有 NU1900 与 xUnit 分析器警告） |
-| `CSharp.UI.Tests` 程序集 | exit 0，284 Total / 0 Failed / 0 Skipped |
+| `CSharp.UI.Tests` 程序集 | exit 0，285 Total / 0 Failed / 0 Skipped |
 | `CSharp.UI.Text.Tests` 程序集 | exit 0，67 Total / 0 Failed / 0 Skipped |
 | `CSharp.UI.Integration.Tests` 程序集 | exit 0，29 Total / 0 Failed / 0 Skipped |
 | `CSharp.UI.OpenTK.Tests` 程序集 | exit 0，189 Total / 0 Failed / 0 Skipped |
 | 三个示例 Debug 构建（Counter/TodoList/ControlGallery） | 各自 exit 0 |
 | Codex 独立探针 `artifacts/responsive-work/responsive-invariants` 构建 | exit 0 |
-| 探针正常模式 | exit 0，23 PASS / 0 FAIL |
+| 探针正常模式 | exit 0，24 PASS / 0 FAIL |
 | 探针 `--growing` 增长链模式 | exit 0：受控失败（深度 256、builds=256、pending=0）、两次重复处理不再增长、显式失效后恢复；`artifacts/responsive-work/rl05-progress.txt` |
 
-四套合计 569，失败/错误/跳过均为 0；新增 28（核心 25：`ResponsiveTests.cs`；集成 2：`ResponsiveIntegrationTests.cs`；OpenTK 1：`WindowResizeRedrawTests` 响应式即时重绘）。
+四套合计 570，失败/错误/跳过均为 0；新增 29（核心 26：`ResponsiveTests.cs`；集成 2：`ResponsiveIntegrationTests.cs`；OpenTK 1：`WindowResizeRedrawTests` 响应式即时重绘）。
 
 ### 适用平台与未验证边界
 
@@ -74,4 +74,4 @@
 - 未实现（RL-06 负责）：builder 内状态读取依赖与自动更新；本轮只留接入点，不宣称状态订阅完成。
 - 未验证：macOS/Linux 真机、三平台人工视觉验收、DPI 1/1.25/2 下 Responsive 布局对比。
 - 已知边界：无限自嵌套描述不能原地“切回”有限内容，需要 `InvalidateResponsiveContent` 或替换节点；`MaxMeasureDepth` 限制单次布局测量递归深度。
-- 提交：RL-05 本地英文提交（实现 + 注释修正），不 amend、不推送；SHA 见 `git log`。
+- 提交：RL-05 本地英文提交（实现、注释与回归补充），不 amend、不推送；SHA 见 `git log`。

@@ -422,6 +422,32 @@ public class ResponsiveTests
     }
 
     [Fact]
+    public void ExplicitInvalidationWithParentConstraintChange_UsesOnlyFinalProposal()
+    {
+        var host = new ParentFrameHost();
+        using var app = new TestApp(host, new Size(400, 240));
+
+        var field = app.Runtime.Root.Require<TextField>();
+        app.Runtime.SetFocus(field);
+        app.Runtime.DispatchKey(new KeyEvent(KeyEventKind.Down, UiKey.End));
+        app.Runtime.DispatchKey(new KeyEvent(KeyEventKind.Down, UiKey.Left, KeyModifiers.Shift));
+        var state = (TextFieldState)field.InteractionState!;
+        var before = host.Calls;
+
+        // 视口不变、只收窄嵌套父 Frame 的宽度并显式失效：同样只能按最终 120 构建一次。
+        host.FrameWidth = 120;
+        host.Version!.Value = 1;
+        app.Runtime.InvalidateResponsiveContent(app.Runtime.Root.Require<Responsive>());
+        app.Runtime.ProcessPendingWork();
+
+        Assert.Equal(before + 1, host.Calls);
+        Assert.Equal(120, host.LastWidth, 3);
+        Assert.Same(field, app.Runtime.Root.Require<TextField>());
+        Assert.Same(field, app.Runtime.FocusedNode);
+        Assert.True(state.HasSelection);
+    }
+
+    [Fact]
     public void DescriptionUpdateWithFailingBuilder_PreservesPreviousSubtree()
     {
         var host = new DescriptorHost();
@@ -840,6 +866,36 @@ public class ResponsiveTests
                     ? new Rectangle(Color.Red)
                     : new TextField(new Binding<string>(() => _text, value => _text = value));
             });
+        }
+    }
+
+    /// <summary>嵌套父 Frame 宽度可变的组件，验证显式失效与父约束变化同批时只按最终提案构建。</summary>
+    private sealed class ParentFrameHost : Component
+    {
+        private string _text = "中文 selection";
+
+        public State<int>? Version { get; private set; }
+
+        public double FrameWidth { get; set; } = 300;
+
+        public int Calls { get; private set; }
+
+        public double LastWidth { get; private set; }
+
+        protected override View Build()
+        {
+            Version = UseState("version", 0);
+            var snapshot = Version.Value;
+            return new FrameView(
+                new Responsive(info =>
+                {
+                    Calls++;
+                    LastWidth = info.AvailableWidth;
+                    return snapshot == 1 && info.AvailableWidth > 200
+                        ? new Rectangle(Color.Red)
+                        : new TextField(new Binding<string>(() => _text, value => _text = value));
+                }),
+                width: FrameWidth);
         }
     }
 
