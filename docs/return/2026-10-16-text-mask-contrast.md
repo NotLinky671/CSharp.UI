@@ -8,7 +8,7 @@
 
 优先级：P2
 
-状态：已独立复现，待 DeepSeek Harness 实现修复及 Codex 复审。本文记录诊断与验收要求，不代表已修复。
+状态：DeepSeek Harness 已修复并提交 `03b7a07`，Codex 于 2026-10-16 独立复审通过。历史诊断与实现期间问题保留，最终结论见文末。
 
 ## 用户现象与本轮范围
 
@@ -77,7 +77,7 @@ Codex 独立基线位于 `artifacts/font-color-independent/`：384 组（四档 
 
 建议 DSH 将测试参考 `TextDirectReference.RenderOnBackground` 的透明颜色分支改成“按实际不透明 RGB 直接绘制到层，Restore 时统一乘 alpha”，并加入至少一项 `中文边缘 English 123`、14 号、DPI 1.25、前景 alpha 128 与 Opacity 0.63 的组合回归，防止未来用逐 glyph 透明度参考误判本框架纹理整体透明度。保持正向最终 RGB 阈值与原有源码行为，不放宽阈值。
 
-## 实现记录（DeepSeek Harness，待 Codex 复审）
+## 实现记录（DeepSeek Harness，后续已由 Codex 复审）
 
 ### 策略：按实际文字颜色栅格化同一份遮罩（未采用 pow / 全局 sRGB / 假粗体 / Nearest）
 
@@ -148,3 +148,14 @@ R16 的 `TextRasterSamplingTests` 改为用命令实际 tint 取遮罩（`Raster
 - 字形外伸裁剪仍是 R16 已知限制，本次未处理。
 - 颜色进入 GPU 纹理键后，同一文字的不同前景色各占一个纹理条目，容量语义由既有 LRU 保证；
   未做“同一遮罩多色复用”，因为那正是本次要消除的错误来源。
+
+## Codex 最终独立复审（2026-10-16）
+
+复审提交：`03b7a07`，`Rasterize text masks with the actual text color`。结论：本轮修复通过；实现期间发现的负对照判定与透明度参考问题均已修正，未发现阻碍本轮验收的代码问题。
+
+- 独立完整构建解决方案成功，0 错误；现有 NU1900 漏洞信息服务访问警告保留。随后直接运行本次构建的四套测试程序集：核心 172、文本 67、集成 14、OpenTK 179，共 **432 项全部通过，0 失败、0 跳过**。日志位于 `artifacts/font-color-independent/solution-build.txt` 与 `*-final.txt`。
+- 独立比较真实控件的最终 GPU RGB 与 Skia 直接绘制参考：四档 DPI、四字号、两主题、三类文本、Text/Button/Toggle/TextField，共 384 组；修复前 188 组超标、最大差 84/255，修复后 0 组超标、最大差 2/255，各组平均 MAE 0.10419/255。额外有色半透明与整体 Opacity 的 384 组也全部达标，最大差 3/255、平均 MAE 0.11035/255。两组均保持 R16 的像素尺寸与原点映射。这里的误差描述像素差异，不表示主观清晰度百分比。
+- 使用同一实际运行时对四类控件执行浅色→深色→浅色切换：新颜色使用新纹理，切回原颜色复用原纹理，排版未重新执行。另编译并运行只实现旧栅格方法的外部文本服务替身，确认新增默认接口方法可用。证据为 `final-after.txt`、`final-extended-after.txt`；两份程序最终均退出 0。
+- 三个示例 Debug/Release 六次构建均成功，12 份核心/文本 DLL 副本的 SHA-256 均匹配对应配置的最新库构建。核对三个 Release 示例各 5 帧启动日志，均退出 0，本机真实 DPI 为 1.5。生产源码在这些检查后未再变更。
+- 独立生成并查看 `artifacts/font-color-independent/before.png`、`after.png`，均为用户原句的原尺寸实际 GPU 输出。原来的白字遮罩复用造成的深字边缘加重已消除；仍保留灰度 AA 与已记录的字形外伸裁剪限制，不宣称已实现 LCD/ClearType 或完成三平台人工观感验证。
+- 核对修复提交仅含本轮 15 个代码、测试与文档文件，差异格式检查通过。用户原有 `AGENTS.md` 修改未被提交。本节以单独的英文审核记录提交保存，不改写 DSH 的修复提交。
