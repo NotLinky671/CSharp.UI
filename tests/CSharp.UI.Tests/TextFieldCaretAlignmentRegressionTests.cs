@@ -53,11 +53,31 @@ public class TextFieldCaretAlignmentRegressionTests
         => Assert.Single(commands.OfType<RectangleCommand>()
             .Where(c => c.Fill == Theme.Light.SelectionBackground));
 
-    private static void AssertSameVerticalCenter(Rect expected, Rect actual, string label)
+    private static void AssertPhysicalPixelOrigin(Rect bounds, double pixelScale, string label)
     {
-        var delta = Math.Abs(expected.Center.Y - actual.Center.Y);
-        Assert.True(delta < 0.001, $"{label} 的纵向中心应一致，实际偏差 {delta}。");
+        Assert.Equal(0, Math.IEEERemainder(bounds.X * pixelScale, 1), 6);
+        Assert.Equal(0, Math.IEEERemainder(bounds.Y * pixelScale, 1), 6);
     }
+
+    /// <summary>R16 契约：文字遮罩目标物理尺寸与纹理像素 1:1（1 纹素 = 1 物理像素）。</summary>
+    private static void AssertOneTexelPerPhysicalPixel(TextureCommand text, double pixelScale)
+    {
+        Assert.Equal(text.Texture.PixelWidth, text.Bounds.Width * pixelScale, 6);
+        Assert.Equal(text.Texture.PixelHeight, text.Bounds.Height * pixelScale, 6);
+    }
+
+    /// <summary>单行文本里光标/选区的行内 Y 偏移为 0，因此它们的顶边必须与纹理顶边完全一致。</summary>
+    private static void AssertSharedVerticalOrigin(TextureCommand text, RectangleCommand part, double pixelScale, string label)
+    {
+        AssertPhysicalPixelOrigin(text.Bounds, pixelScale, "文字纹理");
+        Assert.Equal(text.Bounds.Y, part.Bounds.Y, 9);
+    }
+
+    /// <summary>吸附只允许平移不到半个物理像素，排版后的文字行仍必须在输入框内垂直居中。</summary>
+    private static void AssertLineBoxCentered(Rect frame, double originY, double lineHeight, double pixelScale)
+        => Assert.True(
+            Math.Abs((originY + (lineHeight / 2)) - frame.Center.Y) <= (0.5 / pixelScale) + 1e-6,
+            $"文字行应在输入框内垂直居中（吸附误差不超过半个物理像素），实际偏差 {Math.Abs((originY + (lineHeight / 2)) - frame.Center.Y)}。");
 
     [Theory]
     [InlineData(24, 14)]
@@ -67,7 +87,7 @@ public class TextFieldCaretAlignmentRegressionTests
     [InlineData(32, 20)]
     [InlineData(48, 20)]
     [InlineData(64, 24)]
-    public void 光标与文字纹理共享纵向原点且保持垂直居中(double height, double fontSize)
+    public void 光标与文字纹理共享物理像素原点和垂直居中(double height, double fontSize)
     {
         using var app = CreateApp("Hello 中文", height, fontSize);
         var (node, commands) = FocusAndFrame(app);
@@ -75,10 +95,9 @@ public class TextFieldCaretAlignmentRegressionTests
         var text = TextTexture(commands);
         var caret = Caret(commands);
 
-        // 光标行与文字纹理共享同一纵向中心，且与输入框外观中心一致。
-        AssertSameVerticalCenter(text.Bounds, caret.Bounds, "光标");
-        AssertSameVerticalCenter(node.Frame, text.Bounds, "文字");
-        Assert.Equal(text.Bounds.Height, caret.Bounds.Height, 3);
+        AssertSharedVerticalOrigin(text, caret, app.Runtime.PixelScale, "光标");
+        AssertOneTexelPerPhysicalPixel(text, app.Runtime.PixelScale);
+        AssertLineBoxCentered(node.Frame, text.Bounds.Y, caret.Bounds.Height, app.Runtime.PixelScale);
         Assert.True(caret.Bounds.Height > 0);
     }
 
@@ -94,10 +113,9 @@ public class TextFieldCaretAlignmentRegressionTests
         var selection = Selection(commands);
         var caret = Caret(commands);
 
-        AssertSameVerticalCenter(text.Bounds, selection.Bounds, "选区");
-        AssertSameVerticalCenter(text.Bounds, caret.Bounds, "光标");
-        Assert.Equal(text.Bounds.Height, selection.Bounds.Height, 3);
-        AssertSameVerticalCenter(node.Frame, selection.Bounds, "输入框");
+        AssertSharedVerticalOrigin(text, selection, app.Runtime.PixelScale, "选区");
+        AssertSharedVerticalOrigin(text, caret, app.Runtime.PixelScale, "光标");
+        AssertLineBoxCentered(node.Frame, text.Bounds.Y, selection.Bounds.Height, app.Runtime.PixelScale);
     }
 
     [Fact]
@@ -110,11 +128,12 @@ public class TextFieldCaretAlignmentRegressionTests
         Assert.DoesNotContain(commands, command => command is TextureCommand);
         var caret = Caret(commands);
         Assert.True(caret.Bounds.Height > 0);
-        AssertSameVerticalCenter(node.Frame, caret.Bounds, "空文本光标");
+        AssertPhysicalPixelOrigin(caret.Bounds, app.Runtime.PixelScale, "空文本光标");
+        AssertLineBoxCentered(node.Frame, caret.Bounds.Y, caret.Bounds.Height, app.Runtime.PixelScale);
     }
 
     [Fact]
-    public void 空文本与placeholder共享同一纵向中心()
+    public void 空文本与placeholder共享同一纵向原点()
     {
         using var app = CreateApp(string.Empty, 48, placeholder: "请输入");
         var (node, commands) = FocusAndFrame(app);
@@ -123,8 +142,8 @@ public class TextFieldCaretAlignmentRegressionTests
         Assert.Equal(Theme.Light.MutedForeground, placeholder.Tint);
 
         var caret = Caret(commands);
-        AssertSameVerticalCenter(node.Frame, placeholder.Bounds, "placeholder");
-        AssertSameVerticalCenter(placeholder.Bounds, caret.Bounds, "光标");
+        AssertSharedVerticalOrigin(placeholder, caret, app.Runtime.PixelScale, "光标");
+        AssertLineBoxCentered(node.Frame, placeholder.Bounds.Y, caret.Bounds.Height, app.Runtime.PixelScale);
     }
 
     [Theory]
@@ -139,15 +158,16 @@ public class TextFieldCaretAlignmentRegressionTests
         var text = TextTexture(commands);
         var caret = Caret(commands);
 
-        AssertSameVerticalCenter(text.Bounds, caret.Bounds, "光标");
-        AssertSameVerticalCenter(node.Frame, text.Bounds, "文字");
+        AssertSharedVerticalOrigin(text, caret, pixelScale, "光标");
+        AssertOneTexelPerPhysicalPixel(text, pixelScale);
+        AssertLineBoxCentered(node.Frame, text.Bounds.Y, caret.Bounds.Height, pixelScale);
 
-        // 逻辑几何不随 DPI 改变，纹理像素高度按 DPI 缩放。
-        Assert.Equal((int)Math.Ceiling(text.Bounds.Height * pixelScale), text.Texture.PixelHeight);
+        // 逻辑几何不随 DPI 改变，纹理像素尺寸就是排版尺寸向上取整后的物理像素数。
+        Assert.Equal(0, Math.IEEERemainder(text.Bounds.X * pixelScale, 1), 6);
     }
 
     [Fact]
-    public void 横向滚动后光标与文字仍共享纵向原点()
+    public void 横向滚动后光标与文字仍共享物理像素原点()
     {
         using var app = CreateApp(new string('w', 200), 48, viewport: new Size(200, 200));
         var (node, _) = FocusAndFrame(app);
@@ -162,10 +182,11 @@ public class TextFieldCaretAlignmentRegressionTests
 
         // 文字左移出裁剪区，说明确实发生了滚动。
         Assert.True(text.Bounds.X < clip.Bounds.X, "文本应已横向滚动。");
-        AssertSameVerticalCenter(text.Bounds, caret.Bounds, "光标");
+        AssertSharedVerticalOrigin(text, caret, app.Runtime.PixelScale, "光标");
+        AssertOneTexelPerPhysicalPixel(text, app.Runtime.PixelScale);
 
         // 纵向原点不受滚动影响：光标仍在输入框垂直中心所在的行内。
-        AssertSameVerticalCenter(node.Frame, caret.Bounds, "输入框");
+        AssertLineBoxCentered(node.Frame, caret.Bounds.Y, caret.Bounds.Height, app.Runtime.PixelScale);
         Assert.InRange(caret.Bounds.X, clip.Bounds.X, clip.Bounds.Right);
         Assert.True(caret.Bounds.Bottom <= clip.Bounds.Bottom + 0.001);
     }

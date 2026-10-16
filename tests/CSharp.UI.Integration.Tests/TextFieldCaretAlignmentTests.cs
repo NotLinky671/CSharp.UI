@@ -62,18 +62,38 @@ public class TextFieldCaretAlignmentTests
         => Assert.Single(commands.OfType<RectangleCommand>()
             .Where(c => c.Fill == Theme.Light.SelectionBackground));
 
-    private static void AssertSameVerticalCenter(Rect expected, Rect actual, string label)
+    private static void AssertPhysicalPixelOrigin(Rect bounds, double pixelScale)
     {
-        var delta = Math.Abs(expected.Center.Y - actual.Center.Y);
-        Assert.True(delta < 0.001, $"{label} 的纵向中心应一致，实际偏差 {delta}。");
+        Assert.Equal(0, Math.IEEERemainder(bounds.X * pixelScale, 1), 6);
+        Assert.Equal(0, Math.IEEERemainder(bounds.Y * pixelScale, 1), 6);
     }
+
+    /// <summary>R16 契约：真实 Skia 遮罩的目标物理尺寸与纹理像素 1:1（1 纹素 = 1 物理像素）。</summary>
+    private static void AssertOneTexelPerPhysicalPixel(TextureCommand text, double pixelScale)
+    {
+        Assert.Equal(text.Texture.PixelWidth, text.Bounds.Width * pixelScale, 6);
+        Assert.Equal(text.Texture.PixelHeight, text.Bounds.Height * pixelScale, 6);
+    }
+
+    /// <summary>单行文本里光标/选区的行内 Y 偏移为 0，顶边必须与纹理顶边完全一致。</summary>
+    private static void AssertSharedVerticalOrigin(TextureCommand text, RectangleCommand part, double pixelScale, string label)
+    {
+        AssertPhysicalPixelOrigin(text.Bounds, pixelScale);
+        Assert.Equal(text.Bounds.Y, part.Bounds.Y, 9);
+    }
+
+    /// <summary>吸附只允许平移不到半个物理像素，真实排版后的文字行仍必须在输入框内垂直居中。</summary>
+    private static void AssertLineBoxCentered(Rect frame, double originY, double lineHeight, double pixelScale)
+        => Assert.True(
+            Math.Abs((originY + (lineHeight / 2)) - frame.Center.Y) <= (0.5 / pixelScale) + 1e-6,
+            $"文字行应在输入框内垂直居中（吸附误差不超过半个物理像素），实际偏差 {Math.Abs((originY + (lineHeight / 2)) - frame.Center.Y)}。");
 
     [Theory]
     [InlineData(32, 14)]
     [InlineData(48, 14)]
     [InlineData(64, 18)]
     [InlineData(40, 22)]
-    public void 真实排版下光标与文字纹理共享纵向中心(double height, double fontSize)
+    public void 真实排版下光标与文字纹理共享物理像素原点(double height, double fontSize)
     {
         var runtime = Create("Hello 中文混排", height, fontSize);
         using var _runtime = runtime;
@@ -83,9 +103,9 @@ public class TextFieldCaretAlignmentTests
         var caret = Caret(commands);
 
         Assert.True(text.Texture.PixelWidth > 0);
-        AssertSameVerticalCenter(text.Bounds, caret.Bounds, "光标");
-        AssertSameVerticalCenter(node.Frame, text.Bounds, "文字");
-        Assert.Equal(text.Bounds.Height, caret.Bounds.Height, 3);
+        AssertSharedVerticalOrigin(text, caret, runtime.PixelScale, "光标");
+        AssertOneTexelPerPhysicalPixel(text, runtime.PixelScale);
+        AssertLineBoxCentered(node.Frame, text.Bounds.Y, caret.Bounds.Height, runtime.PixelScale);
     }
 
     [Fact]
@@ -104,9 +124,9 @@ public class TextFieldCaretAlignmentTests
         var caret = Caret(commands);
 
         Assert.True(selection.Bounds.Width > 0);
-        AssertSameVerticalCenter(text.Bounds, selection.Bounds, "选区");
-        AssertSameVerticalCenter(text.Bounds, caret.Bounds, "光标");
-        AssertSameVerticalCenter(node.Frame, selection.Bounds, "输入框");
+        AssertSharedVerticalOrigin(text, selection, runtime.PixelScale, "选区");
+        AssertSharedVerticalOrigin(text, caret, runtime.PixelScale, "光标");
+        AssertLineBoxCentered(node.Frame, text.Bounds.Y, selection.Bounds.Height, runtime.PixelScale);
     }
 
     [Fact]
@@ -119,19 +139,21 @@ public class TextFieldCaretAlignmentTests
         var placeholder = TextTexture(commands);
         var caret = Caret(commands);
 
-        AssertSameVerticalCenter(node.Frame, placeholder.Bounds, "placeholder");
-        AssertSameVerticalCenter(placeholder.Bounds, caret.Bounds, "光标");
+        AssertSharedVerticalOrigin(placeholder, caret, runtime.PixelScale, "光标");
+        AssertLineBoxCentered(node.Frame, placeholder.Bounds.Y, caret.Bounds.Height, runtime.PixelScale);
 
         // 无 placeholder 的空文本：没有纹理，光标仍在文字行本应出现的位置。
         var plainRuntime = Create(string.Empty, 48);
         using var _plainRuntime = plainRuntime;
         var (plainNode, plainCommands) = FocusAndFrame(plainRuntime);
         Assert.DoesNotContain(plainCommands, command => command is TextureCommand);
-        AssertSameVerticalCenter(plainNode.Frame, Caret(plainCommands).Bounds, "空文本光标");
+        AssertPhysicalPixelOrigin(Caret(plainCommands).Bounds, plainRuntime.PixelScale);
+        AssertLineBoxCentered(plainNode.Frame, Caret(plainCommands).Bounds.Y, Caret(plainCommands).Bounds.Height, plainRuntime.PixelScale);
     }
 
     [Theory]
     [InlineData(1.0)]
+    [InlineData(1.25)]
     [InlineData(1.5)]
     [InlineData(2.0)]
     public void 真实排版下不同DPI保持同一几何约定(double pixelScale)
@@ -143,13 +165,14 @@ public class TextFieldCaretAlignmentTests
         var text = TextTexture(commands);
         var caret = Caret(commands);
 
-        AssertSameVerticalCenter(text.Bounds, caret.Bounds, "光标");
-        AssertSameVerticalCenter(node.Frame, text.Bounds, "文字");
+        AssertSharedVerticalOrigin(text, caret, pixelScale, "光标");
+        AssertOneTexelPerPhysicalPixel(text, pixelScale);
+        AssertLineBoxCentered(node.Frame, text.Bounds.Y, caret.Bounds.Height, pixelScale);
         Assert.Equal((int)Math.Ceiling(text.Bounds.Height * pixelScale), text.Texture.PixelHeight);
     }
 
     [Fact]
-    public void 真实排版下横向滚动后光标仍与文字共享纵向原点()
+    public void 真实排版下横向滚动后光标仍与文字共享物理像素原点()
     {
         var runtime = Create(new string('w', 80), 48, viewport: new Size(200, 200));
         using var _runtime = runtime;
@@ -164,8 +187,9 @@ public class TextFieldCaretAlignmentTests
         var clip = Assert.Single(commands.OfType<PushClipCommand>());
 
         Assert.True(text.Bounds.X < clip.Bounds.X, "文本应已横向滚动。");
-        AssertSameVerticalCenter(text.Bounds, caret.Bounds, "光标");
-        AssertSameVerticalCenter(node.Frame, caret.Bounds, "输入框");
+        AssertSharedVerticalOrigin(text, caret, runtime.PixelScale, "光标");
+        AssertOneTexelPerPhysicalPixel(text, runtime.PixelScale);
+        AssertLineBoxCentered(node.Frame, caret.Bounds.Y, caret.Bounds.Height, runtime.PixelScale);
         Assert.InRange(caret.Bounds.X, clip.Bounds.X, clip.Bounds.Right);
     }
 }

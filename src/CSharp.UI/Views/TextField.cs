@@ -136,8 +136,15 @@ public sealed class TextField : View
 
         // 文字纹理在内容区内垂直居中，因此光标、选区与点击命中都必须从同一个文本原点出发；
         // 直接用 inner.Y 会让光标随输入框变高/字号变大而向上错位。
-        var originX = inner.X - state.ScrollX;
-        var originY = TextPainter.VerticalOrigin(inner, layout.Size);
+        // 该原点再统一吸附到物理像素：文字纹理、光标、选区与点击命中共用同一变换（见 TextPainter.ResolveOrigin）。
+        var textBounds = new Rect(
+            inner.X - state.ScrollX,
+            TextPainter.VerticalOrigin(inner, layout.Size),
+            layout.Size.Width,
+            layout.Size.Height);
+        var origin = TextPainter.ResolveOrigin(textBounds, layout.Size, TextAlignment.Left, layout.PixelScale);
+        var originX = origin.X;
+        var originY = origin.Y;
 
         // 选择高亮。
         if (state.HasSelection && node.IsFocused)
@@ -161,7 +168,6 @@ public sealed class TextField : View
 
         // 传入已居中的文本原点（高度取排版高度，Paint 的垂直居中偏移因此为 0），
         // 保证纹理、光标与选区使用同一坐标约定。
-        var textBounds = new Rect(originX, originY, layout.Size.Width, layout.Size.Height);
         TextPainter.Paint(context, node, layout, textColor, textBounds, TextAlignment.Left);
 
         // 光标。
@@ -169,8 +175,19 @@ public sealed class TextField : View
         {
             var caretIndex = layout.SnapToCaretStop(Math.Clamp(state.Caret, 0, text.Length));
             var caret = layout.GetCaretBounds(caretIndex, 1.5);
+            var caretRect = new Rect(originX + caret.X, originY + caret.Y, caret.Width, caret.Height);
+
+            // 共用吸附后的文本原点；光标是矢量矩形而不是纹理，不需要纹素对齐。
+            // 文本末尾 + 最大横向滚动时，吸附可能把光标推到内容区外不足 1 像素而整条不可见，
+            // 因此把光标夹取回内容区，保证它始终可见；末端偏移包含光标宽度和原点吸附量，
+            // 内部未被裁剪的光标仍与文字原点及排版位置精确一致。
+            if (caretRect.Width <= inner.Width)
+            {
+                caretRect = caretRect with { X = Math.Clamp(caretRect.X, inner.Left, inner.Right - caretRect.Width) };
+            }
+
             context.Commands.Add(new RectangleCommand(
-                new Rect(originX + caret.X, originY + caret.Y, caret.Width, caret.Height),
+                caretRect,
                 textColor,
                 0,
                 null,
@@ -457,10 +474,14 @@ public sealed class TextField : View
         var inner = InnerRect(node.Frame);
         var state = GetState(node);
 
-        // 命中坐标与绘制共用同一文本原点（纵向居中），横向再加上滚动偏移。
-        var local = new Point(
-            position.X - inner.X + state.ScrollX,
-            position.Y - TextPainter.VerticalOrigin(inner, layout.Size));
+        // 命中坐标与绘制共用同一文本原点（垂直居中 + 横向滚动偏移，并同样吸附到物理像素）。
+        var textBounds = new Rect(
+            inner.X - state.ScrollX,
+            TextPainter.VerticalOrigin(inner, layout.Size),
+            layout.Size.Width,
+            layout.Size.Height);
+        var origin = TextPainter.ResolveOrigin(textBounds, layout.Size, TextAlignment.Left, layout.PixelScale);
+        var local = new Point(position.X - origin.X, position.Y - origin.Y);
         return layout.SnapToCaretStop(layout.HitTestIndex(local));
     }
 

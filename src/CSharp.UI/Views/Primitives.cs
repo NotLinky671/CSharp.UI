@@ -140,14 +140,10 @@ public sealed class Text : View
         }
 
         var frame = node.Frame;
-        var x = Alignment switch
-        {
-            TextAlignment.Center => frame.X + ((frame.Width - layout.Size.Width) / 2),
-            TextAlignment.Right => frame.Right - layout.Size.Width,
-            _ => frame.X,
-        };
-        var y = frame.Y + ((frame.Height - layout.Size.Height) / 2);
-        var bounds = new Rect(Math.Round(x, 3), Math.Round(y, 3), layout.Size.Width, layout.Size.Height);
+
+        // 统一文字绘制契约：排版仍用小数逻辑尺寸，但纹理左上角必须吸附到物理像素，
+        // 并按“1 纹素 = 1 物理像素”映射（含 ceil 余量），否则整张遮罩会被线性过滤二次采样。
+        var origin = TextPainter.ResolveOrigin(frame, layout.Size, Alignment, layout.PixelScale);
 
         var key = new TextTextureKey(
             layout.Text,
@@ -170,7 +166,7 @@ public sealed class Text : View
         var color = node.Environment.ResolvedForeground;
         context.Commands.Add(new TextureCommand(
             handle,
-            bounds,
+            TextPainter.ResolveTextureBounds(handle, origin, layout.PixelScale),
             new Rect(0, 0, handle.PixelWidth, handle.PixelHeight),
             color,
             node.Environment.Opacity));

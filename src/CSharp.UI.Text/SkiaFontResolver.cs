@@ -14,7 +14,10 @@ internal sealed class FontInstance : IDisposable
     public FontInstance(SKTypeface typeface, float size)
     {
         Typeface = typeface;
-        // Alpha8 覆盖率遮罩不参与子像素渲染，否则灰度遮罩会出现彩边。
+        // Subpixel=false：字形原点吸附到整数设备像素，这是本框架的“整数定位”策略，
+        // 目的是让 Alpha8 灰度遮罩里的字形落在整数物理像素上（与绘制端的原点吸附契约一致）。
+        // 注意：Subpixel 控制的是小数像素定位，与是否使用 LCD 子像素抗锯齿无关；
+        // 是否 LCD 由 Edging 决定，这里保持 SKFontEdging.Antialias，即灰度抗锯齿，不会出现彩边。
         Font = new SKFont(typeface, size)
         {
             Subpixel = false,

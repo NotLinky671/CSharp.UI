@@ -64,9 +64,62 @@ internal static class TextPainter
     /// 文本纹理、光标、选择高亮与点击命中必须共用这一原点：文本框高度或字号变化时，
     /// 若光标/选区仍以内容区顶边为原点，就会与垂直居中的文字行错位。
     /// 高度小于文本时偏移为负，由调用方的裁剪负责截断。
+    /// 该值仍是逻辑坐标；落到物理像素必须先经过 <see cref="ResolveOrigin"/> 的吸附。
     /// </remarks>
     public static double VerticalOrigin(Rect bounds, Size textSize)
         => bounds.Y + ((bounds.Height - textSize.Height) / 2);
+
+    /// <summary>
+    /// 把文本原点吸附到物理像素网格：返回的逻辑坐标满足 <c>value * pixelScale</c> 为整数。
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// 文字遮罩由 <see cref="ITextService.Rasterize"/> 按 <c>ceil(逻辑尺寸 × DPI)</c> 分配，
+    /// 再整张映射到目标矩形。只有让遮罩左上角落在整数物理像素上，1 个纹素才恰好覆盖 1 个物理像素；
+    /// 否则线性过滤会把整张遮罩二次混合（字迹变糊），半像素偏移还会改变笔画覆盖率。
+    /// </para>
+    /// <para>
+    /// 这里只吸附原点，不改变排版尺寸：布局、换行、对齐与裁剪继续使用小数逻辑坐标。
+    /// 文字纹理、光标、选区与点击命中必须共用同一个吸附后的原点，避免出现半个物理像素的相对错位。
+    /// </para>
+    /// </remarks>
+    public static Point SnapToPhysicalPixel(Point origin, double pixelScale)
+    {
+        var scale = NormalizeScale(pixelScale);
+        return new Point(
+            Math.Round(origin.X * scale, MidpointRounding.AwayFromZero) / scale,
+            Math.Round(origin.Y * scale, MidpointRounding.AwayFromZero) / scale);
+    }
+
+    /// <summary>
+    /// 解析文本遮罩的目标逻辑矩形：左上角是吸附到物理像素的文本原点，
+    /// 尺寸为纹理像素数 ÷ DPI，即 1 个纹素对应 1 个物理像素。
+    /// </summary>
+    /// <remarks>
+    /// 尺寸可能比排版尺寸大不足 1 物理像素（栅格化的 ceil 余量）。该余量必须留在纹理里
+    /// 1:1 绘制，不能被当作整张纹理的缩放系数；否则采样相位会随文字位置变化。
+    /// </remarks>
+    public static Rect ResolveTextureBounds(TextureHandle handle, Point origin, double pixelScale)
+    {
+        var scale = NormalizeScale(pixelScale);
+        return new Rect(origin.X, origin.Y, handle.PixelWidth / scale, handle.PixelHeight / scale);
+    }
+
+    /// <summary>
+    /// 解析文本块在目标矩形内的绘制原点：先按 <paramref name="alignment"/> 与垂直居中算出逻辑原点，
+    /// 再吸附到物理像素（DPR 由 <paramref name="pixelScale"/> 给出）。
+    /// </summary>
+    /// <remarks>文字纹理、光标、选区与点击命中都必须使用本方法返回的原点。</remarks>
+    public static Point ResolveOrigin(Rect bounds, Size textSize, TextAlignment alignment, double pixelScale)
+    {
+        var x = alignment switch
+        {
+            TextAlignment.Center => bounds.X + ((bounds.Width - textSize.Width) / 2),
+            TextAlignment.Right => bounds.Right - textSize.Width,
+            _ => bounds.X,
+        };
+        return SnapToPhysicalPixel(new Point(x, VerticalOrigin(bounds, textSize)), pixelScale);
+    }
 
     /// <summary>把排版结果作为纹理绘制到指定矩形（按 <paramref name="alignment"/> 水平对齐，垂直居中）。</summary>
     public static void Paint(
@@ -89,15 +142,7 @@ internal static class TextPainter
             return;
         }
 
-        var x = alignment switch
-        {
-            TextAlignment.Center => bounds.X + ((bounds.Width - layout.Size.Width) / 2),
-            TextAlignment.Right => bounds.Right - layout.Size.Width,
-            _ => bounds.X,
-        };
-        var y = VerticalOrigin(bounds, layout.Size);
-        var destination = new Rect(Math.Round(x, 3), Math.Round(y, 3), layout.Size.Width, layout.Size.Height);
-
+        var origin = ResolveOrigin(bounds, layout.Size, alignment, layout.PixelScale);
         var key = new TextPaintKey(layout.Text, layout.Font, layout.PixelScale, layout.Size, alignment);
         var handle = textureService.GetOrCreate(key, () => context.TextService.Rasterize(layout));
         if (!handle.IsValid)
@@ -107,11 +152,14 @@ internal static class TextPainter
 
         context.Commands.Add(new TextureCommand(
             handle,
-            destination,
+            ResolveTextureBounds(handle, origin, layout.PixelScale),
             new Rect(0, 0, handle.PixelWidth, handle.PixelHeight),
             color,
             node.Environment.Opacity * opacity));
     }
+
+    private static double NormalizeScale(double pixelScale)
+        => pixelScale is > 0 and < double.PositiveInfinity ? pixelScale : 1.0;
 
     /// <summary>控件文本纹理缓存键。</summary>
     private readonly record struct TextPaintKey(string Text, FontDescription Font, double PixelScale, Size Size, TextAlignment Alignment);
