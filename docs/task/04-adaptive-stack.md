@@ -2,7 +2,7 @@
 
 创建日期：2026-10-16
 
-状态：待 Codex 复审
+状态：已完成（Codex 复审通过）
 
 阶段：C
 
@@ -44,3 +44,5 @@
 | `dotnet exec tests/CSharp.UI.Integration.Tests/bin/Debug/net10.0/CSharp.UI.Integration.Tests.dll` | exit 0，27 Total / 0 Failed |
 
 RL-04 新增核心测试 12 项（`AdaptiveStackTests`：断点精确值/两侧/小数、无界横向自然尺寸、两模式间距与交叉轴对齐、Main 随模式、显式 Horizontal 不变高度、DPI 1/1.25/1.5/2、同模式连续缩放不卸载、宽窄切换身份/Key/组件 State/TextField 焦点光标选区/Tab 顺序、旧坐标不命中、硬尺寸溢出诊断、探测模式恢复、参数校验），集成测试 6 项（`AdaptiveStackIntegrationTests`：真实 Skia 下宽窄切换保持中文数据与真实光标可见、真实换行高度随模式变化、DPI 1/1.25/1.5/2 模式选择一致）。全部在 Windows 本机执行；未验证 macOS/Linux 原生与三平台人工视觉验收。提交 SHA 见仓库本地提交历史。
+
+Codex 复审：实现 `b3fc0ff`；独立 Flow/Adaptive 探针23/23通过，四套测试541/541通过，三个示例Debug构建通过。含跨断点后内层ScrollView身份/偏移保持。证据见[审核记录](../return/2026-10-16-responsive-layout-review.md)。

@@ -2,7 +2,7 @@
 
 创建日期：2026-10-16
 
-状态：待 Codex 复审
+状态：已完成（Codex 复审通过）
 
 阶段：B
 
@@ -45,3 +45,5 @@
 | `dotnet exec tests/CSharp.UI.Integration.Tests/bin/Debug/net10.0/CSharp.UI.Integration.Tests.dll` | exit 0，21 Total / 0 Failed |
 
 RL-03 新增核心测试 20 项（`FlowLayoutTests`：贪心分行/精确阈值/空/零宽/无界/超宽重测量/硬固定溢出/FillWidth 整行/Flex 诊断/行内对齐/Padding/嵌套宽度差异/宽度变化/DPI 1、1.25、1.5、2/探测缓存恢复/参数校验），集成测试 3 项（`FlowIntegrationTests`：真实 Skia 换行高度、ScrollView 内容高度与滚动边界、缩窄后真实光标可见）。全部在 Windows 本机执行；未验证 macOS/Linux 原生与三平台人工视觉验收。提交 SHA 见仓库本地提交历史。
+
+Codex 复审：实现 `f76177d`；独立 Flow/Adaptive 探针23/23通过，四套测试541/541通过，三个示例Debug构建通过。证据及环境差异见[审核记录](../return/2026-10-16-responsive-layout-review.md)。

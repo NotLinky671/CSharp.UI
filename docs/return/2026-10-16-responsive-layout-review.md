@@ -104,3 +104,25 @@ Codex 已复核同约束缓存同时区分 LastMeasureIsIntrinsic 和临时提�
 独立执行 `dotnet run --project artifacts/responsive-work/flex-invariants/Verify.csproj --no-build` 退出0，18/18通过。首轮5项失败及后续补查全部关闭：嵌套宽400、Padding X=20、Probe后120/280、压缩50/50、外层Flex宽10；无界FillWidth回到自然33.6；真实Skia最终换行及祖先高度111.7265625正确；自然提案分类、模式切换与长文本缩窄后的真实光标/选区/焦点均通过。
 
 已核对本轮实际 runner 结果：核心227、文本67、集成18、OpenTK188，合计500，失败/错误/跳过均为0。`git diff --check` 无格式错误。RL-01部分“初始子项提案为Effective”的断言随新增Intrinsic契约更新，探测/环境/文本缓存/异常恢复的原有行为断言保留并扩展。RL-02可作为后续任务基础；此处不表示尚未实现的Flow/AdaptiveStack/Responsive已完成，也不代替最终平台验收。
+
+## RL-03 / RL-04 独立预验收
+
+Flow 实现提交为 `f76177d`；AdaptiveStack 尚在实施，本节不代替最终四套回归核对。
+
+Codex 独立验证程序位于 `artifacts/responsive-work/flow-adaptive-invariants`，使用已有框架程序集，以 `BuildProjectReferences=false` 构建，未与 Harness 并行重建共享工程。构建退出0、0警告/错误；随后运行退出0，23项断言全部通过：
+
+- Flow 的 Padding20 非零绝对原点、精确放满、超宽硬尺寸保留及溢出诊断；未创建每行运行时父节点。
+- AdaptiveStack 在 Padding 扣除后的精确断点及断点下方，DPI1/1.25/1.5/2 结果一致；水平无界使用横向自然布局，显式 Horizontal basis 不变成高度。两种模式分别显式设置间距，未假定宽模式 Spacing 自动覆盖 VerticalSpacing。
+- Flow/AdaptiveStack 中 TextField 换行/切换后保留节点、焦点、光标及选区，旧坐标不命中移动后的输入框，Tab 仍按声明顺序遍历。
+- 真实 Skia 多行文字换行后，尾项位置与 Flow/ScrollView 自然高度相符。
+- AdaptiveStack 中内层 ScrollView 先滚动50逻辑像素，跨断点后同一节点及偏移50均保持。
+
+当前未发现阻塞性行为问题，仍需等待 RL-04 正式测试、最终完整回归及文档提交后放行。
+
+### 四套测试独立重跑
+
+Codex 随后直接执行当前 Debug 测试程序集，核心259、文本67、集成27全部退出0。OpenTK首次在沙箱内执行为188项中1失败（系统剪贴板写入读回为空）；按环境限制使用正常桌面权限重跑相同程序集后188项全部通过，退出0。正常权限完整结果合计541，失败/错误/跳过均为0，R17文字颜色遮罩与既有窗口缩放回归仍通过。该结果不包含尚未实施的 Responsive 和最终示例改造。
+
+### RL-03 / RL-04 最终复审通过
+
+已核对实现 `f76177d`（Flow）及 `b3fc0ff`（AdaptiveStack）的变更、正式测试及实施记录。Flow 行缓存与 Adaptive 选定模式均被 Probe 快照恢复；同一父节点中的排列改变不创建新运行时父节点；Adaptive 的横/纵间距、对齐及显式轴向规则独立。三个现有示例 Debug 构建退出0，`git diff --check` 无格式错误。独立23项与四套541项结果如上，无未关闭阻塞问题，两项可作为后续阶段基础。Release和最终Gallery改造仍由后续任务验收。
