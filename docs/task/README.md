@@ -17,7 +17,7 @@
 | ☑ | RL-05 | [Responsive 安全内容构建事务](05-responsive-transactions.md) | [RL-02](02-flex-and-fill-width.md) | D |
 | ☑ | RL-06 | [Responsive 状态依赖与生命周期](06-responsive-state-and-lifetime.md) | [RL-05](05-responsive-transactions.md) | D |
 | ☑ | RL-07 | [示例改造与使用指南](07-responsive-gallery-and-guides.md) | [RL-03](03-flow-layout.md)、[RL-04](04-adaptive-stack.md)、[RL-06](06-responsive-state-and-lifetime.md) | E |
-| ☐ | RL-08 | [输入、DPI 与图形集成回归](08-responsive-integration.md) | [RL-07](07-responsive-gallery-and-guides.md) | F |
+| ☑ | RL-08 | [输入、DPI 与图形集成回归](08-responsive-integration.md) | [RL-07](07-responsive-gallery-and-guides.md) | F |
 | ☐ | RL-09 | [完整验收与交付记录](09-responsive-delivery.md) | [RL-08](08-responsive-integration.md) | F |
 
 ## 阶段分组
@@ -38,7 +38,7 @@
 - [x] [RL-05](05-responsive-transactions.md) Responsive 安全内容构建事务
 - [x] [RL-06](06-responsive-state-and-lifetime.md) Responsive 状态依赖与生命周期
 - [x] [RL-07](07-responsive-gallery-and-guides.md) 示例改造与使用指南
-- [ ] [RL-08](08-responsive-integration.md) 输入、DPI 与图形集成回归
+- [x] [RL-08](08-responsive-integration.md) 输入、DPI 与图形集成回归
 - [ ] [RL-09](09-responsive-delivery.md) 完整验收与交付记录
 
 ## 执行与审核

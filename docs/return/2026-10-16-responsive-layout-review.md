@@ -247,3 +247,24 @@ Codex独立程序 `artifacts/responsive-work/gallery-invariants` 直接实例化
 ### RL-07 最终复审通过
 
 实现 f8ef52c 已核对，P1/P2均关闭。Codex独立重建并运行真实Gallery探针67/67通过（四逻辑宽×四DPI、实际文本排版宽度、两层滚动、焦点/选区及独立嵌套组件），独立核心300项退出0；核对完整四套300+67+30+204=601全部通过，三示例Debug构建退出0，格式检查通过。指南与实际父级约束及状态边界一致。允许开始RL-08输入/DPI/图形集成；尚不代表Release、原生缩放或最终交付完成。
+
+## RL-08 实施期间独立检查
+
+Codex新增 artifacts/responsive-work/input-invariants（直接引用实际Gallery程序集，不重建共享工程）并独立运行，176项检查全部通过、退出0，日志 rl08-input-independent.txt。四档DPI分别连续1024→320→768→480→1024→320：实际新坐标按钮/Toggle点击、Slider拖动与捕获、中文输入后实际排版原点+caret（未先夹取矢量线）、输入节点/焦点/选区保持、Tab遍历、无焦点后20次空闲不构建/布局/重绘、真实双层滚轮路由及文字缓存容量均通过。此结论仅覆盖该CPU/真实Skia输入探针，不替代本任务GPU、宿主resize及原生模态循环验证。后续实现有改动需复跑。
+
+原生循环证据注意：旧 artifacts/resize-native-review/Program.cs 的最终return未强制frontReadable/expandedPixels>0，front读取失败时会跳过像素检查仍exit0。RL-08/09若复用需报告并校验实际非零采样数量；不能将expandedPixels=0解释为无黑边。该旧脚本只运行简单Text，也不能替代真实Gallery跨断点布局的原生循环验证。
+
+RL-08测试预审：GalleryBreakpointInputTests.DragSlider当前Down/Move/Up使用同一坐标，不足以固定拖动及指针捕获行为；请让Down与Move使用不同位置，至少覆盖从左向右拖动后实际绑定值变化（Codex独立探针已验证该实际动作通过）。请保留旧坐标不命中、实际光标原点检查，不以放宽断言来处理测试场景本身的定位错误。
+
+独立输入探针扩展至180项并退出0：实际Gallery与Nested各240次连续变宽320..1024、DPI1.5。Gallery最大单轮Measure175/Arrange154、每次1轮布局/0动态builder；Nested最大Measure96/Arrange67、每次2轮布局/2动态builder。两者resize期间组件Build增量0、无待处理动态请求，Skia缓存128/64均在上限，纹理live256且后续两帧回到容量内。保留实际计数不作未经测量帧率承诺。
+
+RL-08 GPU覆盖预审：当前GalleryGpuIntegrationTests仅固定900宽、新建runtime、DPI1.25/1.5/2，尚未把响应式跨断点/DPI变化接入最终RGB检查。请增加真实同一runtime从1024到320及DPI1→1.25→1.5→2的重排/文字纹理与最终RGB验证（直接参考沿用现有实现，不需新算法）。这样才能排除仅新建窗口时正确、实际缩放仍复用旧排版/纹理的缺口；保留实际墨迹及裁剪采样断言。
+
+Codex独立GPU探针 gpu-invariants 已在Intel RaptorLake OpenGL3.3上退出0，16/16通过。直接实例化同一Gallery运行时，DPI1/1.25/1.5/2，每档1024→320→768→480；比较实际换行说明整块文字最终RGB与Skia直接颜色绘制，mean0.0585..0.0992、max2（阈值0.75/4），每场实际墨迹2905..10588像素。320时真实排版从宽358.477×37.242变为252×55.863，纹理随DPI为252×56/315×70/378×84/504×112，1纹素=1物理像素。日志 artifacts/responsive-work/rl08-gpu-independent.txt；没有使用旧纹理缩放来冒充重排。此探针不代替正式持续回归及嵌套裁剪/原生循环。
+
+RL-08最终文档预审：responsive-layout.md新加的纹理‘上限为纹理缓存容量’需限定。ITextureService实现有本帧/上一帧引用保护，容量是长期目标，受保护条目可临时超过容量，后续帧回收；不能将本轮样例峰值256的结果写成全局硬上限。请与既有纹理缓存契约一致。
+Codex已独立复跑新增242项OpenTK完整套件，全部退出0（日志rl08-opentk-independent.txt）；含7个同运行时RGB检查点、双层裁剪、7步真实宿主150%resize，R16/R17/R18全部保留通过。
+
+### RL-08 最终复审通过
+
+实现 fc5abeb 已核对。本阶段增加38项实际示例/真实Skia/GL集成回归；四套300+67+30+242=639全部通过。Codex独立运行242项完整OpenTK套件退出0，并以独立180项输入/连续缩放与16项同运行时GPU逐像素探针验证。实际拖动、跨DPI纹理更新和缓存长期容量的审核事项均已处理；指南已如实区分程序化resize、旧Text原生探针和人工边界。未发现需改生产代码的问题，允许执行RL-09。最终仍须完成三示例Debug/Release、18 DLL副本、5帧smoke、真实Gallery原生模态循环及截图交付，不以此阶段测试替代。
