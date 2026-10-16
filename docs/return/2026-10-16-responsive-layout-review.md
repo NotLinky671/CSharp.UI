@@ -126,3 +126,62 @@ Codex 随后直接执行当前 Debug 测试程序集，核心259、文本67、�
 ### RL-03 / RL-04 最终复审通过
 
 已核对实现 `f76177d`（Flow）及 `b3fc0ff`（AdaptiveStack）的变更、正式测试及实施记录。Flow 行缓存与 Adaptive 选定模式均被 Probe 快照恢复；同一父节点中的排列改变不创建新运行时父节点；Adaptive 的横/纵间距、对齐及显式轴向规则独立。三个现有示例 Debug 构建退出0，`git diff --check` 无格式错误。独立23项与四套541项结果如上，无未关闭阻塞问题，两项可作为后续阶段基础。Release和最终Gallery改造仍由后续任务验收。
+
+## RL-05 实施期间预审
+
+### 待核对：ResponsiveInfo 的公开 init 绕过构造校验
+
+当前 `ResponsiveInfo` 构造器校验宽度与有界标记，但 `AvailableWidth` / `IsWidthBounded` 仍公开 `init`，可用对象初始化或 `with` 构造 NaN、负宽度及有限性不一致的值。请在接口冻结前关闭这种绕过（例如只读属性、统一校验入口），或提供等效的完整校验；测试不能只有构造器路径。结构体的不可避免 default 值应与“主动公开可修改但不校验”的路径区别说明。此项为实施中检查，最终以成品及实测为准。
+
+### 首轮独立探针：正常场景14/14通过
+
+`artifacts/responsive-work/responsive-invariants/Verify.csproj` 使用已有框架程序集（`BuildProjectReferences=false`）构建退出0、0警告/错误；运行退出0。普通 VStack/ScrollView 中裸 Responsive 首帧、Padding 后最终260/140宽度、尾项及内容高度、同宽重复测量、Probe 不构建、不替换稳定内容、无界宽度、16层嵌套、40并列节点、同宽新描述更新一次及同引用描述不重复构建均通过。本阶段尚未完成，不据此放行。
+
+### [P1] 整体预算未能阻止无限扩张树先发生 StackOverflow
+
+Codex 在独立子进程运行 `dotnet run --project artifacts/responsive-work/responsive-invariants/Verify.csproj --no-build -- --growing`，退出1，实际输出 `Stack overflow.`。复现描述仅为 `View Next() => new Responsive(_ => Next());`，随后正常启动 runtime 并调用 ProcessPendingWork；这会每轮新增下一层节点。栈反复经过 Responsive.Measure / LayoutContext.Measure，未到达预期的受控整体预算异常。当前4096次构建的预算与递归布局栈深度不匹配，不能保证在耗尽栈前终止。
+
+请加入适合递归布局的深度/工作安全边界或等效机制，既允许16层和批量节点，又在无限扩张时抛出带路径/输入的普通可捕获异常，清空队列并允许后续合法更新恢复。仅断言预算常量或只验证反复替换浅层身份不够；应对真实逐层增长描述运行独立进程回归，避免把StackOverflow带入主测试进程。修正后同一 `--growing` 探针必须受控退出0，不能依赖进程崩溃/超时/StackOverflow。RL-05 暂不放行。
+
+边界还需覆盖失败后再次处理同一错误 builder：仅把每轮总构建预算降低但保留已增长链，下一轮预算重置后仍可能逐次加深并最终溢出。需要实际树深度边界/回滚或等效机制，保证连续失败也保持安全，而合法切回有限内容能够恢复。正常/异常独立探针已扩为18项全部通过（额外含主动异常与BuildFrame重入后的请求清理、合法更新恢复），不关闭此项增长链阻塞问题。
+
+### 512深度修订实测：首次受控，但再次处理仍栈溢出
+
+已用18:30构建的修订程序集重跑扩展 `--growing`：首次得到普通异常（测量深度512、构建512、pending0），随后再次调用 ProcessPendingWork，进程仍以 StackOverflow 退出（Windows退出码-1073741571）。新栈落在 UiRuntime.InvalidateSubtree → InvalidateLayout → ProcessPendingWork，说明测量入口限制不足以保障异常清理及重复处理路径。完整输出保存在 `artifacts/responsive-work/rl05-growing-independent.txt`。
+
+扩展探针包含首次失败、两次重复处理、随后 `stop=true` + `InvalidateResponsiveContent(root)` 切回有限 Text 的恢复断言。请修正后完整运行该探针；不能以“首次抛普通异常”关闭本问题，测量、失效清理、后续收敛/卸载都需留足栈深度余量。此为实施期修订实测，仍未放行。
+
+### 增长链及公开init问题已验证关闭
+
+18:37修订程序集下，`--growing` 首次受控失败（512构建、pending0）、连续两次重试均保持512构建，并在根节点显式内容失效、切回有限Text后恢复，整体退出0。InvalidateSubtree已改显式栈。ResponsiveInfo两个属性已改只读，新增反射检查也通过。以上关闭各自问题，但下述新增最终提案回归仍阻塞放行。
+
+### [P1] 布局前按旧宽度消费新描述，瞬时错误分支卸载了应复用的输入框
+
+为恢复过深旧内容，当前 ProcessPendingWorkCore 在 RunLayout 前消费请求，MarkDescriptionChanged/InvalidateContent 用 LastInfo 直接排队。若同一批更新既改变描述又改变父级宽度，就会先按上一轮宽度构建错误分支，再按本轮实际宽度构建最终分支，违背同轮只激活最终有效提案的契约。
+
+Codex独立探针当前22项，20通过、2失败，运行退出1：
+
+1. 旧宽300，新描述与SetViewport180一起更新：预期builder只执行1次，实际2次（最终宽180）。
+2. 初始TextField获得焦点与选区；builder仅在“新描述版本1且宽>200”时返回Rectangle，否则TextField。版本1与宽180同批更新时，最终仍应是同父级同类型TextField，保留原节点/焦点/选区。实际先按旧300构建Rectangle，把原输入框卸载，再按180创建新输入框；实测oldMounted=false、FocusedNode=null。
+
+复现已放入 `artifacts/responsive-work/responsive-invariants/Program.cs`，普通模式直接覆盖。请让深树恢复与最终提案合并同时成立，不能用无条件消费上轮LastInfo来修复恢复问题；同步状态/描述/父约束变化时不得挂载或卸载过时分支。修复后普通22项及增长链模式都须通过，且保留已通过的事务/Probe/异常及既有回归。RL-05仍不放行。
+
+### 描述路径修正通过，显式失效路径仍复现同一P1
+
+18:46修订后 MarkDescriptionChanged 不直接排队，以上两个描述更新断言通过。但 InvalidateContent 仍 QueueIfMeasured，按LastInfo提前消费；此入口正是RL-06状态失效接入点，不能保留同类过时分支问题。
+
+独立普通探针新增第23项：根Responsive初始宽300、内容TextField并获得焦点；修改builder捕获条件，同时调用 `InvalidateResponsiveContent(root)` 与 `SetViewport(180)`，随后 ProcessPendingWork。builder在“新条件且宽>200”时返回Rectangle，否则TextField。预期只构建一次、保留最终兼容输入框；实测调用2次、oldMounted=false，运行退出1（其余22项通过）。因此同一P1仍未关闭；最终提案规则须覆盖描述与显式/状态内容失效两条路径，同时保留深树合法更新恢复。
+
+### 最终提案修订：独立24项及增长链验证通过
+
+18:59构建的修订程序集下，Codex重新以BuildProjectReferences=false构建独立探针，退出0、0警告/错误；普通模式24/24通过，退出0。新增第24项同时改变嵌套父Frame宽度并显式内容失效（视口不变），也只执行一次builder，原TextField仍挂载且焦点保持；因此不是只修SetViewport的特例。此前描述+宽度、显式失效+缩放的失败均已关闭。
+
+增长链模式随后独立重跑退出0：达到测量深度256时受控失败（builds256/pending0），两次重试仍builds256，显式根内容更新切回有限Text后成功恢复。当前安全循环先尝试本轮布局、按最终有效提案消费；只有明确LayoutDepthLimitException且有请求时尝试恢复，正常布局不提前消费旧LastInfo。公开Info只读属性、异常清理、Probe和同宽描述规则均通过。
+
+本节关闭上述实施期问题，尚需完整回归、最终提交与变更核对后才标记RL-05复审完成；不提前变更任务状态。
+
+### RL-05 最终复审通过
+
+实现 `465d3e0`，注释整理 `18a2d3b`，父约束变更与显式失效的正式回归 `4723e65`。Codex已核对最终变更与记录，并亲自运行四套当前Debug程序集：核心285、文本67、集成29、OpenTK189，合计570，失败/错误/跳过均为0，全部退出0；OpenTK按正常桌面权限执行。三个现有示例Debug构建记录均退出0，`git diff --check` 无格式错误。
+
+独立普通24项及增长链模式结果如上；最终提案与内容签名、异常及深树清理、节点复用和R18即时回调绘制均通过，本阶段问题全部关闭。可以开始RL-06状态依赖工作。此处不表示尚未实施的状态订阅、Gallery改造或最终Release/跨平台交付完成。
