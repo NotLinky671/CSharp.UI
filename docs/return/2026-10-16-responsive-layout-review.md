@@ -1,0 +1,52 @@
+# 通用响应式布局实施审核记录
+
+记录日期：2026-10-16
+
+审核人：Codex
+
+设计依据：[响应式布局计划](../plan/2026-10-16-responsive-layout-plan.md)、[当前任务索引](../task/README.md)。
+
+状态：按任务持续复审；文档建立不表示实现已通过。
+
+## RL-01 首版代码复查
+
+### P1：Probe 恢复测量有效标记，却没有恢复文本排版缓存
+
+首版 `MeasureProbeScope.MeasureSnapshot` 只保存 DesiredSize、MeasureValid、LastConstraints、LastProposalKind；Text.Measure 会同时改写 ViewCache。如下序列会导致有效缓存与实际排版对象不一致：
+
+1. Text.Wrap 在宽100下完成有效测量，ViewCache为100宽排版，MeasureValid=true。
+2. Probe以宽300测量，ViewCache被改为300宽排版。
+3. 退出Probe恢复原100宽的LastConstraints和有效标记，但ViewCache仍为300宽。
+4. 再次有效Measure(100)命中缓存，不执行Text.Measure，最后按100宽排列却使用300宽的排版/纹理。
+
+需要恢复所有测量拥有的缓存状态（至少ViewCache；Environment也不能先修改后才拍快照），或令受Probe影响的缓存失效并保证下一次有效测量真正重算。用真实Text.Wrap/Skia排版与绘制命令验证，不只检查DesiredSize和LastProposalKind；覆盖异常退出和嵌套Probe。若选择“恢复之前有效缓存”，恢复内容必须完整，不能只恢复有效标记。
+
+### P2：把内部固定内容的尺寸当作外层 Frame 自身尺寸，导致基准与边界错误
+
+首版Frame.ApplyFrame在内层固定240、外层max100时保留ExplicitSize=240与MaxSize=100，但EffectiveMax及BaseSize均优先返回240。实际外层Frame的自然尺寸已是100；同理外层min300的自然尺寸是300，当前BaseSize/EffectiveMin/Max仍返回240，后续Flex会按错误的基准分配。
+
+注意：初版审核把所有外层范围都视为“直接取交”的描述过于简单，现按Frame实际盒子语义修正。外层min300允许自身变宽并居中放置240的内容，这是合法布局，不应伪造300..240的矛盾区间。外层max100则需要保留“自身上限100、内部仍需240”的溢出信息，不能隐藏上限或谎称内容已压缩。应区分外框分配特征与内容固定要求，具体内部表示由本阶段冻结，不要求生硬合成同一范围。
+
+添加外层FrameView(maxWidth:100)/FrameView(minWidth:300)包裹固定240内容以及Padding的真实节点回归。没有Flex basis时，基准须反映外框自然尺寸100/300，最大/最小声明不能被内层属性覆盖；内部240的固定内容仍保留，默认Frame的Measure/Arrange行为不变。现有Frame扩展的范围重载需要完整参数，测试可直接使用FrameView构造器，不应把概念性短写误当成既有可编译API。
+
+### 独立验证进展
+
+`artifacts/responsive-work/invariants/Verify.csproj` 使用真实Skia Text.Wrap复测。当前新增ViewCache快照后，Probe300再恢复有效100，最终仍为6行、纹理宽100，此项已通过。外层固定/max/min与Padding的特征仍需按上面的盒子语义修正；首版基准记录见`rl01-first.txt`，其中早期min/max期望区间已被本节纠正，以本节与后续验证为准。
+
+### RL-01 快照入口完整性补查
+
+新增完整快照后仍需核对两条捷径：`Measure`命中已有缓存时可能改写Environment，但当前在该分支没有CaptureForProbes；`MeasureFresh`在调用Measure之前就把MeasureValid改为false，快照会记录改写后的false而非进入探测前的true。请在改写任何探测拥有的节点状态前拍快照，并覆盖“同约束缓存命中但环境需解析”和“BeginProbe内MeasureFresh”的恢复。正常有效测量仍保持原行为。
+
+本阶段尚未通过的主要问题仍是P2外框盒子语义：不能只把EffectiveMin/Max改成数学交集。最新任务验收补充和上文已明确，外层min300包240内容是合法扩张，外层max100的自然基准是100；内部固定要求与外框自身配额应区分。当前`BaseSize=ExplicitSize??...`及透传内层ExplicitSize仍会给出错误基准，不能将此版本交给RL-02。
+
+### RL-01 当前最后一项独立失败（待修正）
+
+盒子语义已按修订正确，7个Sizing案例与真实文本缓存都通过。扩展探针`artifacts/responsive-work/invariants/rl01-refined.txt`还实测：`Cached Probe environment restore: PASS=False`，而`MeasureFresh Probe restore: PASS=True`。复现仅保持测量约束/字体不变，将节点缓存的Foreground设为Red以模拟旧视觉环境；BeginProbe内Measure命中缓存，ResolveEnvironment将其改为父级继承值，退出后Red未恢复。该路径正是Measure中显式处理的缓存命中环境更新分支，应在赋值前CaptureForProbes。普通有效测量的环境更新不受影响。
+
+请补这个入口与回归后再提交。当前基础尺寸/文本8项通过不等于扩展10项全部通过；不需要再重做已证明的负对照或拓展范围。
+
+### RL-01 修订版复审通过
+
+Codex 已复核缓存命中路径在改写 Environment 前调用 CaptureForProbes，MeasureFresh 也在清除有效标记前拍快照。独立执行 `dotnet run --project artifacts/responsive-work/invariants/Verify.csproj --no-build`，退出码 0，10/10 通过；包含真实 Skia 文本缓存、环境恢复、MeasureFresh 恢复及七组外框尺寸案例。
+
+已核对本轮完整测试日志：核心 191、文本 67、集成 15、OpenTK 188，合计 461，失败/错误/跳过均为 0。`git diff --check` 无格式错误。此前 P1、P2 与快照入口问题均已关闭，RL-01 可作为 RL-02 的基础；本结论不代表后续响应式 API 或三平台人工验收已完成。

@@ -10,7 +10,7 @@
 
 | 完成 | ID | 任务 | 依赖 | 阶段 |
 |---|---|---|---|---|
-| ☐ | RL-01 | [测量提案与尺寸特征基础](01-layout-proposals-and-sizing.md) | 无 | A |
+| ☑ | RL-01 | [测量提案与尺寸特征基础](01-layout-proposals-and-sizing.md) | 无 | A |
 | ☐ | RL-02 | [Flex 与 FillWidth](02-flex-and-fill-width.md) | [RL-01](01-layout-proposals-and-sizing.md) | A |
 | ☐ | RL-03 | [Flow 自动换行容器](03-flow-layout.md) | [RL-02](02-flex-and-fill-width.md) | B |
 | ☐ | RL-04 | [AdaptiveStack 稳定布局切换](04-adaptive-stack.md) | [RL-02](02-flex-and-fill-width.md) | C |
@@ -31,7 +31,7 @@
 
 ## 完成清单
 
-- [ ] [RL-01](01-layout-proposals-and-sizing.md) 测量提案与尺寸特征基础
+- [x] [RL-01](01-layout-proposals-and-sizing.md) 测量提案与尺寸特征基础
 - [ ] [RL-02](02-flex-and-fill-width.md) Flex 与 FillWidth
 - [ ] [RL-03](03-flow-layout.md) Flow 自动换行容器
 - [ ] [RL-04](04-adaptive-stack.md) AdaptiveStack 稳定布局切换
