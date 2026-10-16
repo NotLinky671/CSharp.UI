@@ -47,6 +47,7 @@ RL-09 **未改动生产代码**：五项响应式能力的公开与内部接口�
 | `artifacts/responsive-work/rl09-native-scsize/` | 真实 `GalleryApp`/`NestedResponsiveExample` 的 Windows 原生 `SC_SIZE` 模态循环探针：强制 front buffer 可读、逐宽度非零像素采样、framebuffer 契约与无窗口真实布局逐节点对照 |
 | `artifacts/responsive-work/rl09-capture/` | 真实窗口 front buffer 原尺寸 PNG 截图（宽/窄 Gallery、嵌套示例三档宽度） |
 | `docs/delivery/2026-10-16-responsive-layout-delivery.md` | 持久交付记录（构建/测试/DLL/冒烟/原生循环/截图/平台范围） |
+| `docs/delivery/2026-10-16-responsive-layout-evidence/` | 五张原尺寸 PNG（宽/窄 Gallery、Nested 三档），随仓库分发 |
 | `docs/guide/responsive-layout.md` | §9 更新原生 SC_SIZE 证据与人工鼠标边界 |
 | `docs/guide/testing.md` | 修正运行器过滤器写法并补充响应式回归说明 |
 
@@ -78,7 +79,7 @@ dotnet run --project artifacts/responsive-work/rl09-native-scsize -- nested     
 
 - Release 5 帧 smoke：ControlGallery 900×700→1350×1050、Counter 480×320→720×480、TodoList 760×480→1140×720，DPI 均 1.5，退出码 0。
 - 原生 SC_SIZE（Gallery）：`enters=1,exits=1,modalFrames=20,geometryErrors=0,frontReadable=True`；7 个逻辑宽度（900/500/1120/420/620/300/1024）均非空采样、背景与内容像素 >0、纯黑 0、右侧边缘非背景 0；自适应模式随 560/840 断点翻转；布局签名与同尺寸无窗口真实布局一致。Nested：`enters=1,exits=1,modalFrames=16`，6 个宽度同上通过。
-- 截图：宽 1024@1.5 → 1536×1050（wrap 358.477×37.242），窄 320@1.5 → 480×1050（wrap 252×55.863）；嵌套 1100 面板 616/296 分别 `HStack`/`VStack` 分支，500 时两面板均窄分支。
+- 截图：宽 1024@1.5 → 1536×1050（wrap 358.477×37.242），窄 320@1.5 → 480×1050（wrap 252×55.863）；嵌套 1100 面板 616/296 分别 `HStack`/`VStack` 分支，500 时两面板均窄分支；五张原尺寸 PNG 见 `docs/delivery/2026-10-16-responsive-layout-evidence/`。
 - Codex 独立探针重跑：`input-invariants` 180/180、`gpu-invariants` 16/16，退出码均 0；Codex 另独立核对 18 份 DLL 与四套 Release 程序集 639 项全部通过。
 - Codex 实施期截图探针预审（稳定帧等待依赖偶发刷新）已处理：`rl09-capture` 显式 `RequestRedraw()`，重跑仍退出码 0 且 PNG 哈希不变，未改生产宿主。
 

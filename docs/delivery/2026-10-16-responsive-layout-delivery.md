@@ -83,16 +83,25 @@ RL-01…RL-08 已分别通过 Codex 复审；本记录汇总最终集成验收�
 ## 7. 原尺寸截图与独立嵌套示例证据
 
 `artifacts/responsive-work/rl09-capture` 从真实窗口 front buffer 读取全帧并原尺寸写出 PNG（1 纹素 = 1 物理像素），文件名含逻辑/物理尺寸与 DPI。
+五张 PNG 已按原字节复制（未重采样、未编辑）到本目录下的证据目录 [2026-10-16-responsive-layout-evidence](2026-10-16-responsive-layout-evidence)，随仓库提交分发。
 
-| 文件 | 逻辑 | 物理（原尺寸） | 断点模式 | wrapFrame / 分支 |
+| 文件（点击查看原尺寸） | 逻辑 | 物理（原尺寸） | 断点模式 | wrapFrame / 分支 |
 |---|---|---|---|---|
-| `control-gallery-logical1024x700-physical1536x1050-dpi1.5.png` | 1024×700 | 1536×1050 | 5/5 横向 | Frame 358.477、排版 358.477×37.242 |
-| `control-gallery-logical320x700-physical480x1050-dpi1.5.png` | 320×700 | 480×1050 | 0/5 横向 | Frame 252、排版 252×55.863（3 行） |
-| `nested-responsive-logical1100x780-physical1650x1170-dpi1.5.png` | 1100×780 | 1650×1170 | [H,V] | 面板 616/296，分支 `HStack(3)` / `VStack(3)` |
-| `nested-responsive-logical700x780-physical1050x1170-dpi1.5.png` | 700×780 | 1050×1170 | [H,V] | 面板 616/296，分支 `HStack(3)` / `VStack(3)` |
-| `nested-responsive-logical500x780-physical750x1170-dpi1.5.png` | 500×780 | 750×1170 | [V,V] | 面板 436/296，分支 `VStack(3)` / `VStack(3)` |
+| [control-gallery-logical1024x700-physical1536x1050-dpi1.5.png](2026-10-16-responsive-layout-evidence/control-gallery-logical1024x700-physical1536x1050-dpi1.5.png) | 1024×700 | 1536×1050 | 5/5 横向 | Frame 358.477、排版 358.477×37.242 |
+| [control-gallery-logical320x700-physical480x1050-dpi1.5.png](2026-10-16-responsive-layout-evidence/control-gallery-logical320x700-physical480x1050-dpi1.5.png) | 320×700 | 480×1050 | 0/5 横向 | Frame 252、排版 252×55.863（3 行） |
+| [nested-responsive-logical1100x780-physical1650x1170-dpi1.5.png](2026-10-16-responsive-layout-evidence/nested-responsive-logical1100x780-physical1650x1170-dpi1.5.png) | 1100×780 | 1650×1170 | [H,V] | 面板 616/296，分支 `HStack(3)` / `VStack(3)` |
+| [nested-responsive-logical700x780-physical1050x1170-dpi1.5.png](2026-10-16-responsive-layout-evidence/nested-responsive-logical700x780-physical1050x1170-dpi1.5.png) | 700×780 | 1050×1170 | [H,V] | 面板 616/296，分支 `HStack(3)` / `VStack(3)` |
+| [nested-responsive-logical500x780-physical750x1170-dpi1.5.png](2026-10-16-responsive-layout-evidence/nested-responsive-logical500x780-physical750x1170-dpi1.5.png) | 500×780 | 750×1170 | [V,V] | 面板 436/296，分支 `VStack(3)` / `VStack(3)` |
 
-五张 PNG 均为非空内容（非背景像素 82,275–247,433），纯黑像素 0。目录与 SHA256 见 `artifacts/responsive-work/rl09-evidence` 与 `artifacts/responsive-work/rl09-progress.txt`。
+宽/窄 Gallery 与同一窗口内两种嵌套分支的预览：
+
+![宽 Gallery 1024 逻辑宽 @150%](2026-10-16-responsive-layout-evidence/control-gallery-logical1024x700-physical1536x1050-dpi1.5.png)
+
+![窄 Gallery 320 逻辑宽 @150%](2026-10-16-responsive-layout-evidence/control-gallery-logical320x700-physical480x1050-dpi1.5.png)
+
+![嵌套示例 1100 逻辑宽：宽容器走宽分支、窄容器走窄分支](2026-10-16-responsive-layout-evidence/nested-responsive-logical1100x780-physical1650x1170-dpi1.5.png)
+
+五张 PNG 均为非空内容（非背景像素 82,275–247,433），纯黑像素 0；两次运行哈希一致（渲染确定性）。SHA256 与原始输出见 `artifacts/responsive-work/rl09-progress.txt`、`artifacts/responsive-work/rl09-evidence`。
 
 ## 8. 平台范围与未验证边界（如实记录，不以估计代替）
 
@@ -111,15 +120,17 @@ RL-01…RL-08 已分别通过 Codex 复审；本记录汇总最终集成验收�
 ## 9. 审核问题闭环与文档一致性
 
 - RL-01…RL-08 的每一项实施期问题均已在 [审核记录](../return/2026-10-16-responsive-layout-review.md) 中记录为关闭；本轮未发现需要修改生产代码的新问题。
-- Codex 独立探针本次重跑：`input-invariants` 180/180、退出码 0；`gpu-invariants` 16/16、退出码 0（同一 Gallery 运行时四宽 × 四 DPI，最终 RGB 与直接绘制参考 mean 0.0585–0.0992、max 2）。
-- Codex 在 RL-09 实施期间另行独立核对：三示例×两配置×三库 18 份 DLL SHA256 全部匹配；四套 **Release** 程序集 300+67+30+242=639 全部通过（失败/错误/跳过 0、退出码 0）。
+- **Codex 独立验收（RL-09 实施期间，记录于审核记录末端）**：独立 SHA256 核对三示例 × 两配置 × 三库共 18 份 DLL，18/18 匹配（`final-dll-independent.json`）；独立执行四套 **Release** 程序集 300+67+30+242=639，全部失败/错误/跳过 0、退出码 0（`final-release-*-independent.txt`），覆盖最终优化产物而非仅 Debug；核对三个 Release 示例实际 5 帧 smoke 全部退出码 0 且 DPI 1.5；独立查看本轮原尺寸宽/窄 Gallery 与 Nested PNG，视觉与日志一致、未见黑区。
+- 本地重跑 Codex 独立探针：`input-invariants` 180/180、退出码 0；`gpu-invariants` 16/16、退出码 0（同一 Gallery 运行时四宽 × 四 DPI，最终 RGB 与直接绘制参考 mean 0.0585–0.0992、max 2）。
 - Codex 实施期截图探针预审（等待稳定帧时宿主按需绘制、不保证后续帧）已处理：`rl09-capture` 在等待目标宽度与稳定帧、以及缩放后均显式调用 `context.RequestRedraw()`，不依赖偶发系统刷新；两模式重跑仍退出码 0、PNG 哈希不变，生产宿主未改动。
-- 文档检查：`node artifacts/responsive-work/audit-docs.mjs` 检查 50 个 Markdown 文件、259 条相对链接与 9 任务依赖图，唯一报告为“`09-responsive-delivery.md`: not complete”（本任务处于待复审，符合预期）；`validate-docs.mjs` 校验 27 个 UTF-8 文件、链接、代码围栏与依赖图通过。
+- Codex 交付文档预审（截图需随仓库分发）已处理：五张原尺寸 PNG 按原字节复制到 [证据目录](2026-10-16-responsive-layout-evidence) 并在 §7 提供可点击链接与预览，未重采样或编辑图像。
+- 文档检查：`node artifacts/responsive-work/audit-docs.mjs` 检查 51 个 Markdown 文件、相对链接与 9 任务依赖图，唯一报告为“`09-responsive-delivery.md`: not complete”（本任务处于待复审，符合预期）；`validate-docs.mjs` 校验 27 个 UTF-8 文件、链接、代码围栏与依赖图通过。
 - API 指南代码与实际签名核对通过（`FrameView`/`Frame` 范围重载、`.Flex`、`.FillWidth`、`Flow`、`AdaptiveStack`、`Responsive`、`ResponsiveInfo` 只读属性）。
 - 已修正 `docs/guide/testing.md` 中过时的运行器过滤器写法（`--filter-class`/`--filter-method` → 实际支持的 `-class`/`-method`/`-trait`）。
 
 ## 10. 证据与提交
 
-- 过程与原始输出：`artifacts/responsive-work/rl09-progress.txt`、`rl09-debug-build.txt`、`rl09-release-build.txt`、`rl09-CSharp.UI.*.txt`、`rl09-release-smoke.txt`、`rl09-native-scsize-gallery.txt`、`rl09-native-scsize-nested.txt`、`rl09-capture-*.txt`、`rl09-input-invariants-rerun.txt`、`rl09-gpu-invariants-rerun.txt`、`rl09-evidence/*.png`（均在 `.gitignore` 覆盖的 `artifacts/` 下，不随提交分发）。
-- 本记录所在提交为 RL-09 实现提交；提交 SHA 与精确文件清单见 `artifacts/responsive-work/rl09-progress.txt` 与交付回复。提交为本地英文提交，未 amend、未推送；未改动用户 `AGENTS.md`、Codex `docs/return` 与任何系统/SDK/NuGet 配置。
+- 随仓库分发的图像证据：[2026-10-16-responsive-layout-evidence](2026-10-16-responsive-layout-evidence)（五张原尺寸 PNG，与 `artifacts/responsive-work/rl09-evidence` 逐字节一致）。
+- 过程与原始输出：`artifacts/responsive-work/rl09-progress.txt`、`rl09-debug-build.txt`、`rl09-release-build.txt`、`rl09-CSharp.UI.*.txt`、`rl09-release-smoke.txt`、`rl09-native-scsize-gallery.txt`、`rl09-native-scsize-nested.txt`、`rl09-capture-*.txt`、`rl09-input-invariants-rerun.txt`、`rl09-gpu-invariants-rerun.txt`、`rl09-evidence/*.png`（在 `.gitignore` 覆盖的 `artifacts/` 下，仅本地保留；需要分发的图像已复制到上方证据目录）。
+- 记录提交：先以 `e66bbcd`（`Add RL-09 responsive layout final acceptance and delivery record`）提交交付文档，再按 Codex 预审补交图像证据与本次修订；未 amend、未推送；未改动用户 `AGENTS.md`、Codex `docs/return` 与任何系统/SDK/NuGet 配置。完整 SHA 与精确文件清单见 `artifacts/responsive-work/rl09-progress.txt` 与交付回复。
 - 完成判定：`docs/task/09-responsive-delivery.md` 保持“待 Codex 复审”，全完成索引由 Codex 在复审通过后更新。
