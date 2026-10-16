@@ -32,13 +32,13 @@ dotnet run --project tests/CSharp.UI.OpenTK.Tests
 dotnet run --project tests/CSharp.UI.OpenTK.Tests -- -trait "Category=Graphics"
 ```
 
-也可以使用 `dotnet test CSharp.UI.slnx`；若需要按名称筛选，可用运行器的 `--help` 查看当前支持的过滤器（`--filter-class`、`--filter-method` 等）。
+也可以使用 `dotnet test CSharp.UI.slnx`；若需要按名称筛选，可用运行器的 `--help` 查看当前支持的过滤器（当前为单破折号的 `-class`、`-method`、`-namespace`、`-trait` 及对应的 `-class-`/`-method-` 排除形式）。
 
 ## 无图形环境
 
 - 核心与文本测试不依赖图形环境，可直接在 CI 容器中运行。
 - 图形测试需要 OpenGL 3.3 上下文（Linux 上可用 Mesa + Xvfb）。**图形测试失败不会被标记为跳过**：缺少上下文时会如实失败并输出诊断，避免把“没跑”当成“通过”。
-- Windows 与 macOS 的真机输入/DPI 验证结果记录在 [../task/14-cross-platform-validation.md](../archive/2026-10-14-framework-tasks/14-cross-platform-validation.md)。
+- Windows 与 macOS 的首版真机输入/DPI 验证结果记录在[首版跨平台验证记录](../archive/2026-10-14-framework-tasks/14-cross-platform-validation.md)。
 
 ## 真实窗口冒烟测试
 
@@ -95,6 +95,13 @@ CSHARPUI_SMOKE_FRAMES=5 ./artifacts/publish/win-x64/ControlGallery.exe
 - 图形侧回归 `TextColorMaskTests` 走真实 CPU→GL 最终 RGB，覆盖深字浅底/浅字深底、12/14/16/28 号、
   中英混排、重复细竖线、DPI 1/1.25/1.5/2；并用旧白字遮罩在同一 GPU 路径上做负对照。
 - 前景色/主题变化后 GPU 纹理缓存必须分离、排版（测量）缓存不得失效；半透明与 `Opacity` 只乘一次。
+
+响应式布局：
+
+- 弹性、换行、自适应堆叠与 `Responsive` 分支都基于父容器分配的逻辑宽度：同一逻辑宽度在 DPI 1/1.25/1.5/2 下选择相同；跨断点后文字按新宽度重新排版并重新栅格化（1 纹素 = 1 物理像素），不缩放旧文字纹理。
+- 真实示例回归位于 `GalleryDpiLayoutTests`、`GalleryBreakpointInputTests`、`GalleryGpuIntegrationTests`、`GalleryHostResizeTests`、`GalleryIdleAndBoundsTests`；`NestedResponsiveExample` 覆盖同一窗口内不同父宽度选择不同内容分支。
+- 独立探针 `artifacts/responsive-work/*-invariants` 覆盖真实 Skia 布局、连续缩放、输入命中与最终 RGB；Windows 原生 `SC_SIZE` 模态循环与 150% 原尺寸截图证据见[响应式布局交付记录](../delivery/2026-10-16-responsive-layout-delivery.md)。
+- 物理鼠标人工拖拽、macOS/Linux 真机与系统 DPI 修改不在自动化结论内。
 
 ## 资源计数的读取方式
 
