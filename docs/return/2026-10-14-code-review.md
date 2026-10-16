@@ -5,7 +5,7 @@
 审核版本：`31e6b01377bfa669672de4f881dbf477445f05ac`  
 问题状态：全部已修复（R01—R09）；剪贴板测试失败已定位为环境抖动并加固，见文末汇总
 
-设计依据：[框架计划](../plan/2026-10-14-declarative-ui-framework-plan.md)。任务依据：[任务索引](../task/README.md)。
+设计依据：[框架计划](../plan/2026-10-14-declarative-ui-framework-plan.md)。任务依据：[任务索引](../archive/2026-10-14-framework-tasks/README.md)。
 
 本次审核发现 **9 个已复现的问题，其中 3 个 P1、6 个 P2**。建议修复后重新执行相应验收。本文记录错误及返修要求，不代表问题已经修复，也不替代现有任务的实现记录。
 

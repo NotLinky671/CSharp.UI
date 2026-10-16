@@ -38,7 +38,7 @@ dotnet run --project tests/CSharp.UI.OpenTK.Tests -- -trait "Category=Graphics"
 
 - 核心与文本测试不依赖图形环境，可直接在 CI 容器中运行。
 - 图形测试需要 OpenGL 3.3 上下文（Linux 上可用 Mesa + Xvfb）。**图形测试失败不会被标记为跳过**：缺少上下文时会如实失败并输出诊断，避免把“没跑”当成“通过”。
-- Windows 与 macOS 的真机输入/DPI 验证结果记录在 [../task/14-cross-platform-validation.md](../task/14-cross-platform-validation.md)。
+- Windows 与 macOS 的真机输入/DPI 验证结果记录在 [../task/14-cross-platform-validation.md](../archive/2026-10-14-framework-tasks/14-cross-platform-validation.md)。
 
 ## 真实窗口冒烟测试
 

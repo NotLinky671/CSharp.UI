@@ -2,7 +2,7 @@
 
 计划日期：2026-10-16
 
-状态：设计草案，待审阅与任务拆分；本文 API 为拟议接口，尚未实现。
+状态：用户已确认继续，已拆分为 [9 个实施任务](../task/README.md)，实施中；拟议 API 以各阶段实现和复审后记录为准。
 
 设计依据：[首版框架计划](2026-10-14-declarative-ui-framework-plan.md)、[当前控件展示页](../../samples/CSharp.UI.Samples.ControlGallery/Program.cs)、[R18 窗口缩放重绘验收](../return/2026-10-16-window-resize-black-area.md)。
 
@@ -185,4 +185,4 @@ Codex 负责设计、任务拆分与独立审核；DeepSeek Harness 负责实现
 
 新增或更新 API、Flex/Frame 顺序、无界布局、响应式状态身份、布局诊断和迁移指南。用户现有固定尺寸代码无需修改即可保持原行为；示例给出从固定 Frame 到弹性 basis/最大宽度的迁移写法。
 
-本次仅创建计划，保留原计划和现有 `docs/task`。进入任务拆分时再按 AGENTS.md 的规则，清除旧 task 文件后创建本计划的新任务与 README；旧交付记录可从 Git 历史追溯，`docs/plan` 与 `docs/return` 继续保留。
+2026-10-16 用户确认继续后，已按 AGENTS.md 清除旧 task 并创建本计划的新任务与 README。首版 14 个任务及其索引/汇总共 16 个文件保存在[历史归档](../archive/2026-10-14-framework-tasks/README.md)，相关链接已迁移；旧交付也可从 Git 历史追溯。原设计计划与 `docs/return` 审核记录继续保留。

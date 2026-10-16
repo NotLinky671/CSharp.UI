@@ -3,7 +3,7 @@
 - 任务 ID：14
 - 创建日期：2026-10-14
 - 状态：已完成
-- 原计划：[CSharp.UI 框架设计计划](../2026-10-14-declarative-ui-framework-plan.md)
+- 原计划：[CSharp.UI 框架设计计划](../../plan/2026-10-14-declarative-ui-framework-plan.md)
 - 任务索引：[返回任务索引](README.md)
 
 ## 目标与范围

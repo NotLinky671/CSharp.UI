@@ -37,7 +37,7 @@ UiApplication.Run(new Counter());
 | `tests/` | 核心单元测试、文本测试、图形集成测试（xUnit v3） |
 | `tools/CSharp.UI.AssetGenerator` | 生成示例图片资源，保证资源可复现 |
 | `docs/guide` | 入门、API、状态、修饰符、Key、组件、平台与测试说明 |
-| `docs/task` | 14 个任务的实施与验收记录（本仓库的交付依据） |
+| `docs/task` | 当前响应式布局 9 个任务；首版任务与交付记录见 `docs/archive/2026-10-14-framework-tasks` |
 
 ## 快速开始
 
@@ -59,7 +59,7 @@ dotnet run --project tests/CSharp.UI.Tests
 - [编写自定义组件](docs/guide/custom-components.md)
 - [平台、字体与原生依赖](docs/guide/platform-notes.md)
 - [测试指南](docs/guide/testing.md)
-- 设计与任务：[计划](docs/plan/2026-10-14-declarative-ui-framework-plan.md)、[任务索引](docs/task/README.md)
+- 设计与任务：[首版计划](docs/plan/2026-10-14-declarative-ui-framework-plan.md)、[响应式布局计划](docs/plan/2026-10-16-responsive-layout-plan.md)、[当前任务](docs/task/README.md)、[首版验收记录](docs/archive/2026-10-14-framework-tasks/README.md)
 
 ## 首版范围
 

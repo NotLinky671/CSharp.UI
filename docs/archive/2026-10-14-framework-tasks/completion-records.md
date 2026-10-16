@@ -8,7 +8,7 @@
 
 ## 任务 01—13 的返修记录（2026-10-14）
 
-Codex 审核（[docs/return/2026-10-14-code-review.md](../return/2026-10-14-code-review.md)）提出 9 个问题（R01—R09，含 3 个 P1），已全部修复并为每项补充回归测试：
+Codex 审核（[docs/return/2026-10-14-code-review.md](../../return/2026-10-14-code-review.md)）提出 9 个问题（R01—R09，含 3 个 P1），已全部修复并为每项补充回归测试：
 
 | 编号 | 修复位置 | 回归测试 |
 |---|---|---|
@@ -26,7 +26,7 @@ Codex 审核（[docs/return/2026-10-14-code-review.md](../return/2026-10-14-code
 
 ### 复审第二轮（R10、R11）
 
-Codex 复审（[2026-10-14 返修代码复审记录](../return/2026-10-14-code-review-follow-up.md)）确认原 R01—R09 复现用例已通过，并新增两项问题，均已修复：
+Codex 复审（[2026-10-14 返修代码复审记录](../../return/2026-10-14-code-review-follow-up.md)）确认原 R01—R09 复现用例已通过，并新增两项问题，均已修复：
 
 | 编号 | 修复位置 | 回归测试 |
 |---|---|---|

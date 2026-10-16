@@ -18,7 +18,7 @@
 | libSkiaSharp | `SkiaSharp 3.119.4` + `SkiaSharp.NativeAssets.*` | CPU 文本栅格化、图片解码 |
 | libHarfBuzzSharp | `HarfBuzzSharp 8.3.1.5` + `HarfBuzzSharp.NativeAssets.*` | 文本 shaping |
 
-发布检查覆盖 Windows x64、Linux x64、macOS x64/arm64 四种架构（命令与结果见 [../task/14-cross-platform-validation.md](../task/14-cross-platform-validation.md)）。
+发布检查覆盖 Windows x64、Linux x64、macOS x64/arm64 四种架构（命令与结果见 [../task/14-cross-platform-validation.md](../archive/2026-10-14-framework-tasks/14-cross-platform-validation.md)）。
 核心库 `CSharp.UI` **不引用** OpenTK、SkiaSharp 或任何原生库，因此核心单元测试不需要图形上下文。
 
 ## DPI 与三个坐标空间
