@@ -96,6 +96,12 @@ public sealed class ViewNode
     internal double AllocatedMainExtent { get; set; } = double.NaN;
 
     /// <summary>
+    /// 最近的 <see cref="Flow"/> 分行结果（有界缓存）：记录每项最终主轴/交叉轴尺寸与行划分。
+    /// null 表示该节点不是 Flow 或尚未测量。探测作用域退出时随其它测量状态一起恢复。
+    /// </summary>
+    internal FlowLayoutCache? FlowCache { get; set; }
+
+    /// <summary>
     /// 读取该节点当前对外暴露的按轴尺寸特征（显式固定/最小/最大与弹性配额）。
     /// 特征来自视图声明，不从被父约束截断的 <see cref="DesiredSize"/> 反推。
     /// </summary>

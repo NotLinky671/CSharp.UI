@@ -139,6 +139,12 @@ internal sealed class LayoutContext
             $"无界{Describe(axis)}轴：节点 {node.DebugPath} 的 {operation} 需要有限可用空间，已回退自然尺寸。");
     }
 
+    /// <summary>报告当前容器不支持某种直接子项声明的可定位诊断（按节点/轴去重、按轮次限量）。</summary>
+    public void ReportUnsupported(ViewNode node, LayoutAxis axis, string message)
+    {
+        _diagnostics?.Report(new LayoutDiagnosticKey(node, LayoutDiagnosticKind.Unsupported, axis), message);
+    }
+
     private void Measure(ViewNode node, LayoutConstraints constraints, MeasureProposalKind kind, bool intrinsic)
     {
         var parentEnvironment = node.Parent?.Environment ?? Runtime.Environment;
@@ -366,7 +372,8 @@ internal sealed class MeasureProbeScope : IDisposable
         MeasureProposalKind LastProposalKind,
         bool LastMeasureIsIntrinsic,
         double[]? ChildMainAllocation,
-        double AllocatedMainExtent)
+        double AllocatedMainExtent,
+        FlowLayoutCache? FlowCache)
     {
         public static MeasureSnapshot Capture(ViewNode node)
             => new(
@@ -378,7 +385,8 @@ internal sealed class MeasureProbeScope : IDisposable
                 node.LastProposalKind,
                 node.LastMeasureIsIntrinsic,
                 node.ChildMainAllocation,
-                node.AllocatedMainExtent);
+                node.AllocatedMainExtent,
+                node.FlowCache);
 
         public void Restore(ViewNode node)
         {
@@ -391,6 +399,7 @@ internal sealed class MeasureProbeScope : IDisposable
             node.LastMeasureIsIntrinsic = LastMeasureIsIntrinsic;
             node.ChildMainAllocation = ChildMainAllocation;
             node.AllocatedMainExtent = AllocatedMainExtent;
+            node.FlowCache = FlowCache;
         }
     }
 }

@@ -8,6 +8,9 @@ internal enum LayoutDiagnosticKind
 
     /// <summary>无界：需要有限可用空间的操作遇到了无界约束。</summary>
     Unbounded = 1,
+
+    /// <summary>不支持：当前容器不接受某种直接子项声明（例如 Flow 直接子项的 Flex 权重）。</summary>
+    Unsupported = 2,
 }
 
 /// <summary>布局诊断的去重键：同一节点、同一类别、同一轴视为同一类稳定问题。</summary>

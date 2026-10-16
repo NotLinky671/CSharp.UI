@@ -25,6 +25,7 @@
 | `View` | 视图描述基类（不可变、可重复声明） |
 | `Component` | 组件基类，`protected abstract View Build()`；`protected State<T> UseState<T>(string name, T initialValue)`、`UseBinding<T>(...)` |
 | `VStack` / `HStack` / `ZStack` | 垂直 / 水平 / 层叠布局；`.Spacing(...)`、`.Align(...)` |
+| `Flow` | 自动换行布局：`.Spacing(...)`（项间距）、`.LineSpacing(...)`（行间距）、`.Align(Alignment)`（行内对齐） |
 | `Spacer` / `Spacer(double fixedSize)` | 吸收剩余空间 / 固定空隙 |
 | `ScrollView(View content, ScrollAxis axis)` | 单轴滚动容器，保留滚动位置；`WheelSensitivity`（有限非负，默认 1）缩放滚轮距离 |
 | `Text` | 文本；`.WithFont(...)`、`.Wrap(maxLines)`、`.Align(...)`、`.Ellipsis()`、`.WithLineHeight(...)` |
@@ -57,6 +58,21 @@
 - **同轴嵌套外层生效**：外层 `.Flex()`/`.FillWidth()` 完整覆盖内层的弹性声明（grow/shrink、basis、min/max 与 FillWidth 的填充标记都不叠加、不残留内层值），只有 `.Frame(...)` 的硬性固定/最小/最大声明会被保留；不同轴独立处理。
 - `.FillWidth()` 覆盖内层 `.Flex()` 的显式 basis：基准回到自然尺寸，因此宽度无界时按契约回退自然宽度，而不是继续使用内层 basis。
 - 参数在声明时校验：权重与显式 basis/min 必须有限且非负，`max` 允许正无穷，禁止 NaN，且 `min ≤ max`。
+
+## 自动换行 Flow
+
+| 类型 | 说明 |
+|---|---|
+| `Flow(params View[] children)` / `Flow(IReadOnlyList<View>)` | 按声明顺序从左到右贪心分行；子项顺序与身份不变 |
+| `Spacing` / `.Spacing(double)` | 行内项目间距（有限非负，默认 0） |
+| `LineSpacing` / `.LineSpacing(double)` | 行与行之间的间距（有限非负，默认 0） |
+| `LineAlignment` / `.Align(Alignment)` | 行内交叉轴对齐：`Start`（默认，顶部）/ `Center` / `End`（`Stretch` 会拉伸到行高） |
+
+- 行宽来自父级提供的逻辑约束并保留小数：`width < breakpoint` 与断点无关，本容器直接使用可用宽度；宽度无界时所有项目排成单行、使用自然尺寸。
+- 行高由该行最终测量后的最高项目决定；整体高度按行间距累加，可直接作为纵向 `ScrollView` 的内容，宽度变化会更新内容高度与滚动边界。
+- 不可压缩的硬固定项目（`.Frame(width:...)`、`.Frame(minWidth:...)`、`Rectangle.FixedSize`）宽于整行时独占一行并输出可定位溢出诊断；可重新测量的普通超宽内容按整行宽度重新测量。空容器、零宽项目、正好放满都有确定行为。
+- `.FillWidth()` 作为“占整行”的请求独占一行（不参与逐行权重分配）；无界宽度时回退自然尺寸。
+- 第一版不做逐行 Flex 权重分配：直接子项的 `.Flex()` 会输出可定位不支持诊断，请把弹性表单项放入内嵌 `HStack`/`AdaptiveStack`。
 
 ## 状态与绑定
 
