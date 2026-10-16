@@ -77,6 +77,18 @@ public abstract class View
     }
 
     /// <summary>
+    /// 该节点读取的状态发生变化时的更新派发：组件节点重建 <c>Build</c>，
+    /// <see cref="Responsive"/> 节点重建动态内容；其它视图默认不处理。
+    /// </summary>
+    /// <remarks>
+    /// 状态依赖集合同时保存普通组件节点与动态内容节点，因此这里必须区分更新目标，
+    /// 不能只在“视图是 Component”时才失效。
+    /// </remarks>
+    internal virtual void OnStateDependencyChanged(ViewNode node)
+    {
+    }
+
+    /// <summary>
     /// 需要定时唤醒重绘时返回下一次唤醒的相对延迟（例如 TextField 光标闪烁）；
     /// 返回 null 表示不需要定时唤醒。
     /// </summary>

@@ -538,6 +538,9 @@ public class ResponsiveTests
         // 异常后队列与阶段标志被清理，不再残留请求。
         Assert.Equal(0, runtime.PendingResponsiveRequestCount);
 
+        // 循环路径也不会把状态读取作用域泄漏到构建之外。
+        Assert.Null(BuildTracker.Current);
+
         // 稳定下来的合法更新可恢复。
         host.StopAlternating();
         runtime.ProcessPendingWork();

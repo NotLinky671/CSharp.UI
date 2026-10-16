@@ -6,14 +6,22 @@ namespace CSharp.UI;
 internal readonly record struct ResponsiveRequest(ResponsiveInfo Info, int Revision);
 
 /// <summary>
-/// <see cref="Responsive"/> 节点的内容事务状态：描述版本、已稳定内容签名与单轮重建预算计数。
+/// <see cref="Responsive"/> 节点的内容事务状态：描述版本、已稳定内容签名、单轮重建预算计数，
+/// 以及 builder 的状态读取依赖（独立读取作用域）。
 /// </summary>
 /// <remarks>
 /// 描述版本使“同宽的新 builder 描述”仍重建一次；已稳定签名用于在返回旧提案时撤销过时请求。
 /// 每轮计数在两个 <c>ProcessPendingWork</c> 调用之间重置，因此持续宽度变化不会被累计误判为循环。
+/// 依赖集合在每次成功构建后整体替换（条件读取被取消后不再触发），节点卸载时全部释放。
 /// </remarks>
-internal sealed class ResponsiveContentState
+internal sealed class ResponsiveContentState : IStateReadScope
 {
+    private readonly ViewNode _owner;
+    private readonly List<StateBase> _reads = [];
+    private HashSet<StateBase> _readDependencies = [];
+
+    public ResponsiveContentState(ViewNode owner) => _owner = owner;
+
     /// <summary>描述/内容版本；协调器替换描述或显式失效内容时递增。</summary>
     public int Revision;
 
@@ -37,6 +45,71 @@ internal sealed class ResponsiveContentState
 
     /// <summary>该轮次内的重建次数（按节点计，不与其它节点共用全局 8 轮）。</summary>
     public int RebuildsInPass;
+
+    /// <summary>builder 当前登记的状态读取依赖数量（诊断与回归用）。</summary>
+    public int ReadDependencyCount => _readDependencies.Count;
+
+    /// <inheritdoc />
+    bool IStateReadScope.IsDynamicContentBuild => true;
+
+    /// <inheritdoc />
+    public void RecordRead(StateBase state)
+    {
+        if (!_reads.Contains(state))
+        {
+            _reads.Add(state);
+        }
+    }
+
+    /// <summary>开始一次 builder 读取作用域：清空上次读取记录并栈式推入跟踪。</summary>
+    public BuildTracker.Scope BeginReads()
+    {
+        _reads.Clear();
+        return BuildTracker.Push(this);
+    }
+
+    /// <summary>
+    /// 结束一次成功构建：把本次读取集合替换为依赖集合（移除不再读取的订阅、补登记新订阅）。
+    /// builder 抛出异常时不调用，保留上一次成功内容的依赖。
+    /// </summary>
+    public void CommitReads()
+    {
+        var next = new HashSet<StateBase>(_reads);
+        foreach (var state in _readDependencies)
+        {
+            if (!next.Contains(state))
+            {
+                state.RemoveDependent(_owner);
+            }
+        }
+
+        foreach (var state in next)
+        {
+            if (!_readDependencies.Contains(state))
+            {
+                state.AddDependent(_owner);
+            }
+        }
+
+        _readDependencies = next;
+        _reads.Clear();
+    }
+
+    /// <summary>节点卸载：释放 builder 读取的全部状态订阅。</summary>
+    public void ReleaseDependencies()
+    {
+        foreach (var state in _readDependencies)
+        {
+            state.RemoveDependent(_owner);
+        }
+
+        _readDependencies.Clear();
+        _reads.Clear();
+    }
+
+    /// <summary>按节点取回或创建事务状态。</summary>
+    public static ResponsiveContentState GetOrCreate(ViewNode node)
+        => node.ResponsiveContent ??= new ResponsiveContentState(node);
 }
 
 /// <summary>
@@ -81,7 +154,7 @@ internal sealed class ResponsiveTransactionManager
             return;
         }
 
-        var state = node.ResponsiveContent ??= new ResponsiveContentState();
+        var state = ResponsiveContentState.GetOrCreate(node);
         state.HasLastInfo = true;
         state.LastInfo = info;
 
@@ -103,19 +176,18 @@ internal sealed class ResponsiveTransactionManager
     /// </summary>
     public void MarkDescriptionChanged(ViewNode node)
     {
-        var state = node.ResponsiveContent ??= new ResponsiveContentState();
+        var state = ResponsiveContentState.GetOrCreate(node);
         state.Revision++;
     }
 
     /// <summary>
-    /// 请求内容重建的通用入口（供后续状态依赖接入）；递增版本使同宽内容也重建一次。
+    /// 请求内容重建的通用入口（状态依赖与显式失效共用）；递增版本使同宽内容也重建一次。
     /// 已测量过的节点会直接排队（复用最近的最终有效提案）；运行时仅在测量递归深度受限、无法完成布局时
     /// 先消费它替换过深旧内容，再重试布局。正常布局仍以本轮测量得到的最终有效提案为准。
-    /// 本阶段不改变任何状态语义，仅提供清晰接入点。
     /// </summary>
     public void InvalidateContent(ViewNode node)
     {
-        var state = node.ResponsiveContent ??= new ResponsiveContentState();
+        var state = ResponsiveContentState.GetOrCreate(node);
         state.Revision++;
         QueueIfMeasured(node, state);
     }

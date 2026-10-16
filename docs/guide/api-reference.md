@@ -90,12 +90,31 @@
 - 复用统一 Stack 算法：`FlexAxis.Main` 随当前模式的最近 Stack 主轴解释，显式 `FlexAxis.Horizontal` 的宽度 basis 在纵向模式下不会变成高度。
 - 窄模式的 Spacer 与普通 VStack 一致（仅在主轴有界时吸收剩余空间）；宽模式与 HStack 一致。
 
+## 任意内容分支 Responsive
+
+| 类型 | 说明 |
+|---|---|
+| `Responsive(Func<ResponsiveInfo, View> builder)` | 按父容器最终有效逻辑宽度选择内容结构；有界宽度占满所分配宽度、高度自然展开，宽度无界时使用自然尺寸 |
+| `ResponsiveInfo` | 只读 `AvailableWidth` / `IsWidthBounded`；构造器拒绝 NaN、负宽度以及“有界标记与有限性不一致”，属性不可 `set`/`init` |
+
+- **只在安全阶段构建**：测量（含探测与自然尺寸测量）只登记最终有效宽度提案，不执行 builder、不协调/卸载节点；
+  `UiRuntime` 在重建与布局之间执行 builder 并重新布局到稳定后才绘制。同一节点一轮内多次提案合并为最后一次有效提案，
+  短时间连续的状态与宽度变化只构建一次。
+- **builder 是纯描述构建**：可以读取已有的 `State<T>`（自动登记为动态内容的依赖，状态变化后只重建该内容），
+  但不得写状态（写入相同值同样抛出 `InvalidOperationException`）、不得创建 `UseState`、不得执行 IO 或操作窗口
+  （`SetViewport`/`SetEnvironment`/`BuildFrame` 等）。状态所有权仍只属于外层 `Component.Build`。
+- **依赖随条件切换清理**：每次成功构建后依赖集合被整体替换，条件分支移除后不再触发构建；builder 抛错时保留上一次成功内容的依赖并恢复读取作用域，
+  节点卸载后丢弃过时请求、不再构建。动态内容循环与整体工作预算受限，并给出带节点路径的诊断。
+- **内容切换沿用协调规则**：同父级同 Key/类型的节点复用；跨父级或类型变化会真正卸载并清理焦点、指针捕获、选区与
+  布局/绘制阶段补登记的绑定依赖。需要跨分支保持输入焦点和本地编辑状态时优先使用 `AdaptiveStack`；
+  持久数据放在外层 `State`/`Binding`，框架不承诺跨父级迁移焦点或本地编辑状态。
+
 ## 状态与绑定
 
 | 类型 | 说明 |
 |---|---|
-| `State<T>` | `Value` 读写；读取登记依赖，写入在值变化时通知依赖组件；`PeekValue()` 不登记依赖 |
-| `Binding<T>` | `Value` 双向读写；`Binding.From(get, set)`、`Binding.Constant(value)`、`Binding.Select(...)`；`State<T>` 可隐式转换为 `Binding<T>` |
+| `State<T>` | `Value` 读写；读取登记依赖（组件 `Build` 与 `Responsive` builder 各自独立作用域），写入时把变化派发到对应更新目标；`PeekValue()` 不登记依赖 |
+| `Binding<T>` | `Value` 双向读写；`Binding.From(get, set)`、`Binding.Constant(value)`、`Binding.Select(...)`；`State<T>` 可隐式转换为 `Binding<T>`；`Read(node)` 在构建之外补登记长期依赖，读取它的节点卸载或被替换描述时释放 |
 
 ## 输入事件（平台无关）
 

@@ -236,6 +236,10 @@ public sealed class UiRuntime : IDisposable
     /// 控件在测量/绘制阶段通过 <see cref="Binding{T}.Read"/> 读取绑定时使用，
     /// 覆盖绑定被保存在字段、构建期未显式读取状态的场景。
     /// </summary>
+    /// <remarks>
+    /// 登记同时记录在读取它的 <paramref name="node"/> 上：动态内容切换移除该控件时，
+    /// 对应订阅随节点卸载释放，不会残留到已经无关的组件或响应式内容上。
+    /// </remarks>
     public void RegisterBindingDependency(ViewNode node, StateBase state)
     {
         ArgumentNullException.ThrowIfNull(node);
@@ -244,10 +248,34 @@ public sealed class UiRuntime : IDisposable
         {
             if (current.ComponentState is { } componentState)
             {
-                componentState.AddExtraDependency(state);
+                var registrations = node.BindingDependencyRegistrations ??= [];
+                if (registrations.Add((componentState, state)))
+                {
+                    componentState.AddExtraDependency(state);
+                }
+
                 return;
             }
         }
+    }
+
+    /// <summary>
+    /// 节点卸载或描述被替换前，释放它在布局/绘制阶段补登记的绑定依赖。
+    /// 控件换用新的绑定后不能继续持有旧来源状态的订阅。
+    /// </summary>
+    internal void ReleaseBindingDependencies(ViewNode node)
+    {
+        if (node.BindingDependencyRegistrations is not { Count: > 0 } registrations)
+        {
+            return;
+        }
+
+        foreach (var (owner, state) in registrations)
+        {
+            owner.RemoveExtraDependency(state);
+        }
+
+        registrations.Clear();
     }
 
     /// <summary>
@@ -263,7 +291,8 @@ public sealed class UiRuntime : IDisposable
 
     /// <summary>
     /// 请求重新构建某个 <see cref="Responsive"/> 节点的内容，即使宽度不变。
-    /// 这是后续状态依赖（RL-06）的接入点：当前不改变状态语义，也不会自动订阅状态。
+    /// 状态依赖（builder 读取的 <see cref="State{T}"/> 变化）与显式失效共用该入口；
+    /// 只登记内容请求并使布局失效，不在通知路径中同步执行 builder。
     /// </summary>
     internal void InvalidateResponsiveContent(ViewNode node)
     {
@@ -278,27 +307,36 @@ public sealed class UiRuntime : IDisposable
     }
 
     /// <summary>执行一次响应式内容构建并协调结果；只在安全阶段由事务消费者调用。</summary>
+    /// <remarks>
+    /// builder 有一个独立的、栈式的状态读取作用域：成功返回后把本次读取替换为该节点的依赖集合
+    /// （条件读取被移除后不再触发构建），抛出异常时保留上一次成功内容的依赖并恢复此前的 tracker。
+    /// </remarks>
     internal void ExecuteResponsiveContent(ViewNode node, Responsive responsive, ResponsiveRequest request)
     {
         ResponsiveBuildCount++;
+        var state = ResponsiveContentState.GetOrCreate(node);
         View built;
-        try
+        using (state.BeginReads())
         {
-            built = responsive.Builder(request.Info)
-                ?? throw new InvalidOperationException(
-                    $"Responsive 在节点 {node.ShortDebugPath()} 返回了 null 视图；builder 必须返回内容描述。");
-        }
-        catch (Exception ex) when (ex is not OutOfMemoryException)
-        {
-            ReportDiagnostic(
-                $"构建响应式内容失败：节点 {node.ShortDebugPath()}（可用宽度 " +
-                $"{(request.Info.IsWidthBounded ? request.Info.AvailableWidth.ToString("0.###") : "无界")}）：{ex.Message}");
-            throw;
+            try
+            {
+                built = responsive.Builder(request.Info)
+                    ?? throw new InvalidOperationException(
+                        $"Responsive 在节点 {node.ShortDebugPath()} 返回了 null 视图；builder 必须返回内容描述。");
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                ReportDiagnostic(
+                    $"构建响应式内容失败：节点 {node.ShortDebugPath()}（可用宽度 " +
+                    $"{(request.Info.IsWidthBounded ? request.Info.AvailableWidth.ToString("0.###") : "无界")}）：{ex.Message}");
+                throw;
+            }
+
+            state.CommitReads();
         }
 
         Reconciler.ReconcileDynamicContent(node, built);
 
-        var state = node.ResponsiveContent!;
         state.HasContent = true;
         state.StableInfo = request.Info;
         state.StableRevision = request.Revision;
@@ -558,6 +596,8 @@ public sealed class UiRuntime : IDisposable
         _focus.OnNodeUnmounting(node);
         _router.OnNodeUnmounting(node);
         _responsiveTransactions.Remove(node);
+        ReleaseBindingDependencies(node);
+        node.ResponsiveContent?.ReleaseDependencies();
         node.ResponsiveContent = null;
     }
 

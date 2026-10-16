@@ -113,4 +113,50 @@ public class ResponsiveIntegrationTests
         Assert.True(narrowBody.Frame.Height < wideHeight, "窄分支内容更少，高度应变小。");
         Assert.Equal(narrowBody.Frame.Height, runtime.Root.FindDescendants<Text>().Last().Frame.Y, 3);
     }
+
+    [Fact]
+    public void Responsive_BuilderStateRead_ReBuildsRealTextAndUpdatesScrollRange()
+    {
+        var host = new StateDrivenHost();
+        using var runtime = CreateRuntime(host, new Size(300, 120));
+
+        var body = runtime.Root.FindDescendants<Text>().First();
+        Assert.Equal(StateDrivenHost.LongText, Assert.IsType<Text>(body.View).Content);
+        var longLayout = (TextLayoutResult)body.ViewCache!;
+        Assert.True(longLayout.Lines.Count > 1, $"宽布局应真实换行，实际行数 {longLayout.Lines.Count}。");
+
+        // builder 直接读取状态、外层组件不读取：内容仍必须按新文本重新排版并向上汇总高度。
+        host.Text!.Value = "short";
+        runtime.ProcessPendingWork();
+
+        var updated = runtime.Root.FindDescendants<Text>().First();
+        Assert.Same(body, updated);
+        Assert.Equal("short", Assert.IsType<Text>(updated.View).Content);
+        Assert.Single(((TextLayoutResult)updated.ViewCache!).Lines);
+        Assert.True(updated.Frame.Height < longLayout.Size.Height, "换成短文本后高度应变小。");
+        Assert.Equal(1, host.Builds);
+        Assert.Equal(updated.Frame.Height, runtime.Root.FindDescendants<Text>().Last().Frame.Y, 3);
+    }
+
+    /// <summary>builder 直接读取文本状态；外层组件不读取它。</summary>
+    private sealed class StateDrivenHost : Component
+    {
+        public const string LongText =
+            "State driven responsive paragraph. 状态驱动的响应式段落，用于确认 builder 读取的状态变化后真实重新排版。"
+            + "Second sentence keeps wrapping across several lines so the height changes when the text becomes short. "
+            + "第三句继续增加内容，确保宽布局下换行行数明显多于一行。";
+
+        public State<string>? Text { get; private set; }
+
+        public int Builds { get; private set; }
+
+        protected override View Build()
+        {
+            Builds++;
+            Text = UseState("text", LongText);
+            return new ScrollView(new VStack(
+                new Responsive(_ => new Text(Text.Value).Wrap()),
+                new Text("tail")));
+        }
+    }
 }

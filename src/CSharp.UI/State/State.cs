@@ -30,6 +30,16 @@ public sealed class State<T> : StateBase
         set
         {
             EnsureUiThread();
+            if (BuildTracker.IsDynamicContentBuild)
+            {
+                // 契约检查先于相等性短路：写入相同的值同样违反“builder 只做纯描述构建”，
+                // 不能因为值没变就被静默接受。
+                throw new InvalidOperationException(
+                    $"Responsive builder 内不能写状态 {Name}：builder 必须是纯描述构建。" +
+                    "写状态（即使写入相同值）、执行 IO 或操作窗口都会破坏收敛与状态所有权；" +
+                    "请在事件处理或外层 Component 中修改状态。");
+            }
+
             if (EqualityComparer<T>.Default.Equals(_value, value))
             {
                 return;
@@ -127,10 +137,15 @@ public sealed class Binding<T>
     }
 }
 
-/// <summary>状态基类：保存名称、所属节点与依赖它的组件节点集合。</summary>
+/// <summary>状态基类：保存名称、所属节点与依赖它的组件/动态内容节点集合。</summary>
+/// <remarks>
+/// 同一节点可以对同一状态有多种登记来源（构建期读取、绑定补登记）；依赖集合按节点引用计数，
+/// 只有最后一个来源释放后才会真正移除订阅，避免“移除附加绑定依赖”误删仍然有效的构建依赖。
+/// </remarks>
 public abstract class StateBase
 {
     private readonly List<ViewNode> _dependents = [];
+    private readonly Dictionary<ViewNode, int> _dependentRefs = new(ReferenceEqualityComparer.Instance);
 
     internal StateBase(string name, ViewNode owner)
     {
@@ -150,15 +165,36 @@ public abstract class StateBase
 
     internal void AddDependent(ViewNode node)
     {
-        if (!_dependents.Contains(node))
+        var count = _dependentRefs.TryGetValue(node, out var existing) ? existing : 0;
+        _dependentRefs[node] = count + 1;
+        if (count == 0)
         {
             _dependents.Add(node);
         }
     }
 
-    internal void RemoveDependent(ViewNode node) => _dependents.Remove(node);
+    internal void RemoveDependent(ViewNode node)
+    {
+        if (!_dependentRefs.TryGetValue(node, out var count))
+        {
+            return;
+        }
 
-    internal void ClearDependents() => _dependents.Clear();
+        if (count <= 1)
+        {
+            _dependentRefs.Remove(node);
+            _dependents.Remove(node);
+            return;
+        }
+
+        _dependentRefs[node] = count - 1;
+    }
+
+    internal void ClearDependents()
+    {
+        _dependents.Clear();
+        _dependentRefs.Clear();
+    }
 
     internal abstract void RecordRead();
 
@@ -179,7 +215,9 @@ public abstract class StateBase
         {
             if (node.IsMounted)
             {
-                node.Runtime.InvalidateComponent(node);
+                // 依赖节点可能是普通组件，也可能是动态内容（Responsive）节点：
+                // 由视图把失效派发到自己的更新目标，不能因“不是 Component”而丢弃。
+                node.View.OnStateDependencyChanged(node);
             }
         }
     }

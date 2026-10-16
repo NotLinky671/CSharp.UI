@@ -185,6 +185,10 @@ internal static class Reconciler
         var next = descriptor.View;
         node.View = next;
 
+        // 描述被替换：旧绑定在布局/绘制阶段补登记的长期依赖必须先释放，
+        // 否则复用同一节点换用新绑定后仍会残留旧来源状态的订阅。
+        node.Runtime.ReleaseBindingDependencies(node);
+
         if (!next.IsLayoutEquivalent(previous))
         {
             node.InvalidateLayout();

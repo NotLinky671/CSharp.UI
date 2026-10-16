@@ -71,7 +71,13 @@ public readonly record struct ResponsiveInfo
 /// </para>
 /// <para>
 /// 内容切换沿用现有协调规则：同父级同 Key/类型的子节点复用，类型或 Key 变化会卸载旧分支。
-/// 跨分支保持输入焦点等编辑状态应使用 <see cref="AdaptiveStack"/>。本阶段不提供状态依赖能力。
+/// 跨分支保持输入焦点等编辑状态应使用 <see cref="AdaptiveStack"/>。
+/// </para>
+/// <para>
+/// <b>状态依赖</b>：builder 读取 <see cref="State{T}"/> 时登记在该节点上，状态变化只重建这段动态内容，不重建外层组件；
+/// 每次成功构建后依赖集合被整体替换，条件分支移除后不再触发构建。builder 必须是纯描述构建：
+/// 不得写状态（写入相同值同样抛出 <see cref="InvalidOperationException"/>）、不得创建 <c>UseState</c>，
+/// 也不得执行 IO 或操作窗口；状态所有权只属于外层 <see cref="Component"/>。
 /// </para>
 /// </remarks>
 public sealed class Responsive : View
@@ -92,6 +98,13 @@ public sealed class Responsive : View
 
     /// <summary>最终布局依赖有效提案（动态内容需要父级最终宽度才能构建）。</summary>
     internal override bool RequiresEffectiveProposal => true;
+
+    /// <summary>
+    /// builder 读取的状态变化时重建动态内容：该节点以自身身份登记为状态依赖，
+    /// 失效必须派发到内容重建（而不是因为不是 Component 被忽略）。
+    /// </summary>
+    internal override void OnStateDependencyChanged(ViewNode node)
+        => node.Runtime.InvalidateResponsiveContent(node);
 
     // 描述身份由协调器按引用替换；新描述必须让内容按新 builder 重建一次，因此不做布局等价判断。
     // 既有子树由 Reconciler 保留到安全阶段，不能在这里按空 Children 清空。

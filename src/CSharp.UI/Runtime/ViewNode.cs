@@ -132,6 +132,12 @@ public sealed class ViewNode
 
     internal ComponentState? ComponentState { get; set; }
 
+    /// <summary>
+    /// 该节点在测量/绘制阶段通过 <see cref="Binding{T}.Read"/> 补登记的长期依赖
+    /// （来源组件 + 来源状态，按节点去重）。节点卸载时逐条释放，动态内容移除控件不会残留订阅。
+    /// </summary>
+    internal HashSet<(ComponentState Owner, StateBase State)>? BindingDependencyRegistrations { get; set; }
+
     internal Component? ComponentInstance { get; set; }
 
     internal List<IDisposable>? Resources { get; set; }
