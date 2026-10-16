@@ -46,14 +46,21 @@ new HStack(
     new Text("名称"),
     new TextField(name.ToBinding()).FillWidth())
     .Spacing(8)
+
+// 宽度上限：窄容器里自动收缩到父级可用宽度
+new FrameView(
+    new Text("较长的说明文字").Wrap(),
+    maxWidth: 360,
+    alignment: Alignment.Start)
 ```
 
 - **外层优先（完整覆盖）**：`.Flex(...).FillWidth()` 与 `.FillWidth().Flex(...)` 都以外层同轴声明为准；内层的 grow/shrink、basis、min/max 与 FillWidth 的填充标记都不叠加、不残留，只有 `.Frame(...)` 的硬性固定/最小/最大声明会被保留。不同轴独立处理。
 - **FillWidth 的基准**：`.FillWidth()` 覆盖内层 `.Flex()` 的显式 basis，基准回到自然尺寸；宽度无界时因此回退自然宽度，而不是沿用内层 basis。
 - **固定 Frame 不被取消**：`.Frame(width: 240)` 保持 240，即使外层再写 `.Flex(shrink: 1)` 或 `.FillWidth()`；需要可压缩时改用 `basis`。
-- **上限仍生效**：`.Frame(maxWidth: 300).FillWidth()` 与 `.FillWidth().Frame(maxWidth: 300)` 都把实际内容矩形限制在 300（不只是期望尺寸）。
+- **上限仍生效**：`new FrameView(content, maxWidth: 300).FillWidth()` 与 `new FrameView(content.FillWidth(), maxWidth: 300)` 都把实际内容矩形限制在 300（不只是期望尺寸）。声明的 `maxWidth`/`maxHeight` 只是上限，子项实际可用尺寸取父级约束与声明的较小者，所以窄容器里文字按更窄的宽度换行/省略。范围重载参数较多时直接使用 `FrameView` 构造器（如上），或写全 `Frame(width: null, height: null, minWidth: null, minHeight: null, maxWidth: 300, maxHeight: null, alignment: Alignment.Start)`。
 - **轴向**：`FlexAxis.Main` 由最近的堆叠容器解析（VStack 垂直、HStack 水平）；`FlexAxis.Horizontal`/`Vertical` 固定不变，容器切换主轴时不会把宽度 basis 变成高度。
 - **旧语义保持**：未使用 `Flex`/`FillWidth` 的堆叠完全沿用原行为（例如 `Spacer` 吸收全部剩余空间）。
+- 响应式组合（`Flow`、`AdaptiveStack`、`Responsive`）与固定尺寸迁移见[响应式布局：使用与迁移](responsive-layout.md)。
 
 ## 与布局无关的修饰符
 

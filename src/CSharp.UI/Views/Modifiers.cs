@@ -150,7 +150,9 @@ public sealed class FrameView : ModifierView
 
             if (MaxWidth is { } maxWidth)
             {
-                childConstraints = childConstraints.WithMaxWidth(maxWidth);
+                // 外框声明的 maxWidth 是上限而不是对父级的扩张：子项实际可用宽度取父级上限与声明的较小者，
+                // 否则文字会按更宽的声明排版，却在更窄的容器里被截断（窄容器下省略/换行结果错误）。
+                childConstraints = childConstraints.WithMaxWidth(Math.Min(childConstraints.MaxWidth, maxWidth));
             }
         }
 
@@ -167,7 +169,8 @@ public sealed class FrameView : ModifierView
 
             if (MaxHeight is { } maxHeight)
             {
-                childConstraints = childConstraints.WithMaxHeight(maxHeight);
+                // 与 maxWidth 对称：高度上限不得把子项约束扩张到父级之上。
+                childConstraints = childConstraints.WithMaxHeight(Math.Min(childConstraints.MaxHeight, maxHeight));
             }
         }
 

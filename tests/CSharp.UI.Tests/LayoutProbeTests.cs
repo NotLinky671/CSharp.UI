@@ -570,6 +570,29 @@ public class LayoutProbeTests
     }
 
     [Fact]
+    public void FrameMaxWidth_ClampsChildMeasurementToParentAvailableWidth()
+    {
+        // RL-07：外框声明的 maxWidth 不能把子项约束扩张到父级之上；窄容器下文字必须按实际可用宽度排版。
+        using (var narrow = new TestApp(
+            new VStack(new FrameView(new Text("窄容器中的最大宽度限制"), maxWidth: 320, alignment: Alignment.Start)),
+            new Size(200, 300)))
+        {
+            narrow.Frame();
+            var child = narrow.Runtime.Root.Children[0].Children[0];
+            Assert.Equal(200, child.LastConstraints.MaxWidth, 3);
+        }
+
+        using (var wide = new TestApp(
+            new VStack(new FrameView(new Text("宽容器中的最大宽度限制"), maxWidth: 320, alignment: Alignment.Start)),
+            new Size(600, 300)))
+        {
+            wide.Frame();
+            var child = wide.Runtime.Root.Children[0].Children[0];
+            Assert.Equal(320, child.LastConstraints.MaxWidth, 3);
+        }
+    }
+
+    [Fact]
     public void Component_ForwardsContentSizeFeatures()
     {
         using var app = new TestApp(new FixedWidthComponent(), new Size(400, 300));

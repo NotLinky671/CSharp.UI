@@ -94,13 +94,16 @@ public sealed class Counter : Component
 |---|---|---|
 | `samples/CSharp.UI.Samples.Counter` | 组件、状态、按钮与键盘激活 | `dotnet run --project samples/CSharp.UI.Samples.Counter` |
 | `samples/CSharp.UI.Samples.TodoList` | TextField + Binding + 带键 `ForEach` + 增删重排 + ScrollView | `dotnet run --project samples/CSharp.UI.Samples.TodoList` |
-| `samples/CSharp.UI.Samples.ControlGallery` | 全部首版控件、布局、修饰符、主题、图片与中英文文本 | `dotnet run --project samples/CSharp.UI.Samples.ControlGallery` |
+| `samples/CSharp.UI.Samples.ControlGallery` | 全部首版控件、布局、修饰符、主题、图片与中英文文本；在 320/480/768/1024 逻辑宽度下使用响应式布局 | `dotnet run --project samples/CSharp.UI.Samples.ControlGallery` |
+
+控件展示工程还包含可独立实例化的 `NestedResponsiveExample`：在同一个窗口并排展示宽/窄两个父容器，各自选择不同布局分支。
 
 三份示例代码完全相同地适用于 Windows、macOS 与 Linux；宿主差异（GLFW、字体回退、剪贴板）由框架处理。
 
 ## 下一步
 
 - [公开 API 参考](api-reference.md)
+- [响应式布局：使用与迁移](responsive-layout.md)
 - [状态与生命周期](state-lifecycle.md)
 - [修饰符顺序](modifier-order.md)
 - [Key 与动态列表](keys-and-lists.md)

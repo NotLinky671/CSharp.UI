@@ -46,6 +46,14 @@ protected override View Build()
 - 节点卸载后丢弃尚未消费的过时内容请求，不再执行 builder。
 - builder 必须是**纯描述构建**：不得写状态（写入相同值也抛出 `InvalidOperationException`）、不得创建 `UseState`、不得执行 IO 或操作窗口（`SetViewport`/`SetEnvironment`/`BuildFrame` 等）。需要改状态时请在事件处理或外层组件中进行。
 
+## 布局切换时的状态身份
+
+- `AdaptiveStack` 始终是同一个运行时父节点与同一批子节点，只切换横/纵排列：输入框文本、光标、选区、焦点、组件 `UseState` 与内层 `ScrollView` 滚动位置在宽窄切换时保持。
+- `Responsive` 的分支切换沿用协调规则：同父级同 Key/类型复用，跨父级或类型变化会卸载旧分支。持久数据请放在外层 `State`/`Binding`；框架**不承诺跨父级迁移焦点或本地编辑状态**。
+- 需要跨断点继续编辑的输入场景优先使用 `AdaptiveStack`；需要按宽度换整块结构时使用 `Responsive`，并把焦点相关交互限制在稳定分支内。
+
+详见[响应式布局：使用与迁移](responsive-layout.md)。
+
 ## 更新与绘制
 
 ```csharp

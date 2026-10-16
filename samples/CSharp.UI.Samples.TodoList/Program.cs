@@ -25,15 +25,23 @@ public sealed class TodoApp : Component
         var remaining = current.Count(i => !i.Done);
 
         return new VStack(
-            new HStack(
-                new Text("待办清单").WithFont(FontDescription.Default.WithSize(22)),
+            // 页头与表单行使用稳定 AdaptiveStack：空间不足时标签/输入与按钮改为上下排列。
+            new AdaptiveStack(
+                560,
+                new Text("待办清单").WithFont(FontDescription.Default.WithSize(22)).Wrap(),
                 new Spacer(),
-                new Button(theme.Value.IsDark ? "切换到明亮主题" : "切换到暗色主题", () => theme.Value = theme.Value.IsDark ? Theme.Light : Theme.Dark)),
-            new HStack(
-                new TextField(draft.ToBinding(), "输入待办内容后回车或点击添加"),
+                new Button(theme.Value.IsDark ? "切换到明亮主题" : "切换到暗色主题", () => theme.Value = theme.Value.IsDark ? Theme.Light : Theme.Dark))
+                .Spacing(12)
+                .VerticalSpacing(8)
+                .Align(Alignment.Start),
+            new AdaptiveStack(
+                560,
+                new TextField(draft.ToBinding(), "输入待办内容后回车或点击添加").FillWidth(),
                 new Button("添加", () => items.Value = Add(current, draft.Value, draft)),
-                new Button("清空已完成", () => items.Value = [.. current.Where(i => !i.Done)])),
-            new Text($"剩余 {remaining} 项 / 共 {current.Count} 项").WithFont(FontDescription.Default.WithSize(12)),
+                new Button("清空已完成", () => items.Value = [.. current.Where(i => !i.Done)]))
+                .Spacing(8)
+                .VerticalSpacing(6),
+            new Text($"剩余 {remaining} 项 / 共 {current.Count} 项").WithFont(FontDescription.Default.WithSize(12)).Wrap(),
             new ScrollView(
                 new VStack(
                     new ForEach<TodoItem>(
@@ -48,7 +56,8 @@ public sealed class TodoApp : Component
                     .Spacing(6))
                 .Frame(height: 260),
             new Text("列表项使用稳定键；重排或删除后，每行的状态仍属于原来的项目。")
-                .WithFont(FontDescription.Default.WithSize(12)))
+                .WithFont(FontDescription.Default.WithSize(12))
+                .Wrap())
         .Spacing(12)
         .Padding(20)
         .Background(theme.Value.Background)
@@ -109,13 +118,18 @@ public sealed class TodoRow : Component
     }
 
     protected override View Build()
-        => new HStack(
+        => new AdaptiveStack(
+                560,
                 new Toggle(new Binding<bool>(() => _item.Done, value => { if (value != _item.Done) { _onToggle(); } }), _item.Title),
-                new Spacer(),
-                new Button("上移", _onMoveUp),
-                new Button("下移", _onMoveDown),
-                new Button("删除", _onRemove))
-            .Spacing(8);
+                // 操作按钮使用 Flow：窄容器下按声明顺序换行，节点身份与 Tab 顺序不变。
+                new Flow(
+                    new Button("上移", _onMoveUp),
+                    new Button("下移", _onMoveDown),
+                    new Button("删除", _onRemove))
+                    .Spacing(8)
+                    .LineSpacing(6))
+            .Spacing(8)
+            .VerticalSpacing(6);
 }
 
 internal static class Program

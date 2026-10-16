@@ -13,14 +13,18 @@ public sealed class Counter : Component
         var count = UseState("count", 0);
 
         return new VStack(
-            new Text($"计数：{count.Value}").WithFont(FontDescription.Default.WithSize(28)),
-            new Text($"已点击 {count.Value} 次").WithFont(FontDescription.Default.WithSize(13)),
-            new HStack(
+            new Text($"计数：{count.Value}").WithFont(FontDescription.Default.WithSize(28)).Wrap(),
+            new Text($"已点击 {count.Value} 次").WithFont(FontDescription.Default.WithSize(13)).Wrap(),
+            // 按钮组按父容器可用宽度换行：窄窗口下自动折行，不读取窗口尺寸。
+            new Flow(
                 new Button("增加", () => count.Value++),
                 new Button("减少", () => count.Value--),
-                new Button("重置", () => count.Value = 0)),
+                new Button("重置", () => count.Value = 0))
+                .Spacing(8)
+                .LineSpacing(8),
             new Text("点击按钮或按 Tab 聚焦后用 Enter/Space 激活。")
-                .WithFont(FontDescription.Default.WithSize(12)))
+                .WithFont(FontDescription.Default.WithSize(12))
+                .Wrap())
         .Spacing(12)
         .Padding(24);
     }

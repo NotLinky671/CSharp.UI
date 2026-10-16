@@ -59,6 +59,8 @@
 - **同轴嵌套外层生效**：外层 `.Flex()`/`.FillWidth()` 完整覆盖内层的弹性声明（grow/shrink、basis、min/max 与 FillWidth 的填充标记都不叠加、不残留内层值），只有 `.Frame(...)` 的硬性固定/最小/最大声明会被保留；不同轴独立处理。
 - `.FillWidth()` 覆盖内层 `.Flex()` 的显式 basis：基准回到自然尺寸，因此宽度无界时按契约回退自然宽度，而不是继续使用内层 basis。
 - 参数在声明时校验：权重与显式 basis/min 必须有限且非负，`max` 允许正无穷，禁止 NaN，且 `min ≤ max`。
+- 固定尺寸与上限：`.Frame(width: 240)` 是固定尺寸；`.Frame(minWidth: 200, maxWidth: 240)` 是有范围的盒子。声明的 `maxWidth`/`maxHeight` 只是上限，子项实际可用尺寸取父级约束与声明的**较小者**，因此窄容器不会按更宽的声明排版文字。范围重载参数较多时可直接使用 `new FrameView(content, maxWidth: 320, alignment: Alignment.Start)`。
+- 响应式用法、断点约定与固定尺寸迁移见[响应式布局：使用与迁移](responsive-layout.md)。
 
 ## 自动换行 Flow
 
