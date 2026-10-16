@@ -108,6 +108,12 @@ public sealed class ViewNode
     internal bool? AdaptiveIsHorizontal { get; set; }
 
     /// <summary>
+    /// <see cref="Responsive"/> 节点的内容事务状态（描述版本、已稳定输入签名与每轮重建预算）。
+    /// 只在协调器与运行时安全阶段改写，探测/自然测量不会激活或改写它。
+    /// </summary>
+    internal ResponsiveContentState? ResponsiveContent { get; set; }
+
+    /// <summary>
     /// 读取该节点当前对外暴露的按轴尺寸特征（显式固定/最小/最大与弹性配额）。
     /// 特征来自视图声明，不从被父约束截断的 <see cref="DesiredSize"/> 反推。
     /// </summary>
@@ -231,6 +237,37 @@ public sealed class ViewNode
             parts.Reverse();
             return string.Join(" / ", parts);
         }
+    }
+
+    /// <summary>
+    /// 截断后的调试路径：最多保留最近 <paramref name="maxSegments"/> 层并用前缀省略号标记被截断的祖先。
+    /// 用于深层/非收敛树的诊断，避免错误消息本身随深度爆炸，也不额外递归整条祖先链。
+    /// </summary>
+    internal string ShortDebugPath(int maxSegments = 6)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxSegments);
+        var parts = new List<string>();
+        var truncated = false;
+        for (var node = this; node is not null; node = node.Parent)
+        {
+            if (parts.Count == maxSegments)
+            {
+                truncated = true;
+                break;
+            }
+
+            var key = node.View switch
+            {
+                KeyedView keyed => $"[{keyed.Key}]",
+                Component component => $"[{component.DebugName}]",
+                _ => string.Empty,
+            };
+            parts.Add(node.View.DebugName + key);
+        }
+
+        parts.Reverse();
+        var path = string.Join(" / ", parts);
+        return truncated ? "…/" + path : path;
     }
 
     /// <summary>标记该节点需要重新布局（并重绘）。</summary>

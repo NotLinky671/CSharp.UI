@@ -164,6 +164,16 @@ public abstract class View
     /// <summary>在堆叠容器主轴上吸收剩余空间的权重；0 表示不吸收。</summary>
     internal virtual double FlexGrow(ViewNode node, bool horizontal) => 0;
 
+    /// <summary>
+    /// 该视图的最终布局必须由有效提案完成：<c>.Flex()</c>/<c>.FillWidth()</c> 的弹性分配与
+    /// <see cref="Responsive"/> 的动态内容在自然尺寸测量中都无法完成。
+    /// </summary>
+    /// <remarks>
+    /// 普通容器（无直接弹性声明的 Stack）据此把有效测量传递到内部需要最终提案的子树，
+    /// 而不是只识别直接的 Flex 声明；探测与自然尺寸测量期间该标记不触发任何构建。
+    /// </remarks>
+    internal virtual bool RequiresEffectiveProposal => false;
+
     /// <summary>返回用于调试的简短描述。</summary>
     public override string ToString() => DebugName;
 }

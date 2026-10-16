@@ -258,11 +258,11 @@ internal static class StackLayout
         if (!HasExplicitFlex(children, mainAxis))
         {
             // 旧语义：只求和自然尺寸，剩余空间由 Arrange 按旧 FlexGrow 分配。
-            // 自身没有直接弹性声明时仍必须把有效提案传递到内部含 Flex 的子树，
-            // 否则嵌套 Flex 会永远停留在自然测量结果上。
+            // 自身没有直接弹性声明时仍必须把有效提案传递到需要最终提案的子树（含 Flex 与 Responsive 动态内容），
+            // 否则嵌套弹性分配或响应式内容会永远停留在自然测量结果上。
             foreach (var child in children)
             {
-                if (context.SubtreeHasFlexDeclaration(child))
+                if (context.SubtreeNeedsEffectiveProposal(child))
                 {
                     context.Measure(child, childConstraints);
                 }

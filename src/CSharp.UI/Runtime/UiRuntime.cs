@@ -51,6 +51,7 @@ public sealed class UiRuntime : IDisposable
     private readonly HashSet<ViewNode> _componentSet = [];
     private readonly List<string> _diagnostics = [];
     private readonly LayoutDiagnostics _layoutDiagnostics;
+    private readonly ResponsiveTransactionManager _responsiveTransactions = new();
     private readonly FocusManager _focus;
     private readonly InputRouter _router;
     private bool _layoutDirty = true;
@@ -58,6 +59,9 @@ public sealed class UiRuntime : IDisposable
     private bool _needsDraw = true;
     private bool _disposed;
     private bool _registered;
+    private bool _processingWork;
+    private bool _buildingFrame;
+    private long _workPassId;
 
     /// <summary>创建运行时并挂载根视图。</summary>
     public UiRuntime(View root, UiRuntimeServices services)
@@ -124,6 +128,15 @@ public sealed class UiRuntime : IDisposable
     /// <summary>是否存在待处理的组件重建。</summary>
     public bool HasPendingBuild => _componentQueue.Count > 0;
 
+    /// <summary>当前挂起、尚未在安全阶段消费的响应式内容请求数量（诊断用）。</summary>
+    internal int PendingResponsiveRequestCount => _responsiveTransactions.PendingCount;
+
+    /// <summary>累计执行的响应式内容构建次数（诊断用）。</summary>
+    internal int ResponsiveBuildCount { get; private set; }
+
+    /// <summary>最近一轮 <see cref="ProcessPendingWork"/> 实际消费的响应式内容构建次数（诊断用）。</summary>
+    internal int LastResponsiveTransactionCount { get; private set; }
+
     /// <summary>设置根环境（主题 / 默认字体 / 默认前景色），并使布局失效。</summary>
     public void SetEnvironment(EnvironmentValues environment)
     {
@@ -176,11 +189,17 @@ public sealed class UiRuntime : IDisposable
 
     private static void InvalidateSubtree(ViewNode node)
     {
-        foreach (var child in node.ChildList)
+        // 显式栈：动态内容可能形成很深的链，失效遍历不能依赖递归调用栈。
+        var pending = new Stack<ViewNode>();
+        pending.Push(node);
+        while (pending.Count > 0)
         {
-            child.MeasureValid = false;
-            child.ArrangeValid = false;
-            InvalidateSubtree(child);
+            foreach (var child in pending.Pop().ChildList)
+            {
+                child.MeasureValid = false;
+                child.ArrangeValid = false;
+                pending.Push(child);
+            }
         }
     }
 
@@ -231,7 +250,65 @@ public sealed class UiRuntime : IDisposable
         }
     }
 
-    /// <summary>处理待办的组件重建与布局：宿主每轮循环调用。</summary>
+    /// <summary>
+    /// 登记 <see cref="Responsive"/> 节点的最终有效宽度提案（由测量阶段调用）。
+    /// 只记录输入，不执行 builder、不修改节点树，也不会触发绘制。
+    /// </summary>
+    internal void RequestResponsiveContent(ViewNode node, ResponsiveInfo info)
+        => _responsiveTransactions.Register(node, info);
+
+    /// <summary>标记 <see cref="Responsive"/> 描述被替换：同宽的新 builder 描述也需要重建一次内容。</summary>
+    internal void MarkResponsiveDescription(ViewNode node)
+        => _responsiveTransactions.MarkDescriptionChanged(node);
+
+    /// <summary>
+    /// 请求重新构建某个 <see cref="Responsive"/> 节点的内容，即使宽度不变。
+    /// 这是后续状态依赖（RL-06）的接入点：当前不改变状态语义，也不会自动订阅状态。
+    /// </summary>
+    internal void InvalidateResponsiveContent(ViewNode node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        if (!node.IsMounted || node.View is not Responsive)
+        {
+            return;
+        }
+
+        _responsiveTransactions.InvalidateContent(node);
+        InvalidateLayout(node);
+    }
+
+    /// <summary>执行一次响应式内容构建并协调结果；只在安全阶段由事务消费者调用。</summary>
+    internal void ExecuteResponsiveContent(ViewNode node, Responsive responsive, ResponsiveRequest request)
+    {
+        ResponsiveBuildCount++;
+        View built;
+        try
+        {
+            built = responsive.Builder(request.Info)
+                ?? throw new InvalidOperationException(
+                    $"Responsive 在节点 {node.ShortDebugPath()} 返回了 null 视图；builder 必须返回内容描述。");
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            ReportDiagnostic(
+                $"构建响应式内容失败：节点 {node.ShortDebugPath()}（可用宽度 " +
+                $"{(request.Info.IsWidthBounded ? request.Info.AvailableWidth.ToString("0.###") : "无界")}）：{ex.Message}");
+            throw;
+        }
+
+        Reconciler.ReconcileDynamicContent(node, built);
+
+        var state = node.ResponsiveContent!;
+        state.HasContent = true;
+        state.StableInfo = request.Info;
+        state.StableRevision = request.Revision;
+    }
+
+    /// <summary>处理待办的组件重建、响应式内容构建与布局：宿主每轮循环调用。</summary>
+    /// <remarks>
+    /// 顺序按“重建 → 布局 → 消费响应式请求 → 再布局到稳定”循环，绘制只发生在返回之后的 <see cref="BuildFrame"/>。
+    /// 组件重建与响应式 builder 都不允许重入本方法（例如在 Build/builder 内调用 <see cref="BuildFrame"/>）。
+    /// </remarks>
     public void ProcessPendingWork()
     {
         if (_disposed)
@@ -239,9 +316,102 @@ public sealed class UiRuntime : IDisposable
             return;
         }
 
+        if (_processingWork)
+        {
+            throw new InvalidOperationException(
+                "UiRuntime.ProcessPendingWork 不可重入：不能在组件 Build、布局测量或响应式 builder 内再次处理待办工作或生成帧。");
+        }
+
+        _processingWork = true;
+        try
+        {
+            ProcessPendingWorkCore();
+        }
+        catch
+        {
+            // 异常后清理队列与阶段标志：丢弃未消费的响应式请求与待重建组件，并强制下一次合法更新
+            // 重新测量整棵树，使 builder 抛错、描述循环等受控失败之后仍能恢复，不残留半成品队列。
+            _componentQueue.Clear();
+            _componentSet.Clear();
+            _responsiveTransactions.Clear();
+            InvalidateLayout(Root);
+            throw;
+        }
+        finally
+        {
+            _processingWork = false;
+        }
+    }
+
+    private void ProcessPendingWorkCore()
+    {
         // 循环检测按“同一组件在一轮调度内被重复重建的次数”计算，而不是按待更新组件总数：
         // 批量刷新任意数量的组件都是正常场景，只有在 Build() 期间修改状态才会让同一节点反复入队。
         var rebuildCounts = new Dictionary<ViewNode, int>();
+        var passId = ++_workPassId;
+        var responsiveBudget = ResponsiveTransactionManager.MaxTransactionsPerPass;
+        LastResponsiveTransactionCount = 0;
+
+        while (true)
+        {
+            DrainComponentQueue(rebuildCounts);
+
+            var progressed = false;
+
+            if (_layoutDirty)
+            {
+                try
+                {
+                    RunLayout();
+                }
+                catch (LayoutDepthLimitException) when (_responsiveTransactions.HasPending)
+                {
+                    // 旧内容过深导致测量受限：先消费显式失效请求（复用最近有效提案）替换过深内容，再重试布局。
+                    // 描述更新本身不直接排队，因此不会用过时宽度激活分支；只有显式失效走这条恢复路径。
+                    var recovered = _responsiveTransactions.Consume(this, passId, ref responsiveBudget);
+                    LastResponsiveTransactionCount += recovered;
+                    if (recovered == 0)
+                    {
+                        throw;
+                    }
+
+                    progressed = true;
+                    _layoutDirty = true;
+                    InvalidateRender();
+                    continue;
+                }
+            }
+
+            if (_responsiveTransactions.HasPending)
+            {
+                var afterLayout = _responsiveTransactions.Consume(this, passId, ref responsiveBudget);
+                LastResponsiveTransactionCount += afterLayout;
+                progressed |= afterLayout > 0;
+            }
+
+            if (!progressed)
+            {
+                break;
+            }
+
+            // 内容变化后必须重新测量、排列到稳定，之后才允许绘制（不提交半成品布局）。
+            _layoutDirty = true;
+            InvalidateRender();
+        }
+
+        // 环境（Disable 等）在布局阶段解析，因此布局完成后校验焦点与指针交互状态。
+        _focus.Validate();
+        _router.ValidateInteractionState();
+
+        if (_renderDirty)
+        {
+            _needsDraw = true;
+            _renderDirty = false;
+        }
+    }
+
+    private void DrainComponentQueue(Dictionary<ViewNode, int> rebuildCounts)
+    {
         while (_componentQueue.Count > 0)
         {
             var node = _componentQueue[0];
@@ -275,21 +445,6 @@ public sealed class UiRuntime : IDisposable
                 throw;
             }
         }
-
-        if (_layoutDirty)
-        {
-            RunLayout();
-        }
-
-        // 环境（Disable 等）在布局阶段解析，因此布局完成后校验焦点与指针交互状态。
-        _focus.Validate();
-        _router.ValidateInteractionState();
-
-        if (_renderDirty)
-        {
-            _needsDraw = true;
-            _renderDirty = false;
-        }
     }
 
     /// <summary>确保待办工作已处理，并生成一帧绘制命令。</summary>
@@ -297,14 +452,28 @@ public sealed class UiRuntime : IDisposable
     {
         ProcessPendingWork();
 
-        // 帧边界：纹理服务据此保护本帧引用的纹理，避免生成后续命令时淘汰前面命令仍在引用的纹理。
-        Services.TextureService?.BeginFrame();
+        if (_buildingFrame)
+        {
+            throw new InvalidOperationException(
+                "UiRuntime.BuildFrame 不可重入：不能在绘制命令生成（Emit）期间再次生成帧。");
+        }
 
-        var options = new RenderFrameOptions(ViewportSize, PixelScale, ClearColor);
-        var context = new DrawContext(this, Services.TextService, Services.TextureService, Services.ImageService, PixelScale, options);
-        Root.View.Emit(Root, context);
-        _needsDraw = false;
-        return new RenderFrame(context.ToArray(), ViewportSize, PixelScale, ClearColor);
+        _buildingFrame = true;
+        try
+        {
+            // 帧边界：纹理服务据此保护本帧引用的纹理，避免生成后续命令时淘汰前面命令仍在引用的纹理。
+            Services.TextureService?.BeginFrame();
+
+            var options = new RenderFrameOptions(ViewportSize, PixelScale, ClearColor);
+            var context = new DrawContext(this, Services.TextService, Services.TextureService, Services.ImageService, PixelScale, options);
+            Root.View.Emit(Root, context);
+            _needsDraw = false;
+            return new RenderFrame(context.ToArray(), ViewportSize, PixelScale, ClearColor);
+        }
+        finally
+        {
+            _buildingFrame = false;
+        }
     }
 
     /// <summary>当前清屏色。</summary>
@@ -383,11 +552,13 @@ public sealed class UiRuntime : IDisposable
         _layoutDiagnostics.Clear();
     }
 
-    /// <summary>节点卸载前由协调器调用，清理焦点与交互状态。</summary>
+    /// <summary>节点卸载前由协调器调用，清理焦点、交互状态与未消费的响应式请求。</summary>
     internal void OnNodeUnmounting(ViewNode node)
     {
         _focus.OnNodeUnmounting(node);
         _router.OnNodeUnmounting(node);
+        _responsiveTransactions.Remove(node);
+        node.ResponsiveContent = null;
     }
 
     private void RunLayout()

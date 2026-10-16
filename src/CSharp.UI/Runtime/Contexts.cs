@@ -1,14 +1,37 @@
 namespace CSharp.UI;
 
 /// <summary>
+/// 单次布局的测量递归深度超过安全上限时抛出的受控异常。
+/// </summary>
+/// <remarks>
+/// 它是 <see cref="InvalidOperationException"/>：调用方按普通可捕获异常处理。
+/// 运行时在安全阶段会先尝试用显式失效请求替换过深内容，再重试布局；仍无法恢复才向调用方抛出。
+/// </remarks>
+internal sealed class LayoutDepthLimitException : InvalidOperationException
+{
+    public LayoutDepthLimitException(string message)
+        : base(message)
+    {
+    }
+}
+
+/// <summary>
 /// 测量/排列阶段上下文：提供服务访问、失效标记与子节点递归入口。
 /// </summary>
 internal sealed class LayoutContext
 {
     private readonly List<MeasureProbeScope> _probeScopes = [];
-    private readonly Dictionary<ViewNode, bool> _flexSubtreeCache = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<ViewNode, bool> _effectiveProposalSubtreeCache = new(ReferenceEqualityComparer.Instance);
     private readonly LayoutDiagnostics? _diagnostics;
     private int _intrinsicDepth;
+    private int _measureDepth;
+
+    /// <summary>
+    /// 单次布局的测量递归深度上限。动态内容每轮新增一层节点（或描述持续加深）时会先命中这里，
+    /// 以受控诊断失败，而不是依赖 StackOverflow 或让 UI 线程卡住。
+    /// 取值远高于正常 UI 嵌套（16 层原型与批量节点均可通过），同时为测量、排列与异常清理留足栈余量。
+    /// </summary>
+    internal const int MaxMeasureDepth = 256;
 
     public LayoutContext(
         UiRuntime runtime,
@@ -147,6 +170,29 @@ internal sealed class LayoutContext
 
     private void Measure(ViewNode node, LayoutConstraints constraints, MeasureProposalKind kind, bool intrinsic)
     {
+        if (_measureDepth >= MaxMeasureDepth)
+        {
+            var message =
+                $"布局测量递归深度超过上限 {MaxMeasureDepth}：节点 {node.ShortDebugPath()}。" +
+                "该上限用于在动态内容每轮新增一层节点或描述持续加深时受控失败，避免栈溢出或 UI 线程卡住；" +
+                "请让内容结构收敛。";
+            Runtime.ReportDiagnostic(message);
+            throw new LayoutDepthLimitException(message);
+        }
+
+        _measureDepth++;
+        try
+        {
+            MeasureCore(node, constraints, kind, intrinsic);
+        }
+        finally
+        {
+            _measureDepth--;
+        }
+    }
+
+    private void MeasureCore(ViewNode node, LayoutConstraints constraints, MeasureProposalKind kind, bool intrinsic)
+    {
         var parentEnvironment = node.Parent?.Environment ?? Runtime.Environment;
         var environment = node.View.ResolveEnvironment(node, parentEnvironment);
 
@@ -206,22 +252,22 @@ internal sealed class LayoutContext
     }
 
     /// <summary>
-    /// 子树中是否存在显式 <c>.Flex()</c>/<c>.FillWidth()</c> 声明；按轮次记忆，避免重复遍历。
-    /// 用于把有效布局提案传递到普通容器内部的弹性子树（自然测量本身不做最终分配）。
+    /// 子树中是否存在需要“最终有效提案”才能完成布局的视图（<c>.Flex()</c>/<c>.FillWidth()</c>/<see cref="Responsive"/>）。
+    /// 按轮次记忆，避免重复遍历；普通容器据此把有效测量传递到自然测量无法完成布局的子树。
     /// </summary>
-    public bool SubtreeHasFlexDeclaration(ViewNode node)
+    public bool SubtreeNeedsEffectiveProposal(ViewNode node)
     {
-        if (_flexSubtreeCache.TryGetValue(node, out var cached))
+        if (_effectiveProposalSubtreeCache.TryGetValue(node, out var cached))
         {
             return cached;
         }
 
-        var found = node.View is FlexView or FillWidthView;
+        var found = node.View.RequiresEffectiveProposal;
         if (!found)
         {
             foreach (var child in node.ChildList)
             {
-                if (SubtreeHasFlexDeclaration(child))
+                if (SubtreeNeedsEffectiveProposal(child))
                 {
                     found = true;
                     break;
@@ -229,9 +275,16 @@ internal sealed class LayoutContext
             }
         }
 
-        _flexSubtreeCache[node] = found;
+        _effectiveProposalSubtreeCache[node] = found;
         return found;
     }
+
+    /// <summary>
+    /// 登记 <see cref="Responsive"/> 节点的最终有效宽度提案；同节点一轮内以最后一次为准，
+    /// 回到已稳定提案时由运行时撤销过时请求。该方法只登记输入，不执行 builder、不修改节点树。
+    /// </summary>
+    public void RequestResponsiveContent(ViewNode node, ResponsiveInfo info)
+        => Runtime.RequestResponsiveContent(node, info);
 
     /// <summary>让所有活动探测作用域在节点被改写前记录原状态（同一作用域只记录一次）。</summary>
     private void CaptureForProbes(ViewNode node)

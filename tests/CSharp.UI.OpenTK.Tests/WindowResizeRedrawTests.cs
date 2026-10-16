@@ -481,6 +481,79 @@ public sealed class WindowResizeRedrawTests
     }
 
     [Fact]
+    public void 响应式内容在窗口尺寸回调返回前完成重建与布局()
+    {
+        GlOffscreenSurface.AllowNonMainThreadCreation();
+        var framesBefore = -1;
+        var framesAfter = -1;
+        var pendingRequests = -1;
+        var responsiveWidth = -1.0;
+        var logicalWidth = -1.0;
+        var contentColor = Color.Black;
+        var cornerColor = Color.Black;
+        var observed = false;
+
+        var result = UiApplication.Run(
+            new Responsive(info => info.AvailableWidth < 400
+                ? new Rectangle(Color.Blue) { FixedSize = new Size(48, 48) }
+                : new Rectangle(Color.Red) { FixedSize = new Size(48, 48) }),
+            HostOptions("RL-05 响应式即时重绘", context =>
+            {
+                if (context.RenderedFrameCount != 1)
+                {
+                    return;
+                }
+
+                context.Dispatcher.Post(() =>
+                {
+                    try
+                    {
+                        var host = UiApplication.CurrentHost!;
+                        framesBefore = context.RenderedFrameCount;
+
+                        // 程序化放大客户区：OpenTK 同步派发 Resize/FramebufferResize，
+                        // 宿主在回调内执行重建/布局/绘制；响应式内容必须在这里收敛到最终宽度。
+                        host.Window.ClientSize = new Vector2i(
+                            host.Window.ClientSize.X + 240,
+                            host.Window.ClientSize.Y + 160);
+                        framesAfter = context.RenderedFrameCount;
+
+                        pendingRequests = context.Runtime.PendingResponsiveRequestCount;
+                        logicalWidth = context.LogicalSize.Width;
+                        var node = context.Runtime.Root.FindDescendant<Responsive>();
+                        responsiveWidth = node?.Frame.Width ?? -1;
+                        contentColor = node is { Children.Count: > 0 }
+                            ? (node.Children[0].View as Rectangle)?.Fill ?? Color.Black
+                            : Color.Black;
+
+                        var framebuffer = QueryFramebufferSize(host);
+                        cornerColor = ReadFrontPixel(host, 4, framebuffer.Y - 4);
+                        observed = true;
+                    }
+                    finally
+                    {
+                        context.RequestExit(0);
+                    }
+                });
+            }));
+
+        Assert.Equal(0, result);
+        Assert.True(observed, "未能在首帧后执行响应式尺寸验证。");
+
+        var diagnostics =
+            $"帧 {framesBefore}→{framesAfter}，逻辑宽 {logicalWidth}，响应式宽 {responsiveWidth}，" +
+            $"待消费请求 {pendingRequests}，内容色 {contentColor}，左上像素 {cornerColor}";
+
+        // 尺寸回调返回前必须按最终宽度重建内容并提交完整帧，而不是半成品或空内容。
+        Assert.True(framesAfter > framesBefore, $"尺寸回调内必须立即提交一帧：{diagnostics}");
+        Assert.Equal(0, pendingRequests);
+        Assert.True(responsiveWidth > 300, $"响应式内容必须使用扩大后的最终宽度：{diagnostics}");
+        Assert.Equal(logicalWidth, responsiveWidth, 3);
+        AssertColor.Equal(Color.Red, contentColor);
+        AssertColor.Equal(Color.Red, cornerColor);
+    }
+
+    [Fact]
     public void 清屏不受旧裁剪限制覆盖整个framebuffer()
     {
         GlOffscreenSurface.AllowNonMainThreadCreation();

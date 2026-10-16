@@ -96,6 +96,11 @@ internal static class Reconciler
             case Component component:
                 BuildComponent(node, component);
                 return;
+            case Responsive responsive:
+                // 响应式内容由运行时在安全阶段构建。描述更新时保留既有子树（不能先按空 Children 清空），
+                // 只递增描述版本，使同宽的新描述也重建一次；首次挂载由随后的有效测量登记请求。
+                node.Runtime.MarkResponsiveDescription(node);
+                return;
             case ImplicitRootContainer container:
                 ReconcileDescriptors(node, [.. container.Descriptors]);
                 return;
@@ -103,6 +108,24 @@ internal static class Reconciler
                 ReconcileChildren(node, node.View.Children);
                 return;
         }
+    }
+
+    /// <summary>把响应式 builder 返回的描述协调为节点内容；多条目时包裹隐式容器。</summary>
+    /// <remarks>
+    /// 与 <see cref="BuildComponent"/> 相同的结构规则：单视图保持无额外层级；
+    /// <c>ForEach</c> 或多条目包裹隐式容器（按垂直堆叠排列），保证节点只有一个内容子项并获得布局。
+    /// </remarks>
+    public static void ReconcileDynamicContent(ViewNode node, View content)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        var descriptors = Expand(content);
+        if (!IsCollectionView(content) && descriptors.Count == 1)
+        {
+            ReconcileDescriptors(node, descriptors);
+            return;
+        }
+
+        ReconcileDescriptors(node, [new ChildDescriptor(new ImplicitRootContainer(descriptors), null, false)]);
     }
 
     /// <summary>执行组件 Build 并把结果协调为组件的子节点。</summary>
@@ -329,6 +352,10 @@ internal static class Reconciler
     }
 
     /// <summary>卸载节点及其子树，触发清理并释放资源与订阅。</summary>
+    /// <remarks>
+    /// 使用显式后序遍历（先子后父）而不是递归：动态内容可能形成很深的链，
+    /// 卸载不能在耗尽调用栈时失败。兄弟节点的清理顺序与原递归实现一致。
+    /// </remarks>
     public static void Unmount(ViewNode node)
     {
         if (!node.IsMounted || node.IsUnmounting)
@@ -336,12 +363,33 @@ internal static class Reconciler
             return;
         }
 
-        node.IsUnmounting = true;
-        foreach (var child in node.ChildList.ToArray())
+        var order = new List<ViewNode>();
+        var pending = new Stack<ViewNode>();
+        pending.Push(node);
+        while (pending.Count > 0)
         {
-            Unmount(child);
+            var current = pending.Pop();
+            if (!current.IsMounted || current.IsUnmounting)
+            {
+                continue;
+            }
+
+            current.IsUnmounting = true;
+            order.Add(current);
+            foreach (var child in current.ChildList)
+            {
+                pending.Push(child);
+            }
         }
 
+        for (var i = order.Count - 1; i >= 0; i--)
+        {
+            CleanupNode(order[i]);
+        }
+    }
+
+    private static void CleanupNode(ViewNode node)
+    {
         node.Runtime.OnNodeUnmounting(node);
 
         try

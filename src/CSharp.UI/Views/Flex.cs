@@ -70,6 +70,9 @@ public sealed class FlexView : ModifierView
     /// <inheritdoc />
     public override string DebugName => $"Flex({Axis}, grow:{Grow:0.##}, shrink:{Shrink:0.##})";
 
+    /// <summary>弹性分配需要父级最终提案才能完成。</summary>
+    internal override bool RequiresEffectiveProposal => true;
+
     /// <inheritdoc />
     internal override LayoutFeatures GetLayoutFeatures(ViewNode node, LayoutAxis mainAxis)
     {
@@ -119,6 +122,9 @@ public sealed class FillWidthView : ModifierView
 
     /// <inheritdoc />
     public override string DebugName => "FillWidth";
+
+    /// <summary>有界宽度下的填充分配需要父级最终提案才能完成。</summary>
+    internal override bool RequiresEffectiveProposal => true;
 
     /// <inheritdoc />
     internal override LayoutFeatures GetLayoutFeatures(ViewNode node, LayoutAxis mainAxis)
