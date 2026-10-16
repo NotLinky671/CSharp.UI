@@ -8,7 +8,7 @@
 
 优先级：P2
 
-状态：DeepSeek Harness 已修复（回调内即时绘制 + 重入/生命周期保护 + 全 framebuffer 清屏），新增 9 例宿主回归并通过正反向验证；待 Codex 最终复审。
+状态：DeepSeek Harness 已修复并提交 `8fc5d5e`，Codex 于 2026-10-16 独立复审通过；最终结论见文末。
 
 ## 用户现象
 
@@ -125,3 +125,14 @@ Codex 另外以全新 GlOffscreenSurface/GlRenderer 独立验证清屏（`artifa
 - 无窗口管理器环境（例如裸 `xvfb-run`）上的原生最小化/恢复不验证，测试动态 Skip；非 Windows 平台本轮未运行。
 - 未在“模态循环进行中跨 DPI 显示器移动窗口”下验证；DPI 变化路径沿用既有 `SimulateContentScaleChange` 覆盖。
 - `artifacts/resize-review/opentk-tests.txt` 等临时输出保留在忽略目录，不影响交付。
+
+## Codex 最终独立复审（2026-10-16）
+
+复审提交：`8fc5d5e4b6039a107f2d74f39bad6cd3cc08a214`，`Redraw the window during interactive resize`。本轮修复通过，首版发现的重建重入、异常退出许可与测试隔离问题均已修正，未发现阻碍本轮验收的代码问题。
+
+- 独立完整构建解决方案成功，0 错误，保留已有 NU1900 与 xUnit 分析器警告。随后直接运行最终四套测试程序集：核心 172、文本 67、集成 14、OpenTK 188，共 **441 项全部通过，0 失败、0 跳过**。日志为 `artifacts/resize-review/codex-build.txt`、`codex-*.txt`。
+- 独立重新编译并执行原生 Windows sizing modal loop 探针，使用最终提交：记录到一对 enter/exit，循环内提交 22 帧，其中 21 帧包含扩展区域；renderer 与实际 GLFW framebuffer 尺寸错误为 0，累计 1,402,650 个扩展区域背景像素采样错误为 0。循环进行中的一次观测为 `active=1,framesAtEnter=1,framesNow=22,modalFrames=21,client=610x420`，程序最终退出 0。证据为 `artifacts/resize-native-review/after.txt`，对照 `before.txt` 的循环内 0 新帧。这里是程序驱动的真实原生模态循环，不是人工鼠标拖拽，也不是仅在循环退出后校验。
+- 独立 guard 探针再次确认：Build 期间 FrameRendered 次数为 0；Run 受控异常被捕获后 Refresh 不增加帧数；即时绘制中 FrameRendered 抛出的受控异常没有逃出回调处理边界，Run 返回错误码 1。探针自身三项均通过、退出 0，见 `artifacts/resize-guard-review/final-after.txt`。
+- 独立完整解决方案构建更新了三个 Debug 示例，另重新构建三个 Release 示例；逐一比较六个示例目录内核心、文本和 OpenTK 的 18 份 DLL，SHA-256 全部匹配对应配置的最终库构建。三个 Release 示例各渲染 5 帧后退出 0，本机真实 DPI 为 1.5，日志为 `codex-Counter-smoke.txt`、`codex-TodoList-smoke.txt`、`codex-ControlGallery-smoke.txt`。
+- 修复提交仅包含本轮 6 个源码、测试及文档文件，提交差异格式检查通过，未提交用户已有 `AGENTS.md` 修改。原 ACP 请求达到固定 45 分钟超时后正常关闭，随后恢复同一个 ACP 会话完成记录与提交；没有重复启动并行修复。本节作为独立审核记录另行英文提交。
+- 本机 Windows 150% 下的上述路径通过；人工鼠标拖拽全过程、其他平台真机与模态循环中跨 DPI 显示器移动仍未作实测，不扩大验收结论。
