@@ -2,7 +2,7 @@
 
 记录日期：2026-10-16
 
-状态：**待 Codex 复审**（本记录由 DeepSeek Harness 在 RL-09 实施后填写；`docs/task/09-responsive-delivery.md` 同步标为待复审，完成判定与索引收尾由 Codex 负责）
+状态：**已完成，Codex 复审通过**（2026-10-16；九项任务均已完成，验证范围和未验证平台见下文）
 
 设计依据：[响应式布局计划](../plan/2026-10-16-responsive-layout-plan.md)、[当前任务索引](../task/README.md)、[RL-01…RL-08 审核记录](../return/2026-10-16-responsive-layout-review.md)。
 
@@ -124,7 +124,7 @@ RL-01…RL-08 已分别通过 Codex 复审；本记录汇总最终集成验收�
 - 本地重跑 Codex 独立探针：`input-invariants` 180/180、退出码 0；`gpu-invariants` 16/16、退出码 0（同一 Gallery 运行时四宽 × 四 DPI，最终 RGB 与直接绘制参考 mean 0.0585–0.0992、max 2）。
 - Codex 实施期截图探针预审（等待稳定帧时宿主按需绘制、不保证后续帧）已处理：`rl09-capture` 在等待目标宽度与稳定帧、以及缩放后均显式调用 `context.RequestRedraw()`，不依赖偶发系统刷新；两模式重跑仍退出码 0、PNG 哈希不变，生产宿主未改动。
 - Codex 交付文档预审（截图需随仓库分发）已处理：五张原尺寸 PNG 按原字节复制到 [证据目录](2026-10-16-responsive-layout-evidence) 并在 §7 提供可点击链接与预览，未重采样或编辑图像。
-- 文档检查：`node artifacts/responsive-work/audit-docs.mjs` 检查 51 个 Markdown 文件、相对链接与 9 任务依赖图，唯一报告为“`09-responsive-delivery.md`: not complete”（本任务处于待复审，符合预期）；`validate-docs.mjs` 校验 27 个 UTF-8 文件、链接、代码围栏与依赖图通过。
+- 文档检查：`node artifacts/responsive-work/audit-docs.mjs` 最终检查 51 个 Markdown 文件、285 条相对链接与 9 任务/10 依赖边，errors 为空；`validate-docs.mjs` 校验 27 个 UTF-8 文件、链接、代码围栏与依赖图通过。
 - API 指南代码与实际签名核对通过（`FrameView`/`Frame` 范围重载、`.Flex`、`.FillWidth`、`Flow`、`AdaptiveStack`、`Responsive`、`ResponsiveInfo` 只读属性）。
 - 已修正 `docs/guide/testing.md` 中过时的运行器过滤器写法（`--filter-class`/`--filter-method` → 实际支持的 `-class`/`-method`/`-trait`）。
 
@@ -133,4 +133,8 @@ RL-01…RL-08 已分别通过 Codex 复审；本记录汇总最终集成验收�
 - 随仓库分发的图像证据：[2026-10-16-responsive-layout-evidence](2026-10-16-responsive-layout-evidence)（五张原尺寸 PNG，与 `artifacts/responsive-work/rl09-evidence` 逐字节一致）。
 - 过程与原始输出：`artifacts/responsive-work/rl09-progress.txt`、`rl09-debug-build.txt`、`rl09-release-build.txt`、`rl09-CSharp.UI.*.txt`、`rl09-release-smoke.txt`、`rl09-native-scsize-gallery.txt`、`rl09-native-scsize-nested.txt`、`rl09-capture-*.txt`、`rl09-input-invariants-rerun.txt`、`rl09-gpu-invariants-rerun.txt`、`rl09-evidence/*.png`（在 `.gitignore` 覆盖的 `artifacts/` 下，仅本地保留；需要分发的图像已复制到上方证据目录）。
 - 记录提交：先以 `e66bbcd`（`Add RL-09 responsive layout final acceptance and delivery record`）提交交付文档，再按 Codex 预审补交图像证据与本次修订；未 amend、未推送；未改动用户 `AGENTS.md`、Codex `docs/return` 与任何系统/SDK/NuGet 配置。完整 SHA 与精确文件清单见 `artifacts/responsive-work/rl09-progress.txt` 与交付回复。
-- 完成判定：`docs/task/09-responsive-delivery.md` 保持“待 Codex 复审”，全完成索引由 Codex 在复审通过后更新。
+- 完成判定：Codex 已于 2026-10-16 完成复审，九项任务与索引均标记完成。实现提交 `e66bbcd`、原尺寸证据提交 `faca6ba`；最终独立审核结论见上述审核记录。
+
+## 11. Codex 最终独立验收
+
+2026-10-16：复审通过。独立Release四套300+67+30+242=639项全部通过、18份DLL SHA256全部匹配；核对Debug完整639项、三示例5帧smoke、原生Gallery/Nested非零像素采样与稳定布局，检查宽窄和嵌套原尺寸图像，5张持久PNG与原始输出哈希一致。独立输入180项和GPU16项通过。文档、相对链接、任务依赖图与UTF-8检查通过。审核中发现的问题全部闭环；未验证平台和人工边界保持第8节所列，不扩展本次通过结论。

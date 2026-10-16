@@ -18,7 +18,7 @@
 | ☑ | RL-06 | [Responsive 状态依赖与生命周期](06-responsive-state-and-lifetime.md) | [RL-05](05-responsive-transactions.md) | D |
 | ☑ | RL-07 | [示例改造与使用指南](07-responsive-gallery-and-guides.md) | [RL-03](03-flow-layout.md)、[RL-04](04-adaptive-stack.md)、[RL-06](06-responsive-state-and-lifetime.md) | E |
 | ☑ | RL-08 | [输入、DPI 与图形集成回归](08-responsive-integration.md) | [RL-07](07-responsive-gallery-and-guides.md) | F |
-| ☐ | RL-09 | [完整验收与交付记录](09-responsive-delivery.md) | [RL-08](08-responsive-integration.md) | F |
+| ☑ | RL-09 | [完整验收与交付记录](09-responsive-delivery.md) | [RL-08](08-responsive-integration.md) | F |
 
 ## 阶段分组
 
@@ -39,7 +39,7 @@
 - [x] [RL-06](06-responsive-state-and-lifetime.md) Responsive 状态依赖与生命周期
 - [x] [RL-07](07-responsive-gallery-and-guides.md) 示例改造与使用指南
 - [x] [RL-08](08-responsive-integration.md) 输入、DPI 与图形集成回归
-- [ ] [RL-09](09-responsive-delivery.md) 完整验收与交付记录
+- [x] [RL-09](09-responsive-delivery.md) 完整验收与交付记录
 
 ## 执行与审核
 
@@ -50,3 +50,7 @@ Codex规划与独立审核；DeepSeek Harness实现和测试，通过后英文�
 首次API冻结还包括：Flex默认grow/shrink为1；显式硬Frame不被Flex覆盖；Flow的FillWidth占整行，不参与逐行权重分配；Responsive同宽描述更新需重建一次，而普通重复测量不得因闭包引用重新构建。
 
 每阶段记录实际命令/数量/退出码，区分程序化、原生循环与人工真机验证；保留用户原有AGENTS.md修改，不推送。
+
+## 最终验收
+
+2026-10-16：RL-01 至 RL-09 全部完成并由 Codex 复审通过。Debug/Release 构建通过，两配置四套测试各639项全通过；18份示例DLL副本匹配、三Release示例各5帧启动通过。Windows150%真实Gallery/Nested原生SC_SIZE循环及原尺寸图像已验证。详见[交付记录](../delivery/2026-10-16-responsive-layout-delivery.md)与[审核记录](../return/2026-10-16-responsive-layout-review.md)。macOS/Linux真机、物理鼠标人工拖拽及LCD/ClearType未验证，详见交付范围。

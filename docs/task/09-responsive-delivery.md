@@ -2,7 +2,7 @@
 
 创建日期：2026-10-16
 
-状态：待Codex复审
+状态：已完成（Codex复审通过）
 
 阶段：F
 
@@ -25,7 +25,7 @@
 - [x] 顺序构建并执行四套完整测试，保留441项基线；Debug/Release 解决方案构建均退出码 0，四套 300+67+30+242=639 全部通过，失败/错误/跳过均为 0，未改弱旧断言。
 - [x] 三个现有示例Debug/Release全部更新；核对18份核心/文本/OpenTK DLL哈希与对应库构建一致（0 不一致）；Release 三个示例各 5 帧启动 smoke 均退出码 0，无窗口/进程遗留。
 - [x] 提供原尺寸宽/窄Gallery图（逻辑 1024/320 @150% → 物理 1536×1050 / 480×1050）、独立嵌套示例结果（逻辑 1100/700/500），以及 Windows 150% 宿主/输入/缩放证据；其他平台区分编译、CPU、离屏与真机，全部如实标为未验证。
-- [x] 检查API示例、日期、链接、任务状态、布局诊断与已知限制；闭环所有Codex审核问题。`audit-docs.mjs` 唯一报告为“09 未完成”（待复审预期），`validate-docs.mjs` 通过。
+- [x] 检查API示例、日期、链接、任务状态、布局诊断与已知限制；闭环所有Codex审核问题。最终 `audit-docs.mjs` 检查51份Markdown、285条相对链接、9任务/10依赖边，errors为空；`validate-docs.mjs` 通过。
 - [x] 实现者通过后英文提交本轮文件（本地、未 amend/推送），Codex 完成独立复审并另存记录；不纳入用户既有 `AGENTS.md` 修改与 Codex `docs/return`。
 
 ## 测试与验收
@@ -89,4 +89,4 @@ dotnet run --project artifacts/responsive-work/rl09-native-scsize -- nested     
 - 未验证：macOS/Linux 真机的编译、CPU 测试、离屏 GL 与原生窗口（本机 RID 交叉编译 restore 离线失败，退出码 1，未声称通过）；LCD/ClearType；真实人工鼠标拖拽；系统 DPI 修改。
 - 提交 SHA 与完整日志见 `artifacts/responsive-work/rl09-progress.txt`。
 
-实现完成，标注**待Codex复审**；复审通过前不宣称最终验收完成。
+2026-10-16：Codex最终复审通过，九项任务全部完成。验证范围及未验证边界见交付记录。

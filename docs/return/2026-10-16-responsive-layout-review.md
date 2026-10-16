@@ -268,3 +268,19 @@ Codex已独立复跑新增242项OpenTK完整套件，全部退出0（日志rl08-
 ### RL-08 最终复审通过
 
 实现 fc5abeb 已核对。本阶段增加38项实际示例/真实Skia/GL集成回归；四套300+67+30+242=639全部通过。Codex独立运行242项完整OpenTK套件退出0，并以独立180项输入/连续缩放与16项同运行时GPU逐像素探针验证。实际拖动、跨DPI纹理更新和缓存长期容量的审核事项均已处理；指南已如实区分程序化resize、旧Text原生探针和人工边界。未发现需改生产代码的问题，允许执行RL-09。最终仍须完成三示例Debug/Release、18 DLL副本、5帧smoke、真实Gallery原生模态循环及截图交付，不以此阶段测试替代。
+
+## RL-09 实施期间独立验收
+
+最终Debug/Release解决方案构建日志均exit0、0编译错误（各保留12条既有xUnit分析器警告）。Codex独立SHA256核对三示例×两配置×三库共18份DLL，18/18匹配；记录final-dll-independent.json。核对三Release实际5帧smoke全部exit0且DPI1.5。
+Codex额外独立执行四套Release程序集300+67+30+242=639项，全部失败/错误/跳过0、退出0；日志final-release-*-independent.txt。此验证针对最终优化后产物，不只是Debug测试。等待真实Gallery原生模态循环和原尺寸图像等最后交付证据。
+
+RL-09截图探针预审：rl09-capture.FrameRendered里settle<3直接return，但宿主按需绘制，不保证还有后续帧；请像SmokeTestHook一样在需要下一帧时显式RequestRedraw，确保无人值守截图完成，而不是依赖偶发系统刷新或持续泵消息。仅作用于截图探针，不改生产宿主。原生Gallery/Nested日志已核对均RESULT PASS、非零采样、geometryErrors0。
+
+RL-09交付文档预审：已独立查看真实宽/窄Gallery与Nested原尺寸PNG，视觉与日志一致，未见黑区。请将5张原尺寸PNG复制到docs/delivery下按日期命名的证据目录，并在交付记录中给出可点击相对链接/预览；现仅列ignored artifacts纯文件名，克隆仓库后会丢失计划要求的图像交付。复制既有输出即可，不重采样/编辑图像。另请将Codex独立四套Release639全通过与18DLL核对证据同步进交付文档（return已有真实结果），最终状态由Codex收尾。
+
+### RL-09 与全套响应式任务最终复审通过
+
+核对实现e66bbcd、证据faca6ba，所有实施期审核事项关闭。Debug/Release解决方案构建exit0（0错误、各12条既有分析器警告）；两配置各四套639项全部通过，Release由Codex独立执行。独立18份DLL哈希18/18一致，三Release示例5帧exit0。真实Gallery原生SC_SIZE循环7宽、Nested6观测宽均正常enter/exit，DPI1.5、geometryErrors0、实际非零背景/内容采样、右边缘未绘制像素0，且逐节点布局对照一致。5张原尺寸PNG已保存docs并与原始输出逐一SHA256匹配；已实际查看宽/窄Gallery及宽/窄Nested图像。截图显式请求后续帧缺口修正并复跑。
+独立input180/gpu16通过，状态/焦点/选区、双层滚轮、实际文字原点、DPI纹理、连续240次变宽、缓存及空闲契约均通过。最终9任务ID唯一、10条依赖无环、相对链接/UTF8/代码围栏通过；索引9/9完成。macOS/Linux真机与交叉编译、物理鼠标人工拖拽、LCD/ClearType未验证，不将其报告为通过。保留用户AGENTS修改，所有提交均本地英文提交，未推送。
+
+结论：原计划通用Flex/FillWidth、Flow、AdaptiveStack、Responsive安全构建与状态依赖、示例和集成验收全部完成并通过当前已声明的Windows自动化范围，无待修复审核问题。
