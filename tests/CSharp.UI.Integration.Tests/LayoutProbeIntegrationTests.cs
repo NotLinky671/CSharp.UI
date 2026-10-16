@@ -72,7 +72,9 @@ public class LayoutProbeIntegrationTests
         Assert.Same(originalCache, textNode.ViewCache);
         Assert.Equal(originalConstraints, textNode.LastConstraints);
         Assert.Equal(originalFrame, textNode.Frame);
-        Assert.Equal(MeasureProposalKind.Effective, textNode.LastProposalKind);
+
+        // 普通 VStack 的子项只经过自然尺寸测量，恢复的是 Intrinsic 提案（不是最终有效提案）。
+        Assert.Equal(MeasureProposalKind.Intrinsic, textNode.LastProposalKind);
 
         // 下一帧必须复用进入探测前的排版几何，不得按探测宽度（30/60）绘制。
         var afterBounds = runtime.BuildFrame().Commands

@@ -39,8 +39,24 @@
 
 ## 修饰符
 
-`Padding`、`Frame`、`Width`、`Height`、`Size`、`Background`、`Foreground`、`Border`、`CornerRadius`、`Opacity`、`Clip`、`Disabled`、`Theme`、`Font`、`Key`。
+`Padding`、`Frame`、`Width`、`Height`、`Size`、`Background`、`Foreground`、`Border`、`CornerRadius`、`Opacity`、`Clip`、`Disabled`、`Theme`、`Font`、`Key`、`Flex`、`FillWidth`。
 修饰符返回**新的包装视图**，调用顺序具有语义（见[修饰符顺序](modifier-order.md)）。
+
+## 弹性尺寸
+
+| 类型 | 说明 |
+|---|---|
+| `.Flex(grow = 1, shrink = 1, basis = null, min = 0, max = 正无穷, axis = FlexAxis.Main)` | 让内容在最近的堆叠容器中按剩余空间增长或压缩；`basis` 省略表示自然尺寸 |
+| `.FillWidth()` | 占满可用宽度：横向 Stack 主轴上参与伸缩，纵向 Stack 交叉轴上占满；宽度无界时回退自然尺寸 |
+| `FlexView` / `FillWidthView` | 上述修饰符对应的包装视图（一般通过扩展方法使用） |
+| `FlexAxis` | `Main`（由最近布局容器主轴解析）/ `Horizontal` / `Vertical` |
+
+- 分配规则：先按约束后的 basis 测量，再分配正剩余空间（按 grow 权重）或不足空间（按 shrink × 约束后 basis 权重）；达到 `min`/`max` 的项目冻结后把剩余量分配给其它项目。零 basis 没有可压缩量。
+- 分配结束后按最终主轴长度重新测量全部子项，换行文本的高度随实际宽度变化，并把复测后的最终高度向上传递给普通容器；固定项与 min 之和无法容纳时输出带节点路径的溢出诊断，不产生负尺寸。
+- `.Frame(width: 240)` 始终是固定尺寸，不会被 `.Flex()`/`.FillWidth()` 压缩或拉伸；需要“通常 240、可以变窄”时使用 `.Flex(basis: 240, min: 120)`。
+- **同轴嵌套外层生效**：外层 `.Flex()`/`.FillWidth()` 完整覆盖内层的弹性声明（grow/shrink、basis、min/max 与 FillWidth 的填充标记都不叠加、不残留内层值），只有 `.Frame(...)` 的硬性固定/最小/最大声明会被保留；不同轴独立处理。
+- `.FillWidth()` 覆盖内层 `.Flex()` 的显式 basis：基准回到自然尺寸，因此宽度无界时按契约回退自然宽度，而不是继续使用内层 basis。
+- 参数在声明时校验：权重与显式 basis/min 必须有限且非负，`max` 允许正无穷，禁止 NaN，且 `min ≤ max`。
 
 ## 状态与绑定
 
@@ -62,7 +78,7 @@
 
 ## 基础类型
 
-`Point`、`Size`、`Rect`、`Thickness`、`Color`、`Alignment`、`LayoutConstraints`、`FontFamily`、`FontDescription`、`FontWeight`、`TextAlignment`、`TextWrapping`、`TextTrimming`、`FontMetrics`、`Theme`、`EnvironmentValues`。
+`Point`、`Size`、`Rect`、`Thickness`、`Color`、`Alignment`、`LayoutConstraints`、`FontFamily`、`FontDescription`、`FontWeight`、`TextAlignment`、`TextWrapping`、`TextTrimming`、`FontMetrics`、`Theme`、`EnvironmentValues`、`FlexAxis`。
 
 ## 绘制与服务契约
 

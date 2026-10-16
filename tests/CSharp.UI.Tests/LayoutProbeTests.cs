@@ -32,8 +32,9 @@ public class LayoutProbeTests
             Assert.Equal(probeConstraints, node.LastConstraints);
         }
 
-        // 探测退出后恢复进入前的有效提案，探测不被当作最终提案。
-        Assert.Equal(MeasureProposalKind.Effective, node.LastProposalKind);
+        // 探测退出后恢复进入前的提案：普通 VStack 的子项只经过自然尺寸测量，
+        // 因此持有 Intrinsic 提案而不是最终有效提案（RL-02：自然测量不得冒充有效提案）。
+        Assert.Equal(MeasureProposalKind.Intrinsic, node.LastProposalKind);
         Assert.Equal(originalConstraints, node.LastConstraints);
         Assert.Equal(33.5, node.DesiredSize.Width, 3);
         Assert.Equal(measuresBefore + 1, context.MeasureCount);
@@ -111,7 +112,7 @@ public class LayoutProbeTests
         Assert.Equal(MeasureProposalKind.Effective, context.CurrentProposal);
         Assert.False(context.IsProbing);
         Assert.Equal(originalConstraints, node.LastConstraints);
-        Assert.Equal(MeasureProposalKind.Effective, node.LastProposalKind);
+        Assert.Equal(MeasureProposalKind.Intrinsic, node.LastProposalKind);
     }
 
     [Fact]
@@ -137,7 +138,7 @@ public class LayoutProbeTests
         Assert.False(context.IsProbing);
         Assert.Equal(MeasureProposalKind.Effective, context.CurrentProposal);
         Assert.Equal(originalConstraints, node.LastConstraints);
-        Assert.Equal(MeasureProposalKind.Effective, node.LastProposalKind);
+        Assert.Equal(MeasureProposalKind.Intrinsic, node.LastProposalKind);
     }
 
     [Fact]
@@ -214,7 +215,7 @@ public class LayoutProbeTests
         // 探测产生的排版缓存不得泄漏为最终提案的一部分。
         Assert.Same(originalCache, text.ViewCache);
         Assert.Equal(((TextLayoutResult)originalCache!).Size, text.DesiredSize);
-        Assert.Equal(MeasureProposalKind.Effective, text.LastProposalKind);
+        Assert.Equal(MeasureProposalKind.Intrinsic, text.LastProposalKind);
     }
 
     [Fact]
@@ -332,11 +333,11 @@ public class LayoutProbeTests
         var probed = context.Probe(rectangle, LayoutConstraints.Unbounded);
         Assert.True(double.IsFinite(probed.Width) && double.IsFinite(probed.Height));
         Assert.True(rectangle.MeasureValid);
-        Assert.Equal(MeasureProposalKind.Effective, rectangle.LastProposalKind);
+        Assert.Equal(MeasureProposalKind.Intrinsic, rectangle.LastProposalKind);
 
         var probedFeatures = context.ProbeFeatures(rectangle, LayoutConstraints.Unbounded);
         Assert.Equal(33.5, probedFeatures.Horizontal.ExplicitSize!.Value);
-        Assert.Equal(MeasureProposalKind.Effective, rectangle.LastProposalKind);
+        Assert.Equal(MeasureProposalKind.Intrinsic, rectangle.LastProposalKind);
     }
 
     [Fact]
@@ -473,7 +474,7 @@ public class LayoutProbeTests
         }
 
         Assert.True(text.MeasureValid);
-        Assert.Equal(MeasureProposalKind.Effective, text.LastProposalKind);
+        Assert.Equal(MeasureProposalKind.Intrinsic, text.LastProposalKind);
         Assert.Equal(originalConstraints, text.LastConstraints);
         Assert.Same(originalCache, text.ViewCache);
     }
@@ -579,6 +580,146 @@ public class LayoutProbeTests
         Assert.Equal(180d, features.ExplicitSize!.Value);
         Assert.Equal(180d, features.BaseSize);
         Assert.Equal(180d, features.ContentMinSize!.Value);
+    }
+
+    [Fact]
+    public void Probe_RestoresFlexibleAllocationCacheIncludingNestedAndExceptionPaths()
+    {
+        using var app = new TestApp(
+            new HStack(
+                new Rectangle(Color.Red).Flex(basis: 100, max: 120),
+                new Rectangle(Color.Blue).Flex(grow: 3, basis: 100)),
+            new Size(400, 100));
+        app.Frame();
+
+        var stack = app.Runtime.Root;
+        var originalAllocation = stack.ChildMainAllocation;
+        Assert.NotNull(originalAllocation);
+        Assert.Equal(new[] { 120d, 280d }, originalAllocation!);
+        Assert.Equal(400, stack.AllocatedMainExtent, 3);
+
+        var context = NewContext(app);
+
+        // 不同宽度的探测会改写分配结果与主轴可用长度；嵌套探测异常退出后必须完整恢复。
+        Action probeThatThrows = () =>
+        {
+            using var outer = context.BeginProbe();
+            context.Measure(stack, new LayoutConstraints(0, 200, 0, 100));
+            Assert.Equal(200, stack.AllocatedMainExtent, 3);
+
+            using var inner = context.BeginProbe();
+            context.Measure(stack, new LayoutConstraints(0, 80, 0, 100));
+            throw new InvalidOperationException("探测期间异常退出");
+        };
+
+        Assert.Throws<InvalidOperationException>(probeThatThrows);
+
+        Assert.Equal(originalAllocation, stack.ChildMainAllocation);
+        Assert.Equal(400, stack.AllocatedMainExtent, 3);
+
+        // 按原约束命中恢复后的有效提案并排列：仍然使用恢复出的 120/280 分配。
+        context.Measure(stack, stack.LastConstraints);
+        context.Arrange(stack, new Rect(0, 0, 400, 100));
+        Assert.Equal(120, stack.Children[0].Frame.Width, 3);
+        Assert.Equal(280, stack.Children[1].Frame.Width, 3);
+    }
+
+    [Fact]
+    public void ProbeInsideIntrinsicScope_DoesNotReuseEffectiveAllocationCache()
+    {
+        using var app = new TestApp(
+            new HStack(
+                new Text("abcd").FillWidth(),
+                new Rectangle(Color.Blue) { FixedSize = new Size(40, 20) })
+                .Align(Alignment.Stretch),
+            new Size(400, 100));
+        app.Frame();
+
+        var stack = app.Runtime.Root;
+        var effectiveAllocation = stack.ChildMainAllocation;
+        Assert.NotNull(effectiveAllocation);
+        Assert.Equal(new[] { 360d, 40d }, effectiveAllocation!);
+        Assert.Equal(400, stack.AllocatedMainExtent, 3);
+
+        // 有效分配完成后，以原约束在 BeginProbe + 自然尺寸测量中读取：算法模式不同，
+        // 必须重新执行自然尺寸算法，不能复用有效分配缓存。
+        var context = NewContext(app);
+        using (context.BeginProbe())
+        {
+            context.PushIntrinsicMeasure();
+            try
+            {
+                context.Measure(stack, stack.LastConstraints);
+            }
+            finally
+            {
+                context.PopIntrinsicMeasure();
+            }
+
+            Assert.True(stack.LastMeasureIsIntrinsic, "探测内的自然尺寸测量必须登记自然尺寸算法模式。");
+            Assert.Null(stack.ChildMainAllocation);
+            Assert.True(double.IsNaN(stack.AllocatedMainExtent), "自然尺寸测量不得留下有效分配长度。");
+        }
+
+        // 探测退出后完整恢复有效分配结果与算法模式。
+        Assert.Equal(effectiveAllocation, stack.ChildMainAllocation);
+        Assert.Equal(400, stack.AllocatedMainExtent, 3);
+        Assert.Equal(400, stack.DesiredSize.Width, 3);
+        Assert.False(stack.LastMeasureIsIntrinsic);
+
+        // 兼容缓存仍可复用：同约束的正常 Probe（有效分配算法）命中原提案，不重新测量、不改写分配。
+        var measuresBefore = context.MeasureCount;
+        context.Probe(stack, stack.LastConstraints);
+        Assert.Equal(measuresBefore, context.MeasureCount);
+        Assert.Equal(effectiveAllocation, stack.ChildMainAllocation);
+    }
+
+    [Fact]
+    public void NaturalMeasurement_IsVisibleToViewsAsIntrinsicProposalOnly()
+    {
+        var observer = new ProposalObservingView();
+        using var app = new TestApp(new VStack(observer), new Size(400, 300));
+        app.Frame();
+
+        // 普通 VStack 的自然尺寸测量：视图在 Measure 内看到的是 Intrinsic，绝不是有效提案。
+        Assert.Contains(MeasureProposalKind.Intrinsic, observer.Observed);
+        Assert.DoesNotContain(MeasureProposalKind.Effective, observer.Observed);
+        Assert.All(observer.ObservedEffective, value => Assert.False(value));
+
+        var node = app.Runtime.Root.Children[0];
+        var context = NewContext(app);
+
+        // 无内层容器的直接测量是有效提案；探测作用域内是 Probe。
+        observer.Observed.Clear();
+        observer.ObservedEffective.Clear();
+        context.Measure(node, LayoutConstraints.TightWidth(120));
+        Assert.Equal(new[] { MeasureProposalKind.Effective }, observer.Observed);
+        Assert.All(observer.ObservedEffective, value => Assert.True(value));
+
+        observer.Observed.Clear();
+        observer.ObservedEffective.Clear();
+        using (context.BeginProbe())
+        {
+            context.Measure(node, LayoutConstraints.TightWidth(60));
+            Assert.Equal(new[] { MeasureProposalKind.Probe }, observer.Observed);
+        }
+
+        Assert.All(observer.ObservedEffective, value => Assert.False(value));
+    }
+}
+
+/// <summary>RL-02 测试用视图：记录自己在 Measure 内观察到的提案性质。</summary>
+internal sealed class ProposalObservingView : View
+{
+    public List<MeasureProposalKind> Observed { get; } = [];
+
+    public List<bool> ObservedEffective { get; } = [];
+
+    internal override void Measure(ViewNode node, LayoutConstraints constraints, LayoutContext context)
+    {
+        Observed.Add(context.CurrentProposal);
+        ObservedEffective.Add(context.IsEffectiveProposal);
+        node.DesiredSize = new Size(20, 20);
     }
 }
 

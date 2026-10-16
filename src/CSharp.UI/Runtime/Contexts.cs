@@ -6,7 +6,9 @@ namespace CSharp.UI;
 internal sealed class LayoutContext
 {
     private readonly List<MeasureProbeScope> _probeScopes = [];
+    private readonly Dictionary<ViewNode, bool> _flexSubtreeCache = new(ReferenceEqualityComparer.Instance);
     private readonly LayoutDiagnostics? _diagnostics;
+    private int _intrinsicDepth;
 
     public LayoutContext(
         UiRuntime runtime,
@@ -42,12 +44,42 @@ internal sealed class LayoutContext
     /// <summary>本次布局中实际执行的 Arrange 次数。</summary>
     public int ArrangeCount { get; internal set; }
 
-    /// <summary>当前测量提案性质：探测作用域内为 <see cref="MeasureProposalKind.Probe"/>，否则为有效测量。</summary>
+    /// <summary>
+    /// 当前测量提案性质：探测作用域内为 <see cref="MeasureProposalKind.Probe"/>；
+    /// 自然尺寸测量期间为 <see cref="MeasureProposalKind.Intrinsic"/>（视图在 Measure 内读取到的也是它）；
+    /// 其余为 <see cref="MeasureProposalKind.Effective"/>。
+    /// </summary>
     public MeasureProposalKind CurrentProposal
-        => _probeScopes.Count > 0 ? MeasureProposalKind.Probe : MeasureProposalKind.Effective;
+        => _probeScopes.Count > 0
+            ? MeasureProposalKind.Probe
+            : _intrinsicDepth > 0 ? MeasureProposalKind.Intrinsic : MeasureProposalKind.Effective;
+
+    /// <summary>
+    /// 当前测量是否是最终有效布局提案。动态内容（挂载/卸载/内容选择）只能在这里为真时执行：
+    /// 探测与自然尺寸测量都不得被当作有效布局。
+    /// </summary>
+    public bool IsEffectiveProposal => CurrentProposal == MeasureProposalKind.Effective;
 
     /// <summary>是否处于探测作用域。探测期间不得挂载/卸载节点或选择动态内容。</summary>
     public bool IsProbing => _probeScopes.Count > 0;
+
+    /// <summary>
+    /// 是否处于自然尺寸（intrinsic）测量：堆叠容器在此模式下只求和自然尺寸，不执行最终弹性分配与复测，
+    /// 避免嵌套容器逐层触发完整分配造成指数级重测。
+    /// </summary>
+    public bool IsIntrinsicMeasure => _intrinsicDepth > 0;
+
+    /// <summary>进入自然尺寸测量；调用方必须用 finally 保证配对的 <see cref="PopIntrinsicMeasure"/>。</summary>
+    public void PushIntrinsicMeasure() => _intrinsicDepth++;
+
+    /// <summary>退出自然尺寸测量。</summary>
+    public void PopIntrinsicMeasure()
+    {
+        if (_intrinsicDepth > 0)
+        {
+            _intrinsicDepth--;
+        }
+    }
 
     /// <summary>
     /// 进入探测作用域：内部所有测量按探测处理，作用域以 finally 语义退出时恢复进入前的测量状态。
@@ -77,9 +109,9 @@ internal sealed class LayoutContext
         return node.GetLayoutFeatures();
     }
 
-    /// <summary>测量子节点（遵循测量缓存）；提案性质取当前作用域。</summary>
+    /// <summary>测量子节点（遵循测量缓存）；提案性质与算法模式取当前作用域。</summary>
     public void Measure(ViewNode node, LayoutConstraints constraints)
-        => Measure(node, constraints, CurrentProposal);
+        => Measure(node, constraints, CurrentProposal, IsIntrinsicMeasure);
 
     /// <summary>测量子节点，但忽略缓存（用于需要重新测量的场景）。</summary>
     public void MeasureFresh(ViewNode node, LayoutConstraints constraints)
@@ -87,7 +119,7 @@ internal sealed class LayoutContext
         // 先记录探测快照，再清空缓存，否则探测退出时无法恢复进入前的有效状态。
         CaptureForProbes(node);
         node.MeasureValid = false;
-        Measure(node, constraints);
+        Measure(node, constraints, CurrentProposal, IsIntrinsicMeasure);
     }
 
     /// <summary>报告某轴的显式固定/最小尺寸被父级可用空间截断（按节点去重、按轮次限量）。</summary>
@@ -107,12 +139,12 @@ internal sealed class LayoutContext
             $"无界{Describe(axis)}轴：节点 {node.DebugPath} 的 {operation} 需要有限可用空间，已回退自然尺寸。");
     }
 
-    private void Measure(ViewNode node, LayoutConstraints constraints, MeasureProposalKind kind)
+    private void Measure(ViewNode node, LayoutConstraints constraints, MeasureProposalKind kind, bool intrinsic)
     {
         var parentEnvironment = node.Parent?.Environment ?? Runtime.Environment;
         var environment = node.View.ResolveEnvironment(node, parentEnvironment);
 
-        if (CanReuseMeasurement(node, constraints, kind))
+        if (CanReuseMeasurement(node, constraints, kind, intrinsic))
         {
             // 缓存命中也可能改写环境（父级环境/字体变化）：必须先拍快照再赋值，
             // 否则探测期间解析出的环境会残留在作用域之外。
@@ -125,7 +157,7 @@ internal sealed class LayoutContext
             return;
         }
 
-        // 快照必须在改写任何测量状态（环境、期望尺寸、排版缓存）之前记录。
+        // 快照必须在改写任何测量状态（环境、期望尺寸、排版缓存、弹性分配结果）之前记录。
         CaptureForProbes(node);
 
         if (!Equals(environment, node.Environment))
@@ -143,24 +175,56 @@ internal sealed class LayoutContext
             Math.Clamp(node.DesiredSize.Height, 0, constraints.MaxHeight));
         node.LastConstraints = constraints;
         node.LastProposalKind = kind;
+        node.LastMeasureIsIntrinsic = intrinsic;
         node.MeasureValid = true;
 
-        if (kind == MeasureProposalKind.Effective)
+        if (kind != MeasureProposalKind.Probe)
         {
             ReportTruncatedDeclarations(node, constraints);
         }
     }
 
-    /// <summary>测量缓存复用规则：探测可复用任意已有结果，有效测量只能复用有效提案。</summary>
-    private static bool CanReuseMeasurement(ViewNode node, LayoutConstraints constraints, MeasureProposalKind kind)
+    /// <summary>
+    /// 测量缓存复用规则：约束、算法模式（自然尺寸/有效分配）必须一致。
+    /// 探测可复用同模式同约束的任意已有结果；实际测量只复用非探测结果，
+    /// 因此同约束的自然测量不会掩盖后续必须执行弹性分配的有效测量，探测也不会复用到分配算法产生的缓存。
+    /// </summary>
+    private static bool CanReuseMeasurement(ViewNode node, LayoutConstraints constraints, MeasureProposalKind kind, bool intrinsic)
     {
-        if (!node.MeasureValid || node.LastConstraints != constraints)
+        if (!node.MeasureValid || node.LastConstraints != constraints || node.LastMeasureIsIntrinsic != intrinsic)
         {
             return false;
         }
 
-        // 有效测量绝不能被探测结果掩盖：否则同约束下 Probe→有效测量会丢失最终布局提案。
-        return kind == MeasureProposalKind.Probe || node.LastProposalKind == MeasureProposalKind.Effective;
+        return kind == MeasureProposalKind.Probe || node.LastProposalKind == kind;
+    }
+
+    /// <summary>
+    /// 子树中是否存在显式 <c>.Flex()</c>/<c>.FillWidth()</c> 声明；按轮次记忆，避免重复遍历。
+    /// 用于把有效布局提案传递到普通容器内部的弹性子树（自然测量本身不做最终分配）。
+    /// </summary>
+    public bool SubtreeHasFlexDeclaration(ViewNode node)
+    {
+        if (_flexSubtreeCache.TryGetValue(node, out var cached))
+        {
+            return cached;
+        }
+
+        var found = node.View is FlexView or FillWidthView;
+        if (!found)
+        {
+            foreach (var child in node.ChildList)
+            {
+                if (SubtreeHasFlexDeclaration(child))
+                {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        _flexSubtreeCache[node] = found;
+        return found;
     }
 
     /// <summary>让所有活动探测作用域在节点被改写前记录原状态（同一作用域只记录一次）。</summary>
@@ -191,6 +255,20 @@ internal sealed class LayoutContext
         double available,
         bool bounded)
     {
+        // 自身边界逆序（min > max）：声明互相矛盾，以显式下界为准并诊断，不能让 Math.Clamp 抛异常。
+        if (features.EffectiveMin > features.EffectiveMax)
+        {
+            ReportOverflow(node, axis, features.EffectiveMin, features.EffectiveMax);
+            return;
+        }
+
+        // 内容硬要求超过盒子可能的最大尺寸：保留上限并诊断“内容仍需 X”。
+        if (features.ContentMinSize is { } contentMin && contentMin > features.EffectiveMax + 0.0001)
+        {
+            ReportOverflow(node, axis, contentMin, features.EffectiveMax);
+            return;
+        }
+
         if (!bounded || !double.IsFinite(available))
         {
             return;
@@ -285,7 +363,10 @@ internal sealed class MeasureProbeScope : IDisposable
         EnvironmentValues Environment,
         bool MeasureValid,
         LayoutConstraints LastConstraints,
-        MeasureProposalKind LastProposalKind)
+        MeasureProposalKind LastProposalKind,
+        bool LastMeasureIsIntrinsic,
+        double[]? ChildMainAllocation,
+        double AllocatedMainExtent)
     {
         public static MeasureSnapshot Capture(ViewNode node)
             => new(
@@ -294,7 +375,10 @@ internal sealed class MeasureProbeScope : IDisposable
                 node.Environment,
                 node.MeasureValid,
                 node.LastConstraints,
-                node.LastProposalKind);
+                node.LastProposalKind,
+                node.LastMeasureIsIntrinsic,
+                node.ChildMainAllocation,
+                node.AllocatedMainExtent);
 
         public void Restore(ViewNode node)
         {
@@ -304,6 +388,9 @@ internal sealed class MeasureProbeScope : IDisposable
             node.MeasureValid = MeasureValid;
             node.LastConstraints = LastConstraints;
             node.LastProposalKind = LastProposalKind;
+            node.LastMeasureIsIntrinsic = LastMeasureIsIntrinsic;
+            node.ChildMainAllocation = ChildMainAllocation;
+            node.AllocatedMainExtent = AllocatedMainExtent;
         }
     }
 }

@@ -14,6 +14,12 @@ internal enum MeasureProposalKind
 
     /// <summary>探测测量：结果只在探测作用域内有效，退出时恢复此前的测量状态。</summary>
     Probe = 1,
+
+    /// <summary>
+    /// 自然尺寸（intrinsic）测量：只用于读取自然尺寸，不构成最终布局提案，
+    /// 因此不能被相同约束的有效测量复用；有效测量必须重新执行并完成弹性分配。
+    /// </summary>
+    Intrinsic = 2,
 }
 
 /// <summary>
@@ -33,6 +39,25 @@ internal static class LayoutFeatureMath
 {
     /// <summary>把弹性权重规范化为有限的非负值；NaN、负数与无穷按 0 处理。</summary>
     public static double NormalizeQuota(double value) => double.IsFinite(value) && value > 0 ? value : 0;
+
+    /// <summary>
+    /// 安全夹取：上下限逆序（最小值大于最大值）或数值非法时也不会调用 <see cref="Math.Clamp(double, double, double)"/> 抛异常。
+    /// 逆序时以显式下界为准（固定/最小声明优先），调用方负责诊断该矛盾。
+    /// </summary>
+    public static double ClampSafe(double value, double min, double max)
+    {
+        if (double.IsNaN(value))
+        {
+            return double.IsNaN(min) ? 0 : min;
+        }
+
+        if (double.IsNaN(min) || double.IsNaN(max))
+        {
+            return value;
+        }
+
+        return min > max ? min : Math.Clamp(value, min, max);
+    }
 }
 
 /// <summary>
@@ -70,6 +95,21 @@ internal readonly record struct AxisLayoutFeatures
     public double? MaxSize { get; init; }
 
     /// <summary>
+    /// 该节点盒子自身的硬性最小声明（来自固定盒子，例如 <c>Frame(minWidth/minHeight)</c>）；null 表示未声明。
+    /// </summary>
+    /// <remarks>
+    /// 与 <see cref="MinSize"/> 的区别：<see cref="MinSize"/> 是解析后的下限，可能被内层 <c>Flex</c> 的弹性下限抬高；
+    /// 外层同轴 <c>Flex</c>/<c>FillWidth</c> 覆盖内层弹性配额时，只有这里的硬性声明必须保留。
+    /// </remarks>
+    public double? HardMinSize { get; init; }
+
+    /// <summary>
+    /// 该节点盒子自身的硬性最大声明（来自固定盒子，例如 <c>Frame(maxWidth/maxHeight)</c>）；null 表示未声明。
+    /// 与 <see cref="HardMinSize"/> 对应：弹性上限可以被外层同轴弹性声明覆盖，硬性上限不可以。
+    /// </summary>
+    public double? HardMaxSize { get; init; }
+
+    /// <summary>
     /// 该节点子树的硬最小要求：外框自身的固定/最小硬下界与内容要求取较大者；null 表示子树可压缩到 0。
     /// 与外框分配尺寸分开保存，避免把内层固定尺寸当成外层分配基准，同时保留“内容仍溢出”的诊断信息。
     /// </summary>
@@ -86,6 +126,13 @@ internal readonly record struct AxisLayoutFeatures
 
     /// <summary>是否声明占满可用宽度（<c>FillWidth</c>，由 RL-02 的修饰符写入）。</summary>
     public bool Fill { get; init; }
+
+    /// <summary>
+    /// 该轴是否由 <c>.Flex()</c>/<c>.FillWidth()</c> 显式声明了弹性配额。
+    /// 仅该标记为真的堆叠才进入弹性分配路径；旧 <c>Spacer</c>/<c>ScrollView</c> 的 <c>FlexGrow</c> 不计入，
+    /// 因此未启用新能力的布局保持原有语义。
+    /// </summary>
+    public bool HasExplicitFlex { get; init; }
 
     /// <summary>该盒子是否有显式固定尺寸声明。</summary>
     public bool IsFixed => ExplicitSize.HasValue;
@@ -112,6 +159,8 @@ internal readonly record struct AxisLayoutFeatures
         ExplicitSize = ExplicitSize + delta,
         MinSize = MinSize + delta,
         MaxSize = MaxSize + delta,
+        HardMinSize = HardMinSize + delta,
+        HardMaxSize = HardMaxSize + delta,
         ContentMinSize = ContentMinSize + delta,
         Basis = Basis + delta,
     };
@@ -126,4 +175,8 @@ internal readonly record struct LayoutFeatures(AxisLayoutFeatures Horizontal, Ax
 
     /// <summary>只有自然尺寸的特征（无任何显式声明）。</summary>
     public static LayoutFeatures FromNatural(Size size) => new(new AxisLayoutFeatures(size.Width), new AxisLayoutFeatures(size.Height));
+
+    /// <summary>替换其中一个轴的特征。</summary>
+    public LayoutFeatures WithAxis(LayoutAxis axis, AxisLayoutFeatures features)
+        => axis == LayoutAxis.Horizontal ? this with { Horizontal = features } : this with { Vertical = features };
 }

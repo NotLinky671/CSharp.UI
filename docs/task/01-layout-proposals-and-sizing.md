@@ -60,6 +60,15 @@
 4. **盒子与内容冲突规则**：外层 `Frame(maxWidth:100)` 包裹固定 240 内容 → `BaseSize=100`、`EffectiveMax=100`、`ContentMinSize=240`、`HasConflictingBounds=true`（保留“内容仍需 240”的溢出信息）；外层 `Frame(minWidth:300)` 包裹固定 240 内容 → `BaseSize=300`、`EffectiveMin=300`、`EffectiveMax=+∞`、`HasConflictingBounds=false`（内容可居中放置，不伪造矛盾）。后续 Flex/Flow 遇到 `HasConflictingBounds` 必须按溢出处理、不静默压缩固定项，并输出带节点路径的诊断。
 5. **诊断**：`LayoutContext.ReportOverflow(node, axis, required, available)`、`ReportUnbounded(node, axis, operation)`；`UiRuntime.LayoutDiagnostics`（内部）按 `(节点, 类别, 轴)` 去重、容量 128、每轮最多输出 16 条新诊断；`UiRuntime.Diagnostics` 保留最近 512 条。当前触发点为“盒子显式固定/最小声明被父级可用空间截断”；无界诊断入口留给后续消费者接入。
 
+### RL-02 期间的契约修订（2026-10-16）
+
+RL-02 复审要求“自然测量不得被当作有效提案缓存”，内部契约在 RL-01 基础上扩展（RL-01 的探测/恢复/环境/排版行为不变）：
+
+- `MeasureProposalKind` 新增 `Intrinsic`：Stack 的自然尺寸测量登记 Intrinsic 提案，不是最终布局提案；`LayoutContext.CurrentProposal` 在自然测量期间返回 `Intrinsic`（视图在 `Measure` 内读取到的也是它），并新增 `IsEffectiveProposal` 作为唯一的“有效提案”判定供后续动态内容使用。
+- 缓存复用同时要求“同约束 + 同算法模式（自然尺寸/有效分配）”：`ViewNode.LastMeasureIsIntrinsic` 与 `LastProposalKind`（最终/临时性质）分开保存；探测可复用同模式同约束的任意已有结果，实际测量只复用同类结果。同约束的自然测量不再掩盖后续必须执行弹性分配的有效测量，探测（含 `PushIntrinsicMeasure` 嵌套）也不会复用到有效分配算法产生的缓存。
+- `MeasureProbeScope.MeasureSnapshot` 补齐 RL-02 新增的 `ViewNode.ChildMainAllocation`/`AllocatedMainExtent` 与 `LastMeasureIsIntrinsic`，恢复覆盖嵌套探测与异常退出。
+- `LayoutProbeTests`/`LayoutProbeIntegrationTests` 中“普通 Stack 子项只经过自然测量”的提案断言由 `Effective` 更新为 `Intrinsic`（其余断言不变）。
+
 ### 验证命令与退出码（顺序执行，`--no-restore -m:1 -nodeReuse:false`）
 
 | 命令 | 结果 |

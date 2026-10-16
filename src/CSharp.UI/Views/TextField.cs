@@ -92,6 +92,19 @@ public sealed class TextField : View
         node.DesiredSize = constraints.Constrain(new Size(width, Height));
     }
 
+    internal override void Arrange(ViewNode node, Rect bounds, LayoutContext context)
+    {
+        node.Frame = bounds;
+
+        // 弹性分配、窗口缩放或断点切换都会改变字段宽度：每次排列后重新保证光标可见，
+        // 否则旧的 ScrollX 会把光标留在可视区之外（绘制阶段的夹取只是最后防线，不能掩盖错位）。
+        // 只调整内部滚动偏移，不写绑定值、不改光标与选区。
+        if (node.IsFocused && node.InteractionState is TextFieldState state)
+        {
+            EnsureCaretVisible(node, state);
+        }
+    }
+
     internal override void Emit(ViewNode node, DrawContext context)
     {
         if (node.Frame.IsEmpty)

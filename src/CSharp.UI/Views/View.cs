@@ -39,8 +39,9 @@ public abstract class View
     /// <summary>
     /// 该视图对外暴露的按轴尺寸特征：自然尺寸、显式固定/最小/最大声明与弹性配额。
     /// 默认只有自然尺寸与旧 <see cref="FlexGrow"/> 语义；声明尺寸的视图与修饰符重写以传播或覆盖声明。
+    /// <paramref name="mainAxis"/> 是最近布局容器的主轴，供 <c>FlexAxis.Main</c> 解析（默认实现不使用）。
     /// </summary>
-    internal virtual LayoutFeatures GetLayoutFeatures(ViewNode node)
+    internal virtual LayoutFeatures GetLayoutFeatures(ViewNode node, LayoutAxis mainAxis)
         => new(
             new AxisLayoutFeatures(node.DesiredSize.Width) { Grow = LayoutFeatureMath.NormalizeQuota(FlexGrow(node, true)) },
             new AxisLayoutFeatures(node.DesiredSize.Height) { Grow = LayoutFeatureMath.NormalizeQuota(FlexGrow(node, false)) });

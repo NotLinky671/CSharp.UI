@@ -209,6 +209,8 @@ public static class StackExtensions
 /// <summary>堆叠布局的共享测量/排列实现。</summary>
 internal static class StackLayout
 {
+    private const double Epsilon = 0.0001;
+
     public static void Measure(
         ViewNode node,
         LayoutConstraints constraints,
@@ -218,6 +220,8 @@ internal static class StackLayout
         Alignment crossAlignment)
     {
         var horizontal = orientation == StackOrientation.Horizontal;
+        var mainAxis = horizontal ? LayoutAxis.Horizontal : LayoutAxis.Vertical;
+        var children = node.ChildList;
 
         // 子项约束：主轴不限制，交叉轴只继承父级上限。
         // 不继承父级最小值，否则父级紧约束会掩盖子项的自然尺寸（拉伸由排列阶段决定）。
@@ -225,46 +229,82 @@ internal static class StackLayout
             ? new LayoutConstraints(0, double.PositiveInfinity, 0, constraints.MaxHeight)
             : new LayoutConstraints(0, constraints.MaxWidth, 0, double.PositiveInfinity);
 
-        double main = 0;
-        double cross = 0;
-        var count = 0;
-        foreach (var child in node.ChildList)
+        // 1. 自然尺寸/基准测量：此模式下嵌套容器不做最终分配，避免逐层完整分配导致指数级重测。
+        //    自然测量只登记 Intrinsic 提案，不能被后续相同约束的有效测量复用。
+        var alreadyIntrinsic = context.IsIntrinsicMeasure;
+        context.PushIntrinsicMeasure();
+        try
         {
-            context.Measure(child, childConstraints);
-            if (horizontal)
+            foreach (var child in children)
             {
-                main += child.DesiredSize.Width;
-                cross = Math.Max(cross, child.DesiredSize.Height);
+                context.Measure(child, childConstraints);
             }
-            else
+        }
+        finally
+        {
+            context.PopIntrinsicMeasure();
+        }
+
+        if (alreadyIntrinsic)
+        {
+            // 自然尺寸测量：只求和自然尺寸，不做弹性分配。
+            node.ChildMainAllocation = null;
+            node.AllocatedMainExtent = double.NaN;
+            var (naturalMain, naturalCross) = SumNatural(children, horizontal, spacing);
+            node.DesiredSize = Compose(constraints, horizontal, naturalMain, naturalCross);
+            return;
+        }
+
+        if (!HasExplicitFlex(children, mainAxis))
+        {
+            // 旧语义：只求和自然尺寸，剩余空间由 Arrange 按旧 FlexGrow 分配。
+            // 自身没有直接弹性声明时仍必须把有效提案传递到内部含 Flex 的子树，
+            // 否则嵌套 Flex 会永远停留在自然测量结果上。
+            foreach (var child in children)
             {
-                main += child.DesiredSize.Height;
-                cross = Math.Max(cross, child.DesiredSize.Width);
+                if (context.SubtreeHasFlexDeclaration(child))
+                {
+                    context.Measure(child, childConstraints);
+                }
             }
 
-            count++;
+            node.ChildMainAllocation = null;
+            node.AllocatedMainExtent = double.NaN;
+
+            // 复测可能改变子项尺寸（例如内部换行文本在最终宽度下变高），
+            // 必须用复测后的最终尺寸重新汇总自己的 DesiredSize，否则向上传递的是旧的自然高度。
+            var (finalMain, finalCross) = SumNatural(children, horizontal, spacing);
+            node.DesiredSize = Compose(constraints, horizontal, finalMain, finalCross);
+            return;
         }
 
-        if (count > 1)
+        // 2. 弹性分配，并按最终主轴长度复测全部子项（含非弹性子项，保证它们也拿到最终提案）。
+        var items = BuildItems(children, mainAxis);
+        var available = horizontal ? constraints.MaxWidth : constraints.MaxHeight;
+        var bounded = horizontal ? constraints.HasBoundedWidth : constraints.HasBoundedHeight;
+        var sizes = Allocate(items, bounded ? available : double.PositiveInfinity, spacing, context, node, mainAxis);
+
+        for (var i = 0; i < items.Count; i++)
         {
-            main += spacing * (count - 1);
+            context.Measure(items[i].Node, TightMain(childConstraints, horizontal, sizes[i]));
         }
 
-        var mainSize = Math.Max(main, horizontal ? constraints.MinWidth : constraints.MinHeight);
-        var crossSize = Math.Max(cross, horizontal ? constraints.MinHeight : constraints.MinWidth);
+        node.ChildMainAllocation = sizes;
+        node.AllocatedMainExtent = available;
 
-        if (horizontal)
+        var crossSize = 0.0;
+        foreach (var child in children)
         {
-            node.DesiredSize = new Size(
-                constraints.IsWidthTight ? constraints.MaxWidth : mainSize,
-                constraints.IsHeightTight ? constraints.MaxHeight : crossSize);
+            crossSize = Math.Max(crossSize, horizontal ? child.DesiredSize.Height : child.DesiredSize.Width);
         }
-        else
+
+        var allocatedMain = Sum(sizes);
+        if (sizes.Length > 1)
         {
-            node.DesiredSize = new Size(
-                constraints.IsWidthTight ? constraints.MaxWidth : crossSize,
-                constraints.IsHeightTight ? constraints.MaxHeight : mainSize);
+            allocatedMain += spacing * (sizes.Length - 1);
         }
+
+        node.DesiredSize = Compose(constraints, horizontal, allocatedMain, crossSize);
     }
 
     public static void Arrange(
@@ -278,6 +318,15 @@ internal static class StackLayout
         var horizontal = orientation == StackOrientation.Horizontal;
         var available = horizontal ? bounds.Width : bounds.Height;
         var children = node.ChildList;
+
+        // 弹性路径：使用测量阶段冻结的分配结果；主轴长度与测量一致（或测量时主轴无界）时不再重算。
+        if (node.ChildMainAllocation is { } allocation
+            && allocation.Length == children.Count
+            && (double.IsInfinity(node.AllocatedMainExtent) || Math.Abs(node.AllocatedMainExtent - available) <= 0.001))
+        {
+            ArrangeFlex(node, bounds, context, horizontal, allocation, spacing, crossAlignment);
+            return;
+        }
 
         // 1. 统计固定尺寸与弹性权重。
         double fixedSize = 0;
@@ -341,5 +390,363 @@ internal static class StackLayout
 
             offset += mainSize + spacing;
         }
+    }
+
+    /// <summary>是否存在显式 <c>.Flex()</c>/<c>.FillWidth()</c> 声明（旧 FlexGrow 不计入）。</summary>
+    private static bool HasExplicitFlex(List<ViewNode> children, LayoutAxis mainAxis)
+    {
+        foreach (var child in children)
+        {
+            var features = child.GetLayoutFeatures(mainAxis);
+            if (features.Horizontal.HasExplicitFlex || features.Vertical.HasExplicitFlex)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>旧语义：自然尺寸求和（主轴含间距）。</summary>
+    private static (double Main, double Cross) SumNatural(List<ViewNode> children, bool horizontal, double spacing)
+    {
+        var main = 0.0;
+        var cross = 0.0;
+        foreach (var child in children)
+        {
+            if (horizontal)
+            {
+                main += child.DesiredSize.Width;
+                cross = Math.Max(cross, child.DesiredSize.Height);
+            }
+            else
+            {
+                main += child.DesiredSize.Height;
+                cross = Math.Max(cross, child.DesiredSize.Width);
+            }
+        }
+
+        if (children.Count > 1)
+        {
+            main += spacing * (children.Count - 1);
+        }
+
+        return (main, cross);
+    }
+
+    private static Size Compose(LayoutConstraints constraints, bool horizontal, double main, double cross)
+    {
+        var mainSize = Math.Max(main, horizontal ? constraints.MinWidth : constraints.MinHeight);
+        var crossSize = Math.Max(cross, horizontal ? constraints.MinHeight : constraints.MinWidth);
+
+        return horizontal
+            ? new Size(
+                constraints.IsWidthTight ? constraints.MaxWidth : mainSize,
+                constraints.IsHeightTight ? constraints.MaxHeight : crossSize)
+            : new Size(
+                constraints.IsWidthTight ? constraints.MaxWidth : crossSize,
+                constraints.IsHeightTight ? constraints.MaxHeight : mainSize);
+    }
+
+    private static List<StackItem> BuildItems(List<ViewNode> children, LayoutAxis mainAxis)
+    {
+        var items = new List<StackItem>(children.Count);
+        foreach (var child in children)
+        {
+            var features = child.GetLayoutFeatures(mainAxis)[mainAxis];
+            var natural = mainAxis == LayoutAxis.Horizontal ? child.DesiredSize.Width : child.DesiredSize.Height;
+            items.Add(new StackItem
+            {
+                Node = child,
+                Natural = Sanitize(natural),
+                Min = Sanitize(features.EffectiveMin),
+                Max = double.IsNaN(features.EffectiveMax) ? double.PositiveInfinity : features.EffectiveMax,
+                Base = features.BaseSize,
+                Grow = LayoutFeatureMath.NormalizeQuota(features.Grow),
+                Shrink = LayoutFeatureMath.NormalizeQuota(features.Shrink),
+                HasExplicitFlex = features.HasExplicitFlex,
+                HasDeclaredBase = features.ExplicitSize.HasValue || features.Basis.HasValue,
+            });
+        }
+
+        return items;
+    }
+
+    private static double Sanitize(double value)
+        => double.IsFinite(value) && value > 0 ? value : 0;
+
+    /// <summary>把子项约束的主轴改为“恰好为分配长度”的紧约束，用于分配后的最终复测。</summary>
+    private static LayoutConstraints TightMain(LayoutConstraints childConstraints, bool horizontal, double size)
+    {
+        var value = Sanitize(size);
+        return horizontal
+            ? new LayoutConstraints(value, value, childConstraints.MinHeight, childConstraints.MaxHeight)
+            : new LayoutConstraints(childConstraints.MinWidth, childConstraints.MaxWidth, value, value);
+    }
+
+    /// <summary>
+    /// 按约束后的 basis 计算各子项的主轴尺寸：先按增长权重分配正剩余空间、按压缩权重分配不足空间，
+    /// 达到 min/max 的项目冻结后把剩余量分配给其它项目；无法容纳时报告溢出且不产生负尺寸。
+    /// </summary>
+    private static double[] Allocate(
+        List<StackItem> items,
+        double available,
+        double spacing,
+        LayoutContext context,
+        ViewNode stackNode,
+        LayoutAxis axis)
+    {
+        var sizes = new double[items.Count];
+
+        // 压缩权重使用“初始经 min/max 约束后的 basis”，并在冻结再分配过程中保持不变；
+        // 否则 basis:1000/max:100 会按 1000:100 的原始权重压缩，得到错误的 ~9/91。
+        var shrinkBasis = new double[items.Count];
+        var bounded = double.IsFinite(available);
+        for (var i = 0; i < items.Count; i++)
+        {
+            sizes[i] = StartSize(items[i], bounded);
+            shrinkBasis[i] = sizes[i];
+        }
+
+        if (!bounded)
+        {
+            // 主轴无界：不做无穷剩余空间分配，显式 basis 保留、其余使用自然尺寸。
+            return sizes;
+        }
+
+        var spacingTotal = items.Count > 1 ? spacing * (items.Count - 1) : 0;
+        var contentAvailable = Math.Max(0, available - spacingTotal);
+        var total = Sum(sizes);
+
+        if (total < contentAvailable - Epsilon)
+        {
+            Grow(items, sizes, contentAvailable - total);
+        }
+        else if (total > contentAvailable + Epsilon)
+        {
+            Shrink(items, sizes, shrinkBasis, total - contentAvailable, contentAvailable, context, stackNode, axis);
+        }
+
+        return sizes;
+    }
+
+    private static double StartSize(StackItem item, bool bounded)
+    {
+        if (bounded && item.HasExplicitFlex)
+        {
+            return LayoutFeatureMath.ClampSafe(item.Base, item.Min, item.Max);
+        }
+
+        if (!bounded && item.HasDeclaredBase)
+        {
+            return LayoutFeatureMath.ClampSafe(item.Base, item.Min, item.Max);
+        }
+
+        return item.Natural;
+    }
+
+    private static void Grow(List<StackItem> items, double[] sizes, double free)
+    {
+        var guard = 0;
+        while (free > Epsilon && guard++ <= items.Count + 1)
+        {
+            var weightSum = 0.0;
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (items[i].Grow > 0 && sizes[i] < items[i].Max - Epsilon)
+                {
+                    weightSum += items[i].Grow;
+                }
+            }
+
+            if (weightSum <= 0)
+            {
+                return;
+            }
+
+            var distributed = 0.0;
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (items[i].Grow <= 0 || sizes[i] >= items[i].Max - Epsilon)
+                {
+                    continue;
+                }
+
+                var share = free * (items[i].Grow / weightSum);
+                var next = Math.Min(items[i].Max, sizes[i] + share);
+                distributed += next - sizes[i];
+                sizes[i] = next;
+            }
+
+            if (distributed <= Epsilon)
+            {
+                return;
+            }
+
+            free -= distributed;
+        }
+    }
+
+    private static void Shrink(
+        List<StackItem> items,
+        double[] sizes,
+        double[] shrinkBasis,
+        double overflow,
+        double contentAvailable,
+        LayoutContext context,
+        ViewNode stackNode,
+        LayoutAxis axis)
+    {
+        var remaining = overflow;
+        var guard = 0;
+        while (remaining > Epsilon && guard++ <= items.Count + 1)
+        {
+            var weightSum = 0.0;
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (CanShrink(items[i], sizes[i]))
+                {
+                    weightSum += items[i].Shrink * Math.Max(0, shrinkBasis[i]);
+                }
+            }
+
+            if (weightSum <= 0)
+            {
+                break;
+            }
+
+            var reduced = 0.0;
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (!CanShrink(items[i], sizes[i]))
+                {
+                    continue;
+                }
+
+                var weight = items[i].Shrink * Math.Max(0, shrinkBasis[i]);
+                if (weight <= 0)
+                {
+                    continue;
+                }
+
+                var share = remaining * (weight / weightSum);
+                var next = Math.Max(items[i].Min, sizes[i] - share);
+                reduced += sizes[i] - next;
+                sizes[i] = next;
+            }
+
+            if (reduced <= Epsilon)
+            {
+                break;
+            }
+
+            remaining -= reduced;
+        }
+
+        if (remaining > Epsilon && contentAvailable > Epsilon)
+        {
+            // 固定项与 min 之和仍超过容器：给出可定位诊断，不产生负尺寸、不丢控件。
+            context.ReportOverflow(stackNode, axis, Sum(sizes), contentAvailable);
+        }
+    }
+
+    private static bool CanShrink(StackItem item, double size)
+        => item.Shrink > 0 && size > item.Min + Epsilon;
+
+    private static double Sum(double[] values)
+    {
+        var total = 0.0;
+        foreach (var value in values)
+        {
+            total += value;
+        }
+
+        return total;
+    }
+
+    private static void ArrangeFlex(
+        ViewNode node,
+        Rect bounds,
+        LayoutContext context,
+        bool horizontal,
+        double[] allocation,
+        double spacing,
+        Alignment crossAlignment)
+    {
+        var mainAxis = horizontal ? LayoutAxis.Horizontal : LayoutAxis.Vertical;
+        var crossAxis = horizontal ? LayoutAxis.Vertical : LayoutAxis.Horizontal;
+        var availableCross = horizontal ? bounds.Height : bounds.Width;
+        var children = node.ChildList;
+        var offset = horizontal ? bounds.X : bounds.Y;
+
+        for (var i = 0; i < children.Count; i++)
+        {
+            var child = children[i];
+            var crossFeature = child.GetLayoutFeatures(mainAxis)[crossAxis];
+            var cross = ResolveCross(child, crossFeature, availableCross, crossAlignment, crossAxis);
+            var mainSize = Math.Max(0, allocation[i]);
+
+            // 交叉轴 Offset 是相对容器内容区的偏移：必须叠加容器自身原点，否则父级有偏移（例如 Padding）时子项会回到 0。
+            if (horizontal)
+            {
+                context.Arrange(child, new Rect(
+                    Math.Round(offset, 3),
+                    Math.Round(bounds.Y + cross.Offset, 3),
+                    mainSize,
+                    cross.Size));
+            }
+            else
+            {
+                context.Arrange(child, new Rect(
+                    Math.Round(bounds.X + cross.Offset, 3),
+                    Math.Round(offset, 3),
+                    cross.Size,
+                    mainSize));
+            }
+
+            offset += mainSize + spacing;
+        }
+    }
+
+    /// <summary>
+    /// 交叉轴尺寸：<c>Stretch</c> 或声明了 <c>FillWidth</c> 时占满可用空间，但不得超过子项自身声明的最大尺寸；
+    /// 其它对齐沿用“自然尺寸与可用空间取较小值”。逆序边界使用安全夹取，不会抛异常。
+    /// </summary>
+    private static (double Size, double Offset) ResolveCross(
+        ViewNode child,
+        AxisLayoutFeatures feature,
+        double available,
+        Alignment alignment,
+        LayoutAxis crossAxis)
+    {
+        var stretch = alignment == Alignment.Stretch || feature.Fill;
+        var natural = crossAxis == LayoutAxis.Horizontal ? child.DesiredSize.Width : child.DesiredSize.Height;
+        var requested = stretch ? available : Math.Min(natural, available);
+        var size = Math.Max(0, LayoutFeatureMath.ClampSafe(requested, feature.EffectiveMin, feature.EffectiveMax));
+
+        var offset = stretch
+            ? 0
+            : alignment switch
+            {
+                Alignment.Center => (available - size) / 2,
+                Alignment.End => available - size,
+                _ => 0,
+            };
+
+        return (Math.Round(size, 3), Math.Round(Math.Max(0, offset), 3));
+    }
+
+    /// <summary>弹性分配使用的一个子项主轴特征快照。</summary>
+    private struct StackItem
+    {
+        public ViewNode Node;
+        public double Natural;
+        public double Min;
+        public double Max;
+        public double Base;
+        public double Grow;
+        public double Shrink;
+        public bool HasExplicitFlex;
+        public bool HasDeclaredBase;
     }
 }

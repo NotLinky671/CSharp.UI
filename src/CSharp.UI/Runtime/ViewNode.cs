@@ -73,14 +73,35 @@ public sealed class ViewNode
 
     internal LayoutConstraints LastConstraints { get; set; }
 
-    /// <summary>最近一次测量缓存的提案性质（有效提案或探测结果）。</summary>
+    /// <summary>
+    /// 最近一次测量缓存的提案性质：有效提案、探测结果或自然尺寸测量。
+    /// 自然尺寸测量（<see cref="MeasureProposalKind.Intrinsic"/>）不是最终布局提案，不会掩盖后续有效测量。
+    /// </summary>
     internal MeasureProposalKind LastProposalKind { get; set; } = MeasureProposalKind.Effective;
+
+    /// <summary>
+    /// 最近一次测量缓存是否由自然尺寸（intrinsic）算法产生。
+    /// 与 <see cref="LastProposalKind"/> 正交：探测作用域内的自然测量结果是 <see cref="MeasureProposalKind.Probe"/>，
+    /// 但同样必须记录算法模式，避免探测复用来自有效分配算法的缓存。
+    /// </summary>
+    internal bool LastMeasureIsIntrinsic { get; set; }
+
+    /// <summary>
+    /// 最近的弹性分配结果：该堆叠容器子节点的主轴尺寸（与 <see cref="ChildList"/> 对齐）。
+    /// null 表示本次测量未进入弹性路径（旧语义堆叠）。
+    /// </summary>
+    internal double[]? ChildMainAllocation { get; set; }
+
+    /// <summary>产生 <see cref="ChildMainAllocation"/> 时的主轴可用长度；排列阶段据此确认分配仍然有效。</summary>
+    internal double AllocatedMainExtent { get; set; } = double.NaN;
 
     /// <summary>
     /// 读取该节点当前对外暴露的按轴尺寸特征（显式固定/最小/最大与弹性配额）。
     /// 特征来自视图声明，不从被父约束截断的 <see cref="DesiredSize"/> 反推。
     /// </summary>
-    internal LayoutFeatures GetLayoutFeatures() => View.GetLayoutFeatures(this);
+    /// <param name="mainAxis">最近布局容器的主轴，供 <c>FlexAxis.Main</c> 解析；诊断等无容器上下文时可省略。</param>
+    internal LayoutFeatures GetLayoutFeatures(LayoutAxis mainAxis = LayoutAxis.Horizontal)
+        => View.GetLayoutFeatures(this, mainAxis);
 
     /// <summary>同级身份键（来自 Key 修饰符或 ForEach 键选择器）。</summary>
     internal object? IdentityKey { get; set; }

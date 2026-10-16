@@ -265,7 +265,7 @@ public sealed class Rectangle : View
     }
 
     // 显式 FixedSize 是按轴固定尺寸声明，不能因为父约束截断了 DesiredSize 而丢失。
-    internal override LayoutFeatures GetLayoutFeatures(ViewNode node)
+    internal override LayoutFeatures GetLayoutFeatures(ViewNode node, LayoutAxis mainAxis)
     {
         if (FixedSize is not { } size)
         {

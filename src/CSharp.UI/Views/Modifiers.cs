@@ -34,9 +34,9 @@ public abstract class ModifierView : View
     }
 
     // 普通修饰符（背景、边框、裁剪、环境类修饰符）不声明尺寸：特征透传内容。
-    internal override LayoutFeatures GetLayoutFeatures(ViewNode node)
+    internal override LayoutFeatures GetLayoutFeatures(ViewNode node, LayoutAxis mainAxis)
         => node.ChildList.Count > 0
-            ? node.ChildList[0].GetLayoutFeatures()
+            ? node.ChildList[0].GetLayoutFeatures(mainAxis)
             : LayoutFeatures.FromNatural(node.DesiredSize);
 }
 
@@ -72,9 +72,9 @@ public sealed class PaddingView : ModifierView
     }
 
     // 内边距位于内容外侧：把水平/垂直内边距分别叠加到对应轴的尺寸声明上。
-    internal override LayoutFeatures GetLayoutFeatures(ViewNode node)
+    internal override LayoutFeatures GetLayoutFeatures(ViewNode node, LayoutAxis mainAxis)
     {
-        var inner = base.GetLayoutFeatures(node);
+        var inner = base.GetLayoutFeatures(node, mainAxis);
         return new LayoutFeatures(
             inner.Horizontal.Inflate(Padding.Horizontal),
             inner.Vertical.Inflate(Padding.Vertical));
@@ -186,9 +186,10 @@ public sealed class FrameView : ModifierView
         }
 
         // Frame 只应用自身声明的最小/最大尺寸；父级上限由测量管线统一收缩。
+        // 逆序声明（min > max）不能调用 Math.Clamp（会抛异常），改用安全夹取并以显式下界为准。
         node.DesiredSize = new Size(
-            Math.Clamp(width2, MinWidth ?? 0, MaxWidth ?? double.PositiveInfinity),
-            Math.Clamp(height2, MinHeight ?? 0, MaxHeight ?? double.PositiveInfinity));
+            LayoutFeatureMath.ClampSafe(width2, MinWidth ?? 0, MaxWidth ?? double.PositiveInfinity),
+            LayoutFeatureMath.ClampSafe(height2, MinHeight ?? 0, MaxHeight ?? double.PositiveInfinity));
     }
 
     internal override void Arrange(ViewNode node, Rect bounds, LayoutContext context)
@@ -212,9 +213,9 @@ public sealed class FrameView : ModifierView
             && frame.Alignment == Alignment;
 
     // 外框尺寸是“声明”：即使父约束已经截断了 DesiredSize，也要在这里保留显式固定/最小/最大尺寸。
-    internal override LayoutFeatures GetLayoutFeatures(ViewNode node)
+    internal override LayoutFeatures GetLayoutFeatures(ViewNode node, LayoutAxis mainAxis)
     {
-        var inner = base.GetLayoutFeatures(node);
+        var inner = base.GetLayoutFeatures(node, mainAxis);
         return new LayoutFeatures(
             ApplyFrame(inner.Horizontal, Width, MinWidth, MaxWidth, node.DesiredSize.Width),
             ApplyFrame(inner.Vertical, Height, MinHeight, MaxHeight, node.DesiredSize.Height));
@@ -241,11 +242,15 @@ public sealed class FrameView : ModifierView
             ExplicitSize = explicitSize,
             MinSize = min,
             MaxSize = max,
+            // 外框声明是硬性边界：外层同轴 Flex 覆盖内层弹性配额时不得覆盖它们。
+            HardMinSize = min,
+            HardMaxSize = max,
             ContentMinSize = MaxOf(ownHardMin, inner.ContentMinSize),
             Grow = inner.Grow,
             Shrink = inner.Shrink,
             Basis = inner.Basis,
             Fill = inner.Fill,
+            HasExplicitFlex = inner.HasExplicitFlex,
         };
     }
 
@@ -588,4 +593,21 @@ public static class Modifiers
     /// <summary>为子树设置字体（按家族名与字号）。</summary>
     public static View Font(this View view, string familyName, double size, FontWeight weight = FontWeight.Normal, bool italic = false)
         => new FontView(view, FontDescription.FromName(familyName, size, weight, italic));
+
+    /// <summary>
+    /// 让内容在最近的堆叠容器中按剩余空间增长或压缩。
+    /// <c>basis</c> 省略表示自然尺寸；参数非法（NaN、负权重、min &gt; max 等）在声明时抛出。
+    /// </summary>
+    public static View Flex(
+        this View view,
+        double grow = 1,
+        double shrink = 1,
+        double? basis = null,
+        double min = 0,
+        double max = double.PositiveInfinity,
+        FlexAxis axis = FlexAxis.Main)
+        => new FlexView(view, grow, shrink, basis, min, max, axis);
+
+    /// <summary>占满可用宽度（有界时填满；横向 Stack 主轴上参与伸缩；无界回退自然尺寸），不取消内部固定 Frame。</summary>
+    public static View FillWidth(this View view) => new FillWidthView(view);
 }

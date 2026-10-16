@@ -82,9 +82,9 @@ public abstract class Component : View
     }
 
     // 组件不声明尺寸：特征透传 Build() 结果的根节点，使组件内的固定 Frame 仍能被上层识别。
-    internal override LayoutFeatures GetLayoutFeatures(ViewNode node)
+    internal override LayoutFeatures GetLayoutFeatures(ViewNode node, LayoutAxis mainAxis)
         => node.Children.Count > 0
-            ? node.Children[0].GetLayoutFeatures()
+            ? node.Children[0].GetLayoutFeatures(mainAxis)
             : LayoutFeatures.FromNatural(node.DesiredSize);
 
     /// <inheritdoc />
