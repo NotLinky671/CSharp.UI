@@ -29,7 +29,7 @@ internal sealed class ResponsiveContentState
     /// <summary>是否已从有效测量得到过提案。</summary>
     public bool HasLastInfo;
 
-    /// <summary>最近一次有效测量登记的宽度提案（描述更新/显式失效直接排队时复用）。</summary>
+    /// <summary>最近一次有效测量登记的宽度提案（显式内容失效直接排队时复用）。</summary>
     public ResponsiveInfo LastInfo;
 
     /// <summary>最近一次单轮重建预算所属的轮次标识。</summary>
@@ -50,7 +50,8 @@ internal sealed class ResponsiveContentState
 /// <para>
 /// 预算分两层：<see cref="MaxRebuildsPerNodePerPass"/> 按节点计，正常深层与批量节点不会互相牵连；
 /// <see cref="MaxTransactionsPerPass"/> 是本轮所有节点构建总数的固定上限，与现存节点数量无关，
-/// 因此“每轮新建下一层 Responsive”或反复更换身份的非收敛描述也能受控失败，而不是无限扩张。
+/// 覆盖“每轮新建大量下一层 Responsive”或反复更换身份的广度扩张描述；
+/// “每轮只新增一层”的深度扩张由 <see cref="LayoutContext.MaxMeasureDepth"/> 受控拦截。
 /// </para>
 /// </remarks>
 internal sealed class ResponsiveTransactionManager
@@ -108,8 +109,8 @@ internal sealed class ResponsiveTransactionManager
 
     /// <summary>
     /// 请求内容重建的通用入口（供后续状态依赖接入）；递增版本使同宽内容也重建一次。
-    /// 已测量过的节点会直接排队（复用最近的最终有效提案），使显式失效可以先于重新测量执行——
-    /// 这样即使旧内容是很深的增长链，也能先重建为有限内容，而不是再次撞上测量深度边界。
+    /// 已测量过的节点会直接排队（复用最近的最终有效提案）；运行时仅在测量递归深度受限、无法完成布局时
+    /// 先消费它替换过深旧内容，再重试布局。正常布局仍以本轮测量得到的最终有效提案为准。
     /// 本阶段不改变任何状态语义，仅提供清晰接入点。
     /// </summary>
     public void InvalidateContent(ViewNode node)

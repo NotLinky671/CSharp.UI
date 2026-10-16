@@ -74,4 +74,4 @@
 - 未实现（RL-06 负责）：builder 内状态读取依赖与自动更新；本轮只留接入点，不宣称状态订阅完成。
 - 未验证：macOS/Linux 真机、三平台人工视觉验收、DPI 1/1.25/2 下 Responsive 布局对比。
 - 已知边界：无限自嵌套描述不能原地“切回”有限内容，需要 `InvalidateResponsiveContent` 或替换节点；`MaxMeasureDepth` 限制单次布局测量递归深度。
-- 提交：RL-05 单一本地英文提交（不 amend、不推送），SHA 见 `git log -1`。
+- 提交：RL-05 本地英文提交（实现 + 注释修正），不 amend、不推送；SHA 见 `git log`。
