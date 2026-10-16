@@ -116,3 +116,7 @@
 - 图形测试失败不能被当作跳过成功：无 GL 上下文时应如实失败并保留诊断。
 - 示例的窗口冒烟测试：`CSHARPUI_SMOKE_FRAMES=<帧数> dotnet run --project samples/<示例> --no-build`，渲染指定帧数后打印窗口/DPI/GL 上下文并自动退出（用于无人值守验证）。
 - 验证入口：`build/verify.ps1`（Windows）与 `build/verify.sh`（Linux/macOS），报告写入 `artifacts/verification/`。
+
+## 5. DeepSeek Harness ACP 连接（2026-10-15）
+
+已验证本机桌面版的 ACP v1 握手、会话列表、固定文本任务收发及会话关闭。连接检查器、启动路径、沙箱权限问题和实际结果见 [ACP 本地连接说明](acp/README.md)。该工具不派发框架开发任务，也不自动允许工具执行。

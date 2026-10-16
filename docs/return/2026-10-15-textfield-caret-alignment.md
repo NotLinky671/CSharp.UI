@@ -3,7 +3,7 @@
 记录日期：2026-10-15  
 审核人：Codex  
 用户确认的现象：输入框光标上下位置偏移。  
-状态：已复现，待 DeepSeek Harness 修复与 Codex 复审。  
+状态：DeepSeek Harness 已修复并提交，Codex 已独立复审通过（2026-10-15）。
 指定执行模型：`opencode-go/deepseek-flash`。
 
 ## 问题与证据
@@ -30,12 +30,12 @@ height=48: textY=15.25, caretY=2, verticalOffset=13.25
 
 ## 回归验收
 
-- [ ] 默认高度 32 和较高输入框 48 中，光标与文本行使用相同纵向原点。
-- [ ] 选择背景与文本行纵向对齐，而不是粘在输入框顶部。
-- [ ] 空文本与 placeholder、不同字体大小、DPI 1 / 1.5 / 2、横向滚动后均验证相同坐标约定。
-- [ ] 使用绘制命令或真实排版结果断言几何关系，避免只测试编辑状态或复制实现公式。
-- [ ] 现有输入、选择、剪贴板替身、光标闪烁、节点复用及长度限制回归测试通过。
-- [ ] 增加至少一个真实 Skia 文本排版与 TextField 组合的集成用例，确认替身与实际文字高度下都正确。
+- [x] 默认高度 32 和较高输入框 48 中，光标与文本行使用相同纵向原点。
+- [x] 选择背景与文本行纵向对齐，而不是粘在输入框顶部。
+- [x] 空文本与 placeholder、不同字体大小、DPI 1 / 1.5 / 2、横向滚动后均验证相同坐标约定。
+- [x] 使用绘制命令或真实排版结果断言几何关系，避免只测试编辑状态或复制实现公式。
+- [x] 现有输入、选择、剪贴板替身、光标闪烁、节点复用及长度限制回归测试通过。
+- [x] 增加至少一个真实 Skia 文本排版与 TextField 组合的集成用例，确认替身与实际文字高度下都正确。
 
 ## 交付要求
 
@@ -52,7 +52,7 @@ height=48: textY=15.25, caretY=2, verticalOffset=13.25
 `TextField.Emit()` 把文本纹理交给 `TextPainter.Paint()` 绘制，而 `Paint()` 会在传入矩形内做垂直居中：
 文本顶边 = `bounds.Y + (bounds.Height - layout.Size.Height) / 2`。TextField 传入的是 `inner`（内容区），
 因此文字纹理实际落在内容区垂直中心；但同一处的选择高亮、光标与 `IndexFromPosition()` 命中仍以 `inner.Y` 为原点，
-遗漏了 `(inner.Height - layout.Size.Height) / 2` 这一项。输入框越高或字号越大，偏差越大。
+遗漏了 `(inner.Height - layout.Size.Height) / 2` 这一项。偏差随输入框高度和文本行高变化。
 
 复现程序实测（`StubTextService`，字号 14，行高 17.5）：高度 32 偏差 5.25，高度 48 偏差 13.25。
 
@@ -116,4 +116,31 @@ dotnet run --project tests/CSharp.UI.OpenTK.Tests --no-build
 - 本地复现程序 `artifacts/caret-review`（不提交）在修复后输出：
   `height=32: textY=7.25, caretY=7.25, verticalOffset=0`、`height=48: textY=15.25, caretY=15.25, verticalOffset=0`，
   文本纵向位置与修复前一致，说明垂直居中外观未被改变。
+
+## Codex 独立复审（2026-10-15）
+
+- 复审结论：本次光标上下偏移修复通过，未发现此次修改引入的代码问题。
+- dsh 提交：`38f4c7481253d6872e4c1ea2283eea88e67adcd8`，`Fix TextField caret and selection to share the centered text origin`。
+- ACP 已确认执行模型为 `opencode-go/deepseek-flash`，使用本机 `magpie` 提供方；任务正常结束，所属会话正常关闭，服务进程退出码 0。
+- 核查本次提交仅包含两份源文件、两份测试文件和本文，没有提交既有 ACP 工具与 Agent 笔记改动。
+- 独立检查共享文本原点、文字纹理矩形、光标与选区位置以及命中坐标逆变换，确认没有重复计算居中偏移，横向滚动与裁剪逻辑保持一致。
+- 独立运行原始复现程序：高度 32 时 `textY=7.25, caretY=7.25`；高度 48 时 `textY=15.25, caretY=15.25`；两者纵向差值均为 0。
+
+复审时通过 `dotnet tests/<工程>/bin/Debug/net10.0/<程序集>.dll` 运行四个已构建测试工程，结果如下：
+
+| 测试工程 | 通过 | 失败 | 跳过 |
+|---|---|---|---|
+| CSharp.UI.Tests | 138 | 0 | 0 |
+| CSharp.UI.Text.Tests | 58 | 0 | 0 |
+| CSharp.UI.Integration.Tests | 13 | 0 | 0 |
+| CSharp.UI.OpenTK.Tests | 93 | 0 | 0 |
+| 合计 | **302** | **0** | **0** |
+
+本轮系统剪贴板往返测试实际通过；此前不同运行环境的失败记录保留，不改写历史。本次复审基于 Windows 上的绘制命令几何、真实 Skia 排版和已有 OpenGL 测试，未重新进行 macOS/Linux 真机验证。
+
+## 示例编译补验（2026-10-15，Codex）
+
+用户提醒后检查 `samples` 的输出：Debug 已包含本次修复，Release 仍保留 2026-10-14 的旧框架 DLL。随后对 Counter、TodoList、ControlGallery 分别执行 Debug 与 Release 构建，共六次，全部成功、0 编译错误（有离线漏洞查询 NU1900 警告）。命令为 `dotnet build samples/<工程>/<工程>.csproj --no-restore -c <Debug或Release> -m:1 -nodeReuse:false`。
+
+逐一比较六个示例输出目录中的 `CSharp.UI.dll` 与对应配置的核心构建产物，SHA-256 全部一致，确认没有继续使用旧框架 DLL。三个 Release 示例均通过 `CSHARPUI_SMOKE_FRAMES=5` 启动测试：各渲染 5 帧后退出码为 0，OpenGL 3.3、DPI 1。该启动检查不替代人工观察光标，也不代表旧的发布目录已经重新发布。
 

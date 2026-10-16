@@ -2,7 +2,7 @@
 
 记录日期：2026-10-15  
 审核人：Codex  
-状态：已实机复现，待 DeepSeek Harness 修复与 Codex 复审。  
+状态：DeepSeek Harness 已修复并提交，Codex 已独立复审通过（2026-10-15）。
 执行模型：`opencode-go/deepseek-flash`。
 
 ## 问题与证据
@@ -43,13 +43,13 @@ runtimeScale=1
 
 ## 测试与验收
 
-- [ ] 纯计算测试覆盖 Windows 100% / 125% / 150% / 200%（R=1），Retina（R=2、D=2）及 GLFW 屏幕坐标与 framebuffer 不同的情形。
-- [ ] 150% 初始逻辑尺寸和 framebuffer 像素一致，400×300 逻辑尺寸约对应 Windows 600×450 像素，不漂移或重复放大。
-- [ ] 缩放后的 Button 命中、TextField 光标/选区定位、Slider 拖动及滚轮位置正确；至少用事件适配器或宿主路径验证，不只测试矩阵公式。
-- [ ] DPI 从 1→1.5→2→1 变化时，布局、输入转换和缓存失效一致；零尺寸/最小化状态不会产生无效值或死循环。
-- [ ] 当前本机 150% 隐藏/可见宿主能读到 PixelScale=1.5，三个示例冒烟输出相应的逻辑视口与物理 framebuffer。
-- [ ] 四个测试工程运行并记录真实结果；不跳过或弱化图形、输入、剪贴板断言。
-- [ ] macOS/Linux 如无真机条件，区分纯计算覆盖与实际验证，不宣称实机已通过。
+- [x] 纯计算测试覆盖 Windows 100% / 125% / 150% / 200%（R=1），Retina（R=2、D=2）及 GLFW 屏幕坐标与 framebuffer 不同的情形。
+- [x] 150% 初始逻辑尺寸和 framebuffer 像素一致，400×300 逻辑尺寸约对应 Windows 600×450 像素，不漂移或重复放大。
+- [x] 缩放后的 Button 命中、TextField 光标/选区定位、Slider 拖动及滚轮位置正确；至少用事件适配器或宿主路径验证，不只测试矩阵公式。
+- [x] DPI 变化时，布局、输入转换和缓存失效通过计算及宿主事件路径模拟验证；零尺寸/最小化状态不会产生无效值或死循环。真实跨屏与修改系统设置仍未实测。
+- [x] 当前本机 150% 隐藏/可见宿主能读到 PixelScale=1.5，三个示例冒烟输出相应的逻辑视口与物理 framebuffer。
+- [x] 四个测试工程运行并记录真实结果；不跳过或弱化图形、输入、剪贴板断言。
+- [x] macOS/Linux 如无真机条件，区分纯计算覆盖与实际验证，不宣称实机已通过。
 
 ## 实现依据
 
@@ -147,7 +147,7 @@ restored: client=600×450 logical=400×300 scale=1.5
 
 - macOS / Linux 无真机：Retina 与 Wayland/X11 仅由纯计算与代码路径覆盖，不宣称实机通过。
 - Windows 125% / 200% 与真实跨显示器 DPI 变更未在本机触发（不修改系统显示设置）：动态路径以与 GLFW 回调完全相同的刷新路径模拟验证；
-  真实系统设置变化由 Codex 独立复核（`artifacts/dpi-verify`）。
+  Codex 的 `artifacts/dpi-verify` 仅独立复核当前实际 150% 下的窗口、渲染范围和输入映射，不会触发真实系统设置变化。
 - 150% 下鼠标交互通过事件适配器与命中测试验证，非人工实际拖动。
 
 ### 提交
@@ -155,4 +155,52 @@ restored: client=600×450 logical=400×300 scale=1.5
 本次 R13 修复、测试、指南与本文合并为一次本地英文提交，未推送；未暂存、未修改 Codex 拥有的
 `docs/agents-notebook/README.md`、`docs/agents-notebook/acp/` 与 `docs/return/2026-10-15-textfield-caret-alignment.md`。
 提交 SHA 见 DeepSeek Harness 的交付报告与 `git log -1 --stat`。
+
+## Codex 独立复审（2026-10-15）
+
+- 提交：`715d6217c63ae57b4a6fd8b778e8d4ec34e2d3d5`，`Fix system DPI scaling to use the window content scale`。
+- 结论：本次系统缩放修复通过复审；中途发现的小数视口取整、动态窗口尺寸与初始化回退顺序问题均已修正。
+- 使用同一个 dsh ACP 会话继续完成返修，显式确认模型 `opencode-go/deepseek-flash`。首次请求曾达到客户端 20 分钟超时，恢复后完成；最终会话正常关闭，服务进程退出码 0。
+- 提交仅包含本次 10 份源文件/测试/指南与本文，既有 ACP 工具、Agent 笔记和 R12 复审改动保留在工作区。
+
+### 独立实机与输入验证
+
+构建并运行 `artifacts/dpi-verify/Verify.csproj`（本地忽略目录，不提交）。该程序创建隐藏的真实宿主窗口，在首帧完成后，从原始窗口坐标驱动宿主实际持有的输入适配器进行按钮点击，并同时核对实际 framebuffer 与渲染器像素范围：
+
+```text
+monitor=1.5/1.5
+logical=400×300
+rawClient=(600, 450)
+framebuffer=(600, 450)
+runtimeScale=1.5
+rendererPixels=600×450
+rawPointer=(59.505, 24)
+logicalPointer=(39.67, 16)
+expected=(39.67, 16)
+clicks=1, PASS=True
+```
+
+输入验证是宿主事件适配器路径验证，不是人工鼠标操作或操作系统级注入；当前实际系统缩放为 150%，没有修改系统设置。
+
+### 独立回归与示例检查
+
+通过 `dotnet tests/<工程>/bin/Debug/net10.0/<程序集>.dll` 运行当前构建输出：
+
+| 测试工程 | 通过 | 失败 | 跳过 |
+|---|---|---|---|
+| CSharp.UI.Tests | 138 | 0 | 0 |
+| CSharp.UI.Text.Tests | 58 | 0 | 0 |
+| CSharp.UI.Integration.Tests | 13 | 0 | 0 |
+| CSharp.UI.OpenTK.Tests | 137 | 0 | 0 |
+| 合计 | **346** | **0** | **0** |
+
+六个 Debug/Release 示例目录中的 `CSharp.UI.OpenTK.dll` 已独立计算 SHA-256，全部匹配对应配置的当前框架构建产物。三个 Release 示例各启动并渲染 5 帧后正常退出，独立观察结果为：
+
+| 示例 | 逻辑视口 | framebuffer | DPI | 退出码 |
+|---|---|---|---|---|
+| Counter | 480×320 | 720×480 | 1.5 | 0 |
+| TodoList | 760×480 | 1140×720 | 1.5 | 0 |
+| ControlGallery | 900×700 | 1350×1050 | 1.5 | 0 |
+
+本轮没有重新发布旧 `artifacts/publish/` 目录。运行新版本应使用上述重新构建的示例输出；已打开的旧进程需要重新启动。macOS/Linux 真机、真实 Windows 125%/200% 系统设置和多显示器切换仍为待验证，不与计算测试或模拟事件混同。
 
