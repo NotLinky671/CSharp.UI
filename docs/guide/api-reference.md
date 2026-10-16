@@ -26,6 +26,7 @@
 | `Component` | 组件基类，`protected abstract View Build()`；`protected State<T> UseState<T>(string name, T initialValue)`、`UseBinding<T>(...)` |
 | `VStack` / `HStack` / `ZStack` | 垂直 / 水平 / 层叠布局；`.Spacing(...)`、`.Align(...)` |
 | `Flow` | 自动换行布局：`.Spacing(...)`（项间距）、`.LineSpacing(...)`（行间距）、`.Align(Alignment)`（行内对齐） |
+| `AdaptiveStack` | 按父级有效逻辑宽度自动切换横/纵布局；`.Spacing(...)`、`.VerticalSpacing(...)`、`.Align(...)`、`.WideAlign(...)` |
 | `Spacer` / `Spacer(double fixedSize)` | 吸收剩余空间 / 固定空隙 |
 | `ScrollView(View content, ScrollAxis axis)` | 单轴滚动容器，保留滚动位置；`WheelSensitivity`（有限非负，默认 1）缩放滚轮距离 |
 | `Text` | 文本；`.WithFont(...)`、`.Wrap(maxLines)`、`.Align(...)`、`.Ellipsis()`、`.WithLineHeight(...)` |
@@ -73,6 +74,21 @@
 - 不可压缩的硬固定项目（`.Frame(width:...)`、`.Frame(minWidth:...)`、`Rectangle.FixedSize`）宽于整行时独占一行并输出可定位溢出诊断；可重新测量的普通超宽内容按整行宽度重新测量。空容器、零宽项目、正好放满都有确定行为。
 - `.FillWidth()` 作为“占整行”的请求独占一行（不参与逐行权重分配）；无界宽度时回退自然尺寸。
 - 第一版不做逐行 Flex 权重分配：直接子项的 `.Flex()` 会输出可定位不支持诊断，请把弹性表单项放入内嵌 `HStack`/`AdaptiveStack`。
+
+## 自适应堆叠 AdaptiveStack
+
+| 类型 | 说明 |
+|---|---|
+| `AdaptiveStack(double breakpoint, params View[] children)` | 父级有效逻辑宽度 `< breakpoint` 为纵向，`>= breakpoint` 为横向；`breakpoint` 必须有限且为正 |
+| `Spacing` / `.Spacing(double)` | 宽模式（横向、HStack 语义）的项间距 |
+| `VerticalSpacing` / `.VerticalSpacing(double)` | 窄模式（纵向、VStack 语义）的项间距 |
+| `WideAlignment` / `.WideAlign(Alignment)` | 宽模式交叉轴（垂直）对齐，默认 `Center`（与 `HStack` 一致） |
+| `NarrowAlignment` / `.Align(Alignment)` | 窄模式交叉轴（水平）对齐，默认 `Stretch`（与 `VStack` 一致） |
+
+- 容器类型、运行时父节点与子项集合始终不变，只切换测量/排列策略，因此输入框文本、光标、选区、焦点、组件 `UseState` 与滚动状态在宽窄切换时保持。
+- 断点依据父级扣除 Padding/Frame 后提供的逻辑宽度，不使用窗口尺寸、物理像素或 DPI；宽度无界时按横向自然尺寸处理。
+- 复用统一 Stack 算法：`FlexAxis.Main` 随当前模式的最近 Stack 主轴解释，显式 `FlexAxis.Horizontal` 的宽度 basis 在纵向模式下不会变成高度。
+- 窄模式的 Spacer 与普通 VStack 一致（仅在主轴有界时吸收剩余空间）；宽模式与 HStack 一致。
 
 ## 状态与绑定
 

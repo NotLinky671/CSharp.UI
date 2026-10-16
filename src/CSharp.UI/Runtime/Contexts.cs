@@ -373,7 +373,8 @@ internal sealed class MeasureProbeScope : IDisposable
         bool LastMeasureIsIntrinsic,
         double[]? ChildMainAllocation,
         double AllocatedMainExtent,
-        FlowLayoutCache? FlowCache)
+        FlowLayoutCache? FlowCache,
+        bool? AdaptiveIsHorizontal)
     {
         public static MeasureSnapshot Capture(ViewNode node)
             => new(
@@ -386,7 +387,8 @@ internal sealed class MeasureProbeScope : IDisposable
                 node.LastMeasureIsIntrinsic,
                 node.ChildMainAllocation,
                 node.AllocatedMainExtent,
-                node.FlowCache);
+                node.FlowCache,
+                node.AdaptiveIsHorizontal);
 
         public void Restore(ViewNode node)
         {
@@ -400,6 +402,7 @@ internal sealed class MeasureProbeScope : IDisposable
             node.ChildMainAllocation = ChildMainAllocation;
             node.AllocatedMainExtent = AllocatedMainExtent;
             node.FlowCache = FlowCache;
+            node.AdaptiveIsHorizontal = AdaptiveIsHorizontal;
         }
     }
 }

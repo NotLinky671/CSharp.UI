@@ -102,6 +102,12 @@ public sealed class ViewNode
     internal FlowLayoutCache? FlowCache { get; set; }
 
     /// <summary>
+    /// 最近的 <see cref="AdaptiveStack"/> 布局模式：true 为横向（宽），false 为纵向（窄），null 表示尚未测量。
+    /// 排列阶段必须沿用测量阶段选择的模式，避免父级对齐导致最终宽度与测量宽度不同时模式翻转。
+    /// </summary>
+    internal bool? AdaptiveIsHorizontal { get; set; }
+
+    /// <summary>
     /// 读取该节点当前对外暴露的按轴尺寸特征（显式固定/最小/最大与弹性配额）。
     /// 特征来自视图声明，不从被父约束截断的 <see cref="DesiredSize"/> 反推。
     /// </summary>
