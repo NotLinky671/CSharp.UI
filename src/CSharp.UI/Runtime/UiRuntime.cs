@@ -44,9 +44,13 @@ public sealed class UiRuntime : IDisposable
 {
     private const int MaxRebuildsPerNode = 100;
 
+    /// <summary>通用诊断文本的保留上限（保留最近的记录，避免长时间运行无界增长）。</summary>
+    private const int MaxDiagnostics = 512;
+
     private readonly List<ViewNode> _componentQueue = [];
     private readonly HashSet<ViewNode> _componentSet = [];
     private readonly List<string> _diagnostics = [];
+    private readonly LayoutDiagnostics _layoutDiagnostics;
     private readonly FocusManager _focus;
     private readonly InputRouter _router;
     private bool _layoutDirty = true;
@@ -64,6 +68,7 @@ public sealed class UiRuntime : IDisposable
         Dispatcher = services.Dispatcher;
         _focus = new FocusManager(this);
         _router = new InputRouter(this, _focus);
+        _layoutDiagnostics = new LayoutDiagnostics(ReportDiagnostic);
         Root = Reconciler.MountRoot(this, root);
         Root.Parent = null;
     }
@@ -110,8 +115,11 @@ public sealed class UiRuntime : IDisposable
     /// <summary>组件 Build 累计次数。</summary>
     public int BuildCount { get; private set; }
 
-    /// <summary>框架诊断信息（资源释放失败、组件异常等）。</summary>
+    /// <summary>框架诊断信息（资源释放失败、组件异常等）；保留最近的 <see cref="MaxDiagnostics"/> 条。</summary>
     public IReadOnlyList<string> Diagnostics => _diagnostics;
+
+    /// <summary>有界、按节点去重的布局诊断收集器（溢出/无界基础，供后续弹性与换行消费者使用）。</summary>
+    internal LayoutDiagnostics LayoutDiagnostics => _layoutDiagnostics;
 
     /// <summary>是否存在待处理的组件重建。</summary>
     public bool HasPendingBuild => _componentQueue.Count > 0;
@@ -356,15 +364,24 @@ public sealed class UiRuntime : IDisposable
     /// <summary>指针当前悬停的节点。</summary>
     public ViewNode? HoveredNode => _router.Hovered;
 
-    /// <summary>记录诊断信息。</summary>
+    /// <summary>记录诊断信息；超过上限时丢弃最早记录。</summary>
     public void ReportDiagnostic(string message)
     {
         _diagnostics.Add(message);
+        if (_diagnostics.Count > MaxDiagnostics)
+        {
+            _diagnostics.RemoveRange(0, _diagnostics.Count - MaxDiagnostics);
+        }
+
         Debug.WriteLine($"[CSharp.UI] {message}");
     }
 
-    /// <summary>清空诊断信息。</summary>
-    public void ClearDiagnostics() => _diagnostics.Clear();
+    /// <summary>清空诊断信息（含布局诊断去重记录）。</summary>
+    public void ClearDiagnostics()
+    {
+        _diagnostics.Clear();
+        _layoutDiagnostics.Clear();
+    }
 
     /// <summary>节点卸载前由协调器调用，清理焦点与交互状态。</summary>
     internal void OnNodeUnmounting(ViewNode node)
@@ -377,7 +394,8 @@ public sealed class UiRuntime : IDisposable
     {
         LastMeasureCount = 0;
         LastArrangeCount = 0;
-        var context = new LayoutContext(this, Services.TextService, Services.ImageService, PixelScale);
+        _layoutDiagnostics.BeginPass();
+        var context = new LayoutContext(this, Services.TextService, Services.ImageService, PixelScale, _layoutDiagnostics);
         context.Measure(Root, LayoutConstraints.Tight(ViewportSize));
         context.Arrange(Root, new Rect(0, 0, ViewportSize.Width, ViewportSize.Height));
         LastMeasureCount = context.MeasureCount;

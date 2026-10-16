@@ -37,6 +37,15 @@ public abstract class View
         => node.DesiredSize = Size.Zero;
 
     /// <summary>
+    /// 该视图对外暴露的按轴尺寸特征：自然尺寸、显式固定/最小/最大声明与弹性配额。
+    /// 默认只有自然尺寸与旧 <see cref="FlexGrow"/> 语义；声明尺寸的视图与修饰符重写以传播或覆盖声明。
+    /// </summary>
+    internal virtual LayoutFeatures GetLayoutFeatures(ViewNode node)
+        => new(
+            new AxisLayoutFeatures(node.DesiredSize.Width) { Grow = LayoutFeatureMath.NormalizeQuota(FlexGrow(node, true)) },
+            new AxisLayoutFeatures(node.DesiredSize.Height) { Grow = LayoutFeatureMath.NormalizeQuota(FlexGrow(node, false)) });
+
+    /// <summary>
     /// 排列阶段：把节点的最终矩形（绝对逻辑坐标）写入 <see cref="ViewNode.Frame"/>，
     /// 并通过 <see cref="LayoutContext.Arrange"/> 排列子节点。
     /// </summary>

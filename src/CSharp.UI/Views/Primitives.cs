@@ -264,6 +264,19 @@ public sealed class Rectangle : View
         node.DesiredSize = desired;
     }
 
+    // 显式 FixedSize 是按轴固定尺寸声明，不能因为父约束截断了 DesiredSize 而丢失。
+    internal override LayoutFeatures GetLayoutFeatures(ViewNode node)
+    {
+        if (FixedSize is not { } size)
+        {
+            return LayoutFeatures.FromNatural(node.DesiredSize);
+        }
+
+        return new LayoutFeatures(
+            new AxisLayoutFeatures(node.DesiredSize.Width) { ExplicitSize = size.Width, ContentMinSize = size.Width },
+            new AxisLayoutFeatures(node.DesiredSize.Height) { ExplicitSize = size.Height, ContentMinSize = size.Height });
+    }
+
     internal override void Emit(ViewNode node, DrawContext context)
     {
         if (!context.IsVisible(node) || node.Frame.IsEmpty)

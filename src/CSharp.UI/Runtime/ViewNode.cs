@@ -73,6 +73,15 @@ public sealed class ViewNode
 
     internal LayoutConstraints LastConstraints { get; set; }
 
+    /// <summary>最近一次测量缓存的提案性质（有效提案或探测结果）。</summary>
+    internal MeasureProposalKind LastProposalKind { get; set; } = MeasureProposalKind.Effective;
+
+    /// <summary>
+    /// 读取该节点当前对外暴露的按轴尺寸特征（显式固定/最小/最大与弹性配额）。
+    /// 特征来自视图声明，不从被父约束截断的 <see cref="DesiredSize"/> 反推。
+    /// </summary>
+    internal LayoutFeatures GetLayoutFeatures() => View.GetLayoutFeatures(this);
+
     /// <summary>同级身份键（来自 Key 修饰符或 ForEach 键选择器）。</summary>
     internal object? IdentityKey { get; set; }
 

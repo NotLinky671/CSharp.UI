@@ -32,6 +32,12 @@ public abstract class ModifierView : View
         node.Frame = bounds;
         context.Arrange(node.ChildList[0], bounds);
     }
+
+    // 普通修饰符（背景、边框、裁剪、环境类修饰符）不声明尺寸：特征透传内容。
+    internal override LayoutFeatures GetLayoutFeatures(ViewNode node)
+        => node.ChildList.Count > 0
+            ? node.ChildList[0].GetLayoutFeatures()
+            : LayoutFeatures.FromNatural(node.DesiredSize);
 }
 
 /// <summary>内边距修饰符：<c>view.Padding(24)</c>。</summary>
@@ -63,6 +69,15 @@ public sealed class PaddingView : ModifierView
     {
         node.Frame = bounds;
         context.Arrange(node.ChildList[0], bounds.Deflate(Padding));
+    }
+
+    // 内边距位于内容外侧：把水平/垂直内边距分别叠加到对应轴的尺寸声明上。
+    internal override LayoutFeatures GetLayoutFeatures(ViewNode node)
+    {
+        var inner = base.GetLayoutFeatures(node);
+        return new LayoutFeatures(
+            inner.Horizontal.Inflate(Padding.Horizontal),
+            inner.Vertical.Inflate(Padding.Vertical));
     }
 
     internal override bool LayoutPropertiesEquivalent(View other)
@@ -195,6 +210,47 @@ public sealed class FrameView : ModifierView
             && frame.MaxWidth == MaxWidth
             && frame.MaxHeight == MaxHeight
             && frame.Alignment == Alignment;
+
+    // 外框尺寸是“声明”：即使父约束已经截断了 DesiredSize，也要在这里保留显式固定/最小/最大尺寸。
+    internal override LayoutFeatures GetLayoutFeatures(ViewNode node)
+    {
+        var inner = base.GetLayoutFeatures(node);
+        return new LayoutFeatures(
+            ApplyFrame(inner.Horizontal, Width, MinWidth, MaxWidth, node.DesiredSize.Width),
+            ApplyFrame(inner.Vertical, Height, MinHeight, MaxHeight, node.DesiredSize.Height));
+    }
+
+    private static AxisLayoutFeatures ApplyFrame(
+        AxisLayoutFeatures inner,
+        double? explicitSize,
+        double? min,
+        double? max,
+        double naturalSize)
+    {
+        // 无尺寸声明的 Frame 只负责对齐：盒子特征与内容一致，仅更新自然尺寸。
+        if (explicitSize is null && min is null && max is null)
+        {
+            return inner with { NaturalSize = naturalSize };
+        }
+
+        // 外框盒子语义：外框自身的固定/最小/最大声明决定分配，内层 ExplicitSize 不再充当外框基准；
+        // 内容的硬最小要求（含内层固定尺寸）单独保留，供可压缩性判断与溢出诊断。
+        var ownHardMin = MaxOf(explicitSize, min);
+        return new AxisLayoutFeatures(naturalSize)
+        {
+            ExplicitSize = explicitSize,
+            MinSize = min,
+            MaxSize = max,
+            ContentMinSize = MaxOf(ownHardMin, inner.ContentMinSize),
+            Grow = inner.Grow,
+            Shrink = inner.Shrink,
+            Basis = inner.Basis,
+            Fill = inner.Fill,
+        };
+    }
+
+    private static double? MaxOf(double? left, double? right)
+        => left is null ? right : right is null ? left : Math.Max(left.Value, right.Value);
 }
 
 /// <summary>背景色修饰符：在内容之后再绘制一层背景矩形，覆盖内边距区域。</summary>
