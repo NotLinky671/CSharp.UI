@@ -201,9 +201,13 @@ public sealed class GlRenderer : IRenderCommandTarget, IDisposable
         _currentClipFramebuffer = GlCoordinateMath.ToFramebufferRect(fullClip, _pixelScale);
         _clipEmpty = fullClip.IsEmpty;
         _unbalancedClipPops = 0;
+
+        // 清屏必须覆盖整个新 framebuffer：先禁用 scissor 清空，避免窗口扩大后旧裁剪矩形
+        // （或逻辑尺寸换算的舍入）让新扩出的右下区域残留未初始化内容；随后再按当前裁剪绘制命令。
+        GL.Disable(EnableCap.ScissorTest);
+        GL.Clear(ClearBufferMask.ColorBufferBit);
         GL.Enable(EnableCap.ScissorTest);
         ApplyScissor(_currentClip);
-        GL.Clear(ClearBufferMask.ColorBufferBit);
 
         ResetBatch();
         _batchCount = 0;

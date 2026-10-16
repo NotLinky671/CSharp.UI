@@ -8,6 +8,8 @@
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <!-- 图形集成测试需要 OpenGL 上下文，与核心单元测试分开运行。 -->
     <DefineConstants>$(DefineConstants);CSHARPUI_GRAPHICS_TESTS</DefineConstants>
+    <!-- R18：窗口尺寸/刷新回调回归需要直接查询 GLFW 的真实窗口与 framebuffer 尺寸。 -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
