@@ -50,3 +50,39 @@
 Codex 已复核缓存命中路径在改写 Environment 前调用 CaptureForProbes，MeasureFresh 也在清除有效标记前拍快照。独立执行 `dotnet run --project artifacts/responsive-work/invariants/Verify.csproj --no-build`，退出码 0，10/10 通过；包含真实 Skia 文本缓存、环境恢复、MeasureFresh 恢复及七组外框尺寸案例。
 
 已核对本轮完整测试日志：核心 191、文本 67、集成 15、OpenTK 188，合计 461，失败/错误/跳过均为 0。`git diff --check` 无格式错误。此前 P1、P2 与快照入口问题均已关闭，RL-01 可作为 RL-02 的基础；本结论不代表后续响应式 API 或三平台人工验收已完成。
+
+## RL-02 实施期间预审（尚未整体验收）
+
+### 待核对：新增分配缓存的 Probe 恢复
+
+本阶段新增 `ViewNode.ChildMainAllocation`、`AllocatedMainExtent`。若测量会改写这些值，应与已有 DesiredSize、ViewCache 一起纳入探测作用域快照；不能退出探测后只恢复尺寸有效标记，却留下另一提案的分配结果。请覆盖“有效分配后以不同宽度 Probe，再按原约束命中测量缓存并 Arrange”，包含嵌套探测和异常退出。此项为实施中的完整性检查，最终以成品代码与实测为准。
+
+### 待核对：同轴外层 Flex 是否真正覆盖内部配额
+
+当前 `FlexView.GetLayoutFeatures` 把内层 `MinSize`/`MaxSize` 与外层 min/max 合并。内层可能来自另一层 Flex，也可能来自硬 Frame，两者需要区别：硬 Frame 应保留，而已被外层同轴 Flex 覆盖的内部弹性配额不应继续限制分配。例如 `new Text("a").Flex(basis:100,min:90).Flex(grow:0,basis:10,max:20)`，外层声明应生效；不能残留内部 min90，产生 90..20 的冲突或最终宽90。请补实际 Frame 的回归，并同时验证硬 Frame 不会被覆盖。FillWidth 外层与 Flex 内层的默认 basis/上下限也需给出一致规则。
+
+### 待核对：普通外层容器不能让内部 Flex 永远停留在 intrinsic 结果
+
+当前 Stack.Measure 总是 PushIntrinsicMeasure 测量所有子项；若外层没有直接显式 Flex 则直接返回，不做最终复测。普通 `new VStack(new HStack(new Text("nested").Flex(basis:80)))` 在 400 宽视口中，内层 HStack 因 alreadyIntrinsic 提前返回，将永远没有机会分配其内部 Flex。需要让最终布局提案到达嵌套容器，并区分 intrinsic 与有效测量的缓存；同约束的 intrinsic 缓存不能掩盖有效分配。自然测量也应遵循 Probe 契约，避免未来 Responsive 把自然测量误认为有效提案。请以普通 VStack/ScrollView 包含 Flex HStack 的真实节点尺寸验证，而不是只有根容器直接带 Flex 的用例。
+
+### 待核对：ArrangeFlex 缺少父容器交叉轴原点
+
+当前 ArrangeFlex 将 ResolveCross 返回的相对 Offset 直接当作绝对坐标。横向容器需要加 bounds.Y，纵向容器需要加 bounds.X。例如 `new VStack(new Text("offset").Flex(basis:40)).Padding(20)`，文字 X 应为 20，不能回到窗口 X=0。请覆盖两个轴、非零父原点和 Center/End 对齐，验证绘制与点击采用同一实际位置。
+
+### 待核对：压缩权重必须使用初始约束后的 basis
+
+当前 StartSize 对 basis 执行 min/max 夹取，但 Shrink 仍使用原始 item.Base 算权重。计划要求使用“shrink × 初始约束后 basis”。两个子项分别为 `.Flex(basis:1000,max:100)` 和 `.Flex(basis:100)`，父宽100、默认 shrink 均为1时，初始尺寸均100，应压缩为50/50；不能按1000:100的原始权重得到约9.09/90.91。请保存并使用分配前夹取后的基准，冻结再分配过程中保持该基准不变。
+
+### RL-02 独立探针：首轮实测 5 项失败，暂不放行
+
+已使用 Harness 本轮生成的核心/文本程序集构建独立验证程序，未重建其共享工程：`dotnet build artifacts/responsive-work/flex-invariants/Verify.csproj --no-restore -p:BuildProjectReferences=false -p:NuGetAudit=false -m:1 -nodeReuse:false` 退出0（有一条既有 NU1900 漏洞服务网络警告）；随后 `dotnet run --project artifacts/responsive-work/flex-invariants/Verify.csproj --no-build` 退出1。14项断言中9项通过，以下5项失败，确认上述问题具有实际行为影响：
+
+| 用例 | 预期 | 实测 |
+|---|---|---|
+| 普通 VStack 内的 Flex HStack | 文字分配宽400 | 宽50.4，仍是自然尺寸 |
+| Padding20 中的纵向 Flex | 文字 X=20 | X=0 |
+| 有效布局→不同宽度 Probe→恢复并 Arrange | 保持120/280 | 变为8.4/8.4 |
+| basis1000/max100 与 basis100 的压缩 | 50/50 | 9.0909/90.9091 |
+| 外层 Flex 覆盖内层弹性上下限 | 宽10 | 宽90 |
+
+增长/压缩冻结再分配、零basis、两种 FillWidth/maxFrame 顺序、真实 Skia 最终宽度换行、嵌套测量量以及输入框缩窄后的真实光标/焦点/选区/Binding 均在本轮独立验证中通过。RL-02 仍处于实施中，此处不是最终成品验收；请修复5个失败项并补正式回归，再重新构建和验证。
