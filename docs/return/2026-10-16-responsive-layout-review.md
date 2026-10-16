@@ -86,3 +86,21 @@ Codex 已复核缓存命中路径在改写 Environment 前调用 CaptureForProbe
 | 外层 Flex 覆盖内层弹性上下限 | 宽10 | 宽90 |
 
 增长/压缩冻结再分配、零basis、两种 FillWidth/maxFrame 顺序、真实 Skia 最终宽度换行、嵌套测量量以及输入框缩窄后的真实光标/焦点/选区/Binding 均在本轮独立验证中通过。RL-02 仍处于实施中，此处不是最终成品验收；请修复5个失败项并补正式回归，再重新构建和验证。
+
+### 修订中的同轴覆盖补查
+
+新 HardMinSize/HardMaxSize 已将硬 Frame 与弹性边界分开；但当前 FillWidthView 覆盖 min/max 时还保留内层 Basis。若约定外层同轴声明完整生效，外层 FillWidth 的默认基准应恢复自然尺寸，不能继续使用内层 Flex 的显式 basis。请覆盖水平无界 ScrollView 中 `new HStack(new Text("abcd").Flex(basis:300).FillWidth())`：外层 FillWidth 按契约回退自然文字宽度，而非300；有限宽度下与兄弟弹性项的空间比例也应一致。外层 Flex 同样需要核对是否残留内层 Fill 标记，避免外层普通弹性声明仍被当作 FillWidth 的交叉轴请求。
+
+新增 Intrinsic 缓存种类后还需统一视图可见的提案入口：当前 LayoutContext.CurrentProposal 在 IsIntrinsicMeasure=true、无显式 Probe scope 时仍返回 Effective，而私有 Measure 再把它改为 Intrinsic 写入 LastProposalKind。后续动态视图在 Measure 内读取 CurrentProposal 会误认其为有效布局；请使该属性或唯一的“有效提案”判定同时排除 Intrinsic，并用实际 Measure 观察上下文的回归固定契约。只修 LastProposalKind 缓存不能解决视图执行期间的提案分类。
+
+嵌套 Flex 的有效复测修订还需把最终自然高度向上传递：当前无直接 Flex 的 Stack 分支在复测子项之前调用 SumNatural，复测后仍用旧 naturalMain/naturalCross 计算自己的 DesiredSize。`ScrollView(VStack(HStack(Text.Wrap().Flex(...), 固定标签), 尾部内容))` 中，内层换行高度虽然变大，外层 VStack 仍可能报告单行旧高度，导致祖先排列/滚动范围错误。请在有效复测后重新汇总最终 DesiredSize，并以真实 Skia 换行高度、尾部位置和 ScrollView 范围验证，不仅检查内部 Text 的宽度。
+
+引入 Intrinsic 算法模式后，Probe 缓存复用也不能再无条件复用所有种类：当前 CanReuseMeasurement 在 kind==Probe 时直接返回true，即使当前 IsIntrinsicMeasure=true、已有缓存来自有效分配算法。有效 HStack 测量完成后，以原约束在 BeginProbe+PushIntrinsicMeasure 中测量，仍可能复用有效 ChildMainAllocation，而没有执行自然尺寸算法。请把“算法是否 intrinsic”与“结果是否临时 probe”分开识别/保存，或采取等效的安全复用规则，并恢复相应快照。独立探针已覆盖同约束下的模式切换，正常 Probe 读取兼容缓存仍可保留。
+
+### RL-02 修订版复审通过
+
+Codex 已复核同约束缓存同时区分 LastMeasureIsIntrinsic 和临时提案性质；Probe 快照恢复算法模式与分配缓存；Frame 硬边界与弹性配额独立，外层 Flex/FillWidth 覆盖旧弹性声明；最终子项高度向上传递，排列包含父级交叉轴原点，压缩使用夹取后的初始 basis。
+
+独立执行 `dotnet run --project artifacts/responsive-work/flex-invariants/Verify.csproj --no-build` 退出0，18/18通过。首轮5项失败及后续补查全部关闭：嵌套宽400、Padding X=20、Probe后120/280、压缩50/50、外层Flex宽10；无界FillWidth回到自然33.6；真实Skia最终换行及祖先高度111.7265625正确；自然提案分类、模式切换与长文本缩窄后的真实光标/选区/焦点均通过。
+
+已核对本轮实际 runner 结果：核心227、文本67、集成18、OpenTK188，合计500，失败/错误/跳过均为0。`git diff --check` 无格式错误。RL-01部分“初始子项提案为Effective”的断言随新增Intrinsic契约更新，探测/环境/文本缓存/异常恢复的原有行为断言保留并扩展。RL-02可作为后续任务基础；此处不表示尚未实现的Flow/AdaptiveStack/Responsive已完成，也不代替最终平台验收。
