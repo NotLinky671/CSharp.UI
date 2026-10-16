@@ -185,3 +185,47 @@ Codex独立探针当前22项，20通过、2失败，运行退出1：
 实现 `465d3e0`，注释整理 `18a2d3b`，父约束变更与显式失效的正式回归 `4723e65`。Codex已核对最终变更与记录，并亲自运行四套当前Debug程序集：核心285、文本67、集成29、OpenTK189，合计570，失败/错误/跳过均为0，全部退出0；OpenTK按正常桌面权限执行。三个现有示例Debug构建记录均退出0，`git diff --check` 无格式错误。
 
 独立普通24项及增长链模式结果如上；最终提案与内容签名、异常及深树清理、节点复用和R18即时回调绘制均通过，本阶段问题全部关闭。可以开始RL-06状态依赖工作。此处不表示尚未实施的状态订阅、Gallery改造或最终Release/跨平台交付完成。
+
+## RL-06 实施期间预审
+
+### 待核对：控件卸载后清理布局/绘制时补登记的绑定依赖
+
+不只检查builder直接读取State的依赖集合。旧RegisterBindingDependency把Binding.Read登记为最近Component的长期_extraDependencies；Responsive分支移除控件但保留外层Component时，这类订阅可能继续存在。请覆盖“在任何Build之外缓存source.ToBinding，仅由活跃TextField在布局/绘制读取；Responsive条件切换移除TextField；再改source值”：不应残留订阅或重建已经无关的Component/Responsive。独立RL-06探针 `responsive-state-invariants` 已准备该场景（尚未运行，待实施程序集），需结合本阶段附加依赖生命周期契约验证。
+
+### 待核对：直接构建依赖与附加绑定依赖重叠时的订阅并集
+
+当前草稿ComponentState新增RemoveExtraDependency，最后一个引用释放时无条件state.RemoveDependent(owner)，但owner可能仍在_dependencies中直接读取该状态；EndBuild移除直接读取时也需保留仍被_extraDependencies引用的订阅。最终State.Dependents应反映两类依赖的并集，不能因清理其中一类而取消另一类有效订阅。
+
+独立探针已补“外层Component.Build直接显示Value，同时Responsive内TextField绑定同一Value；移除TextField后改Value，外层显示必须继续更新”。这是附加依赖清理的互补场景，避免只验证无关订阅被删除，却误删仍需要的订阅。当前属于实施中检查，最终以成品/实测为准。
+
+### [P1] 独立实测：移除绑定控件误删外层仍有效的构建订阅
+
+使用19:20构建的实施程序集，Codex独立构建 `artifacts/responsive-work/responsive-state-invariants/Verify.csproj`（BuildProjectReferences=false）退出0、0警告/错误，运行退出1：12项中11通过、1失败。
+
+失败项为上述重叠场景：外层Component.Build一直用Text显示Value，内层Responsive在Show=true时挂载绑定同一Value的TextField；Binding在任何Build之外创建。Show=false移除TextField后，再改Value，预期外层重新Build一次并显示新值，实际ownerBuilds增量0，显示停留旧值。RemoveExtraDependency最后一个引用释放时无条件RemoveDependent(owner)会删除直接构建订阅，确认预审问题有实际行为影响。
+
+请按直接依赖与附加引用的并集维护订阅，并补相反方向回归：停止直接读取但控件仍绑定时，附加订阅仍驱动更新。已通过的builder-only更新、无需外层重建、条件依赖清理、批量状态/宽度合并、卸载与外层数据保留、纯附加绑定移除清理须保留。RL-06暂不放行。
+
+相反方向也已补入独立程序并实测失败：外层停止在Build中读取Value，但保留仍绑定Value的TextField；再改Value，ownerBuilds仍增量0。普通探针现13项中11通过、2失败，退出1。两项均指向订阅并集清理，不应只单边加判断而遗漏另一方向。
+
+### [P2] 同一控件节点替换Binding来源时保留了旧来源的附加订阅
+
+独立探针再补“相同TextField节点从缓存Binding A换为缓存Binding B”（两者都在Build之外创建）。节点应复用，旧A无其它读取时应释放订阅。当前只在节点卸载时释放BindingDependencyRegistrations；属性更新复用节点不会卸载，因此仍保留A，同时又登记B。实测A.Dependents.Count=1；修改旧A还会触发外层无关Build一次。新B仍能驱动更新，通过其互补断言。
+
+请将附加绑定订阅与当前实际绑定来源对应，节点更新/重新测量时替换失效来源，保留多控件引用与直接构建依赖并集；不要通过禁用正常节点复用处理。普通独立探针现15项：12通过、3失败（两个并集方向及此旧来源残留），退出1。该项与“依赖数量有界、属性更新后的绑定正确”契约相关，修复后应一起通过。
+
+### 订阅修订独立15/15通过
+
+Codex使用19:32修订程序集重新构建状态探针（BuildProjectReferences=false），退出0、0警告/错误；运行退出0，15项全部通过。StateBase按节点维护引用计数，ComponentState对直接依赖集合只增减实际变化，使直接读取与附加绑定引用按并集生效；描述更新前释放控件的旧绑定登记，随后按新描述重新登记，同时保留原控件节点。
+
+实测两个重叠方向ownerBuilds均正确增量1；替换绑定后旧来源订阅数0、修改旧来源ownerBuilds增量0，新来源仍可更新。其余builder-only、条件切换、批量合并、卸载及外层数据保留均通过。上述P1/P2已关闭为实施期问题；仍需正式完整回归和最终提交核对后才放行RL-06。
+
+独立探针随后扩为21项并全部退出0：另覆盖builder写相同值、写不同值、创建UseState的三种禁止操作，以及各自失败后的合法恢复。状态均保持原值，BuildTracker.Current恢复null、请求队列清空；不以相等值短路掩盖纯度契约。该轮构建0警告/错误，未重建共享框架工程。
+
+收尾文档核对：请同步移除Responsive公开XML注释“本阶段不提供状态依赖能力”，以及UiRuntime.InvalidateResponsiveContent仍称“后续RL-06、不会自动订阅”的过时注释，使源码提示与本轮已经实现的状态读取能力一致。
+
+### RL-06 最终复审通过
+
+实现 `964a1e9` 已核对，过时XML说明已更新。独立状态探针21/21通过；Codex独立复跑核心299及真实Skia集成30项全部退出0，核对正式四套完整日志299+67+30+189=585，失败/错误/跳过均为0。三个现有示例Debug构建记录全部退出0，格式检查通过。
+
+两类依赖并集、绑定换源及卸载清理均已有正式与独立回归，动态失效实际派发、栈式作用域恢复、纯构建约束、分支卸载与数据保留符合任务，实施期问题全部关闭。可以开始RL-07示例与指南；本结论不代替后续示例、输入/DPI/图形集成或Release最终交付验收。
