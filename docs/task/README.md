@@ -4,13 +4,13 @@
 
 设计依据：[IME、编辑事务与撤销重做计划](../plan/2026-10-17-text-input-and-editing-plan.md)。
 
-状态：规划完成，10个任务均待开始；本轮仅规划，不启动实现。API仍为草案，TI-01原型与TI-02契约复审后冻结。
+状态：TI-01 接入路线经 Codex 审核通过（探针86项测试通过；用户免除微软拼音测试）；TI-02 实施中；TI-03～TI-10 待开始。Windows候选实际定位、取消与生产宿主验收保留至TI-07/TI-10。
 
 ## 任务与依赖
 
 | 完成 | ID | 任务 | 前置依赖 | 阶段 |
 |---|---|---|---|---|
-| ☐ | TI-01 | [平台可行性与 Windows 原型](01-platform-feasibility.md) | 无 | A |
+| ☑ | TI-01 | [平台可行性与 Windows 原型](01-platform-feasibility.md) | 无 | A |
 | ☐ | TI-02 | [冻结编辑与文本输入契约](02-editing-and-input-contracts.md) | [TI-01：平台可行性与 Windows 原型](01-platform-feasibility.md) | B |
 | ☐ | TI-03 | [统一编辑事务与 Binding 同步](03-atomic-editing-and-binding.md) | [TI-02：冻结编辑与文本输入契约](02-editing-and-input-contracts.md) | B |
 | ☐ | TI-04 | [组合会话与预编辑状态机](04-composition-state-machine.md) | [TI-03：统一编辑事务与 Binding 同步](03-atomic-editing-and-binding.md) | B |
@@ -23,7 +23,7 @@
 
 ## 完成清单
 
-- [ ] [TI-01：平台可行性与 Windows 原型](01-platform-feasibility.md)
+- [x] [TI-01：平台可行性与 Windows 原型](01-platform-feasibility.md)
 - [ ] [TI-02：冻结编辑与文本输入契约](02-editing-and-input-contracts.md)
 - [ ] [TI-03：统一编辑事务与 Binding 同步](03-atomic-editing-and-binding.md)
 - [ ] [TI-04：组合会话与预编辑状态机](04-composition-state-machine.md)
@@ -36,16 +36,16 @@
 
 ## 阶段门槛
 
-- A：TI-01先验证真实Windows输入法、消息来源与三平台路线；原型不通过，不冻结后续接口。
+- A：TI-01路线审核已通过，依据现有WeType真实预编辑/结果、消息来源与三平台矩阵；候选实际定位与取消验收移交TI-07/TI-10，微软拼音不再是门槛。
 - B：TI-02～TI-04交付核心契约、原子编辑与组合状态。
 - C：TI-05～TI-07交付历史、预编辑几何与Windows原生桥；可独立工作以依赖表为准。
 - D：TI-08～TI-10交付平台回退、示例文档、真实IME和最终构建证据。
 
 ## 执行与审核
 
-Codex规划并提交推送文档；DSH按任务实现与单元测试，自测后等待Codex审核。问题写docs/return带日期文件并循环返修，只有审核通过才由DSH英文提交并推送实现。前置任务审核通过才能开始依赖任务。新计划不授权预先宣称完成，不在本轮规划后自动启动ACP实现。
+Codex规划并提交推送文档；DSH按任务实现与单元测试，自测后等待Codex审核。问题写docs/return带日期文件并循环返修，只有审核通过才由DSH英文提交并推送实现。前置任务审核通过才能开始依赖任务。用户已授权继续实施；每项仍须自测及Codex复审，不能预先宣称完成。
 
-基线以TI-01启动时构建测试为准，历史参考639项。Windows完整IME为强制验收；macOS/Linux本轮交付能力声明与已提交文本回退，不宣称三平台完整组合输入。多行TextEditor不在范围。
+基线以TI-01启动时构建测试为准，历史参考639项。Windows使用当前可用输入法进行完整IME验收，不安装、启用或测试用户已移除的微软拼音；macOS/Linux本轮交付能力声明与已提交文本回退，不宣称三平台完整组合输入。多行TextEditor不在范围。
 
 最终交付由Codex写docs/delivery/2026-10-17-text-input-and-editing-delivery.md及同名前缀-evidence目录；完成前不创建假交付结论。
 
