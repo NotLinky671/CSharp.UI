@@ -1,0 +1,3 @@
+beforeScroll=1520
+afterScroll=1520
+FAIL external shrink on render keeps caret visible

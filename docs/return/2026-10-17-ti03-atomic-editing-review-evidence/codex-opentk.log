@@ -1,0 +1,51 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+[RL-08] 连续 41 档宽度：最大测量 175，存活纹理峰值 256，回落 256/256，构建 0，布局轮 42
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 深字浅底：颜色感知遮罩 mean=0.1015 max=2
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 深字浅底：旧白字遮罩 mean=10.1257 max=84（参考遮罩差异 max=99）。
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 浅字深底：颜色感知遮罩 mean=0.1192 max=2
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 浅字深底：参考遮罩与白字遮罩一致（max=0），跳过负对照。
+[R17] "Hello, CSharp.UI!" 12px DPI=1 深字浅底：颜色感知遮罩 mean=0.1201 max=2
+[R17] "Hello, CSharp.UI!" 12px DPI=1 深字浅底：旧白字遮罩 mean=10.0368 max=84（参考遮罩差异 max=98）。
+[R17] "Hello, CSharp.UI!" 16px DPI=1.25 浅字深底：颜色感知遮罩 mean=0.1178 max=2
+[R17] "Hello, CSharp.UI!" 16px DPI=1.25 浅字深底：参考遮罩与白字遮罩一致（max=0），跳过负对照。
+[R17] "Hello, CSharp.UI!" 28px DPI=2 深字浅底：颜色感知遮罩 mean=0.0339 max=2
+[R17] "Hello, CSharp.UI!" 28px DPI=2 深字浅底：旧白字遮罩 mean=3.4801 max=84（参考遮罩差异 max=99）。
+[R17] "中文 English 混排" 14px DPI=1.5 深字浅底：颜色感知遮罩 mean=0.1141 max=2
+[R17] "中文 English 混排" 14px DPI=1.5 深字浅底：旧白字遮罩 mean=10.3365 max=84（参考遮罩差异 max=99）。
+[R17] "中文 English 混排" 16px DPI=2 浅字深底：颜色感知遮罩 mean=0.0891 max=2
+[R17] "中文 English 混排" 16px DPI=2 浅字深底：参考遮罩与白字遮罩一致（max=0），跳过负对照。
+[R17] "llllllllllll" 14px DPI=1.5 深字浅底：颜色感知遮罩 mean=0.2581 max=2
+[R17] "llllllllllll" 14px DPI=1.5 深字浅底：旧白字遮罩 mean=17.6221 max=82（参考遮罩差异 max=97）。
+[R17] "llllllllllll" 28px DPI=1 浅字深底：颜色感知遮罩 mean=0.1887 max=2
+[R17] "llllllllllll" 28px DPI=1 浅字深底：参考遮罩与白字遮罩一致（max=0），跳过负对照。
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 alpha=128 opacity=1：mean=0.2199 max=2
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 alpha=255 opacity=0.5：mean=0.2266 max=2
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 alpha=128 opacity=0.5：mean=0.1577 max=2
+[R17] "中文边缘 English 123" 14px DPI=1.25 alpha=128 opacity=0.63：mean=0.1016 max=2
+[R17] 禁用按钮标签 mean=0.0570 max=2
+[RL-08] 同运行时 1024@1：排版 358.477×37.242 2 行，纹理 359×38，RGB mean=0.0992 max=2，墨迹像素 2905
+[RL-08] 同运行时 320@1：排版 252×55.863 3 行，纹理 252×56，RGB mean=0.0959 max=2，墨迹像素 2905
+[RL-08] 同运行时 320@1.25：排版 252×55.863 3 行，纹理 315×70，RGB mean=0.0805 max=2，墨迹像素 4267
+[RL-08] 同运行时 320@1.5：排版 252×55.863 3 行，纹理 378×84，RGB mean=0.0747 max=2，墨迹像素 5573
+[RL-08] 同运行时 320@2：排版 252×55.863 3 行，纹理 504×112，RGB mean=0.0585 max=2，墨迹像素 10588
+[RL-08] 同运行时 768@1.5：排版 358.477×37.242 2 行，纹理 538×56，RGB mean=0.0788 max=2，墨迹像素 5573
+[RL-08] 同运行时 480@1.5：排版 358.477×37.242 2 行，纹理 538×56，RGB mean=0.0788 max=2，墨迹像素 5573
+[RL-08] Gallery 文字 DPI=1.25：mean=0.1029 max=2 墨迹 (0, 3, 438×20)
+[RL-08] Gallery 文字 DPI=1.5：mean=0.1016 max=2 墨迹 (0, 4, 525×24)
+[RL-08] Gallery 文字 DPI=2：mean=0.0778 max=2 墨迹 (0, 5, 700×31)
+[RL-08] Gallery 内层裁剪 DPI=1：clip=(312.625, 519.004, 274.75×120) 越界像素=0 边界内墨迹=222
+[RL-08] Gallery 内层裁剪 DPI=1.5：clip=(312.625, 519.004, 274.75×120) 越界像素=0 边界内墨迹=282
+[RL-08] 宿主连续 resize 7 步全部一致；构建 0，布局轮 8，帧 15
+[RL-08]   300→逻辑 300×760 fb(450, 1140) renderer450×1140 frames1->3 pending0
+[RL-08]   520→逻辑 520×760 fb(780, 1140) renderer780×1140 frames3->5 pending0
+[RL-08]   620→逻辑 620×760 fb(930, 1140) renderer930×1140 frames5->7 pending0
+[RL-08]   900→逻辑 900×760 fb(1350, 1140) renderer1350×1140 frames7->9 pending0
+[RL-08]   1120→逻辑 1120×760 fb(1680, 1140) renderer1680×1140 frames9->11 pending0
+[RL-08]   340→逻辑 340×760 fb(510, 1140) renderer510×1140 frames11->13 pending0
+[RL-08]   820→逻辑 820×760 fb(1230, 1140) renderer1230×1140 frames13->15 pending0
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '46f6427a055eaea5774ac41639f8bd848cbf0fea13555980ed18f5ed08ee0304')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 242, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 7.765s

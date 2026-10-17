@@ -1,0 +1,6 @@
+PASS external binding sync without descriptor rebuild
+text=x caret=1
+PASS mutate then throw clamps real caret
+caret=1
+PASS readback failure recovers on next frame
+Failures=0

@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace CSharp.UI;
 
 /// <summary>
@@ -96,12 +94,20 @@ public sealed class TextField : View
     {
         node.Frame = bounds;
 
-        // 弹性分配、窗口缩放或断点切换都会改变字段宽度：每次排列后重新保证光标可见，
-        // 否则旧的 ScrollX 会把光标留在可视区之外（绘制阶段的夹取只是最后防线，不能掩盖错位）。
-        // 只调整内部滚动偏移，不写绑定值、不改光标与选区。
-        if (node.IsFocused && node.InteractionState is TextFieldState state)
+        // 排列阶段真实观测绑定值：外部写入可能在没有任何描述重建的情况下改变文本，
+        // 因此这里（以及其它安全入口）都要把会话与选区同步到实际回读值。
+        // 只读绑定并调整节点内部状态，不写 Binding、不产生外部副作用。
+        if (node.InteractionState is TextFieldState state)
         {
-            EnsureCaretVisible(node, state);
+            SyncEditor(node, state, invalidate: false);
+
+            // 弹性分配、窗口缩放或断点切换都会改变字段宽度：每次排列后重新保证光标可见，
+            // 否则旧的 ScrollX 会把光标留在可视区之外（绘制阶段的夹取只是最后防线，不能掩盖错位）。
+            // 只调整内部滚动偏移，不写绑定值、不改光标与选区。
+            if (node.IsFocused)
+            {
+                EnsureCaretVisible(node, state);
+            }
         }
     }
 
@@ -116,6 +122,11 @@ public sealed class TextField : View
         var disabled = node.IsEffectivelyDisabled;
         var state = GetState(node);
         var layout = GetLayout(node, context.TextService);
+
+        // 纯重绘入口也要观测真实绑定值：外部写入可能只请求重绘（没有描述重建、没有重新布局）。
+        // 复用本次排版结果，不递归 GetLayout，也不在这里失效布局。
+        SyncEditor(node, state, invalidate: false, knownLayout: layout);
+
         var text = layout.Text;
 
         // 背景与边框。
@@ -133,6 +144,10 @@ public sealed class TextField : View
 
         var inner = InnerRect(node.Frame);
         var opacity = node.Environment.Opacity;
+
+        // 纯重绘观测可能刚刚同步了外部写入的新文档：立刻用同一排版与内容区把横向滚动夹回/保证光标可见，
+        // 否则旧 ScrollX 会把缩短后的文字整个移出可见区域（不递归 GetLayout、不失效布局）。
+        EnsureCaretVisible(node, state, layout, inner);
 
         if (string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(Placeholder) && !state.HasSelection)
         {
@@ -220,6 +235,7 @@ public sealed class TextField : View
 
         var state = GetState(node);
         context.Runtime.SetFocus(node);
+        SyncEditor(node, state, invalidate: true);
         state.IsDragging = true;
         state.Caret = IndexFromPosition(node, e.Position);
         state.Anchor = state.Caret;
@@ -237,6 +253,7 @@ public sealed class TextField : View
             return false;
         }
 
+        SyncEditor(node, state, invalidate: true);
         state.Caret = IndexFromPosition(node, e.Position);
         EnsureCaretVisible(node, state);
         context.MarkHandled();
@@ -252,6 +269,7 @@ public sealed class TextField : View
         }
 
         state.IsDragging = false;
+        SyncEditor(node, state, invalidate: true);
         state.Caret = IndexFromPosition(node, e.Position);
         return true;
     }
@@ -281,6 +299,8 @@ public sealed class TextField : View
         state.IsDragging = false;
         if (focused)
         {
+            // 焦点变化是安全入口：先按真实绑定值同步会话（外部写入可能已发生），再限制选区。
+            SyncEditor(node, state, invalidate: true);
             var text = Text.Read(node) ?? string.Empty;
             state.Caret = ClampIndex(node, state.Caret, text);
             state.Anchor = ClampIndex(node, state.Anchor, text);
@@ -302,41 +322,177 @@ public sealed class TextField : View
             return false;
         }
 
+        // 单行净化先行：全部被过滤（例如只有换行/制表符）时不产生事务，也不写绑定。
         var inserted = TextInputEvent.SanitizeSingleLine(e.Text);
         if (inserted.Length == 0)
         {
+            context.MarkHandled();
             return true;
         }
 
         var state = GetState(node);
-        var text = Text.Read(node) ?? string.Empty;
-        if (state.HasSelection)
-        {
-            text = ReplaceSelection(state, text, inserted);
-        }
-        else
-        {
-            var caret = ClampIndex(node, state.Caret, text);
-            // 容量按“新增内容的可用长度”计算，并在字素边界上截断插入内容：
-            // 既不拆开代理对/组合字符，也不会挤出未选中的前后文本。
-            var capacity = Math.Max(0, MaxLength - text.Length);
-            inserted = FitInsertion(inserted, capacity);
-            if (inserted.Length == 0)
-            {
-                context.MarkHandled();
-                return true;
-            }
-
-            text = string.Concat(text.AsSpan(0, caret), inserted, text.AsSpan(caret));
-            state.Caret = caret + inserted.Length;
-            state.Anchor = state.Caret;
-        }
-
-        Text.Value = text;
+        SyncEditor(node, state, invalidate: false);
+        var range = CurrentEditRange(node, state);
+        var operation = new EditOperation(range, inserted, TextEditKind.Typing, TextEditReason.UserInput);
+        ApplyEdit(node, state, operation);
         state.BlinkEpoch = node.Runtime.Clock.Now;
-        EnsureCaretVisible(node, state);
         context.MarkHandled();
         return true;
+    }
+
+    /// <summary>
+    /// 当前编辑范围：有选区时用吸附到字素边界的选择范围（保留方向语义，逆序选择也取规范范围），
+    /// 否则用折叠光标位置的空范围。容量 / 整字素截断由编辑会话在真实文本上完成。
+    /// </summary>
+    private TextRange CurrentEditRange(ViewNode node, TextFieldState state)
+    {
+        if (state.HasSelection)
+        {
+            var layout = GetLayout(node, node.Runtime.Services.TextService);
+            return SelectionRange(layout, state);
+        }
+
+        var text = Text.Read(node) ?? string.Empty;
+        return TextRange.FromLength(ClampIndex(node, state.Caret, text), 0);
+    }
+
+    private static TextRange SelectionRange(TextLayoutResult layout, TextFieldState state)
+    {
+        // 起点向上吸附、终点向下吸附：范围只会包含完整字素，不会吞掉选区外的半个字素。
+        var start = layout.SnapToCaretStop(Math.Clamp(state.SelectionStart, 0, layout.Text.Length));
+        var end = layout.SnapToCaretStop(Math.Clamp(state.SelectionEnd, 0, layout.Text.Length), roundUp: true);
+        return new TextRange(start, end);
+    }
+
+    /// <summary>
+    /// 通过统一编辑会话执行一次原子替换：写一次绑定、回读确认，只有实际改变文档时才提交选区与滚动。
+    /// setter 拒绝、容量整体拒绝或回读与操作前一致时都不移动选区、不推进版本。
+    /// </summary>
+    private void ApplyEdit(ViewNode node, TextFieldState state, EditOperation operation)
+    {
+        // 事务期间协调更新是延迟的，node.View 通常仍是本实例；仍按当前视图读取绑定，避免使用过时的描述。
+        if (node.View is not TextField field)
+        {
+            return;
+        }
+
+        var binding = field.Text;
+
+        EditResult result;
+        try
+        {
+            result = state.Editor.Apply(
+                binding.Identity,
+                field.MaxLength,
+                operation,
+                new TextSelection(state.Anchor, state.Caret),
+                () => binding.Read(node) ?? string.Empty,
+                value => binding.Value = value);
+        }
+        catch
+        {
+            // setter 已改写或回读失败：按会话当前真实文本恢复选区/布局，但不掩盖原异常。
+            RecoverAfterTransactionFailure(node, state);
+            throw;
+        }
+
+        // 事务结束时重新核对当前挂载视图：setter 期间可能已同步重建、换用新来源/新 MaxLength，
+        // 甚至整个节点已不再是本输入框。旧事务不得把结果与选区串写到已经不存在的新客户端。
+        if (!node.IsMounted || node.View is not TextField mounted)
+        {
+            return;
+        }
+
+        if (!ReferenceEquals(mounted.Text.Identity, binding.Identity) || mounted.MaxLength != field.MaxLength)
+        {
+            SyncEditor(node, state, invalidate: true);
+            return;
+        }
+
+        if (!result.Changed)
+        {
+            // 拒绝 / 未变化：不做投机选区提交，但把会话与选区对齐到真实回读值（外部变化可能已发生）。
+            SyncEditor(node, state, invalidate: false);
+            return;
+        }
+
+        // 回读值才是唯一事实来源：会话已按实际文本吸附光标，这里沿用其结果快照。
+        state.Caret = result.After.Selection.Active;
+        state.Anchor = result.After.Selection.Anchor;
+        node.Runtime.InvalidateRender();
+        EnsureCaretVisible(node, state);
+    }
+
+    /// <summary>
+    /// 事务抛错后的恢复：按真实回读文本同步会话并限制选区，使布局/渲染失效。
+    /// 次生读取异常只标记 <see cref="TextEditSession.RequiresResync"/>，绝不覆盖原始异常。
+    /// </summary>
+    private void RecoverAfterTransactionFailure(ViewNode node, TextFieldState state)
+    {
+        if (node.View is not TextField field)
+        {
+            // 节点已不再是本输入框：没有可读来源，只标记待重同步并请求重绘。
+            state.Editor.MarkRequiresResync();
+            node.Runtime.InvalidateRender();
+            return;
+        }
+
+        try
+        {
+            var text = field.Text.Read(node) ?? string.Empty;
+            state.Editor.Sync(field.Text.Identity, text, field.MaxLength);
+            ClampSelectionToText(node, state, text);
+            node.Runtime.InvalidateLayout(node);
+        }
+        catch
+        {
+            state.Editor.MarkRequiresResync();
+            node.Runtime.InvalidateRender();
+        }
+    }
+
+    /// <summary>
+    /// 安全入口（挂载/描述更新/排列/绘制/焦点/指针/编辑）统一调用：读取真实绑定值，
+    /// 识别自身确认与外部文本/来源/MaxLength 变化，必要时把选区吸附到真实文本。
+    /// 不写 Binding、不产生外部副作用；已提供排版结果时直接复用，避免递归重排。
+    /// </summary>
+    private void SyncEditor(ViewNode node, TextFieldState state, bool invalidate, TextLayoutResult? knownLayout = null)
+    {
+        if (node.View is not TextField field)
+        {
+            return;
+        }
+
+        var binding = field.Text;
+        var text = knownLayout?.Text ?? binding.Read(node) ?? string.Empty;
+
+        if (state.Editor.IsOwnPendingWrite(text) && state.Editor.MatchesContext(binding.Identity, field.MaxLength))
+        {
+            // 本次读取正是自己的事务写入、且来源与配置未变：不能当成外部变化清空版本或移动选区。
+            return;
+        }
+
+        var sync = state.Editor.Sync(binding.Identity, text, field.MaxLength);
+        if (!sync.HasExternalChange)
+        {
+            return;
+        }
+
+        knownLayout ??= GetLayout(node, node.Runtime.Services.TextService);
+        state.Caret = knownLayout.SnapToCaretStop(Math.Clamp(state.Caret, 0, text.Length));
+        state.Anchor = knownLayout.SnapToCaretStop(Math.Clamp(state.Anchor, 0, text.Length));
+        if (invalidate)
+        {
+            node.Runtime.InvalidateLayout(node);
+        }
+    }
+
+    /// <summary>把光标与选择限制到真实文本并吸附到字素边界（不写绑定）。</summary>
+    private void ClampSelectionToText(ViewNode node, TextFieldState state, string text)
+    {
+        var layout = GetLayout(node, node.Runtime.Services.TextService);
+        state.Caret = layout.SnapToCaretStop(Math.Clamp(state.Caret, 0, text.Length));
+        state.Anchor = layout.SnapToCaretStop(Math.Clamp(state.Anchor, 0, text.Length));
     }
 
     internal override bool OnKeyDown(InputContext context, ViewNode node, KeyEvent e)
@@ -347,6 +503,7 @@ public sealed class TextField : View
         }
 
         var state = GetState(node);
+        SyncEditor(node, state, invalidate: false);
         var text = Text.Read(node) ?? string.Empty;
         var extend = e.Modifiers.HasFlag(KeyModifiers.Shift);
         var command = e.IsCommandPressed;
@@ -372,7 +529,7 @@ public sealed class TextField : View
                     return true;
                 }
 
-                DeleteSelectionOrGrapheme(node, state, text, backward: true);
+                DeleteSelectionOrGrapheme(node, state, text, backward: true, TextEditKind.Backspace);
                 return true;
             case UiKey.Delete:
                 if (!state.HasSelection && state.Caret >= text.Length)
@@ -380,7 +537,7 @@ public sealed class TextField : View
                     return true;
                 }
 
-                DeleteSelectionOrGrapheme(node, state, text, backward: false);
+                DeleteSelectionOrGrapheme(node, state, text, backward: false, TextEditKind.Delete);
                 return true;
             case UiKey.A when command:
                 state.Anchor = 0;
@@ -429,19 +586,21 @@ public sealed class TextField : View
     {
         var state = GetState(node);
         state.BlinkEpoch = node.Runtime.Clock.Now;
+
+        // 建立首次确认快照：绑定来源身份、已提交文本与 MaxLength 的基线。
+        SyncEditor(node, state, invalidate: false);
     }
 
     internal override void OnUpdate(ViewNode node, View previous)
     {
-        // 外部绑定变化后把光标与选择限制到有效范围（字素吸附在绘制/交互时完成）。
         if (node.InteractionState is not TextFieldState state)
         {
             return;
         }
 
-        var text = Text.Read(node) ?? string.Empty;
-        state.Caret = Math.Clamp(state.Caret, 0, text.Length);
-        state.Anchor = Math.Clamp(state.Anchor, 0, text.Length);
+        // 外部文本 / 来源替换 / MaxLength 变化：同步会话并把选区限制到新文本。
+        // 同来源同配置、且文本正是本事务正在写入的候选时，SyncEditor 会识别为自身确认并跳过。
+        SyncEditor(node, state, invalidate: false);
     }
 
     internal override bool IsLayoutEquivalent(View other) => false;
@@ -529,38 +688,23 @@ public sealed class TextField : View
         EnsureCaretVisible(node, state);
     }
 
-    private void DeleteSelectionOrGrapheme(ViewNode node, TextFieldState state, string text, bool backward)
+    private void DeleteSelectionOrGrapheme(ViewNode node, TextFieldState state, string text, bool backward, TextEditKind kind)
     {
         var layout = GetLayout(node, node.Runtime.Services.TextService);
-        string next;
+        TextRange range;
         if (state.HasSelection)
         {
-            var start = layout.SnapToCaretStop(state.SelectionStart);
-            var end = layout.SnapToCaretStop(state.SelectionEnd, roundUp: true);
-            next = string.Concat(text.AsSpan(0, start), text.AsSpan(end));
-            state.Caret = start;
-            state.Anchor = start;
+            range = SelectionRange(layout, state);
         }
         else
         {
             var caret = layout.SnapToCaretStop(Math.Clamp(state.Caret, 0, text.Length));
-            if (backward)
-            {
-                var previous = PreviousBoundary(layout, caret);
-                next = string.Concat(text.AsSpan(0, previous), text.AsSpan(caret));
-                state.Caret = previous;
-            }
-            else
-            {
-                var following = NextBoundary(layout, caret);
-                next = string.Concat(text.AsSpan(0, caret), text.AsSpan(following));
-            }
-
-            state.Anchor = state.Caret;
+            range = backward
+                ? new TextRange(PreviousBoundary(layout, caret), caret)
+                : new TextRange(caret, NextBoundary(layout, caret));
         }
 
-        Text.Value = next;
-        node.Runtime.InvalidateRender();
+        ApplyEdit(node, state, EditOperation.Delete(range, kind, TextEditReason.UserInput));
     }
 
     private static int PreviousBoundary(TextLayoutResult layout, int index)
@@ -589,61 +733,6 @@ public sealed class TextField : View
         return layout.Text.Length;
     }
 
-    private string ReplaceSelection(TextFieldState state, string text, string inserted)
-    {
-        var start = Math.Clamp(state.SelectionStart, 0, text.Length);
-        var end = Math.Clamp(state.SelectionEnd, 0, text.Length);
-
-        // 长度上限只约束新增内容：替换掉 [start,end) 后剩余可用容量由保留的前后文本决定，
-        // 超出容量时按字素边界截断插入内容，绝不截断未选中的文本。
-        var capacity = Math.Max(0, MaxLength - (text.Length - (end - start)));
-        var fitted = FitInsertion(inserted, capacity);
-
-        if (fitted.Length == 0)
-        {
-            // 因容量限制被整体拒绝：保留文本、光标与选区。
-            // 这与用户显式删除不同（Backspace/Delete/剪切走各自的路径），不能等价于删掉选区。
-            return text;
-        }
-
-        var result = string.Concat(text.AsSpan(0, start), fitted, text.AsSpan(end));
-        state.Caret = Math.Min(start + fitted.Length, result.Length);
-        state.Anchor = state.Caret;
-        return result;
-    }
-
-    /// <summary>
-    /// 按字素边界把插入内容截断到 <paramref name="capacity"/> 个 UTF-16 码元之内。
-    /// 无法完整放入的字素会被整个拒绝，避免拆开代理对或组合字符。
-    /// </summary>
-    private static string FitInsertion(string inserted, int capacity)
-    {
-        if (inserted.Length == 0 || capacity <= 0)
-        {
-            return string.Empty;
-        }
-
-        if (inserted.Length <= capacity)
-        {
-            return inserted;
-        }
-
-        var best = 0;
-        var enumerator = System.Globalization.StringInfo.GetTextElementEnumerator(inserted);
-        while (enumerator.MoveNext())
-        {
-            var next = enumerator.ElementIndex + ((string)enumerator.Current).Length;
-            if (next > capacity)
-            {
-                break;
-            }
-
-            best = next;
-        }
-
-        return best == 0 ? string.Empty : inserted[..best];
-    }
-
     private void CopySelection(ViewNode node, TextFieldState state, string text, bool cut)
     {
         if (!state.HasSelection)
@@ -651,10 +740,10 @@ public sealed class TextField : View
             return;
         }
 
+        var layout = GetLayout(node, node.Runtime.Services.TextService);
+        var range = SelectionRange(layout, state).Clamp(text.Length);
+        var selected = text[range.Start..range.End];
         var clipboard = node.Runtime.Services.Clipboard;
-        var start = Math.Clamp(state.SelectionStart, 0, text.Length);
-        var end = Math.Clamp(state.SelectionEnd, 0, text.Length);
-        var selected = text[start..end];
         if (clipboard is not null && selected.Length > 0)
         {
             clipboard.SetText(selected);
@@ -662,10 +751,7 @@ public sealed class TextField : View
 
         if (cut && selected.Length > 0)
         {
-            var next = string.Concat(text.AsSpan(0, start), text.AsSpan(end));
-            Text.Value = next;
-            state.Caret = start;
-            state.Anchor = start;
+            ApplyEdit(node, state, EditOperation.Delete(range, TextEditKind.Cut, TextEditReason.Clipboard));
         }
     }
 
@@ -678,38 +764,36 @@ public sealed class TextField : View
             return;
         }
 
-        pasted = TextInputEvent.SanitizeSingleLine(pasted);
-        if (pasted.Length == 0)
+        // 单行规则过滤后为空时不产生事务（既有行为：不写绑定）。
+        if (TextInputEvent.SanitizeSingleLine(pasted).Length == 0)
         {
             return;
         }
 
-        if (state.HasSelection)
+        var range = CurrentEditRange(node, state);
+        if (!EditOperation.TryCreate(
+                range,
+                pasted,
+                TextEditKind.Paste,
+                TextEditReason.Clipboard,
+                scrubSingleLine: true,
+                out var operation,
+                out _))
         {
-            Text.Value = ReplaceSelection(state, text, pasted);
-        }
-        else
-        {
-            var caret = Math.Clamp(state.Caret, 0, text.Length);
-            pasted = FitInsertion(pasted, Math.Max(0, MaxLength - text.Length));
-            if (pasted.Length == 0)
-            {
-                return;
-            }
-
-            var next = string.Concat(text.AsSpan(0, caret), pasted, text.AsSpan(caret));
-            state.Caret = caret + pasted.Length;
-            state.Anchor = state.Caret;
-            Text.Value = next;
+            return;
         }
 
-        EnsureCaretVisible(node, state);
+        ApplyEdit(node, state, operation);
     }
 
-    private void EnsureCaretVisible(ViewNode node, TextFieldState state)
+    /// <summary>
+    /// 保证光标在内容区可见：只调整 <see cref="TextFieldState.ScrollX"/>，不写绑定、不改光标与选区。
+    /// 可复用调用方已有的排版结果与内容区矩形，供排列与纯重绘观测路径共用而不递归重排。
+    /// </summary>
+    private void EnsureCaretVisible(ViewNode node, TextFieldState state, TextLayoutResult? knownLayout = null, Rect? knownInner = null)
     {
-        var layout = GetLayout(node, node.Runtime.Services.TextService);
-        var inner = InnerRect(node.Frame);
+        var layout = knownLayout ?? GetLayout(node, node.Runtime.Services.TextService);
+        var inner = knownInner ?? InnerRect(node.Frame);
         if (inner.Width <= 0)
         {
             return;
@@ -756,6 +840,9 @@ public sealed class TextField : View
 /// <summary>TextField 的运行时编辑状态（保存在节点上，组件重建后保持）。</summary>
 internal sealed class TextFieldState
 {
+    /// <summary>原子编辑会话：确认文本、文档版本、来源身份与失效接缝（TI-03）。</summary>
+    public TextEditSession Editor { get; } = new();
+
     /// <summary>光标位置的 UTF-16 索引（始终位于字素边界）。</summary>
     public int Caret { get; set; }
 

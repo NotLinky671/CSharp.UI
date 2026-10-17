@@ -1,0 +1,6 @@
+FAIL external binding sync without descriptor rebuild
+text=abcdefgh caret=8
+FAIL mutate then throw clamps real caret
+caret=8
+FAIL readback failure recovers on next frame
+Failures=3

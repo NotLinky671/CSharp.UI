@@ -1,0 +1,8 @@
+PASS reject typing keeps caret
+PASS reject delete keeps caret
+PASS throw before mutation keeps caret
+PASS normalization readback
+PASS normalization frame recovery
+PASS scrubbed no-op no write
+PASS boundary delete no write
+Failures=0

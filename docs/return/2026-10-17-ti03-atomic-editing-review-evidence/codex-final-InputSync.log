@@ -1,0 +1,4 @@
+PASS keyboard read synchronizes external text
+editor=x
+disposal error= interactionNull=True
+PASS disposed node not revived

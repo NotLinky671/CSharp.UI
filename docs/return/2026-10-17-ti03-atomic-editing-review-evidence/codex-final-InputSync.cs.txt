@@ -1,0 +1,14 @@
+using CSharp.UI;
+using CSharp.UI.Testing;
+int failures=0;
+void Check(string n,bool pass){Console.WriteLine($"{(pass?"PASS":"FAIL")} {n}");if(!pass)failures++;}
+UiRuntime Make(Binding<string> b){var r=new UiRuntime(new TextField(b),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=new StubTextService()});r.SetViewport(new Size(400,60),1);r.Start();r.ProcessPendingWork();r.BuildFrame();r.SetFocus(r.Root);return r;}
+object E(UiRuntime r)=>r.Root.InteractionState!.GetType().GetProperty("Editor")!.GetValue(r.Root.InteractionState)!;
+T P<T>(object o,string n)=>(T)o.GetType().GetProperty(n)!.GetValue(o)!;
+{
+ var v="abc";using var r=Make(new Binding<string>(()=>v,x=>v=x));v="x";r.DispatchKey(new KeyEvent(KeyEventKind.Down,UiKey.End));r.BuildFrame();Check("keyboard read synchronizes external text",P<string>(E(r),"Text")=="x");Console.WriteLine($"editor={P<string>(E(r),"Text")}");
+}
+{
+ var v="abc";UiRuntime? r=null;var b=new Binding<string>(()=>v,x=>{v=x;r!.Dispose();});r=Make(b);var node=r.Root;r.DispatchKey(new KeyEvent(KeyEventKind.Down,UiKey.End));Exception? error=null;try{r.DispatchTextInput(new TextInputEvent("x"));}catch(Exception e){error=e;}Console.WriteLine($"disposal error={error?.GetType().Name} interactionNull={node.InteractionState is null}");Check("disposed node not revived",error is null&&node.InteractionState is null);r.Dispose();
+}
+Environment.ExitCode=failures;

@@ -4,7 +4,7 @@
 
 设计依据：[IME、编辑事务与撤销重做计划](../plan/2026-10-17-text-input-and-editing-plan.md)。
 
-状态：TI-01 接入路线经 Codex 审核通过（探针86项测试通过；用户免除微软拼音测试）；TI-02 核心契约经Codex独立复审通过；TI-03～TI-10 待开始。Windows候选实际定位、取消与生产宿主验收保留至TI-07/TI-10。
+状态：TI-01 接入路线经 Codex 审核通过（探针86项测试通过；用户免除微软拼音测试）；TI-02 核心契约经Codex独立复审通过；TI-03 原子编辑与Binding同步经Codex独立复审通过；TI-04～TI-10 待开始。Windows候选实际定位、取消与生产宿主验收保留至TI-07/TI-10。
 
 ## 任务与依赖
 
@@ -12,7 +12,7 @@
 |---|---|---|---|---|
 | ☑ | TI-01 | [平台可行性与 Windows 原型](01-platform-feasibility.md) | 无 | A |
 | ☑ | TI-02 | [冻结编辑与文本输入契约](02-editing-and-input-contracts.md) | [TI-01：平台可行性与 Windows 原型](01-platform-feasibility.md) | B |
-| ☐ | TI-03 | [统一编辑事务与 Binding 同步](03-atomic-editing-and-binding.md) | [TI-02：冻结编辑与文本输入契约](02-editing-and-input-contracts.md) | B |
+| ☑ | TI-03 | [统一编辑事务与 Binding 同步](03-atomic-editing-and-binding.md) | [TI-02：冻结编辑与文本输入契约](02-editing-and-input-contracts.md) | B |
 | ☐ | TI-04 | [组合会话与预编辑状态机](04-composition-state-machine.md) | [TI-03：统一编辑事务与 Binding 同步](03-atomic-editing-and-binding.md) | B |
 | ☐ | TI-05 | [有界撤销重做与编辑命令](05-undo-redo-and-edit-commands.md) | [TI-04：组合会话与预编辑状态机](04-composition-state-machine.md) | C |
 | ☐ | TI-06 | [预编辑绘制、命中与候选几何](06-preedit-rendering-and-geometry.md) | [TI-04：组合会话与预编辑状态机](04-composition-state-machine.md) | C |
@@ -25,7 +25,7 @@
 
 - [x] [TI-01：平台可行性与 Windows 原型](01-platform-feasibility.md)
 - [x] [TI-02：冻结编辑与文本输入契约](02-editing-and-input-contracts.md)
-- [ ] [TI-03：统一编辑事务与 Binding 同步](03-atomic-editing-and-binding.md)
+- [x] [TI-03：统一编辑事务与 Binding 同步](03-atomic-editing-and-binding.md)
 - [ ] [TI-04：组合会话与预编辑状态机](04-composition-state-machine.md)
 - [ ] [TI-05：有界撤销重做与编辑命令](05-undo-redo-and-edit-commands.md)
 - [ ] [TI-06：预编辑绘制、命中与候选几何](06-preedit-rendering-and-geometry.md)

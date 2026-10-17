@@ -1,0 +1,19 @@
+using CSharp.UI;
+using CSharp.UI.Testing;
+int fail=0;
+void Check(string n,bool pass){Console.WriteLine($"{(pass?"PASS":"FAIL")} {n}");if(!pass)fail++;}
+UiRuntime Make(Binding<string> b){var r=new UiRuntime(new TextField(b),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=new StubTextService()});r.SetViewport(new Size(400,60),1);r.Start();r.ProcessPendingWork();r.BuildFrame();r.SetFocus(r.Root);return r;}
+object S(UiRuntime r)=>r.Root.InteractionState!;
+object E(UiRuntime r)=>S(r).GetType().GetProperty("Editor")!.GetValue(S(r))!;
+T P<T>(object o,string name)=>(T)o.GetType().GetProperty(name)!.GetValue(o)!;
+void Key(UiRuntime r,UiKey k)=>r.DispatchKey(new KeyEvent(KeyEventKind.Down,k));
+{
+ var value="abcdefgh";using var r=Make(new Binding<string>(()=>value,v=>value=v));Key(r,UiKey.End);value="x";r.InvalidateLayout(r.Root);r.BuildFrame();Check("external binding sync without descriptor rebuild",P<string>(E(r),"Text")=="x"&&P<int>(S(r),"Caret")<=1);Console.WriteLine($"text={P<string>(E(r),"Text")} caret={P<int>(S(r),"Caret")}");
+}
+{
+ var value="abcdefgh";using var r=Make(new Binding<string>(()=>value,v=>{value="x";throw new InvalidOperationException("expected");}));Key(r,UiKey.End);try{r.DispatchTextInput(new TextInputEvent("z"));}catch(InvalidOperationException){}r.BuildFrame();Check("mutate then throw clamps real caret",P<int>(S(r),"Caret")<=1&&P<string>(E(r),"Text")=="x");Console.WriteLine($"caret={P<int>(S(r),"Caret")}");
+}
+{
+ var value="abc";bool broken=false;using var r=Make(new Binding<string>(()=>broken?throw new InvalidOperationException("read"):value,v=>{value="x";broken=true;}));Key(r,UiKey.End);try{r.DispatchTextInput(new TextInputEvent("z"));}catch(InvalidOperationException){}broken=false;r.InvalidateLayout(r.Root);r.BuildFrame();Check("readback failure recovers on next frame",P<string>(E(r),"Text")=="x"&&P<int>(S(r),"Caret")<=1&&!P<bool>(E(r),"RequiresResync"));
+}
+Console.WriteLine($"Failures={fail}");Environment.ExitCode=fail;

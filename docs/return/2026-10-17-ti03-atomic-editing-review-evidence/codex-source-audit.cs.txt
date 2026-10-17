@@ -1,0 +1,14 @@
+using CSharp.UI;
+using CSharp.UI.Testing;
+var host=new SwitchHost();
+using var r=new UiRuntime(host,new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=new StubTextService()});r.SetViewport(new Size(400,60),1);r.Start();r.ProcessPendingWork();r.BuildFrame();var node=r.Root.Children[0];r.SetFocus(node);r.DispatchKey(new KeyEvent(KeyEventKind.Down,UiKey.End));host.AfterWrite=()=>{host.UseNew!.Value=true;r.ProcessPendingWork();};
+r.DispatchTextInput(new TextInputEvent("X"));
+var state=node.InteractionState!;var editor=state.GetType().GetProperty("Editor")!.GetValue(state)!;
+string observed=(string)editor.GetType().GetProperty("Text")!.GetValue(editor)!;
+int caret=(int)state.GetType().GetProperty("Caret")!.GetValue(state)!;
+Console.WriteLine($"actualNew={host.NewText} editor={observed} caret={caret}");
+bool pass=observed==host.NewText&&caret<=host.NewText.Length;Console.WriteLine($"{(pass?"PASS":"FAIL")} synchronous source replacement ownership");Environment.ExitCode=pass?0:1;
+sealed class SwitchHost:Component{
+ public State<bool>? UseNew;public Action? AfterWrite;public string OldText="abc";public string NewText="NEW";Binding<string>? oldBinding;Binding<string>? newBinding;
+ protected override View Build(){UseNew=UseState("useNew",false);oldBinding??=new Binding<string>(()=>OldText,v=>{OldText=v;AfterWrite?.Invoke();});newBinding??=new Binding<string>(()=>NewText,v=>NewText=v);return new TextField(UseNew.Value?newBinding:oldBinding);}
+}

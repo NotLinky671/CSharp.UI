@@ -1,0 +1,3 @@
+beforeScroll=1520
+afterScroll=0
+PASS external shrink on render keeps caret visible

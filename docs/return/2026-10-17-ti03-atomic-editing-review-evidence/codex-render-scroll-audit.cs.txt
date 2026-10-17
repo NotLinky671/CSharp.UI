@@ -1,0 +1,7 @@
+using CSharp.UI;
+using CSharp.UI.Testing;
+var value=new string('a',200);
+using var r=new UiRuntime(new TextField(new Binding<string>(()=>value,x=>value=x)),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=new StubTextService()});
+r.SetViewport(new Size(180,60),1);r.Start();r.ProcessPendingWork();r.BuildFrame();r.SetFocus(r.Root);r.DispatchKey(new KeyEvent(KeyEventKind.Down,UiKey.End));r.BuildFrame();
+var s=r.Root.InteractionState!;double Scroll()=>(double)s.GetType().GetProperty("ScrollX")!.GetValue(s)!;
+Console.WriteLine($"beforeScroll={Scroll()}");value="x";r.InvalidateRender();r.BuildFrame();Console.WriteLine($"afterScroll={Scroll()}");bool pass=Scroll()==0;Console.WriteLine($"{(pass?"PASS":"FAIL")} external shrink on render keeps caret visible");Environment.ExitCode=pass?0:1;

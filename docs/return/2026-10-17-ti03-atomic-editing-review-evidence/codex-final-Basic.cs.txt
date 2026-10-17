@@ -1,0 +1,20 @@
+using CSharp.UI;
+using CSharp.UI.Testing;
+int failures=0;
+void Check(string name,bool ok){Console.WriteLine($"{(ok?"PASS":"FAIL")} {name}");if(!ok)failures++;}
+UiRuntime Make(Binding<string> binding){var rt=new UiRuntime(new TextField(binding),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=new StubTextService()});rt.SetViewport(new Size(400,60),1);rt.Start();rt.ProcessPendingWork();rt.BuildFrame();rt.SetFocus(rt.Root);return rt;}
+int Caret(UiRuntime rt)=>(int)rt.Root.InteractionState!.GetType().GetProperty("Caret")!.GetValue(rt.Root.InteractionState)!;
+void Key(UiRuntime rt,UiKey key,KeyModifiers mods=KeyModifiers.None)=>rt.DispatchKey(new KeyEvent(KeyEventKind.Down,key,mods));
+{
+ var value="abc";int writes=0;using var rt=Make(new Binding<string>(()=>value,v=>writes++));Key(rt,UiKey.End);rt.DispatchTextInput(new TextInputEvent("x"));Check("reject typing keeps caret",value=="abc"&&Caret(rt)==3&&writes==1);Key(rt,UiKey.Backspace);Check("reject delete keeps caret",value=="abc"&&Caret(rt)==3);
+}
+{
+ var value="abc";using var rt=Make(new Binding<string>(()=>value,v=>throw new InvalidOperationException("expected")));Key(rt,UiKey.End);try{rt.DispatchTextInput(new TextInputEvent("x"));}catch(InvalidOperationException){}Check("throw before mutation keeps caret",value=="abc"&&Caret(rt)==3);
+}
+{
+ var value="abc";using var rt=Make(new Binding<string>(()=>value,v=>value=v.ToUpperInvariant()));Key(rt,UiKey.End);rt.DispatchTextInput(new TextInputEvent("x"));Check("normalization readback",value=="ABCX"&&Caret(rt)<=value.Length);rt.ProcessPendingWork();rt.BuildFrame();Check("normalization frame recovery",Caret(rt)<=value.Length);
+}
+{
+ var value="abc";int writes=0;using var rt=Make(new Binding<string>(()=>value,v=>{writes++;value=v;}));Key(rt,UiKey.Home);rt.DispatchTextInput(new TextInputEvent("\n\t"));Check("scrubbed no-op no write",value=="abc"&&writes==0&&Caret(rt)==0);Key(rt,UiKey.Backspace);Check("boundary delete no write",writes==0);
+}
+Environment.ExitCode=failures;Console.WriteLine($"Failures={failures}");
