@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CSharp.UI.ImeProbe</RootNamespace>
+    <AssemblyName>imeprobe</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <!-- HWND/窗口指针互操作：与宿主同样的理由需要 unsafe。 -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- 探针只在 Windows 上运行；保留 net10.0 目标以便解决方案在其它平台仍能编译该工具（运行时会拒绝）。 -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTK" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CSharp.UI.ImeProbe.Tests" />
+  </ItemGroup>
+
+</Project>

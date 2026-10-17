@@ -1,0 +1,6 @@
+TI-01 IME probe summary (2026-10-17T12:08:09.6863639+08:00)
+events file: C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\probe-repeat\events.jsonl
+events: 92; timed_out: False
+
+[PASS] repeat: repeat key path: OpenTK reports IsRepeat from GLFW_REPEAT (source-verified state-based detection); the real OS auto-repeat with the IME active remains for manual verification
+  {"synthetic_repeat_portion":true,"real_injected_repeat_coalesced":true,"key_repeat_events":2,"key_down_events":4,"char_messages":4,"text_input_events":4,"limitation":"posted WM_KEYDOWN bypasses TranslateMessage, so it proves the IsRepeat flag path only; WM_CHAR duplication during a real OS auto-repeat still needs a physical/real-key check"}

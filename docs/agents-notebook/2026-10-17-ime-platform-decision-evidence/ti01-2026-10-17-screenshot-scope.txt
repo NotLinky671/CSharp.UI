@@ -1,0 +1,7 @@
+TI-01 evidence screenshot scope check (2026-10-17)
+probe window client size: 900x520 ; captured window rect: 922x576
+virtual desktop: 2560x1600 (SM_CXVIRTUALSCREEN x SM_CYVIRTUALSCREEN)
+capture margin: 0 (--capture-margin 0) -> only the probe's own window rect is captured
+whole-desktop capture path: none in ScreenCapture (CaptureWindowRegion only)
+note: this session produced no IME composition, so no candidate window was captured; candidate visuals remain UNVERIFIED
+sample: 132509-main-01-ime-commit-before-typing.png

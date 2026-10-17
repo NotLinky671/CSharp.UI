@@ -1,0 +1,110 @@
+events: 92  file: artifacts/ime-work/probe-repeat/events.jsonl
+stages: {'probe': 4, 'glfw': 27, 'wndproc': 29, 'imm32': 23, 'script': 9}
+kinds: {'log-open': 1, 'options': 1, 'glfw-error': 17, 'window-created': 1, 'install-ok': 1, 'environment': 1, 'ime-state': 3, 'message': 27, 'ime-notify': 14, 'set-native-mode': 1, 'foreground-check': 1, 'ime-request': 1, 'input-language': 3, 'window-language-switch': 2, 'key-event': 4, 'key-down': 4, 'text-input': 4, 'key-up': 2, 'post-synthetic-wm-keydown': 2, 'restore-native-mode': 1, 'uninstall-ok': 1}
+threads (managed tid): {2: 92}
+process/session: pid=64236 session=5
+
+message histogram (wndproc):
+  WM_IME_NOTIFY: 14
+  WM_KEYDOWN: 4
+  WM_CHAR: 4
+  WM_INPUTLANGCHANGE: 2
+  WM_KEYUP: 2
+  WM_IME_REQUEST: 1
+
+WM_IME_* messages: 15
+  seq=24 t_ms=404.0705 WM_IME_NOTIFY wparam=0x8 lparam=0x0 imn=IMN_SETOPENSTATUS
+  seq=26 t_ms=405.1313 WM_IME_NOTIFY wparam=0x6 lparam=0x0 imn=IMN_SETCONVERSIONMODE
+  seq=28 t_ms=405.2543 WM_IME_NOTIFY wparam=0x7 lparam=0x0 imn=IMN_SETSENTENCEMODE
+  seq=33 t_ms=425.6543 WM_IME_REQUEST wparam=0x6 lparam=0xEC187DBD10
+  seq=37 t_ms=1605.5709 WM_IME_NOTIFY wparam=0x1 lparam=0x0 imn=IMN_CLOSESTATUSWINDOW
+  seq=39 t_ms=1606.991 WM_IME_NOTIFY wparam=0x2 lparam=0x0 imn=IMN_OPENSTATUSWINDOW
+  seq=43 t_ms=1610.4332 WM_IME_NOTIFY wparam=0x8 lparam=0x0 imn=IMN_SETOPENSTATUS
+  seq=45 t_ms=1610.7819 WM_IME_NOTIFY wparam=0x6 lparam=0x0 imn=IMN_SETCONVERSIONMODE
+  seq=47 t_ms=1610.9615 WM_IME_NOTIFY wparam=0x7 lparam=0x0 imn=IMN_SETSENTENCEMODE
+  seq=76 t_ms=3260.4079 WM_IME_NOTIFY wparam=0x1 lparam=0x0 imn=IMN_CLOSESTATUSWINDOW
+  seq=78 t_ms=3261.8827 WM_IME_NOTIFY wparam=0x2 lparam=0x0 imn=IMN_OPENSTATUSWINDOW
+  seq=82 t_ms=3265.1885 WM_IME_NOTIFY wparam=0x8 lparam=0x0 imn=IMN_SETOPENSTATUS
+  seq=84 t_ms=3265.2545 WM_IME_NOTIFY wparam=0x6 lparam=0x0 imn=IMN_SETCONVERSIONMODE
+  seq=87 t_ms=3370.6527 WM_IME_NOTIFY wparam=0x6 lparam=0x0 imn=IMN_SETCONVERSIONMODE
+  seq=89 t_ms=3371.0373 WM_IME_NOTIFY wparam=0x8 lparam=0x0 imn=IMN_SETOPENSTATUS
+
+composition-start=0 composition-update=0 composition-end=0
+
+IMM32 context states:
+  seq=23 trigger=probe-start himc=0x80123D ime_desc='' ime_file='' open=False conversion=0x00000001 native=True candidates=0 default_ime_wnd=0x710EB2
+  seq=31 trigger=after-set-native-mode himc=0x80123D ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x710EB2
+  seq=36 trigger=repeat:begin himc=0x80123D ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x710EB2
+
+text input events (GLFW char callback -> OpenTK TextInput):
+  seq=55 t_ms=2263.473 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=62 t_ms=2473.1149 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=67 t_ms=2623.922 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=73 t_ms=2813.8242 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+
+candidate anchor requests (requested vs IMM readback):
+
+TSF records:
+
+synthetic / boundary records:
+  seq=58 post-synthetic-wm-keydown {"label": "main", "step": "repeat:repeat-1", "virtual_key": "0x41", "lparam": "0x40000001", "synthetic": true, "note": "boundary test only: posted WM_KEYDOWN with bit30 set; not a real auto-repeat", "posted": true}
+  seq=63 post-synthetic-wm-keydown {"label": "main", "step": "repeat:repeat-2", "virtual_key": "0x41", "lparam": "0x40000001", "synthetic": true, "note": "boundary test only: posted WM_KEYDOWN with bit30 set; not a real auto-repeat", "posted": true}
+
+interleaving around the first key press (native message vs managed callback):
+  seq=52    wndproc  hwnd-subclass            WM_KEYDOWN
+  seq=53    glfw     glfw-key-callback        key-down key=A repeat=False
+  seq=54    wndproc  hwnd-subclass            WM_CHAR code_unit=0x61
+  seq=55    glfw     glfw-char-callback       text-input text='a' unicode=U+61
+  seq=56    wndproc  hwnd-subclass            WM_KEYUP
+  seq=57    glfw     glfw-key-callback        key-up
+  seq=58    script   synthetic                post-synthetic-wm-keydown
+  seq=59    wndproc  hwnd-subclass            WM_KEYDOWN
+  seq=60    glfw     glfw-key-callback        key-down key=A repeat=False
+  seq=61    wndproc  hwnd-subclass            WM_CHAR code_unit=0x61
+  seq=62    glfw     glfw-char-callback       text-input text='a' unicode=U+61
+  seq=63    script   synthetic                post-synthetic-wm-keydown
+  seq=64    wndproc  hwnd-subclass            WM_KEYDOWN
+  seq=65    glfw     glfw-key-callback        key-down key=A repeat=True
+  seq=66    wndproc  hwnd-subclass            WM_CHAR code_unit=0x61
+  seq=67    glfw     glfw-char-callback       text-input text='a' unicode=U+61
+  seq=68    script   sendinput                key-event step=repeat:release-only:down
+  seq=69    script   sendinput                key-event step=repeat:release-only:up
+  seq=70    wndproc  hwnd-subclass            WM_KEYDOWN
+  seq=71    glfw     glfw-key-callback        key-down key=A repeat=True
+  seq=72    wndproc  hwnd-subclass            WM_CHAR code_unit=0x61
+  seq=73    glfw     glfw-char-callback       text-input text='a' unicode=U+61
+  seq=74    wndproc  hwnd-subclass            WM_KEYUP
+  seq=75    glfw     glfw-key-callback        key-up
+  seq=76    wndproc  hwnd-subclass            WM_IME_NOTIFY
+  seq=77    imm32    imm32-api                ime-notify
+  seq=78    wndproc  hwnd-subclass            WM_IME_NOTIFY
+  seq=79    imm32    imm32-api                ime-notify
+  seq=80    wndproc  hwnd-subclass            WM_INPUTLANGCHANGE
+  seq=81    imm32    imm32-api                input-language
+  seq=82    wndproc  hwnd-subclass            WM_IME_NOTIFY
+  seq=83    imm32    imm32-api                ime-notify
+  seq=84    wndproc  hwnd-subclass            WM_IME_NOTIFY
+  seq=85    imm32    imm32-api                ime-notify
+  seq=86    script   user32-message           window-language-switch
+  seq=87    wndproc  hwnd-subclass            WM_IME_NOTIFY
+  seq=88    imm32    imm32-api                ime-notify
+  seq=89    wndproc  hwnd-subclass            WM_IME_NOTIFY
+  seq=90    imm32    imm32-api                ime-notify
+  seq=91    imm32    imm32-api                restore-native-mode
+  seq=92    wndproc  hwnd-subclass            uninstall-ok
+
+counters:
+  wm_char_messages: 4
+  wm_unichar_messages: 0
+  wm_ime_char_messages: 0
+  wm_ime_startcomposition: 0
+  wm_ime_composition: 0
+  wm_ime_setcontext: 0
+  wm_ime_request: 1
+  wm_ime_notify: 14
+  glfw_key_down: 4
+  glfw_key_down_repeat: 2
+  glfw_text_input: 4
+  callback_exceptions: 0
+  screenshots: 0
+  glfw_errors: 17

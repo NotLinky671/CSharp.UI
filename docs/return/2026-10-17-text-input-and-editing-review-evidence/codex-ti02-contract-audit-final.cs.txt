@@ -1,0 +1,25 @@
+using CSharp.UI;
+int failures = 0;
+void Check(string name, bool pass) { Console.WriteLine($"{(pass ? "PASS" : "FAIL")} {name}"); if (!pass) failures++; }
+Check("default snapshot safe", default(TextSnapshot).Length == 0);
+Check("default operation safe", default(EditOperation).IsNoOp && default(EditOperation).LengthDelta == 0);
+Check("default result safe", default(EditResult).AcceptedText == string.Empty && default(EditResult).Status == TextEditStatus.None);
+var empty=TextSnapshot.Empty;
+Check("future version rejected", !CompositionEvent.Result(12,0,10,0,"hello").TryValidatePayload(empty,out _));
+Check("out of range rejected", !CompositionEvent.Start(12,0,0,0,new TextRange(20,30),"n",compositionCaret:99).TryValidatePayload(empty,out _));
+foreach (var text in new[]{"😀","e\u0301","👩‍👩‍👧‍👦"})
+ Check("split grapheme rejected length="+text.Length,!CompositionEvent.Result(1,1,0,0,"x",new TextRange(1,1)).TryValidatePayload(new TextSnapshot(text,default),out _));
+var a=new[]{new TextRange(0,1)};
+var e=CompositionEvent.Start(12,0,0,0,default,"n",segments:a);a[0]=new TextRange(30,40);
+Check("segments frozen",e.Segments[0]==new TextRange(0,1)&&e.Segments is not TextRange[]);
+var fallback=NoTextInputService.Instance.ApplyComposition(new[]{CompositionEvent.Result(12,0,0,0,"hello")});
+Check("rejection not claimed committed",fallback.Outcome==TextInputOutcome.Rejected&&!fallback.Handled);
+bool rejected=false;
+try { _=EditOperation.Delete(default,(TextEditKind)999); } catch(ArgumentException) { rejected=true; }
+Check("delete enum validated",rejected);
+rejected=false;
+try { _=new EditResult(TextEditStatus.Rejected,new TextSnapshot("a",default,0),new TextSnapshot("b",default,0),"b",0); }catch(ArgumentException){rejected=true;}
+Check("rejected text must unchanged",rejected);
+Check("validator removed",typeof(TextSnapshot).Assembly.GetType("CSharp.UI.CompositionBatchValidator")is null);
+Check("misleading display removed",typeof(TextInputState).GetProperty("DisplayText")is null);
+Console.WriteLine($"Failures={failures}");Environment.ExitCode=failures;

@@ -1,0 +1,5 @@
+Independent entry apartment=STA, managedThread=4
+Execution context station=WinSta0, desktop=Default, session=5, activeConsole=5, interactive=True
+Profile before-probe get=0x00000000, type=1, lang=0804, clsid=86598fb9-66a2-463e-b9c2-aeb906d477ad, profile=607fdf85-fcc8-4dbd-a365-41296f980c9c, hkl=0, flags=3, structBytes=88
+Microsoft Pinyin registered get=0x00000000, flags=0, caps=5003002E, lang=0804, currentKeyboardLayout=8040804
+Independent launcher exit=0

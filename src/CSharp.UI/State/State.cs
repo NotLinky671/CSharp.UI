@@ -101,6 +101,42 @@ public sealed class Binding<T>
     internal StateBase? Source { get; }
 
     /// <summary>
+    /// 绑定来源身份：有来源状态时用状态实例，否则用绑定实例本身。
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>TI-02 冻结的来源识别契约（供 TI-03 判断“绑定来源是否被替换”）：</b>
+    /// </para>
+    /// <list type="bullet">
+    /// <item>
+    /// <description>
+    /// <see cref="State{T}.ToBinding"/> 每次调用都返回<b>新的</b> <see cref="Binding{T}"/> 实例，
+    /// 但 <see cref="Source"/> 指向组件节点持有的同一 <see cref="State{T}"/>，因此来源身份稳定；
+    /// 不能按绑定实例引用或字符串相等判断来源是否变化。
+    /// </description>
+    /// </item>
+    /// <item>
+    /// <description>
+    /// 同一个自定义 <see cref="Binding{T}"/> 实例被重复交给控件时身份稳定（用实例本身识别）；
+    /// 每次重建新建的委托绑定没有可证明的来源，身份是新实例。
+    /// </description>
+    /// </item>
+    /// <item>
+    /// <description>
+    /// <see cref="Select{TTarget}"/> 等映射绑定不保留 <see cref="Source"/>，因此在重建中每次新建的映射绑定
+    /// 都按“来源已更换”<b>保守处理</b>（取消未提交组合、按新文本重同步并清空历史）。
+    /// 需要跨重建保留编辑状态时，必须缓存该绑定实例（例如放在组件字段中）或直接使用
+    /// <see cref="State{T}"/>。
+    /// </description>
+    /// </item>
+    /// </list>
+    /// <para>
+    /// 本属性是内部实现细节；公开契约只承诺“来源可识别时用来源状态，否则用绑定实例”。
+    /// </para>
+    /// </remarks>
+    internal object Identity => (object?)Source ?? this;
+
+    /// <summary>
     /// 读取当前值，并在需要时把来源状态补登记为控件所属组件节点的依赖。
     /// 用于绑定被保存在字段中、构建期没有显式读取状态的场景。
     /// </summary>
@@ -128,7 +164,14 @@ public sealed class Binding<T>
     /// <summary>由固定值创建只读绑定（写入被忽略）。</summary>
     public static Binding<T> Constant(T value) => new(() => value, _ => { });
 
-    /// <summary>返回把值映射到新类型的绑定（单向投影，写入按逆映射处理）。</summary>
+    /// <summary>
+    /// 返回把值映射到新类型的绑定（单向投影，写入按逆映射处理）。
+    /// </summary>
+    /// <remarks>
+    /// 投影结果<b>不保留</b> <see cref="Source"/>：每次调用都会新建一个绑定实例，因此
+    /// <see cref="Identity"/> 在重建之间不稳定。控件按“来源已更换”保守处理（取消组合、清空历史并重同步）。
+    /// 需要跨重建保留编辑状态时，请缓存该映射绑定实例或直接使用 <see cref="State{T}"/>。
+    /// </remarks>
     public Binding<TTarget> Select<TTarget>(Func<T, TTarget> forward, Func<TTarget, T> backward)
     {
         ArgumentNullException.ThrowIfNull(forward);

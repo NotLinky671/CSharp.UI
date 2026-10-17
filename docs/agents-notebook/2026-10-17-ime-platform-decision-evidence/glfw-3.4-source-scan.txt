@@ -1,0 +1,181 @@
+
+==== win32_window.c: IME/imm mentions ====
+731: // HACK: CJK IME sets the extended bit for right Shift
+752: const DWORD time = GetMessageTime();
+763: next.time == time)
+777: // IME notifies that keys have been filtered by setting the
+2191: void _glfwWaitEventsTimeoutWin32(double timeout)
+2193: MsgWaitForMultipleObjects(0, NULL, FALSE, (DWORD) (timeout * 1e3), QS_ALLINPUT);
+2396: // NOTE: Retry clipboard opening a few times as some other application may have it
+2423: // NOTE: Retry clipboard opening a few times as some other application may have it
+
+==== win32_window.c: TranslateMessage/DispatchMessage/PeekMessage order ====
+754: if (PeekMessageW(&next, NULL, 0, 0, PM_NOREMOVE))
+2107: while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+2124: TranslateMessage(&msg);
+2125: DispatchMessageW(&msg);
+2186: WaitMessage();
+2193: MsgWaitForMultipleObjects(0, NULL, FALSE, (DWORD) (timeout * 1e3), QS_ALLINPUT);
+
+==== win32_window.c: WM_CHAR / WM_UNICHAR / surrogate ====
+661: case WM_CHAR:
+662: case WM_SYSCHAR:
+664: if (wParam >= 0xd800 && wParam <= 0xdbff)
+665: window->win32.highSurrogate = (WCHAR) wParam;
+670: if (wParam >= 0xdc00 && wParam <= 0xdfff)
+672: if (window->win32.highSurrogate)
+674: codepoint += (window->win32.highSurrogate - 0xd800) << 10;
+675: codepoint += (WCHAR) wParam - 0xdc00;
+682: window->win32.highSurrogate = 0;
+683: _glfwInputChar(window, codepoint, getKeyMods(), uMsg != WM_SYSCHAR);
+692: case WM_UNICHAR:
+702: _glfwInputChar(window, (uint32_t) wParam, getKeyMods(), GLFW_TRUE);
+
+==== cocoa_window.m: NSTextInputClient ====
+194: // Defines a constant for empty ranges in NSTextInputClient
+330: @interface GLFWContentView : NSView <NSTextInputClient>
+652: - (BOOL)hasMarkedText
+657: - (NSRange)markedRange
+665: - (NSRange)selectedRange
+670: - (void)setMarkedText:(id)string
+671: selectedRange:(NSRange)selectedRange
+681: - (void)unmarkText
+686: - (NSArray*)validAttributesForMarkedText
+691: - (NSAttributedString*)attributedSubstringForProposedRange:(NSRange)range
+702: - (NSRect)firstRectForCharacterRange:(NSRange)range
+709: - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
+742: - (void)doCommandBySelector:(SEL)selector
+
+==== glfw3.h: preedit/IME/candidate API ====
+1453: *  @pointer_lifetime The returned memory block must be valid at least until it
+1509: *  @pointer_lifetime The returned memory block must be valid at least until it
+1551: *  @pointer_lifetime The specified memory block will not be accessed by GLFW
+1580: *  @pointer_lifetime The error description string is valid until the callback
+1959: *  @pointer_lifetime The path array and its strings are valid until the
+2305: *  @pointer_lifetime The specified allocator is copied before this function
+2394: /*! @brief Returns a string describing the compile-time configuration.
+2396: *  This function returns the compile-time generated
+2399: *  compile-time options.  It should not be confused with the OpenGL or OpenGL ES version
+2415: *  @pointer_lifetime The returned string is static and compile-time generated.
+2442: *  @pointer_lifetime The returned string is allocated and freed by GLFW.  You
+2462: *  and a human-readable description each time a GLFW error occurs.
+2563: *  @pointer_lifetime The returned array is allocated and freed by GLFW.  You
+2661: *  This function returns the size, in millimetres, of the display area of the
+2674: *  @param[out] widthMM Where to store the width, in millimetres, of the
+2676: *  @param[out] heightMM Where to store the height, in millimetres, of the
+2699: *  the pixel dimensions of your UI scaled by this look appropriate on your
+2741: *  @pointer_lifetime The returned string is allocated and freed by GLFW.  You
+2852: *  @pointer_lifetime The returned array is allocated and freed by GLFW.  You
+2882: *  @pointer_lifetime The returned array is allocated and freed by GLFW.  You
+2945: *  @pointer_lifetime The returned structure and its arrays are allocated and
+2963: *  original gamma ramp for that monitor is saved by GLFW the first time this
+2988: *  @pointer_lifetime The specified gamma ramp is copied before this function
+3078: *  @pointer_lifetime The specified string is copied before this function
+3138: *  dimensions may be overridden by the window system on creation.  Check the
+3324: *  @pointer_lifetime The returned string is allocated and freed by GLFW.  You
+3351: *  @remark @macos The window title will not be updated until the next time you
+3369: *  candidate images, those of or closest to the sizes desired by the system are
+3391: *  @pointer_lifetime The specified image data is copied before this function
+3522: *  The maximum dimensions must be greater than or equal to the minimum
+3523: *  dimensions and all must be greater than or equal to zero.
+3707: *  the pixel dimensions of your UI scaled by this look appropriate on your
+3896: *  Instead it will become visible the next time the window framebuffer is
+4273: *  at any time with @ref glfwSetWindowShouldClose.
+4528: *  @sa @ref glfwWaitEventsTimeout
+4573: *  @sa @ref glfwWaitEventsTimeout
+4581: /*! @brief Waits with timeout until events are queued and processes them.
+4584: *  available in the event queue, or until the specified timeout is reached.  If
+4590: *  The timeout value must be a positive finite number.
+4611: *  @param[in] timeout The maximum amount of time, in seconds, to wait.
+4628: GLFWAPI void glfwWaitEventsTimeout(double timeout);
+4633: *  queue, causing @ref glfwWaitEvents or @ref glfwWaitEventsTimeout to return.
+4642: *  @sa @ref glfwWaitEventsTimeout
+4696: *  the next time it is called even if the key had been released before the
+4703: *  @ref glfwGetMouseButton returns `GLFW_PRESS` the next time it is called even
+4824: *  @pointer_lifetime The returned string is allocated and freed by GLFW.  You
+4872: *  `GLFW_PRESS` the first time you call it for a key that was pressed, even if
+4911: *  returns `GLFW_PRESS` the first time you call it for a mouse button that was
+5033: *  @pointer_lifetime The specified image data is copied before this function
+5166: *  The scancode of a key is specific to that platform or sometimes even to that
+5171: *  Sometimes GLFW needs to generate synthetic key events, in which case the
+5497: *  @pointer_lifetime The returned array is allocated and freed by GLFW.  You
+5537: *  @pointer_lifetime The returned array is allocated and freed by GLFW.  You
+5594: *  @pointer_lifetime The returned array is allocated and freed by GLFW.  You
+5626: *  @pointer_lifetime The returned string is allocated and freed by GLFW.  You
+5667: *  @pointer_lifetime The returned string is allocated and freed by GLFW.  You
+5846: *  @pointer_lifetime The returned string is allocated and freed by GLFW.  You
+5911: *  writing.  GLFW tries to acquire it a few times, which is almost always enough.  If it
+5913: *  It is safe to try this multiple times.
+5915: *  @pointer_lifetime The specified string is copied before this function
+5944: *  writing.  GLFW tries to acquire it a few times, which is almost always enough.  If it
+5946: *  It is safe to try this multiple times.
+5948: *  @pointer_lifetime The returned string is allocated and freed by GLFW.  You
+5964: /*! @brief Returns the GLFW time.
+5966: *  This function returns the current GLFW time, in seconds.  Unless the time
+5967: *  has been set using @ref glfwSetTime it measures time elapsed since GLFW was
+5970: *  This function and @ref glfwSetTime are helper functions on top of @ref
+5971: *  glfwGetTimerFrequency and @ref glfwGetTimerValue.
+5973: *  The resolution of the timer is system dependent, but is usually on the order
+5975: *  time source on each operating system.
+5977: *  @return The current time, in seconds, or zero if an
+5983: *  writing of the internal base time is not atomic, so it needs to be
+5984: *  externally synchronized with calls to @ref glfwSetTime.
+5986: *  @sa @ref time
+5992: GLFWAPI double glfwGetTime(void);
+5994: /*! @brief Sets the GLFW time.
+5996: *  This function sets the current GLFW time, in seconds.  The value must be
+6000: *  This function and @ref glfwGetTime are helper functions on top of @ref
+6001: *  glfwGetTimerFrequency and @ref glfwGetTimerValue.
+6003: *  @param[in] time The new value, in seconds.
+6008: *  @remark The upper limit of GLFW time is calculated as
+6013: *  writing of the internal base time is not atomic, so it needs to be
+6014: *  externally synchronized with calls to @ref glfwGetTime.
+6016: *  @sa @ref time
+6022: GLFWAPI void glfwSetTime(double time);
+6024: /*! @brief Returns the current value of the raw timer.
+6026: *  This function returns the current value of the raw timer, measured in
+6028: *  glfwGetTimerFrequency.
+6030: *  @return The value of the timer, or zero if an
+6037: *  @sa @ref time
+6038: *  @sa @ref glfwGetTimerFrequency
+6044: GLFWAPI uint64_t glfwGetTimerValue(void);
+6046: /*! @brief Returns the frequency, in Hz, of the raw timer.
+6048: *  This function returns the frequency, in Hz, of the raw timer.
+6050: *  @return The frequency of the timer, in Hz, or zero if an
+6057: *  @sa @ref time
+6058: *  @sa @ref glfwGetTimerValue
+6064: GLFWAPI uint64_t glfwGetTimerFrequency(void);
+6073: *  A context must only be made current on a single thread at a time and each
+6074: *  thread can have only a single current context at a time.  Making a context
+6169: *  context, i.e. the number of screen updates to wait from the time @ref
+6171: *  is sometimes called _vertical synchronization_, _vertical retrace
+6224: *  frequently.  The extension strings will not change during the lifetime of
+6278: *  @pointer_lifetime The returned function pointer is valid until the context
+6347: *  @pointer_lifetime The returned array is allocated and freed by GLFW.  You
+6392: *  @pointer_lifetime The returned function pointer is valid until the library
+
+==== x11_window.c: XIM/XIC ====
+1151: // HACK: Save scancode as some IMs clear the field in XFilterEvent
+1155: filtered = XFilterEvent(event, None);
+1274: count = Xutf8LookupString(window->x11.ic,
+1282: count = Xutf8LookupString(window->x11.ic,
+1303: XLookupString(&event->xkey, NULL, 0, &keysym, NULL);
+1755: XSetICFocus(window->x11.ic);
+1928: window->x11.ic = XCreateIC(_glfw.x11.im,
+1929: XNInputStyle,
+1930: XIMPreeditNothing | XIMStatusNothing,
+
+==== wl_window.c: text-input protocol ====
+
+==== wl_window.c: keyboard key handling ====
+1635: struct wl_keyboard* keyboard,
+1648: if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
+1726: struct wl_keyboard* keyboard,
+1748: struct wl_keyboard* keyboard,
+1766: struct wl_keyboard* keyboard,
+1778: state == WL_KEYBOARD_KEY_STATE_PRESSED ? GLFW_PRESS : GLFW_RELEASE;
+1811: struct wl_keyboard* keyboard,
+1859: struct wl_keyboard* keyboard,
+1870: static const struct wl_keyboard_listener keyboardListener =
+1898: wl_keyboard_add_listener(_glfw.wl.keyboard, &keyboardListener, NULL);
+1902: wl_keyboard_destroy(_glfw.wl.keyboard);

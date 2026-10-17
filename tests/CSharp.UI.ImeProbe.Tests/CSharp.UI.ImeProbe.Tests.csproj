@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CSharp.UI.ImeProbe.Tests</RootNamespace>
+    <AssemblyName>CSharp.UI.ImeProbe.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 只测试 TI-01 探针的纯托管辅助逻辑（Win32 结构布局、组合提交判据、PNG 编码、日志顺序）。 -->
+    <ProjectReference Include="..\..\tools\CSharp.UI.ImeProbe\CSharp.UI.ImeProbe.csproj" />
+  </ItemGroup>
+
+</Project>

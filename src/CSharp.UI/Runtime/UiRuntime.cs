@@ -28,6 +28,21 @@ public sealed record UiRuntimeServices
     /// <see cref="ScrollView"/> 用它把归一化滚轮步数换算为逻辑像素距离。
     /// </summary>
     public IWheelScrollSettingsService WheelScrollSettings { get; init; } = DefaultWheelScrollSettingsService.Instance;
+
+    /// <summary>
+    /// 宿主文本输入服务（组合输入、候选锚点）；null 表示当前宿主只支持已提交文本。
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// 平台消息桥由 <c>CSharp.UI.OpenTK</c> 在 TI-07 提供；无窗口测试与只支持已提交文本的宿主保持 null。
+    /// 消费方通过 <see cref="TextInputForwarder.EffectiveService"/> 把 null 归一化为
+    /// <see cref="NoTextInputService"/>，因此不需要在每个调用点判空。
+    /// </para>
+    /// <para>
+    /// 该服务不改变既有输入路径：已提交文本仍然走 <see cref="UiRuntime.DispatchTextInput"/>。
+    /// </para>
+    /// </remarks>
+    public ITextInputService? TextInputService { get; init; }
 }
 
 /// <summary>

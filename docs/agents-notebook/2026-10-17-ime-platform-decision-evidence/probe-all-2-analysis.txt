@@ -1,0 +1,181 @@
+events: 616  file: artifacts/ime-work/probe-all-2/events.jsonl
+stages: {'probe': 5, 'glfw': 172, 'wndproc': 225, 'imm32': 104, 'script': 95, 'capture': 15}
+kinds: {'log-open': 1, 'options': 1, 'glfw-error': 33, 'window-created': 2, 'install-ok': 1, 'environment': 1, 'message': 221, 'focus-changed': 8, 'set-context': 5, 'ime-notify': 48, 'ime-state': 12, 'set-native-mode': 1, 'foreground-check': 1, 'ime-request': 19, 'input-language': 15, 'screenshot-saved': 15, 'key-event': 88, 'key-down': 43, 'text-input': 41, 'key-up': 43, 'candidate-anchor': 4, 'resize': 2, 'move': 1, 'window-language-switch': 6, 'fault-injection-armed': 1, 'callback-exception': 1, 'close-requested': 1, 'uninstall-ok': 1}
+threads (managed tid): {2: 616}
+process/session: pid=33828 session=5
+
+message histogram (wndproc):
+  WM_IME_NOTIFY: 48
+  WM_KEYDOWN: 43
+  WM_KEYUP: 43
+  WM_CHAR: 42
+  WM_IME_REQUEST: 19
+  WM_INPUTLANGCHANGE: 6
+  WM_ACTIVATE: 5
+  WM_IME_SETCONTEXT: 5
+  WM_KILLFOCUS: 3
+  WM_SETFOCUS: 2
+  WM_SIZE: 2
+  WM_MOVE: 1
+  WM_DESTROY: 1
+  WM_NCDESTROY: 1
+
+WM_IME_* messages: 72
+  seq=26 t_ms=417.8537 WM_IME_SETCONTEXT wparam=0x0 lparam=0xC000000F
+  seq=28 t_ms=418.8624 WM_IME_NOTIFY wparam=0x1 lparam=0x0 imn=IMN_CLOSESTATUSWINDOW
+  seq=52 t_ms=435.0569 WM_IME_SETCONTEXT wparam=0x1 lparam=0xC000000F
+  seq=54 t_ms=435.2125 WM_IME_NOTIFY wparam=0x2 lparam=0x0 imn=IMN_OPENSTATUSWINDOW
+  seq=59 t_ms=470.5719 WM_IME_REQUEST wparam=0x6 lparam=0xFF1F7DC530
+  seq=105 t_ms=2963.8333 WM_IME_NOTIFY wparam=0x9 lparam=0x1 imn=IMN_SETCANDIDATEPOS
+  seq=107 t_ms=2965.581 WM_IME_REQUEST wparam=0x6 lparam=0xFF1F7DC1F8
+  seq=109 t_ms=2965.7553 WM_IME_NOTIFY wparam=0x9 lparam=0x1 imn=IMN_SETCANDIDATEPOS
+  seq=111 t_ms=2965.8895 WM_IME_REQUEST wparam=0x6 lparam=0xFF1F7DC1F8
+  seq=113 t_ms=2966.4872 WM_IME_NOTIFY wparam=0xB lparam=0x0 imn=IMN_SETCOMPOSITIONWINDOW
+  seq=115 t_ms=2966.6652 WM_IME_REQUEST wparam=0x6 lparam=0xFF1F7DB720
+  seq=300 t_ms=9851.9427 WM_IME_SETCONTEXT wparam=0x0 lparam=0xC000000F
+  seq=302 t_ms=9852.1087 WM_IME_NOTIFY wparam=0x1 lparam=0x0 imn=IMN_CLOSESTATUSWINDOW
+  seq=308 t_ms=11044.539 WM_IME_SETCONTEXT wparam=0x1 lparam=0xC000000F
+  seq=310 t_ms=11044.7393 WM_IME_NOTIFY wparam=0x2 lparam=0x0 imn=IMN_OPENSTATUSWINDOW
+  seq=357 t_ms=13032.8423 WM_IME_NOTIFY wparam=0x9 lparam=0x1 imn=IMN_SETCANDIDATEPOS
+  seq=359 t_ms=13033.2004 WM_IME_REQUEST wparam=0x6 lparam=0xFF1F7DC2E8
+  seq=361 t_ms=13033.3447 WM_IME_NOTIFY wparam=0x9 lparam=0x1 imn=IMN_SETCANDIDATEPOS
+  seq=363 t_ms=13033.5205 WM_IME_REQUEST wparam=0x6 lparam=0xFF1F7DC2E8
+  seq=365 t_ms=13033.6278 WM_IME_NOTIFY wparam=0xB lparam=0x0 imn=IMN_SETCOMPOSITIONWINDOW
+
+composition-start=0 composition-update=0 composition-end=0
+
+IMM32 context states:
+  seq=47 trigger=probe-start himc=0x510749 ime_desc='' ime_file='' open=False conversion=0x00000001 native=True candidates=0 default_ime_wnd=0x2211F4
+  seq=49 trigger=after-set-native-mode himc=0x510749 ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x2211F4
+  seq=62 trigger=ime-commit:begin himc=0x510749 ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x2211F4
+  seq=104 trigger=after-typing himc=0x510749 ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x2211F4
+  seq=129 trigger=ime-segmented:begin himc=0x510749 ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x2211F4
+  seq=204 trigger=ime-cancel:begin himc=0x510749 ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x2211F4
+  seq=255 trigger=ime-focus:begin himc=0x510749 ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x2211F4
+  seq=316 trigger=ime-resize:begin himc=0x510749 ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x2211F4
+  seq=430 trigger=latin:begin himc=0x510749 ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x2211F4
+  seq=491 trigger=nonbmp:begin himc=0x510749 ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x2211F4
+  seq=531 trigger=fault:begin himc=0x510749 ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x2211F4
+  seq=564 trigger=ime-close:begin himc=0x510749 ime_desc='' ime_file='' open=True conversion=0x00000011 native=True candidates=0 default_ime_wnd=0x2211F4
+
+text input events (GLFW char callback -> OpenTK TextInput):
+  seq=77 t_ms=2508.9572 unicode=U+6E text='n' utf16=\u006E units=1 code_points=1
+  seq=83 t_ms=2509.7478 unicode=U+69 text='i' utf16=\u0069 units=1 code_points=1
+  seq=89 t_ms=2509.9814 unicode=U+68 text='h' utf16=\u0068 units=1 code_points=1
+  seq=95 t_ms=2510.2161 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=101 t_ms=2510.7062 unicode=U+6F text='o' utf16=\u006F units=1 code_points=1
+  seq=124 t_ms=3343.148 unicode=U+20 text=' ' utf16=\u0020 units=1 code_points=1
+  seq=145 t_ms=4819.8209 unicode=U+6E text='n' utf16=\u006E units=1 code_points=1
+  seq=151 t_ms=4820.3821 unicode=U+69 text='i' utf16=\u0069 units=1 code_points=1
+  seq=157 t_ms=4820.8077 unicode=U+68 text='h' utf16=\u0068 units=1 code_points=1
+  seq=163 t_ms=4821.2865 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=169 t_ms=4822.1659 unicode=U+6F text='o' utf16=\u006F units=1 code_points=1
+  seq=175 t_ms=4822.5995 unicode=U+20 text=' ' utf16=\u0020 units=1 code_points=1
+  seq=187 t_ms=5585.3281 unicode=U+6D text='m' utf16=\u006D units=1 code_points=1
+  seq=193 t_ms=5585.6043 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=199 t_ms=5586.023 unicode=U+20 text=' ' utf16=\u0020 units=1 code_points=1
+  seq=218 t_ms=6962.1563 unicode=U+6E text='n' utf16=\u006E units=1 code_points=1
+  seq=224 t_ms=6962.8031 unicode=U+69 text='i' utf16=\u0069 units=1 code_points=1
+  seq=230 t_ms=6963.1494 unicode=U+68 text='h' utf16=\u0068 units=1 code_points=1
+  seq=236 t_ms=6963.8486 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=242 t_ms=6964.6567 unicode=U+6F text='o' utf16=\u006F units=1 code_points=1
+  seq=269 t_ms=9110.8158 unicode=U+6E text='n' utf16=\u006E units=1 code_points=1
+  seq=275 t_ms=9111.2418 unicode=U+69 text='i' utf16=\u0069 units=1 code_points=1
+  seq=281 t_ms=9111.6264 unicode=U+68 text='h' utf16=\u0068 units=1 code_points=1
+  seq=287 t_ms=9112.0502 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=293 t_ms=9112.4223 unicode=U+6F text='o' utf16=\u006F units=1 code_points=1
+  seq=330 t_ms=12580.9525 unicode=U+6E text='n' utf16=\u006E units=1 code_points=1
+  seq=336 t_ms=12581.1993 unicode=U+69 text='i' utf16=\u0069 units=1 code_points=1
+  seq=342 t_ms=12581.4331 unicode=U+68 text='h' utf16=\u0068 units=1 code_points=1
+  seq=348 t_ms=12581.6035 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=354 t_ms=12581.811 unicode=U+6F text='o' utf16=\u006F units=1 code_points=1
+  seq=453 t_ms=16247.7708 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=459 t_ms=16248.3444 unicode=U+62 text='b' utf16=\u0062 units=1 code_points=1
+  seq=465 t_ms=16249.4114 unicode=U+63 text='c' utf16=\u0063 units=1 code_points=1
+  seq=475 t_ms=17094.1171 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=515 t_ms=18642.5957 unicode=U+1F600 text='😀' utf16=\uD83D\uDE00 units=2 code_points=1
+  seq=549 t_ms=20114.509 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=578 t_ms=21364.8326 unicode=U+6E text='n' utf16=\u006E units=1 code_points=1
+  seq=584 t_ms=21366.0552 unicode=U+69 text='i' utf16=\u0069 units=1 code_points=1
+  seq=590 t_ms=21366.7504 unicode=U+68 text='h' utf16=\u0068 units=1 code_points=1
+  seq=596 t_ms=21367.2251 unicode=U+61 text='a' utf16=\u0061 units=1 code_points=1
+  seq=602 t_ms=21367.6623 unicode=U+6F text='o' utf16=\u006F units=1 code_points=1
+
+candidate anchor requests (requested vs IMM readback):
+  seq=117 trigger=script-after-typing requested_client=220,260 requested_screen=497,643 dpi=144 set_ok=True get_ok=True ime_reported=220,260 style=0xC0 rect=266,338,1188,914
+  seq=369 trigger=before-resize requested_client=220,260 requested_screen=497,643 dpi=144 set_ok=True get_ok=True ime_reported=220,260 style=0xC0 rect=266,338,1188,914
+  seq=393 trigger=after-resize requested_client=284,340 requested_screen=561,723 dpi=144 set_ok=True get_ok=True ime_reported=284,340 style=0xC0 rect=266,338,1508,1074
+  seq=417 trigger=after-move requested_client=284,340 requested_screen=621,763 dpi=144 set_ok=True get_ok=True ime_reported=284,340 style=0xC0 rect=326,378,1568,1114
+
+TSF records:
+
+synthetic / boundary records:
+  seq=532 fault-injection-armed {"message": "WM_CHAR", "note": "synthetic boundary test; not a real IME path"}
+  seq=548 callback-exception {"message": "WM_CHAR", "message_hex": "0x0102", "exception": "InvalidOperationException: fault injection for synthetic message WM_CHAR", "count": 1, "note": "swallowed inside the native callback boundary"}
+
+interleaving around the first key press (native message vs managed callback):
+  seq=74    wndproc  hwnd-subclass            WM_KEYDOWN
+  seq=75    glfw     glfw-key-callback        key-down key=N repeat=False
+  seq=76    wndproc  hwnd-subclass            WM_CHAR code_unit=0x6E
+  seq=77    glfw     glfw-char-callback       text-input text='n' unicode=U+6E
+  seq=78    wndproc  hwnd-subclass            WM_KEYUP
+  seq=79    glfw     glfw-key-callback        key-up
+  seq=80    wndproc  hwnd-subclass            WM_KEYDOWN
+  seq=81    glfw     glfw-key-callback        key-down key=I repeat=False
+  seq=82    wndproc  hwnd-subclass            WM_CHAR code_unit=0x69
+  seq=83    glfw     glfw-char-callback       text-input text='i' unicode=U+69
+  seq=84    wndproc  hwnd-subclass            WM_KEYUP
+  seq=85    glfw     glfw-key-callback        key-up
+  seq=86    wndproc  hwnd-subclass            WM_KEYDOWN
+  seq=87    glfw     glfw-key-callback        key-down key=H repeat=False
+  seq=88    wndproc  hwnd-subclass            WM_CHAR code_unit=0x68
+  seq=89    glfw     glfw-char-callback       text-input text='h' unicode=U+68
+  seq=90    wndproc  hwnd-subclass            WM_KEYUP
+  seq=91    glfw     glfw-key-callback        key-up
+  seq=92    wndproc  hwnd-subclass            WM_KEYDOWN
+  seq=93    glfw     glfw-key-callback        key-down key=A repeat=False
+  seq=94    wndproc  hwnd-subclass            WM_CHAR code_unit=0x61
+  seq=95    glfw     glfw-char-callback       text-input text='a' unicode=U+61
+  seq=96    wndproc  hwnd-subclass            WM_KEYUP
+  seq=97    glfw     glfw-key-callback        key-up
+  seq=98    wndproc  hwnd-subclass            WM_KEYDOWN
+  seq=99    glfw     glfw-key-callback        key-down key=O repeat=False
+  seq=100   wndproc  hwnd-subclass            WM_CHAR code_unit=0x6F
+  seq=101   glfw     glfw-char-callback       text-input text='o' unicode=U+6F
+  seq=102   wndproc  hwnd-subclass            WM_KEYUP
+  seq=103   glfw     glfw-key-callback        key-up
+  seq=104   imm32    imm32-api                ime-state
+  seq=105   wndproc  hwnd-subclass            WM_IME_NOTIFY
+  seq=106   imm32    imm32-api                ime-notify
+  seq=107   wndproc  hwnd-subclass            WM_IME_REQUEST
+  seq=108   imm32    imm32-api                ime-request
+  seq=109   wndproc  hwnd-subclass            WM_IME_NOTIFY
+  seq=110   imm32    imm32-api                ime-notify
+  seq=111   wndproc  hwnd-subclass            WM_IME_REQUEST
+  seq=112   imm32    imm32-api                ime-request
+  seq=113   wndproc  hwnd-subclass            WM_IME_NOTIFY
+  seq=114   imm32    imm32-api                ime-notify
+  seq=115   wndproc  hwnd-subclass            WM_IME_REQUEST
+  seq=116   imm32    imm32-api                ime-request
+  seq=117   imm32    imm32-api                candidate-anchor
+  seq=118   capture  gdi-bitblt               screenshot-saved
+  seq=119   script   sendinput                key-event step=ime-commit:space-commit:down
+  seq=120   script   sendinput                key-event step=ime-commit:space-commit:up
+  seq=121   wndproc  hwnd-subclass            WM_KEYDOWN
+  seq=122   glfw     glfw-key-callback        key-down key=Space repeat=False
+
+counters:
+  wm_char_messages: 42
+  wm_unichar_messages: 0
+  wm_ime_char_messages: 0
+  wm_ime_startcomposition: 0
+  wm_ime_composition: 0
+  wm_ime_setcontext: 5
+  wm_ime_request: 19
+  wm_ime_notify: 48
+  glfw_key_down: 43
+  glfw_key_down_repeat: 0
+  glfw_text_input: 41
+  callback_exceptions: 1
+  screenshots: 15
+  glfw_errors: 33

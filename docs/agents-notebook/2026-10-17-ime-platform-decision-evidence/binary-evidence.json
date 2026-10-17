@@ -1,0 +1,309 @@
+{
+  "glfw_imports": {
+    "machine": "0x8664",
+    "pe32_plus": true,
+    "sections": [
+      ".text",
+      ".rdata",
+      ".data",
+      ".pdata",
+      "_RDATA",
+      ".rsrc",
+      ".reloc"
+    ],
+    "imports": [
+      "KERNEL32.dll",
+      "USER32.dll",
+      "GDI32.dll",
+      "SHELL32.dll"
+    ]
+  },
+  "glfw_ascii_hits": {
+    "imm32.dll": 0,
+    "IMM32.dll": 0,
+    "ImmGetContext": 0,
+    "ImmGetCompositionString": 0,
+    "ImmSetCandidateWindow": 0,
+    "ImmAssociateContext": 0,
+    "ImmReleaseContext": 0,
+    "WM_IME_COMPOSITION": 0,
+    "ImmNotifyIME": 0
+  },
+  "glfw_utf16_hits": {
+    "imm32.dll": 0,
+    "IMM32.dll": 0,
+    "ImmGetContext": 0,
+    "ImmGetCompositionString": 0,
+    "ImmSetCandidateWindow": 0,
+    "ImmAssociateContext": 0,
+    "ImmReleaseContext": 0,
+    "WM_IME_COMPOSITION": 0,
+    "ImmNotifyIME": 0
+  },
+  "managed_hits": {
+    "Counter.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "CSharp.UI.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "CSharp.UI.OpenTK.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "CSharp.UI.Text.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "HarfBuzzSharp.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "OpenTK.Audio.OpenAL.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "OpenTK.Compute.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "OpenTK.Core.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "OpenTK.Graphics.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "OpenTK.Input.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "OpenTK.Mathematics.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "OpenTK.Windowing.Common.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "OpenTK.Windowing.Desktop.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "OpenTK.Windowing.GraphicsLibraryFramework.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "SkiaSharp.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "SkiaSharp.HarfBuzz.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "runtimes\\win-arm64\\native\\libHarfBuzzSharp.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "runtimes\\win-arm64\\native\\libSkiaSharp.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "runtimes\\win-x64\\native\\glfw3.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "runtimes\\win-x64\\native\\libHarfBuzzSharp.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "runtimes\\win-x64\\native\\libSkiaSharp.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "runtimes\\win-x86\\native\\glfw3.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "runtimes\\win-x86\\native\\libHarfBuzzSharp.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    },
+    "runtimes\\win-x86\\native\\libSkiaSharp.dll": {
+      "imm32.dll": 0,
+      "IMM32.dll": 0,
+      "ImmGetContext": 0,
+      "ImmGetCompositionString": 0,
+      "ImmSetCandidateWindow": 0,
+      "ImmAssociateContext": 0,
+      "ImmReleaseContext": 0,
+      "WM_IME_COMPOSITION": 0,
+      "ImmNotifyIME": 0
+    }
+  }
+}

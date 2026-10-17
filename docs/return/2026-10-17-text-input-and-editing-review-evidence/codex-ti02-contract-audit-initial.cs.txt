@@ -1,0 +1,21 @@
+using CSharp.UI;
+var document = TextSnapshot.Empty;
+var session = new TextInputSession(12, 0);
+var start = CompositionBatchValidator.Validate(session, null, null, document,
+    new[] { CompositionEvent.Start(12, 0, 0, 0, default, "n") });
+var update = CompositionBatchValidator.Validate(session, 0, start.EndedCompositionIds, document,
+    new[] { CompositionEvent.Update(12, 0, 0, 1, default, "ni") }, start.OpenCompositionIds);
+Console.WriteLine($"CROSS_MESSAGE_UPDATE={update.Verdicts[0].Decision}");
+var future = CompositionBatchValidator.Validate(session, null, null, document,
+    new[] { CompositionEvent.Result(12, 0, 10, 0, "hello") });
+Console.WriteLine($"FUTURE_VERSION_RESULT={future.Verdicts[0].Decision}");
+var malformed = CompositionBatchValidator.Validate(session, null, null, document,
+    new[] { CompositionEvent.Start(12, 0, 0, 0, new TextRange(20, 30), "n", compositionCaret: 99) });
+Console.WriteLine($"OUT_OF_RANGE_PAYLOAD={malformed.Verdicts[0].Decision}");
+var fallback = NoTextInputService.Instance.ApplyComposition(new[] { CompositionEvent.Result(12, 0, 0, 0, "hello") });
+Console.WriteLine($"FALLBACK_CLAIMS_COMMITTED={fallback.Outcome.HasFlag(TextInputOutcome.ResultCommitted)} handled={fallback.Handled}");
+var e = CompositionEvent.Start(12, 0, 0, 0, default, "n", segments: new[] { new TextRange(0, 1) });
+if (e.Segments is TextRange[] mutable) mutable[0] = new TextRange(30, 40);
+Console.WriteLine($"MUTABLE_SEGMENTS={e.Segments[0]}");
+try { Console.WriteLine($"DEFAULT_SNAPSHOT_LENGTH={default(TextSnapshot).Length}"); }
+catch (Exception ex) { Console.WriteLine($"DEFAULT_SNAPSHOT_EXCEPTION={ex.GetType().Name}"); }

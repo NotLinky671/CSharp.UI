@@ -1,0 +1,33 @@
+TI-01 IME probe summary (2026-10-17T13:30:37.4474736+08:00)
+events file: C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\probe-ti01-final-batch\events.jsonl
+events: 679; timed_out: False
+
+[UNVERIFIED] ime-commit: no WM_IME composition started; the real IME did not engage in this run
+  {"keys":"nihao","commit_key":"VK_SPACE (0x20)","composition_updates":0,"result_segments_total":0,"result_segments_new":[],"result_flag_commits":0,"snapshot_only_result_reads":0,"text_input_events":6,"text_inputs_new":["n","i","h","a","o"," "],"ime_char_messages":0,"char_messages":6,"duplicate_result_and_char_channel_same_text":false,"imm_get_description":"","ime_file_name":"","candidate_requests":1,"assertion":"exactly one new GCS_RESULTSTR-flagged commit segment for the typed pinyin"}
+
+[UNVERIFIED] ime-segmented: segmented commits observed=0 (expected 2); result+preedit same message=False
+  {"first_keys":"nihao","second_keys":"ma","result_segments_total":0,"result_segments_new":[],"result_flag_commits":0,"snapshot_only_result_reads":0,"result_and_preedit_same_message":false,"text_input_events":9,"assertion":"each of the two commits appears exactly once and carries the GCS_RESULTSTR flag"}
+
+[UNVERIFIED] ime-cancel: no WM_IME composition was observed before Escape
+  {"composition_updates":0,"ended_without_result":false,"result_segments_unchanged":true,"window_alive_after_escape":true,"text_input_events":5,"assertion":"composition started, Escape ended it without a result, no result segment was added, window survived"}
+
+[UNVERIFIED] ime-focus: no WM_IME composition was observed before switching focus
+  {"composition_updates":0,"cancellations_after_focus_loss":0,"ended_without_result_on_focus_loss":false,"window_alive_after_focus_round_trip":true,"focus_target_is_own_window":true,"assertion":"focus loss to our own second window ends the composition without a result and the window stays alive"}
+
+[OBSERVED] ime-resize: anchor API round-trip succeeded for each publish point, but the actual on-screen system candidate window position was not independently observed (candidate localization remains UNVERIFIED)
+  {"original_client":"900x520","resized_client":"1220x680","candidate_requests":3,"candidate_set_ok":3,"candidate_get_ok":3,"composition_updates":0,"composing_at_end":false,"system_candidate_actual_position_confirmed":false,"assertion":"three anchor publishes across resize/move all returned success from ImmSetCandidateWindow and ImmGetCandidateWindow"}
+
+[PASS] latin: plain ASCII path with real injected keys under the en-US layout (window-local switch, restored afterwards)
+  {"keys":"abc then 3 injected repeated keydowns for a","char_messages":4,"unichar_messages":0,"ime_char_messages":0,"text_input_events":4,"text_inputs_new":["a","b","c","a"],"key_repeats":0,"input_language_switched_for_this_window_only":true,"input_language_restored":true,"real_key_repeat_note":"SendInput \u6CE8\u5165\u7684\u8FDE\u7EED keydown \u88AB\u7CFB\u7EDF\u5408\u5E76\u4E3A\u4E00\u6B21 WM_KEYDOWN\uFF0C\u672A\u80FD\u4EA7\u751F\u81EA\u52A8\u91CD\u590D\uFF1B\u91CD\u590D\u8DEF\u5F84\u7531 repeat \u573A\u666F\u7684\u5408\u6210\u8FB9\u754C\u6D4B\u8BD5\u8986\u76D6","assertion":"at least three plain ASCII keys produced GLFW TextInput events and the window-local input language was restored"}
+
+[OBSERVED] repeat: synthetic boundary: a posted WM_KEYDOWN with the previous-key-down bit produced GLFW_REPEAT; this is NOT real OS auto-repeat, and real auto-repeat with the IME active remains UNVERIFIED
+  {"synthetic_repeat_portion":true,"real_injected_repeat_coalesced":true,"key_repeat_events":2,"key_down_events":4,"char_messages":4,"text_input_events":4,"limitation":"the repeat notification itself is posted (labelled synthetic) because SendInput cannot produce OS auto-repeat; WM_CHAR duplication is still exercised through TranslateMessage, but the IME\u0027s consumption of repeated keys (VK_PROCESSKEY) needs a real physical key check"}
+
+[PASS] nonbmp: non-BMP through a synthetic keyboard path (surrogate pair -> single GLFW codepoint) to pin down the GLFW char contract
+  {"injected_code_units":"U\u002BD83D then U\u002BDE00 via KEYEVENTF_UNICODE","synthetic":true,"note":"synthetic boundary test: not a real IME path, and no WM_IME message was fabricated","char_messages":2,"unichar_messages":0,"text_input_events":1,"text_inputs_new":["\uD83D\uDE00"],"text_input_utf16":["\\uD83D\\uDE00"],"text_input_code_units":[2],"assertion":"exactly one TextInput with a 2-code-unit surrogate pair from the two injected UTF-16 code units"}
+
+[PASS] fault: synthetic boundary tests: a managed exception thrown in the native callback and a failing log write were both swallowed; the chained window proc still ran
+  {"synthetic":true,"cases":"message-throw (WM_CHAR), log-write-failure (WM_CHAR),","assertion":"both injected failures were swallowed at the native callback boundary and the chained proc still ran","callback_exceptions":2,"log_write_failures":1,"chain_continued_after_exception":true,"window_alive":true}
+
+[OBSERVED] ime-close: window was closed while NOT composing (no IME composition started); this only exercises the close/restore boundary and does not verify closing during a composition
+  {"was_composing":false,"composition_updates":0,"compositions_started":0,"cancellations":0,"callback_exceptions":0,"close_requested":true,"subclass_restored":true,"subclass_still_installed":false,"restore_trigger":"WM_NCDESTROY (see events.jsonl)"}

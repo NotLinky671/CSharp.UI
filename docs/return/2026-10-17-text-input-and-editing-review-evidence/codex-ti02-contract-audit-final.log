@@ -1,0 +1,15 @@
+PASS default snapshot safe
+PASS default operation safe
+PASS default result safe
+PASS future version rejected
+PASS out of range rejected
+PASS split grapheme rejected length=2
+PASS split grapheme rejected length=2
+PASS split grapheme rejected length=11
+PASS segments frozen
+PASS rejection not claimed committed
+PASS delete enum validated
+PASS rejected text must unchanged
+PASS validator removed
+PASS misleading display removed
+Failures=0

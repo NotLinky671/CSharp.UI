@@ -1,0 +1,169 @@
+{
+  "scenario": [
+    "ime-commit",
+    "ime-segmented",
+    "ime-cancel",
+    "ime-focus",
+    "ime-resize",
+    "latin",
+    "nonbmp",
+    "fault",
+    "ime-close"
+  ],
+  "results": [
+    {
+      "name": "ime-commit",
+      "status": "UNVERIFIED",
+      "notes": "no result string observed; either no composition started or the commit key did not select a candidate",
+      "details": {
+        "keys": "nihao",
+        "commit_key": "VK_SPACE (0x20)",
+        "composition_updates": 0,
+        "result_segments_total": 0,
+        "result_segments_new": [],
+        "text_input_events": 6,
+        "text_inputs_new": [
+          "n",
+          "i",
+          "h",
+          "a",
+          "o",
+          " "
+        ],
+        "ime_char_messages": 0,
+        "char_messages": 6,
+        "imm_get_description": "",
+        "ime_file_name": "",
+        "candidate_requests": 1
+      }
+    },
+    {
+      "name": "ime-segmented",
+      "status": "UNVERIFIED",
+      "notes": "segmented commit observed=False; result\u002Bpreedit in one WM_IME_COMPOSITION observed=False (the plan\u0027s TI-04 state machine must still handle both shapes)",
+      "details": {
+        "first_keys": "nihao",
+        "second_keys": "ma",
+        "result_segments_total": 0,
+        "result_segments_new": [],
+        "result_and_preedit_same_message": false,
+        "text_input_events": 9
+      }
+    },
+    {
+      "name": "ime-cancel",
+      "status": "UNVERIFIED",
+      "notes": "no composition was observed before Escape",
+      "details": {
+        "composition_updates": 0,
+        "ended_without_result": false,
+        "result_segments_unchanged": true,
+        "window_alive_after_escape": true,
+        "text_input_events": 5
+      }
+    },
+    {
+      "name": "ime-focus",
+      "status": "UNVERIFIED",
+      "notes": "no composition was observed before switching focus",
+      "details": {
+        "composition_updates": 0,
+        "cancellations_after_focus_loss": 0,
+        "ended_without_result_on_focus_loss": false,
+        "focus_target_is_own_window": true,
+        "foreground_after_switch": "0x760EB8"
+      }
+    },
+    {
+      "name": "ime-resize",
+      "status": "PASS",
+      "notes": "candidate anchor republished across resize/move; compare requested client/screen with screenshots and IME readback",
+      "details": {
+        "original_client": "900x520",
+        "resized_client": "1220x680",
+        "candidate_requests": 3,
+        "composition_updates": 0,
+        "composing_at_end": false
+      }
+    },
+    {
+      "name": "latin",
+      "status": "PASS",
+      "notes": "plain ASCII path with real layout (window-local input language switch, restored afterwards)",
+      "details": {
+        "keys": "abc \u002B hold a (auto-repeat)",
+        "char_messages": 4,
+        "unichar_messages": 0,
+        "ime_char_messages": 0,
+        "text_input_events": 4,
+        "text_inputs_new": [
+          "a",
+          "b",
+          "c",
+          "a"
+        ],
+        "key_repeats": 0,
+        "input_language_switched_for_this_window_only": true
+      }
+    },
+    {
+      "name": "nonbmp",
+      "status": "PASS",
+      "notes": "non-BMP through a synthetic keyboard path (surrogate pair -\u003E single GLFW codepoint) to pin down the GLFW char contract",
+      "details": {
+        "injected_code_units": "U\u002BD83D then U\u002BDE00 via KEYEVENTF_UNICODE",
+        "synthetic": true,
+        "note": "synthetic boundary test: not a real IME path, and no WM_IME message was fabricated",
+        "char_messages": 2,
+        "unichar_messages": 0,
+        "text_input_events": 1,
+        "text_inputs_new": [
+          "\uD83D\uDE00"
+        ],
+        "text_input_utf16": [
+          "\\uD83D\\uDE00"
+        ],
+        "text_input_code_units": [
+          2
+        ]
+      }
+    },
+    {
+      "name": "fault",
+      "status": "PASS",
+      "notes": "synthetic boundary test: managed exception thrown inside the native window proc was swallowed and the chain continued",
+      "details": {
+        "synthetic": true,
+        "fault_message": "WM_CHAR",
+        "callback_exceptions": 1,
+        "chain_continued_after_exception": true,
+        "window_alive": true
+      }
+    },
+    {
+      "name": "ime-close",
+      "status": "PASS",
+      "notes": "close while composing: window destroyed with the subclass still installed; original window proc restored at WM_NCDESTROY; no managed exception escaped",
+      "details": {
+        "was_composing": false,
+        "composition_updates": 0,
+        "compositions_started": 0,
+        "cancellations": 0,
+        "callback_exceptions": 0,
+        "close_requested": true,
+        "subclass_restored": true,
+        "subclass_still_installed": false,
+        "restore_trigger": "WM_NCDESTROY (see events.jsonl)"
+      }
+    }
+  ],
+  "status_legend": {
+    "PASS": "observed with real or explicitly labelled synthetic input",
+    "UNVERIFIED": "input condition missing; nothing was faked",
+    "SKIP": "precondition missing (foreground/IME/layout)",
+    "FAIL": "probe infrastructure failure"
+  },
+  "timed_out": false,
+  "events": 616,
+  "log": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\artifacts\\ime-work\\probe-all-2\\events.jsonl"
+}

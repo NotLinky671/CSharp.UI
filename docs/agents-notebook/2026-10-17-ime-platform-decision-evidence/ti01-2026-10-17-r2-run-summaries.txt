@@ -1,0 +1,29 @@
+TI-01 round-2 real-run summaries (DSH, 2026-10-17)
+=====================================================
+
+### ti01-r2-identity
+[PASS] native-mode-readback: ImmSetOpenStatus(true) and CMODE_NATIVE|CMODE_ROMAN were read back from the actual target HIMC (0x32F0FE9) after the profile activation had landed
+  {"himc":"0x32F0FE9","applied":true,"open_applied":true,"conversion_applied":true,"readback_native":true,"reason":"open=true and CMODE_NATIVE|CMODE_ROMAN were both read back from this HIMC","order":"focus\u002Bpump -\u003E profile activation -\u003E pump -\u003E set native/open on target HIMC -\u003E pump\u002Breadback"}
+[PASS] info: environment snapshot only
+
+### ti01-r2-commit
+[FAIL] profile-temporary-enable: explicit temporary Microsoft Pinyin enable was requested but was not verified; configuration_touched=True, restore_readback_verified=True, detail=activation not verified: ActivateProfile hr=0x80004005; 
+  {"configuration_touched":true,"restore_readback_verified":true,"failure":"activation not verified: ActivateProfile hr=0x80004005; "}
+[PASS] native-mode-readback: ImmSetOpenStatus(true) and CMODE_NATIVE|CMODE_ROMAN were read back from the actual target HIMC (0x650F77) after the profile activation had landed
+  {"himc":"0x650F77","applied":true,"open_applied":true,"conversion_applied":true,"readback_native":true,"reason":"open=true and CMODE_NATIVE|CMODE_ROMAN were both read back from this HIMC","order":"focus\u002Bpump -\u003E profile activation -\u003E pump -\u003E set native/open on target HIMC -\u003E pump\u002Breadback"}
+[SKIP] ime-commit: probe window is not the foreground window; refusing to send key events
+
+### ti01-r2-commit-fg
+[FAIL] profile-temporary-enable: explicit temporary Microsoft Pinyin enable was requested but was not verified; configuration_touched=True, restore_readback_verified=True, detail=activation not verified: ActivateProfile hr=0x80004005; 
+  {"configuration_touched":true,"restore_readback_verified":true,"failure":"activation not verified: ActivateProfile hr=0x80004005; "}
+[PASS] native-mode-readback: ImmSetOpenStatus(true) and CMODE_NATIVE|CMODE_ROMAN were read back from the actual target HIMC (0x29B10F9) after the profile activation had landed
+  {"himc":"0x29B10F9","applied":true,"open_applied":true,"conversion_applied":true,"readback_native":true,"reason":"open=true and CMODE_NATIVE|CMODE_ROMAN were both read back from this HIMC","order":"focus\u002Bpump -\u003E profile activation -\u003E pump -\u003E set native/open on target HIMC -\u003E pump\u002Breadback"}
+[SKIP] ime-commit: probe window is not the foreground window; refusing to send key events
+
+### ti01-r2-commit-attended4
+[FAIL] profile-temporary-enable: explicit temporary Microsoft Pinyin enable was requested but was not verified; configuration_touched=True, restore_readback_verified=True, detail=activation not verified: ActivateProfile hr=0x80004005; 
+  {"configuration_touched":true,"restore_readback_verified":true,"failure":"activation not verified: ActivateProfile hr=0x80004005; "}
+[PASS] native-mode-readback: ImmSetOpenStatus(true) and CMODE_NATIVE|CMODE_ROMAN were read back from the actual target HIMC (0x3DA117F) after the profile activation had landed
+  {"himc":"0x3DA117F","applied":true,"open_applied":true,"conversion_applied":true,"readback_native":true,"reason":"open=true and CMODE_NATIVE|CMODE_ROMAN were both read back from this HIMC","order":"focus\u002Bpump -\u003E profile activation -\u003E pump -\u003E set native/open on target HIMC -\u003E pump\u002Breadback"}
+[SKIP] ime-commit: probe window is not the foreground window; refusing to send key events
+

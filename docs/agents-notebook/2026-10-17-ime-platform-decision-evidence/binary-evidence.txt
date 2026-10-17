@@ -1,0 +1,40 @@
+=== PE import table: samples/CSharp.UI.Samples.Counter/bin/Debug/net10.0/runtimes/win-x64/native/glfw3.dll ===
+  imports KERNEL32.dll
+  imports USER32.dll
+  imports GDI32.dll
+  imports SHELL32.dll
+  sections=['.text', '.rdata', '.data', '.pdata', '_RDATA', '.rsrc', '.reloc'] machine=0x8664 pe32plus=True
+
+=== raw byte scan (ascii) in glfw3.dll ===
+  imm32.dll: 0
+  IMM32.dll: 0
+  ImmGetContext: 0
+  ImmGetCompositionString: 0
+  ImmSetCandidateWindow: 0
+  ImmAssociateContext: 0
+  ImmReleaseContext: 0
+  WM_IME_COMPOSITION: 0
+  ImmNotifyIME: 0
+=== raw byte scan (utf-16le) in glfw3.dll ===
+  imm32.dll: 0
+  IMM32.dll: 0
+  ImmGetContext: 0
+  ImmGetCompositionString: 0
+  ImmSetCandidateWindow: 0
+  ImmAssociateContext: 0
+  ImmReleaseContext: 0
+  WM_IME_COMPOSITION: 0
+  ImmNotifyIME: 0
+
+=== managed assembly scan: samples/CSharp.UI.Samples.Counter/bin/Debug/net10.0 ===
+  scanned 24 managed dlls
+
+=== fetch pinned sources (python TLS) ===
+FETCH glfw-3.4-win32_window.c: 81112 bytes from https://raw.githubusercontent.com/glfw/glfw/3.4/src/win32_window.c
+FETCH glfw-3.4-win32_init.c: 28467 bytes from https://raw.githubusercontent.com/glfw/glfw/3.4/src/win32_init.c
+FETCH glfw-3.4-cocoa_window.m: 60250 bytes from https://raw.githubusercontent.com/glfw/glfw/3.4/src/cocoa_window.m
+FETCH glfw-3.4-x11_window.c: 106290 bytes from https://raw.githubusercontent.com/glfw/glfw/3.4/src/x11_window.c
+FETCH glfw-3.4-wl_window.c: 102422 bytes from https://raw.githubusercontent.com/glfw/glfw/3.4/src/wl_window.c
+FETCH glfw-3.4-include-glfw3.h: 241826 bytes from https://raw.githubusercontent.com/glfw/glfw/3.4/include/GLFW/glfw3.h
+FETCH opentk-4.9.4-NativeWindow.cs: 82132 bytes from https://raw.githubusercontent.com/opentk/opentk/4.9.4/src/OpenTK.Windowing.Desktop/NativeWindow.cs
+FETCH opentk-4.9.4-GLFWNative.cs: 27732 bytes from https://raw.githubusercontent.com/opentk/opentk/4.9.4/src/OpenTK.Windowing.GraphicsLibraryFramework/GLFWNative.cs
