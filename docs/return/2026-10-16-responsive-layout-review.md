@@ -4,7 +4,7 @@
 
 审核人：Codex
 
-设计依据：[响应式布局计划](../plan/2026-10-16-responsive-layout-plan.md)、[当前任务索引](../task/README.md)。
+设计依据：[响应式布局计划](../plan/2026-10-16-responsive-layout-plan.md)、[当前任务索引](../archive/2026-10-16-responsive-layout-tasks/README.md)。
 
 状态：按任务持续复审；文档建立不表示实现已通过。
 

@@ -39,7 +39,7 @@ UiApplication.Run(new Counter());
 | `tests/` | 核心单元测试、文本测试、图形集成测试（xUnit v3） |
 | `tools/CSharp.UI.AssetGenerator` | 生成示例图片资源，保证资源可复现 |
 | `docs/guide` | 入门、API、状态、修饰符、Key、组件、平台与测试说明 |
-| `docs/task` | 当前响应式布局 9 个任务；首版任务与交付记录见 `docs/archive/2026-10-14-framework-tasks` |
+| `docs/task` | 当前 IME 与文本编辑任务；已完成任务归档于 `docs/archive/` |
 
 ## 快速开始
 
@@ -56,6 +56,7 @@ dotnet run --project tests/CSharp.UI.Tests
 - [入门](docs/guide/getting-started.md)
 - [公开 API 参考](docs/guide/api-reference.md)
 - [响应式布局：使用与迁移](docs/guide/responsive-layout.md)
+- [文本输入与编辑计划](docs/plan/2026-10-17-text-input-and-editing-plan.md)（规划中，尚未实现）
 - [状态与生命周期](docs/guide/state-lifecycle.md)
 - [修饰符顺序](docs/guide/modifier-order.md)
 - [Key 与动态列表](docs/guide/keys-and-lists.md)

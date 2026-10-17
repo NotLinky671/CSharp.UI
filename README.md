@@ -39,7 +39,7 @@ UiApplication.Run(new Counter());
 | `tests/` | Core unit tests, text tests, graphics integration tests (xUnit v3) |
 | `tools/CSharp.UI.AssetGenerator` | Generates the sample image assets so they stay reproducible |
 | `docs/guide` | Getting started, API, state, modifiers, keys, components, platform, and testing guides |
-| `docs/task` | The current nine responsive-layout tasks; first-release tasks and delivery records live in `docs/archive/2026-10-14-framework-tasks` |
+| `docs/task` | Current IME and text-editing tasks; completed task sets live in `docs/archive/` |
 
 ## Quick start
 
@@ -56,6 +56,7 @@ See the [getting started guide](docs/guide/getting-started.md) for details.
 - [Getting started](docs/guide/getting-started.md)
 - [Public API reference](docs/guide/api-reference.md)
 - [Responsive layout: usage and migration](docs/guide/responsive-layout.md)
+- [Text input and editing plan](docs/plan/2026-10-17-text-input-and-editing-plan.md) (planned; not implemented)
 - [State and lifecycle](docs/guide/state-lifecycle.md)
 - [Modifier order](docs/guide/modifier-order.md)
 - [Keys and dynamic lists](docs/guide/keys-and-lists.md)

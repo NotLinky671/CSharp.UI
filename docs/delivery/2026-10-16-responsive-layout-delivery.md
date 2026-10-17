@@ -4,7 +4,7 @@
 
 状态：**已完成，Codex 复审通过**（2026-10-16；九项任务均已完成，验证范围和未验证平台见下文）
 
-设计依据：[响应式布局计划](../plan/2026-10-16-responsive-layout-plan.md)、[当前任务索引](../task/README.md)、[RL-01…RL-08 审核记录](../return/2026-10-16-responsive-layout-review.md)。
+设计依据：[响应式布局计划](../plan/2026-10-16-responsive-layout-plan.md)、[响应式任务历史索引](../archive/2026-10-16-responsive-layout-tasks/README.md)、[RL-01…RL-08 审核记录](../return/2026-10-16-responsive-layout-review.md)。
 
 执行环境：Windows 11 桌面、.NET SDK 10.0.303、真实 SkiaSharp/HarfBuzz、OpenGL 3.3（Intel RaptorLake-S Mobile Graphics Controller）、系统 DPI 150%（未修改系统 DPI 设置）。
 

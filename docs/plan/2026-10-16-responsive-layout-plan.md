@@ -2,7 +2,7 @@
 
 计划日期：2026-10-16
 
-状态：用户已确认继续，已拆分为 [9 个实施任务](../task/README.md)，实施中；拟议 API 以各阶段实现和复审后记录为准。
+状态：已完成并复审通过（2026-10-16）；[9个任务及历史索引](../archive/2026-10-16-responsive-layout-tasks/README.md)已归档。交付见[响应式布局交付记录](../delivery/2026-10-16-responsive-layout-delivery.md)。
 
 设计依据：[首版框架计划](2026-10-14-declarative-ui-framework-plan.md)、[当前控件展示页](../../samples/CSharp.UI.Samples.ControlGallery/Program.cs)、[R18 窗口缩放重绘验收](../return/2026-10-16-window-resize-black-area.md)。
 

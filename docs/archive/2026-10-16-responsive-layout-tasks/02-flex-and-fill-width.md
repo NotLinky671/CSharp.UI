@@ -6,7 +6,7 @@
 
 阶段：A
 
-设计依据：[响应式布局计划](../plan/2026-10-16-responsive-layout-plan.md)
+设计依据：[响应式布局计划](../../plan/2026-10-16-responsive-layout-plan.md)
 
 [返回任务索引](README.md)
 
