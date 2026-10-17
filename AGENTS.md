@@ -18,7 +18,7 @@
 - return：当 `Codex` 审核完代码之后，如代码有问题，将发现的问题写在本文件夹下，文件名字中需要带时间。`DeepSeek Harness` 根据里面的文件来修改代码，这个文件夹下的文件不需要删除。
 
 ## 完整工作流
-我(linky) -> Codex -> 我(linky) -> Deepseek Harness -> 我(linky)
+我(linky) -> Codex  -> Deepseek Harness -> Codex -> 我(linky)
 
 ## git
 1.提交默认使用英文
