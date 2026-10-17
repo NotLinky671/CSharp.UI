@@ -68,3 +68,7 @@ R1纯重绘场景补充 [P2]：固定绑定200个a，视口180宽，End后Scroll
 四套回归计数合计744（405+67+30+242），较TI02的708新增36项。保留所有原失败证据与旧断言；没有删除或放宽基线测试。
 
 本任务仅交付原子编辑与Binding同步，组合状态机/预编辑/撤销重做/原生IME桥仍归TI04～TI10；微软拼音按用户要求不测试。允许DSH对本任务已审核代码、测试、任务索引及审核证据英文提交并推送；不得顺带提交artifacts、bin/obj或无关改动。
+
+## 提交与推送
+
+DSH按授权创建英文提交`bc38eb8`（Unify TextField edits with atomic binding transactions），工作区干净。DSH沙箱Git凭据助手因命名管道权限失败而无法推送；Codex通过正常授权环境执行`git push origin main`成功，远程由`9efd2d0`推进到`bc38eb8`。没有更改凭据配置、force/reset/rebase，未在审核后修改实现。TI03里程碑已落地，TI04～TI10仍待实施。
