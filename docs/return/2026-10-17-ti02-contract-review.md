@@ -94,3 +94,7 @@ R1～R6及第二轮边界均关闭。删除提前实现的CompositionBatchValida
 计数合计708（369+67+30+242），较原639增加69项；没有删除/放宽旧断言。最终边界修改影响核心，其他三套是该轮之前复跑，最终解决方案已重建。关键证据位于同日期text-input-and-editing-review-evidence目录。
 
 不宣称完整IME、预编辑绘制、实际编辑事务、撤销重做或候选窗已完成。微软拼音按用户指示未再启用或测试；当前输入法真实宿主验收仍归TI07/TI10。允许DSH只对已审核TI01工具/证据、TI02代码/测试及相应文档英文提交并推送，禁止顺带提交artifacts或无关改动。提交完成后方可交付该里程碑。
+
+## 提交与推送收尾
+
+DSH按审核授权创建英文提交`6d77e9b`（Add text input contracts and reviewed IME feasibility probe）。DSH沙箱无法启动Git凭据助手，推送失败；Codex在正常授权环境执行`git push origin main`成功，远程从`06e4731`推进到`6d77e9b`，未更改源码、未reset/rebase/force。TI01路线与TI02契约里程碑已落地；TI03～TI10仍待实施，不作为完整文本编辑计划交付。
