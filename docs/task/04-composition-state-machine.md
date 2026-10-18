@@ -102,3 +102,5 @@
 最终公开按键接缝为NotifyCompositionKeyOrigin(token, consumed)配合DispatchKey(KeyEvent, object? nativeKeyOriginToken)，同一次按键传相同token；原有DispatchKey(KeyEvent)保持兼容。历史DSH自测记录中的“原生测试未运行”仅描述其自测阶段，最终兼容性测试由Codex执行并通过。
 
 TI-04完成不表示已有真实预编辑绘制或原生输入法支持；后续仍按TI-05～TI-10推进。
+
+实现提交：`af995d85dac292b2f676a278721af1dfb3479425`，已推送至远程main；凭据助手的沙箱限制及宿主推送过程见审核记录。

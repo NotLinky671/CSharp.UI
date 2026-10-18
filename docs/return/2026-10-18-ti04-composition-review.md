@@ -97,4 +97,4 @@ Codex最终执行：
 
 边界：本任务仅完成核心组合状态机与模拟服务/宿主接缝。预编辑绘制及几何属TI-06，真实平台消息桥属TI-07；未进行微软拼音或其他真实IME验收，未变更系统输入法配置，也不宣称macOS/Linux实机组合输入通过。整个文本输入计划尚未交付，TI-05～TI-10继续按依赖推进。
 
-提交与推送：由DSH在本结论后执行，实际提交标识及远程状态将在完成后补记。
+提交与推送：DSH按批准范围创建实现提交`af995d85dac292b2f676a278721af1dfb3479425`（Implement text field composition sessions and lifecycle isolation）。DSH沙箱内Git凭据助手出现Win32 error 5，未改凭据/远程/提交历史；Codex随后通过宿主执行同一条`git push origin main`成功，远程main从8fb26dc推进至af995d8。提交后实现工作树干净。本条审核记录的后续文档提交只补记实际提交/推送，不更改实现或验收结论。
