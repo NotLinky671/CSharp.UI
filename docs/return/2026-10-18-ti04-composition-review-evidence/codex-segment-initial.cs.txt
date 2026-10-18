@@ -1,0 +1,21 @@
+using CSharp.UI;
+using CSharp.UI.Testing;
+var service=new Fake();string value="ab";int writes=0;
+using var rt=new UiRuntime(new TextField(new Binding<string>(()=>value,v=>{writes++;value=v;})),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=new StubTextService(),TextInputService=service});rt.SetViewport(new Size(400,60),1);rt.Start();rt.ProcessPendingWork();rt.BuildFrame();rt.SetFocus(rt.Root);
+var c=service.ActiveClient!;var epoch=c.Session.SessionId;
+TextInputApplyResult Apply(CompositionEvent e)=>c.ApplyComposition(new[]{e});
+Console.WriteLine($"epoch={epoch}");
+Apply(CompositionEvent.Start(epoch,0,0,0,new TextRange(0,2),"nihao"));Console.WriteLine($"preedit={c.Preedit} value={value} writes={writes}");
+Apply(CompositionEvent.Result(epoch,0,0,1,"你好",new TextRange(0,2),"shi"));
+Console.WriteLine($"after first value={value} preedit={c.Preedit} version={c.Document.Version}");
+Apply(CompositionEvent.Result(epoch,0,c.Document.Version,2,"世",new TextRange(2,2)));
+Console.WriteLine($"SEGMENT_PRESERVED={value=="你好世"} value={value} writes={writes}");
+rt.SetFocus(null);rt.SetFocus(rt.Root);c=service.ActiveClient!;epoch=c.Session.SessionId;
+var before=value;var bad=Apply(CompositionEvent.Result(epoch,0,999,0,"BAD",default));
+Console.WriteLine($"FUTURE_REJECTED={value==before} value={value} handled={bad.Handled}");
+sealed class Fake:ITextInputService{
+ public TextInputCapabilities Capabilities=>TextInputCapabilities.Full;public ITextInputClient? ActiveClient{get;private set;}
+ public bool StartSession(ITextInputClient c){ActiveClient=c;return true;}public bool EndSession(){ActiveClient=null;return true;}
+ public TextInputApplyResult ApplyComposition(IReadOnlyList<CompositionEvent> e)=>ActiveClient!.ApplyComposition(e);
+ public bool RequestCancel()=>ActiveClient?.CancelComposition()??false;public bool PublishGeometry(TextInputGeometry g)=>false;
+}

@@ -14,7 +14,8 @@ internal sealed class TestApp : IDisposable
         double pixelScale = 1.0,
         Theme? theme = null,
         Action<StubImageService>? configureImages = null,
-        WheelScrollSettings? wheelScrollSettings = null)
+        WheelScrollSettings? wheelScrollSettings = null,
+        ITextInputService? textInputService = null)
     {
         Dispatcher = new HeadlessUiDispatcher();
         Text = new StubTextService();
@@ -33,6 +34,7 @@ internal sealed class TestApp : IDisposable
             Clipboard = Clipboard,
             Clock = Clock,
             WheelScrollSettings = WheelScroll,
+            TextInputService = textInputService,
         });
 
         Runtime.SetEnvironment(new EnvironmentValues { Theme = theme ?? Theme.Light });

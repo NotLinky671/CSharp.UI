@@ -1,0 +1,8 @@
+FUTURE
+unchanged=False value=BADab outcome=ResultCommitted
+RANGE
+explicitRange=False value=Xab
+CANCEL_ID
+newPreeditPreserved=False preedit=
+REFOCUS
+newClientWorks=False oldSame=True outcome=Rejected

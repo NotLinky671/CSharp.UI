@@ -124,6 +124,17 @@ internal sealed class TextEditSession
         RequestInvalidation();
     }
 
+    /// <summary>
+    /// 只消费“组合需要失效”的接缝位，保留历史失效位（TI-05 仍需看到需要清空历史的事实）。
+    /// </summary>
+    /// <returns>组合刷新/取消是否需要发生。</returns>
+    public bool ConsumeCompositionInvalidation()
+    {
+        var value = CompositionInvalidationRequested;
+        CompositionInvalidationRequested = false;
+        return value;
+    }
+
     /// <summary>取出并清空失效接缝（TI-04 / TI-05 接入后使用；本阶段供测试与后续消费）。</summary>
     public (bool Composition, bool History) ConsumeInvalidation()
     {

@@ -101,6 +101,14 @@ public sealed class TextField : View
         {
             SyncEditor(node, state, invalidate: false);
 
+            // 布局阶段可判定 Disabled：禁用是取消接缝。取消只在安全阶段通知平台（不在 Measure/Arrange 内
+            // 调用外部服务），并按所有者结束会话，不会结束别的新会话。
+            if (node.IsEffectivelyDisabled && state.Composing is not null)
+            {
+                CancelCompositionForHostAction(node, state);
+                state.RequestDeferredEndInputSession();
+            }
+
             // 弹性分配、窗口缩放或断点切换都会改变字段宽度：每次排列后重新保证光标可见，
             // 否则旧的 ScrollX 会把光标留在可视区之外（绘制阶段的夹取只是最后防线，不能掩盖错位）。
             // 只调整内部滚动偏移，不写绑定值、不改光标与选区。
@@ -236,6 +244,10 @@ public sealed class TextField : View
         var state = GetState(node);
         context.Runtime.SetFocus(node);
         SyncEditor(node, state, invalidate: true);
+
+        // 鼠标重新定位选区属于取消接缝：先取消未提交组合，再处理点击。
+        CancelCompositionForHostAction(node, state);
+
         state.IsDragging = true;
         state.Caret = IndexFromPosition(node, e.Position);
         state.Anchor = state.Caret;
@@ -305,10 +317,16 @@ public sealed class TextField : View
             state.Caret = ClampIndex(node, state.Caret, text);
             state.Anchor = ClampIndex(node, state.Anchor, text);
             EnsureCaretVisible(node, state);
+
+            // 焦点获得后才建立文本输入会话；没有服务/仅提交文本时保持既有路径（会话为空操作）。
+            // 每次新会话都分配新 epoch，并创建新客户端（已释放的旧客户端绝不会被复用）。
+            state.InputSession.Start(node, epoch => state.RequireComposing(node, epoch));
         }
         else
         {
-            // 失去焦点后停止闪烁，并取消选择（首版不与其它控件共享选择）。
+            // 失去焦点：先取消未提交组合，再撤销会话归属（先失效、后通知服务），最后收敛选区。
+            CancelCompositionForHostAction(node, state);
+            state.EndInputSession();
             state.Anchor = state.Caret;
         }
 
@@ -322,6 +340,18 @@ public sealed class TextField : View
             return false;
         }
 
+        var state = GetState(node);
+        SyncEditor(node, state, invalidate: false);
+
+        // 组合期间的“已提交字符”通道不做写入：该输入的归属是输入法消息，由组合结果独占落地。
+        // 结束组合是取消接缝，随后仍走既有的已提交文本路径（不重放组合批次）。
+        if (state.Composing?.IsComposing == true)
+        {
+            CancelCompositionForHostAction(node, state);
+            context.MarkHandled();
+            return true;
+        }
+
         // 单行净化先行：全部被过滤（例如只有换行/制表符）时不产生事务，也不写绑定。
         var inserted = TextInputEvent.SanitizeSingleLine(e.Text);
         if (inserted.Length == 0)
@@ -330,8 +360,6 @@ public sealed class TextField : View
             return true;
         }
 
-        var state = GetState(node);
-        SyncEditor(node, state, invalidate: false);
         var range = CurrentEditRange(node, state);
         var operation = new EditOperation(range, inserted, TextEditKind.Typing, TextEditReason.UserInput);
         ApplyEdit(node, state, operation);
@@ -478,6 +506,10 @@ public sealed class TextField : View
             return;
         }
 
+        // 外部文本 / 来源 / MaxLength 真正变化：先取消未提交组合（预编辑绝不写绑定），再收敛选区。
+        // 只在真实外部变化时取消；同节点同绑定重建、Flow/Adaptive 重排不会走到这里。
+        state.Composing?.InvalidateForExternalChange();
+
         knownLayout ??= GetLayout(node, node.Runtime.Services.TextService);
         state.Caret = knownLayout.SnapToCaretStop(Math.Clamp(state.Caret, 0, text.Length));
         state.Anchor = knownLayout.SnapToCaretStop(Math.Clamp(state.Anchor, 0, text.Length));
@@ -504,26 +536,54 @@ public sealed class TextField : View
 
         var state = GetState(node);
         SyncEditor(node, state, invalidate: false);
+        var command = e.IsCommandPressed;
+
+        // 组合期间方向键/Backspace/Delete/空格/Enter/Escape 归输入法所有；同一原生按键内刚结束的组合
+        // 也不能再进入编辑命令（不能只检查此刻是否 Composing）。Tab 的消费结果同样在这里决定。
+        // 命令快捷键（Ctrl/Command + C/X/A/V 等）不属于输入法编辑键：不在此吞掉，交给下面的既有命令分支。
+        if (!command)
+        {
+            if (state.Composing?.IsComposing == true)
+            {
+                state.BlinkEpoch = node.Runtime.Clock.Now;
+                context.MarkHandled();
+                return true;
+            }
+
+            if (state.IsConsumedOriginatingKey(node.Runtime.KeyOriginToken ?? state.NativeKeyToken))
+            {
+                // 组合在同一原生按键内结束：该按键已由输入法消费，控件不再执行编辑命令，也不做焦点遍历。
+                state.BlinkEpoch = node.Runtime.Clock.Now;
+                context.MarkHandled();
+                return true;
+            }
+        }
+
         var text = Text.Read(node) ?? string.Empty;
         var extend = e.Modifiers.HasFlag(KeyModifiers.Shift);
-        var command = e.IsCommandPressed;
         state.BlinkEpoch = node.Runtime.Clock.Now;
 
         switch (e.Key)
         {
             case UiKey.Left:
+                CancelCompositionForHostAction(node, state);
                 MoveCaret(node, state, text, backward: true, extend);
                 return true;
             case UiKey.Right:
+                CancelCompositionForHostAction(node, state);
                 MoveCaret(node, state, text, backward: false, extend);
                 return true;
             case UiKey.Home:
+                CancelCompositionForHostAction(node, state);
                 SetCaret(node, state, 0, extend);
                 return true;
             case UiKey.End:
+                CancelCompositionForHostAction(node, state);
                 SetCaret(node, state, text.Length, extend);
                 return true;
             case UiKey.Backspace:
+                CancelCompositionForHostAction(node, state);
+                text = Text.Read(node) ?? string.Empty;
                 if (!state.HasSelection && state.Caret == 0)
                 {
                     return true;
@@ -532,6 +592,8 @@ public sealed class TextField : View
                 DeleteSelectionOrGrapheme(node, state, text, backward: true, TextEditKind.Backspace);
                 return true;
             case UiKey.Delete:
+                CancelCompositionForHostAction(node, state);
+                text = Text.Read(node) ?? string.Empty;
                 if (!state.HasSelection && state.Caret >= text.Length)
                 {
                     return true;
@@ -540,17 +602,21 @@ public sealed class TextField : View
                 DeleteSelectionOrGrapheme(node, state, text, backward: false, TextEditKind.Delete);
                 return true;
             case UiKey.A when command:
+                CancelCompositionForHostAction(node, state);
                 state.Anchor = 0;
                 state.Caret = text.Length;
                 context.MarkHandled();
                 return true;
             case UiKey.C when command:
+                // 复制只读取已提交选区：组合期间不复制预编辑，也不因此取消组合。
                 CopySelection(node, state, text, cut: false);
                 return true;
             case UiKey.X when command:
+                CancelCompositionForHostAction(node, state);
                 CopySelection(node, state, text, cut: true);
                 return true;
             case UiKey.V when command:
+                CancelCompositionForHostAction(node, state);
                 PasteFromClipboard(node, state, text);
                 return true;
             default:
@@ -600,10 +666,215 @@ public sealed class TextField : View
 
         // 外部文本 / 来源替换 / MaxLength 变化：同步会话并把选区限制到新文本。
         // 同来源同配置、且文本正是本事务正在写入的候选时，SyncEditor 会识别为自身确认并跳过。
+        // SyncEditor 只在真实外部变化时取消已失效的组合（同节点同绑定重建、Flow/Adaptive 重排不取消）。
         SyncEditor(node, state, invalidate: false);
     }
 
+    internal override void OnUnmount(ViewNode node)
+    {
+        if (node.InteractionState is not TextFieldState state)
+        {
+            return;
+        }
+
+        // 真正卸载：先在本地取消未提交段，再按所有者撤销文本输入归属（先失效、后通知服务），
+        // 最后清空组合客户端。旧节点卸载不会结束已经属于另一个节点的新会话。
+        CancelCompositionForHostAction(node, state);
+        state.EndInputSession();
+        state.ClearComposing();
+    }
+
     internal override bool IsLayoutEquivalent(View other) => false;
+
+    /// <summary>取消未提交组合的宿主接缝（幂等）：无组合或没有会话时是无操作。</summary>
+    private static void CancelCompositionForHostAction(ViewNode node, TextFieldState state)
+    {
+        if (state.Composing?.IsComposing != true)
+        {
+            return;
+        }
+
+        state.Composing.CancelComposition();
+    }
+
+    /// <summary>
+    /// 组合提交前的真实文档同步：读取实际绑定值，识别外部写入 / 来源替换 / MaxLength 变化。
+    /// </summary>
+    /// <param name="invalidated">是否检测到外部变化（未提交组合因此失效，需要换 epoch）。</param>
+    /// <remarks>
+    /// 实时组合回调里也会调用：只用核心字素规则夹取选区，不做排版、不递归处理待办、不调用任何平台服务。
+    /// </remarks>
+    internal void SyncCompositionDocument(ViewNode node, TextFieldState state, out bool invalidated)
+    {
+        invalidated = false;
+        if (node.View is not TextField textField)
+        {
+            return;
+        }
+
+        var binding = textField.Text;
+        var text = binding.Read(node) ?? string.Empty;
+        if (state.Editor.IsOwnPendingWrite(text) && state.Editor.MatchesContext(binding.Identity, textField.MaxLength))
+        {
+            return;
+        }
+
+        var sync = state.Editor.Sync(binding.Identity, text, textField.MaxLength);
+        if (!sync.HasExternalChange)
+        {
+            return;
+        }
+
+        invalidated = true;
+        state.Caret = TextGraphemeBoundaries.SnapToBoundary(text, state.Caret);
+        state.Anchor = TextGraphemeBoundaries.SnapToBoundary(text, state.Anchor);
+    }
+
+    /// <summary>
+    /// 把一段组合结果作为<b>一次</b>真实原子事务提交，并处理事务期间的来源/挂载/配置变化。
+    /// </summary>
+    /// <returns>真实事务结果；节点已换源、换配置或卸载时返回“拒绝”，绝不把旧事务写到新客户端。</returns>
+    internal EditResult ApplyCompositionCommit(ViewNode node, TextFieldState state, TextRange range, string result)
+    {
+        if (node.View is not TextField textField)
+        {
+            return RejectedCommit("节点已不再是本输入框；组合结果不写入。");
+        }
+
+        var binding = textField.Text;
+        var identity = binding.Identity;
+        var maxLength = textField.MaxLength;
+
+        EditOperation operation;
+        if (result.Length == 0)
+        {
+            operation = EditOperation.Delete(range, TextEditKind.CompositionResult, TextEditReason.UserInput);
+        }
+        else if (!EditOperation.TryCreate(
+                     range,
+                     result,
+                     TextEditKind.CompositionResult,
+                     TextEditReason.UserInput,
+                     scrubSingleLine: true,
+                     out operation,
+                     out var createError))
+        {
+            return RejectedCommit(createError ?? "组合结果未通过编辑操作校验。");
+        }
+
+        EditResult edit;
+        try
+        {
+            edit = state.Editor.Apply(
+                identity,
+                maxLength,
+                operation,
+                new TextSelection(state.Anchor, state.Caret),
+                () => binding.Read(node) ?? string.Empty,
+                value => binding.Value = value);
+        }
+        catch
+        {
+            // setter / getter 抛错：按真实回读恢复会话，不伪造成功，也不掩盖原异常。
+            // 组合回调内不做文本排版：只用核心字素规则限制选区并标记待布局。
+            try
+            {
+                state.Editor.Sync(identity, binding.Read(node) ?? string.Empty, maxLength);
+                SnapSelectionToText(state, state.Editor.Text);
+                node.Runtime.InvalidateLayout(node);
+            }
+            catch
+            {
+                state.Editor.MarkRequiresResync();
+                node.Runtime.InvalidateRender();
+            }
+
+            throw;
+        }
+
+        // 事务结束时重新核对当前挂载来源与配置：setter 期间可能已同步换源/换 MaxLength/卸载。
+        if (!node.IsMounted || node.View is not TextField mounted)
+        {
+            state.Editor.MarkRequiresResync();
+            return RejectedCommit("事务期间输入框已卸载；组合结果不写入。");
+        }
+
+        if (!ReferenceEquals(mounted.Text.Identity, identity) || mounted.MaxLength != maxLength)
+        {
+            // 事务期间换源/换配置：按新来源真实回读重同步会话（核心字素规则，不做排版），旧事务结果绝不写进新来源。
+            SyncCompositionContext(node, state);
+            return RejectedCommit("事务期间绑定来源或 MaxLength 已变化；旧组合结果不写入新客户端。");
+        }
+
+        if (edit.Changed)
+        {
+            state.Caret = edit.After.Selection.Active;
+            state.Anchor = edit.After.Selection.Anchor;
+
+            // 原生组合回调内不做排版/几何计算：只标记布局失效，由下一次安全布局保证 caret 可见。
+            node.Runtime.InvalidateLayout(node);
+        }
+        else
+        {
+            // 拒绝 / 未变化：只用核心字素规则把会话与选区对齐到真实文本，不做排版。
+            SyncCompositionContext(node, state);
+            SnapSelectionToText(state, state.Editor.Text);
+            node.Runtime.InvalidateLayout(node);
+        }
+
+        return edit;
+    }
+
+    /// <summary>
+    /// 组合回调内的布局无关同步：读取真实绑定、识别外部文本/来源/MaxLength 变化并让组合立即失效，
+    /// 只按核心字素规则夹取选区，<b>绝不</b>调用 <c>GetLayout</c>/<c>TextService.Layout</c>。
+    /// </summary>
+    private void SyncCompositionContext(ViewNode node, TextFieldState state)
+    {
+        if (node.View is not TextField field)
+        {
+            return;
+        }
+
+        var binding = field.Text;
+        string text;
+        try
+        {
+            text = binding.Read(node) ?? string.Empty;
+        }
+        catch
+        {
+            state.Editor.MarkRequiresResync();
+            node.Runtime.InvalidateRender();
+            return;
+        }
+
+        if (state.Editor.IsOwnPendingWrite(text) && state.Editor.MatchesContext(binding.Identity, field.MaxLength))
+        {
+            return;
+        }
+
+        var sync = state.Editor.Sync(binding.Identity, text, field.MaxLength);
+        if (!sync.HasExternalChange)
+        {
+            return;
+        }
+
+        state.Composing?.InvalidateForExternalChange();
+        SnapSelectionToText(state, state.Editor.Text);
+        node.Runtime.InvalidateLayout(node);
+    }
+
+    /// <summary>只按核心字素规则（StringInfo，不要求排版器）把光标与选择限制到真实文本。</summary>
+    private static void SnapSelectionToText(TextFieldState state, string text)
+    {
+        var length = text.Length;
+        state.Caret = TextGraphemeBoundaries.SnapToBoundary(text, Math.Clamp(state.Caret, 0, length));
+        state.Anchor = TextGraphemeBoundaries.SnapToBoundary(text, Math.Clamp(state.Anchor, 0, length));
+    }
+
+    private static EditResult RejectedCommit(string reason)
+        => new(TextEditStatus.Rejected, TextSnapshot.Empty, TextSnapshot.Empty, string.Empty, 0, reason);
 
     private bool IsCaretVisible(ViewNode node, TextFieldState state)
     {
@@ -822,7 +1093,7 @@ public sealed class TextField : View
             return state;
         }
 
-        state = new TextFieldState();
+        state = new TextFieldState(node.Runtime);
         node.InteractionState = state;
         return state;
     }
@@ -842,6 +1113,87 @@ internal sealed class TextFieldState
 {
     /// <summary>原子编辑会话：确认文本、文档版本、来源身份与失效接缝（TI-03）。</summary>
     public TextEditSession Editor { get; } = new();
+
+    /// <summary>文本输入会话接线（运行时唯一实例）：绑定/解绑焦点客户端并收敛取消（TI-04）。</summary>
+    public TextInputServiceSession InputSession { get; }
+
+    /// <summary>
+    /// 本节点当前原生按键的身份 token：原生桥（TI-07）在一次按键的 KeyDown 与组合结束之间传同一个实例；
+    /// 无原生信息时使用节点自己的稳定实例，因此“结束键归属”判定不依赖时间窗或文本内容。
+    /// </summary>
+    public object NativeKeyToken { get; } = new();
+
+    /// <summary>
+    /// 组合客户端（惰性创建）：只有真实焦点会话建立后才存在，卸载时清空，旧实例由接线标记为已撤销。
+    /// </summary>
+    public TextFieldCompositionClient? Composing { get; private set; }
+
+    public TextFieldState(UiRuntime runtime)
+    {
+        ArgumentNullException.ThrowIfNull(runtime);
+        InputSession = runtime.TextInputSession;
+    }
+
+    /// <summary>取得组合客户端；会话使用新 epoch 时创建新客户端，绝不复用已被释放的旧实例。</summary>
+    public TextFieldCompositionClient RequireComposing(ViewNode node, int epoch)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        if (Composing is { IsReleased: false } existing)
+        {
+            return existing;
+        }
+
+        Composing = new TextFieldCompositionClient(node, this, epoch);
+        return Composing;
+    }
+
+    /// <summary>清空组合客户端引用（节点卸载时调用；旧实例已由接线条目释放）。</summary>
+    public void ClearComposing()
+    {
+        Composing?.ResetKeyOwnership();
+        Composing = null;
+    }
+
+    /// <summary>
+    /// 结束本状态上的焦点文本输入会话：只有本节点仍是当前所有者时才结束（先失效、后通知服务）。
+    /// </summary>
+    /// <returns>确实结束了会话时返回 true；没有会话或已属于其他节点时为 false（幂等）。</returns>
+    public bool EndInputSession()
+        => Composing is { } client && InputSession.EndForOwner(client);
+
+    /// <summary>在安全阶段结束本节点会话（布局/绘制阶段不得直接调用平台服务）。</summary>
+    public void RequestDeferredEndInputSession()
+    {
+        if (Composing is { IsReleased: false } client)
+        {
+            InputSession.RequestEndForOwner(client);
+        }
+    }
+
+    /// <summary>
+    /// 撤销归属前的本地取消：恢复活动段开始前的选区（含方向）并清空未提交段。
+    /// 必须在客户端被标记为已释放之前调用。
+    /// </summary>
+    public void CancelCompositionForRelease()
+    {
+        if (Composing is { IsComposing: true } client)
+        {
+            client.CancelComposition(restoreSelection: true);
+        }
+    }
+
+    /// <summary>
+    /// 声明一次原生按键的归属（TI-07 接缝）；返回控件是否应在本次 KeyDown 中放弃该按键。
+    /// </summary>
+    public bool TrackOriginatingKey(object nativeKeyToken, bool consumedByInputMethod)
+        => Composing?.TrackOriginatingKey(nativeKeyToken, consumedByInputMethod) ?? false;
+
+    /// <summary>当前按键是否已被输入法消费、控件不得再执行编辑命令。</summary>
+    public bool IsConsumedOriginatingKey() => IsConsumedOriginatingKey(NativeKeyToken);
+
+    /// <summary>指定 token 的按键是否已被输入法消费。</summary>
+    public bool IsConsumedOriginatingKey(object nativeKeyToken)
+        => Composing?.ShouldOwnInputKey(nativeKeyToken) == TextInputKeyDecision.Consume;
 
     /// <summary>光标位置的 UTF-16 索引（始终位于字素边界）。</summary>
     public int Caret { get; set; }

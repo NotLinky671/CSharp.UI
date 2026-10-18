@@ -194,6 +194,45 @@ internal static class TextGraphemeBoundaries
         invalidOffset = -1;
         return true;
     }
+
+    /// <summary>
+    /// 把任意 UTF-16 偏移吸附到最近的字素边界（不要求排版器）；<paramref name="roundUp"/> 为 true 时向后取。
+    /// </summary>
+    /// <remarks>
+    /// 组合回调路径使用它夹取选区：核心 <see cref="System.Globalization.StringInfo"/> 足够，避免在原生回调里
+    /// 读取排版结果或递归布局。
+    /// </remarks>
+    internal static int SnapToBoundary(string? text, int offset, bool roundUp = false)
+    {
+        var value = text ?? string.Empty;
+        if (offset <= 0)
+        {
+            return 0;
+        }
+
+        if (offset >= value.Length)
+        {
+            return value.Length;
+        }
+
+        var boundaries = new List<int> { 0 };
+        var enumerator = System.Globalization.StringInfo.GetTextElementEnumerator(value);
+        while (enumerator.MoveNext())
+        {
+            boundaries.Add(enumerator.ElementIndex + ((string)enumerator.Current).Length);
+        }
+
+        var found = boundaries.BinarySearch(offset);
+        if (found >= 0)
+        {
+            return offset;
+        }
+
+        var insertion = ~found;
+        return roundUp
+            ? boundaries[Math.Min(insertion, boundaries.Count - 1)]
+            : boundaries[Math.Max(0, insertion - 1)];
+    }
 }
 
 /// <summary>选区方向：活动端相对锚点的位置，用于保留“向左/向右选择”的语义。</summary>

@@ -150,9 +150,12 @@ internal sealed class OpenTkInputAdapter
         DispatchPointer(new PointerEvent(PointerEventKind.Cancel, LogicalPointerPosition, PointerButton.None, _modifiers));
     }
 
-    /// <summary>处理窗口焦点变化；失去焦点时取消指针捕获与按下状态。</summary>
+    /// <summary>处理窗口焦点变化；失去焦点时取消指针捕获与按下状态，并取消未提交的文本组合。</summary>
     internal void HandleFocusChanged(bool focused)
     {
+        // 核心接缝：窗口失活会取消未提交组合并撤销文本输入会话归属（先失效、后通知服务）。
+        _runtime.NotifyWindowActivation(focused);
+
         if (focused)
         {
             _runtime.InvalidateRender();

@@ -1,0 +1,144 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.Tests
+  Discovered:  CSharp.UI.Tests
+  Starting:    CSharp.UI.Tests
+    CSharp.UI.Tests.TextFieldCompositionTests.ResultAfterExternalChangeIsRejectedWithoutWrite [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(190,0): at CSharp.UI.Tests.TextFieldCompositionTests.ResultAfterExternalChangeIsRejectedWithoutWrite()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.ServiceThrowingOnStartSessionLeavesNoSession [FAIL]
+      Assert.Null() Failure: Value is not null
+      Expected: null
+      Actual:   TextFieldCompositionClient { DisplayString = "", Document = v0 len=2 0->0 (None), IsComposing = False, Preedit = "", PreeditCaret = 0, ··· }
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(1056,0): at CSharp.UI.Tests.TextFieldCompositionTests.ServiceThrowingOnStartSessionLeavesNoSession()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.CopyDuringCompositionReadsCommittedSelectionOnly [FAIL]
+      Assert.Equal() Failure: Strings differ
+                 ↓ (pos 0)
+      Expected: "bc"
+      Actual:   ""
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(768,0): at CSharp.UI.Tests.TextFieldCompositionTests.CopyDuringCompositionReadsCommittedSelectionOnly()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.ZZDiagnostic [FAIL]
+      committed='abcd' committedLen=4 prefix='a' suffix='d' repl=[1..3)
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(92,0): at CSharp.UI.Tests.TextFieldCompositionTests.ZZDiagnostic()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.UnmountAndRuntimeDisposeCancelCompositionCleanly [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(977,0): at CSharp.UI.Tests.TextFieldCompositionTests.UnmountAndRuntimeDisposeCancelCompositionCleanly()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.WindowDeactivationCancelsCompositionAndRevokesOwnership [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(913,0): at CSharp.UI.Tests.TextFieldCompositionTests.WindowDeactivationCancelsCompositionAndRevokesOwnership()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.SegmentsSnapshotIsImmutableAfterAcceptance [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 0
+      Actual:   2
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(651,0): at CSharp.UI.Tests.TextFieldCompositionTests.SegmentsSnapshotIsImmutableAfterAcceptance()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.LongPreeditWritesNothingAndKeepsFixedReplacement [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 4
+      Actual:   2
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(69,0): at CSharp.UI.Tests.TextFieldCompositionTests.LongPreeditWritesNothingAndKeepsFixedReplacement()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.WrongEpochFutureVersionAndStaleVersionAreRejectedWithoutWrite [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(410,0): at CSharp.UI.Tests.TextFieldCompositionTests.WrongEpochFutureVersionAndStaleVersionAreRejectedWithoutWrite()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.DisplayMappingRestoresCommittedDocumentOffsets [FAIL]
+      Assert.Equal() Failure: Strings differ
+                    ↓ (pos 3)
+      Expected: "aXYcd"
+      Actual:   "aXYd"
+                    ↑ (pos 3)
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(109,0): at CSharp.UI.Tests.TextFieldCompositionTests.DisplayMappingRestoresCommittedDocumentOffsets()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.DisableCancelsComposition [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(952,0): at CSharp.UI.Tests.TextFieldCompositionTests.DisableCancelsComposition()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.SameNodeSameBindingRebuildPreservesComposition [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(1011,0): at CSharp.UI.Tests.TextFieldCompositionTests.SameNodeSameBindingRebuildPreservesComposition()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.PasteAndSelectAllCancelCompositionThenApply [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(789,0): at CSharp.UI.Tests.TextFieldCompositionTests.PasteAndSelectAllCancelCompositionThenApply()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.ResultTransactionThrowingPropagatesAndKeepsCommittedDocument [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(1081,0): at CSharp.UI.Tests.TextFieldCompositionTests.ResultTransactionThrowingPropagatesAndKeepsCommittedDocument()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.EmptyOrScrubbedResultCannotDeleteOriginalSelection [FAIL]
+      Assert.True() Failure
+      Expected: True
+      Actual:   False
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(237,0): at CSharp.UI.Tests.TextFieldCompositionTests.EmptyOrScrubbedResultCannotDeleteOriginalSelection()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.ResponsiveUnmountClearsCompositionWhileAdaptiveRebuildKeepsIt [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(1042,0): at CSharp.UI.Tests.TextFieldCompositionTests.ResponsiveUnmountClearsCompositionWhileAdaptiveRebuildKeepsIt()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Tests.TextFieldCompositionTests.FocusSwitchCancelsOldAndDoesNotCorruptNewClient [FAIL]
+      Assert.False() Failure
+      Expected: False
+      Actual:   True
+      Stack Trace:
+        tests\CSharp.UI.Tests\TextFieldCompositionTests.cs(878,0): at CSharp.UI.Tests.TextFieldCompositionTests.FocusSwitchCancelsOldAndDoesNotCorruptNewClient()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    CSharp.UI.Tests (ID = '47b51e4c25395a5b04e646c4c96a60918fb6bab65d6c621ff4209fae5289dd48')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.Tests  Total: 444, Errors: 0, Failed: 17, Skipped: 0, Not Run: 0, Time: 0.891s

@@ -1,0 +1,33 @@
+PASS preedit writes nothing
+PASS first segment committed
+PASS segments preserve confirmed text
+PASS future version rejected
+PASS noStart explicit range
+FAIL result snapshot matches actual caret and version
+PASS composition ID gaps accepted
+PASS old cancel cannot cancel new ID
+PASS refocus fresh working client
+PASS old client immutable epoch
+PASS released client cannot write
+PASS external write invalidates before commit
+FAIL external observation revokes old epoch even with current version
+PASS partial batch reports actual write
+PASS invalid start does not burn ID
+PASS empty result preserves selection text and retires event
+PASS window loss clears composition
+PASS window activation opens fresh epoch
+FAIL future Cancel version cannot end valid preedit
+FAIL future End version cannot end valid preedit
+PASS local cancellation notifies service at safe phase
+FAIL empty noStart result can continue preedit
+FAIL continued noStart segment anchored to explicit range
+PASS empty noStart result retires composition ID
+PASS rejected result setter runs only once
+FAIL getterThrow threw InvalidOperationException
+PASS Start synchronous reentry preserves focus flags
+PASS Start synchronous reentry retains service client
+PASS Start reentry writes only focused field
+FAIL End synchronous reentry preserves focus flags
+PASS End synchronous reentry retains service client
+FAIL End reentry writes only focused field
+Checks: 23 passed, 9 failed

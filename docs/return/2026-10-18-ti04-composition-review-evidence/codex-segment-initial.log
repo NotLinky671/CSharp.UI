@@ -1,0 +1,5 @@
+epoch=1
+preedit=nihao value=ab writes=0
+after first value=你好 preedit=shi version=1
+SEGMENT_PRESERVED=False value=世 writes=2
+FUTURE_REJECTED=True value=世 handled=False

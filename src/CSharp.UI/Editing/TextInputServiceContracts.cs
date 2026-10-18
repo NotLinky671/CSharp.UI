@@ -191,15 +191,24 @@ public enum TextInputOutcome
 /// <param name="Document">应用后的文档快照；未处理时等于传入的快照。</param>
 /// <param name="Handled">
 /// 事件是否已由框架同步消费。为 true 时宿主不得再把同一原生消息的字符插入文档；
-/// 为 false 时框架没有写入任何内容，宿主也不得把该批次“重投”到当前焦点——
+/// 为 false 时框架没有消费任何事件，宿主也不得把该批次“重投”到当前焦点——
 /// 已提交字符始终走既有 <see cref="UiRuntime.DispatchTextInput"/> 通道，组合批次不做重放。
+/// <para>
+/// <b>部分批次语义：</b>批次允许已处理前缀。后续事件被拒绝时，只要前缀有事件被消费，这里就为 true——
+/// 不能用 false 宣称整批未处理，否则宿主会把已由框架落地的字符再插入一次。
+/// </para>
 /// </param>
 /// <param name="RejectionReason">未处理或部分处理时的诊断原因；不包含用户原文。</param>
+/// <param name="AppliedEventCount">
+/// 本批次中<b>实际处理</b>的事件数量（含幂等无写入的 Cancel/End）。批次允许已处理前缀：后续事件被拒绝时
+/// 这个计数如实反映已执行的部分，不谎报整批未处理（未处理时为 0）。
+/// </param>
 public readonly record struct TextInputApplyResult(
     TextInputOutcome Outcome,
     TextSnapshot Document,
     bool Handled,
-    string? RejectionReason = null)
+    string? RejectionReason = null,
+    int AppliedEventCount = 0)
 {
     /// <summary>未执行任何动作（无能力/无客户端/格式非法）的结果。</summary>
     public static TextInputApplyResult NotHandled(TextSnapshot document, string? reason = null)
@@ -212,8 +221,11 @@ public readonly record struct TextInputApplyResult(
     /// <summary><see cref="Outcome"/> 是否只表示“没有执行任何动作”。</summary>
     public bool IsNoOp => (Outcome & ~TextInputOutcome.Rejected) == TextInputOutcome.None;
 
+    /// <summary>批次中有事件被拒绝（可能同时已经执行了前缀动作）。</summary>
+    public bool HasRejection => (Outcome & TextInputOutcome.Rejected) != 0;
+
     public override string ToString()
-        => $"{Outcome} handled={Handled}"
+        => $"{Outcome} handled={Handled} applied={AppliedEventCount}"
             + (RejectionReason is null ? string.Empty : $" ({RejectionReason})");
 }
 

@@ -1,0 +1,7 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.Tests
+  Discovered:  CSharp.UI.Tests
+  Starting:    CSharp.UI.Tests
+  Finished:    CSharp.UI.Tests (ID = '47b51e4c25395a5b04e646c4c96a60918fb6bab65d6c621ff4209fae5289dd48')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.Tests  Total: 467, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.960s

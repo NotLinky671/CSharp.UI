@@ -69,6 +69,7 @@ public sealed class UiRuntime : IDisposable
     private readonly ResponsiveTransactionManager _responsiveTransactions = new();
     private readonly FocusManager _focus;
     private readonly InputRouter _router;
+    private readonly TextInputServiceSession _textInput;
     private bool _layoutDirty = true;
     private bool _renderDirty = true;
     private bool _needsDraw = true;
@@ -76,7 +77,12 @@ public sealed class UiRuntime : IDisposable
     private bool _registered;
     private bool _processingWork;
     private bool _buildingFrame;
+    private bool _windowActive = true;
+    private int _nextTextInputEpoch;
     private long _workPassId;
+
+    /// <summary>当前正在分发的原生按键身份 token；由 <see cref="DispatchKey(KeyEvent, object?)"/> 设置。</summary>
+    private object? _keyOriginToken;
 
     /// <summary>创建运行时并挂载根视图。</summary>
     public UiRuntime(View root, UiRuntimeServices services)
@@ -87,6 +93,7 @@ public sealed class UiRuntime : IDisposable
         Dispatcher = services.Dispatcher;
         _focus = new FocusManager(this);
         _router = new InputRouter(this, _focus);
+        _textInput = new TextInputServiceSession(this);
         _layoutDiagnostics = new LayoutDiagnostics(ReportDiagnostic);
         Root = Reconciler.MountRoot(this, root);
         Root.Parent = null;
@@ -456,6 +463,10 @@ public sealed class UiRuntime : IDisposable
         _focus.Validate();
         _router.ValidateInteractionState();
 
+        // 文本输入的平台通知只在安全阶段发出（不在 Measure/Arrange/Emit 内调用外部服务）：
+        // 外部绑定/来源变化换新 epoch，或把本地已取消的组合通知给平台。
+        _textInput.FlushPendingNotifications();
+
         if (_renderDirty)
         {
             _needsDraw = true;
@@ -566,7 +577,35 @@ public sealed class UiRuntime : IDisposable
     public void DispatchWheel(WheelEvent e) => _router.DispatchWheel(e);
 
     /// <summary>分发键盘事件。</summary>
-    public void DispatchKey(KeyEvent e) => _router.DispatchKey(e);
+    public void DispatchKey(KeyEvent e) => DispatchKey(e, nativeKeyOriginToken: null);
+
+    /// <summary>
+    /// 分发键盘事件，并把<b>同一次原生按键</b>的显式身份 token 一起传入（TI-07 原生桥接缝）。
+    /// </summary>
+    /// <param name="e">按键事件。</param>
+    /// <param name="nativeKeyOriginToken">
+    /// 该次按键出现的身份 token；必须与 <see cref="NotifyCompositionKeyOrigin"/> 记录的是同一个实例。
+    /// 传 null 时回退到控件自己的稳定 token，保证没有原生信息的既有分发路径完全兼容。
+    /// </param>
+    /// <remarks>
+    /// 组合在同一原生按键内结束、随后仍进入 <c>KeyDown</c> 时，归属判定必须比较同一个显式 token，
+    /// 而不是控件内部常量；本重载让宿主不必取得任何内部对象即可正确声明与消费该按键。
+    /// </remarks>
+    public void DispatchKey(KeyEvent e, object? nativeKeyOriginToken)
+    {
+        _keyOriginToken = nativeKeyOriginToken;
+        try
+        {
+            _router.DispatchKey(e);
+        }
+        finally
+        {
+            _keyOriginToken = null;
+        }
+    }
+
+    /// <summary>当前正在分发的原生按键 token；没有显式 token 时为 null。</summary>
+    internal object? KeyOriginToken => _keyOriginToken;
 
     /// <summary>分发已提交文本输入。</summary>
     public void DispatchTextInput(TextInputEvent e) => _router.DispatchTextInput(e);
@@ -576,6 +615,94 @@ public sealed class UiRuntime : IDisposable
 
     /// <summary>设置焦点节点；传入 null 表示清除焦点。</summary>
     public void SetFocus(ViewNode? node) => _focus.SetFocus(node);
+
+    /// <summary>
+    /// 通知运行时窗口激活状态变化（宿主窗口失活/重新激活时调用）。
+    /// </summary>
+    /// <param name="active">窗口是否处于激活状态。</param>
+    /// <remarks>
+    /// <para>
+    /// 失活时：先在本地取消焦点控件未提交的组合，再撤销文本输入会话归属并通知服务（先失效、后通知，避免服务的
+    /// 同步回调串写到新客户端）。重新激活时，若焦点仍在可编辑控件上，用<b>新的 epoch</b> 恢复输入会话
+    /// （不会恢复任何旧组合）。
+    /// </para>
+    /// <para>
+    /// 这是给宿主窗口循环的最小接缝（TI-07 使用）；核心不实现窗口循环，也不引入任何平台类型。
+    /// </para>
+    /// </remarks>
+    public void NotifyWindowActivation(bool active)
+    {
+        if (_windowActive == active)
+        {
+            return;
+        }
+
+        _windowActive = active;
+        if (!active)
+        {
+            _focus.CancelTextInput();
+        }
+        else
+        {
+            _focus.ResumeTextInput();
+        }
+
+        InvalidateRender();
+    }
+
+    /// <summary>窗口当前是否处于激活状态；无窗口测试默认为 true。</summary>
+    public bool IsWindowActive => _windowActive;
+
+    /// <summary>
+    /// 声明一次原生按键的归属（TI-07 原生桥接缝）：把显式 token 交给当前焦点文本控件，
+    /// 覆盖“组合在同一原生按键内结束、随后仍进入 KeyDown”的归属判定。
+    /// </summary>
+    /// <returns>控件是否应放弃该按键（不再执行编辑命令）。没有焦点文本控件时返回 false。</returns>
+    public bool NotifyCompositionKeyOrigin(object nativeKeyToken, bool consumedByInputMethod)
+    {
+        ArgumentNullException.ThrowIfNull(nativeKeyToken);
+        if (_focus.Focused is not { } focused || focused.InteractionState is not TextFieldState state)
+        {
+            return false;
+        }
+
+        return state.TrackOriginatingKey(nativeKeyToken, consumedByInputMethod);
+    }
+
+    /// <summary>
+    /// 分配一个新的焦点文本输入 epoch 并创建租约；同一运行时内 epoch 单调递增，不同节点不会复用 epoch 0。
+    /// </summary>
+    /// <remarks>
+    /// 应用不调用本方法；TextField 通过 <c>TextFieldState.InputSession</c> 建立会话。运行时只保留当前归属，
+    /// 不持有租约列表，因此焦点切换不会无界增长。
+    /// </remarks>
+    internal TextInputFocusLease AcquireTextInputLease()
+        => new(this, ++_nextTextInputEpoch);
+
+    /// <summary>该运行时的文本输入会话接线（TextField 焦点/生命周期使用）。</summary>
+    internal TextInputServiceSession TextInputSession => _textInput;
+
+    /// <summary>撤销当前文本输入归属并结束会话（运行时释放时调用，先失效、后通知）。</summary>
+    internal void ReleaseTextInputLeases() => _textInput.End();
+
+    /// <summary>
+    /// 撤销一个节点已建立的文本输入归属：只有该节点仍是当前所有者时才结束会话（先失效、后通知服务）。
+    /// </summary>
+    /// <remarks>
+    /// 焦点切换与节点卸载都会调用；节点从未建立会话或会话已属于其他节点时是无操作——
+    /// 旧节点卸载不会结束新字段的会话。
+    /// </remarks>
+    internal void ReleaseTextInputOwnershipFor(ViewNode node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        if (node.InteractionState is not TextFieldState state)
+        {
+            return;
+        }
+
+        state.CancelCompositionForRelease();
+        state.EndInputSession();
+    }
 
     /// <summary>按 Tab 顺序移动焦点。<paramref name="backward"/> 为 true 时反向。</summary>
     public void MoveFocus(bool backward = false) => _focus.Move(backward);
@@ -639,6 +766,9 @@ public sealed class UiRuntime : IDisposable
         }
 
         _disposed = true;
+
+        // 先撤销文本输入归属（旧 epoch/旧客户端立即失效），再卸载树并通知服务，避免服务回调串写到已移除节点。
+        ReleaseTextInputLeases();
         Reconciler.Unmount(Root);
         _componentQueue.Clear();
         _componentSet.Clear();

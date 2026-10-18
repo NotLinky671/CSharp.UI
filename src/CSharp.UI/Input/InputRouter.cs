@@ -7,6 +7,9 @@ internal sealed class FocusManager
 {
     private readonly UiRuntime _runtime;
 
+    /// <summary>焦点变更代际：服务回调重入 <see cref="SetFocus"/> 时用于让外层调用放弃收尾。</summary>
+    private int _focusGeneration;
+
     public FocusManager(UiRuntime runtime) => _runtime = runtime;
 
     /// <summary>当前焦点节点。</summary>
@@ -39,6 +42,10 @@ internal sealed class FocusManager
     }
 
     /// <summary>设置焦点；节点不可用（未挂载、被禁用、不可聚焦）时清除焦点。</summary>
+    /// <remarks>
+    /// 通知旧服务时服务可能同步重入（<c>EndSession</c> 里再次 <see cref="SetFocus"/>）：外层调用必须在
+    /// 重入后放弃收尾，不能把已经被重入覆盖的目标重新标记为焦点，也不能替换重入建立的服务归属。
+    /// </remarks>
     public void SetFocus(ViewNode? node)
     {
         if (node is not null && (!node.IsMounted || node.IsEffectivelyDisabled || !node.View.IsFocusable))
@@ -51,12 +58,33 @@ internal sealed class FocusManager
             return;
         }
 
+        var generation = ++_focusGeneration;
         var previous = Focused;
         Focused = node;
         if (previous is not null)
         {
             previous.IsFocused = false;
+
+            // 旧焦点客户端先撤销文本输入归属（先失效），再触发 OnFocusChanged；这样即使服务同步回调
+            // 也不会写入正在获得焦点的新客户端。
+            _runtime.ReleaseTextInputOwnershipFor(previous);
+
+            // 撤销归属会同步通知服务：服务可能在 EndSession 内重入并把焦点切回旧节点。
+            // 此时外层必须立即放弃，不能再对 previous 发出失焦通知（那会结束重入刚建立的新会话）。
+            if (_focusGeneration != generation || !ReferenceEquals(Focused, node))
+            {
+                _runtime.InvalidateRender();
+                return;
+            }
+
             previous.View.OnFocusChanged(new InputContext(_runtime), previous, false);
+        }
+
+        // 服务在回调里重入并切换了焦点：外层不得再改动焦点标志或服务归属。
+        if (_focusGeneration != generation || !ReferenceEquals(Focused, node))
+        {
+            _runtime.InvalidateRender();
+            return;
         }
 
         if (node is not null)
@@ -66,6 +94,24 @@ internal sealed class FocusManager
         }
 
         _runtime.InvalidateRender();
+    }
+
+    /// <summary>窗口失活等接缝：先撤销当前焦点客户端的文本输入归属，再收敛取消。</summary>
+    public void CancelTextInput()
+    {
+        if (Focused is { } focused)
+        {
+            _runtime.ReleaseTextInputOwnershipFor(focused);
+        }
+    }
+
+    /// <summary>窗口重新激活：焦点仍在可编辑控件上时用新的 epoch 恢复文本输入会话。</summary>
+    public void ResumeTextInput()
+    {
+        if (Focused is { } focused && focused.IsMounted && !focused.IsEffectivelyDisabled && focused.View is TextField)
+        {
+            focused.View.OnFocusChanged(new InputContext(_runtime), focused, true);
+        }
     }
 
     /// <summary>按遍历顺序移动焦点；没有可聚焦节点时清除焦点。</summary>
@@ -98,13 +144,28 @@ internal sealed class FocusManager
         return -1;
     }
 
-    /// <summary>节点卸载前清理焦点。</summary>
+    /// <summary>节点卸载前清理焦点与文本输入归属。</summary>
+    /// <remarks>
+    /// 撤销归属会同步通知服务，服务可能在回调里把焦点重新设到别的节点；此时不得把重入建立的新焦点清空。
+    /// </remarks>
     public void OnNodeUnmounting(ViewNode node)
     {
-        if (Focused is not null && IsSelfOrDescendant(node, Focused))
+        var target = Focused;
+        if (target is null || !IsSelfOrDescendant(node, target))
         {
-            Focused = null;
+            return;
         }
+
+        var generation = ++_focusGeneration;
+        _runtime.ReleaseTextInputOwnershipFor(target);
+
+        // 服务回调重入并建立了新的焦点：保留重入结果，不覆盖。
+        if (_focusGeneration != generation || !ReferenceEquals(Focused, target))
+        {
+            return;
+        }
+
+        Focused = null;
     }
 
     /// <summary>重建后校验焦点仍然有效（节点被删除或被 Disabled 包裹时清除焦点）。</summary>

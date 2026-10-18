@@ -1,0 +1,41 @@
+PASS preedit writes nothing
+PASS first segment committed
+PASS segments preserve confirmed text
+PASS future version rejected
+PASS noStart explicit range
+PASS result snapshot matches actual caret and version
+PASS composition ID gaps accepted
+PASS old cancel cannot cancel new ID
+PASS refocus fresh working client
+PASS old client immutable epoch
+PASS released client cannot write
+PASS external write invalidates before commit
+PASS external observation revokes old epoch even with current version
+PASS partial batch reports actual write
+PASS invalid start does not burn ID
+PASS empty result preserves selection text and retires event
+PASS window loss clears composition
+FAIL inactive programmatic refocus does not start session
+PASS window activation opens fresh epoch
+PASS future Cancel version cannot end valid preedit
+PASS future End version cannot end valid preedit
+PASS local cancellation notifies service at safe phase
+PASS empty noStart result can continue preedit
+PASS continued noStart segment anchored to explicit range
+PASS empty noStart result retires composition ID
+PASS rejected result setter runs only once
+PASS getter exception contained in callback
+PASS guarded callback still commits
+PASS composition callback does not perform text layout
+PASS setter exception contained
+PASS composition error recovery does not perform text layout
+PASS setter exception reports actual changed document
+PASS public seam accepts explicit key ownership
+PASS end-before-KeyDown consumed via public dispatcher token
+PASS following distinct key still traverses focus
+PASS Start synchronous reentry preserves focus flags
+PASS Start synchronous reentry retains service client
+PASS Start reentry writes only focused field
+PASS End synchronous reentry preserves focus flags
+FAIL End synchronous reentry retains service client
+Checks: 38 passed, 2 failed
