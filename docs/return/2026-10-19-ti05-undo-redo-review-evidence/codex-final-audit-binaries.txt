@@ -1,0 +1,12 @@
+
+Algorithm : SHA256
+Hash      : 95D5AE626A9BAE516974BB418205F77B3861ACFAC2D377F9128031C7BD78CC69
+Path      : C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\ti05-audit\bin\Debug\net10.0\CSharp.UI.dll
+
+Algorithm : SHA256
+Hash      : 1FB542B050DF242D3C85E0B8CF50B42A57B391EDE483C2A88D1E6B224F617464
+Path      : C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\ti05-audit\bin\Debug\net10.0\Audit.dll
+
+Algorithm : SHA256
+Hash      : 7D27F799A2E7905A0C521C6B0DE943E4ED2D6BCA4B196086356F72E658FE195F
+Path      : C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\ti04-audit\bin\Debug\net10.0\Audit.dll

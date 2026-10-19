@@ -43,6 +43,18 @@ public sealed record UiRuntimeServices
     /// </para>
     /// </remarks>
     public ITextInputService? TextInputService { get; init; }
+
+    /// <summary>
+    /// 每节点撤销/重做历史容量（TI-05 内部可配置）；默认 100 项 / 1,048,576 UTF-16 码元，0 禁用记录。
+    /// </summary>
+    /// <remarks>内部可配置只用于测试与宿主策略，不扩张公开编辑器 API。</remarks>
+    internal TextHistoryCapacity HistoryCapacity { get; init; } = TextHistoryCapacity.Default;
+
+    /// <summary>
+    /// 编辑快捷键平台策略（TI-05 内部）。默认按当前操作系统映射；测试可注入以纯核心验证 mac/Linux 组合，
+    /// 但不代表真机验收。原生宿主最终路由属 TI-07。
+    /// </summary>
+    internal TextEditPlatformKind EditPlatform { get; init; } = TextEditCommandResolver.DefaultPlatform;
 }
 
 /// <summary>
@@ -607,6 +619,9 @@ public sealed class UiRuntime : IDisposable
     /// <summary>当前正在分发的原生按键 token；没有显式 token 时为 null。</summary>
     internal object? KeyOriginToken => _keyOriginToken;
 
+    /// <summary>编辑快捷键平台策略（宿主最终路由属 TI-07；核心只解析命令）。</summary>
+    internal TextEditPlatformKind EditPlatform => Services.EditPlatform;
+
     /// <summary>分发已提交文本输入。</summary>
     public void DispatchTextInput(TextInputEvent e) => _router.DispatchTextInput(e);
 
@@ -641,6 +656,12 @@ public sealed class UiRuntime : IDisposable
         if (!active)
         {
             _focus.CancelTextInput();
+
+            // 窗口失活是分组边界：打断合并，但不清空历史（重新激活后仍可撤销）。
+            if (_focus.Focused?.InteractionState is TextFieldState state)
+            {
+                state.History.BreakMerge();
+            }
         }
         else
         {

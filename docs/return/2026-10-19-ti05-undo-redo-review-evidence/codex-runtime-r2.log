@@ -1,0 +1,47 @@
+PASS typing merge 499ms
+PASS typing redo 499ms
+PASS typing merge 500ms
+PASS typing redo 500ms
+PASS typing merge 501ms
+PASS typing redo 501ms
+PASS selection replacement
+PASS undo selection text
+PASS undo backward selection direction
+PASS redo after selection
+PASS moving away and back breaks merge
+PASS copy command breaks merge even without selection
+PASS scrubbed noop preserves redo
+PASS accepted new edit clears redo
+PASS external binding update clears old undo before write
+PASS MaxLength accepts whole available fragment
+PASS undo uses actual accepted fragment
+PASS capacity-rejected paste preserves redo
+PASS undo setter rejection is actual unchanged value
+FAIL rejected undo clears untrusted stacks
+PASS normalized undo reads actual binding
+PASS normalized undo clears both stacks
+PASS write-then-throw leaves actual document and clears history
+FAIL getter failure clears untrusted history
+FAIL composition client read failure also invalidates history
+FAIL undo cross-transaction combining mark
+FAIL undo original base letter
+PASS redo combining mark restores complete text
+FAIL undo cross-transaction ZWJ suffix
+FAIL undo ZWJ joiner
+FAIL undo original emoji
+PASS backspace removes whole emoji graphemes
+PASS merged backspace restores exact text
+PASS segmented IME commit
+PASS one segmented IME result per undo
+PASS undo prior IME result restores original selection text
+PASS redo segmented IME results
+PASS IME consumed modified undo token wins
+PASS unowned undo cancels preedit then undoes
+PASS AltGr does not trigger undo
+PASS wrong platform modifier does not trigger undo
+PASS CapsLock does not prevent undo
+PASS window activation breaks merge without composition service
+PASS committed-only fallback supports undo
+PASS 100-entry budget evicts oldest complete transactions
+PASS evicted transaction cannot be undone
+Checks: 38 passed, 8 failed

@@ -165,6 +165,10 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
         _applying++;
         try
         {
+            // 任何组合阶段（Start/Update/Result/Cancel/End）都是合并分组边界；预编辑更新不入历史，
+            // 每个真实 Result 由 ApplyCompositionCommit 各自记录一项。
+            _state.History.BreakMerge();
+
             var result = _composition.Apply(
                 events,
                 _epoch,
@@ -184,6 +188,8 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
         {
             // 事务/绑定异常已经由状态机与 ApplyCompositionCommit 恢复真实文档；这里只记录脱敏诊断并返回拒绝。
             // 不再次调用 CurrentDocument（可能重复抛错），使用状态机最后一次可靠快照。
+            // 历史上下文已不可信，必须实际失效；不触碰组合消费者自己的失效标志。
+            _state.History.Clear();
             _node.Runtime.ReportDiagnostic($"组合事件应用失败（节点 {_node.ShortDebugPath()}）：{ex.GetType().Name}");
             return TextInputApplyResult.Rejected(_composition.LastDocument, "组合事件应用失败；未确认任何写入。");
         }
@@ -218,6 +224,16 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
         _keyOwnership.IsComposing = _composition.IsComposing;
         return _keyOwnership.Track(nativeKeyToken, consumedByInputMethod);
     }
+
+    /// <summary>
+    /// 该 token 是否被<b>显式</b>声明为输入法已消费（一次性）；不把“当前正在组合”算作显式消费。
+    /// </summary>
+    /// <remarks>
+    /// 命令键需要这个更精确的判定：输入法明确消费的同一次原生按键（包括带命令修饰符的按键）必须让给输入法；
+    /// 组合期间未被声明的 Undo/Redo/Cut/Paste/SelectAll 仍应先取消预编辑再执行。
+    /// </remarks>
+    internal bool IsExplicitlyConsumedKey(object nativeKeyToken)
+        => _keyOwnership.IsExplicitlyConsumed(nativeKeyToken);
 
     /// <summary>撤销归属时清空未消费的按键接缝。</summary>
     internal void ResetKeyOwnership() => _keyOwnership.Reset();
@@ -278,6 +294,10 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             _ = ex;
+
+            // 事务之外的客户端读取失败（Document/GetState/组合前同步）同样让历史不可信；
+            // 清理历史是核心内存操作，不触碰组合消费者自己的失效标志。
+            _state.History.Clear();
             return _lastReliableDocument ?? new CompositionDocument(
                 _state.Editor.Text,
                 _state.Editor.Version,

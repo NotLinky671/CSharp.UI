@@ -17,6 +17,37 @@ internal readonly record struct TextEditSyncResult(
 }
 
 /// <summary>
+/// 一次原子替换事务的<b>结构化</b>结论（TI-05 内部）：历史消费者据此判断能否记录或必须清理，
+/// 不依赖任何诊断字符串。
+/// </summary>
+internal enum TextEditTransactionOutcome
+{
+    /// <summary>尚未执行事务。</summary>
+    None = 0,
+
+    /// <summary>回读值与请求候选完全一致，可用于记录逆操作。</summary>
+    Applied,
+
+    /// <summary>回读值与请求候选不同（绑定转换/规范化）；不得记录错误的逆操作。</summary>
+    Normalized,
+
+    /// <summary>setter 写入后回读仍是旧值（明确拒绝或规范化回旧值）。</summary>
+    SetterRefused,
+
+    /// <summary>候选与旧文本一致（真正的空操作，未调用 setter）。</summary>
+    NoChange,
+
+    /// <summary>校验/容量整体拒绝，未调用 setter。</summary>
+    Rejected,
+
+    /// <summary>setter 抛错（写入结果不可信）。</summary>
+    WriteFailed,
+
+    /// <summary>setter 后回读抛错（写入结果不可确认）。</summary>
+    ReadFailed,
+}
+
+/// <summary>
 /// 单行 TextField 的原子编辑会话（TI-03 内部实现）：确认文本、文档版本、绑定来源身份与原子替换事务。
 /// </summary>
 /// <remarks>
@@ -64,6 +95,24 @@ internal sealed class TextEditSession
 
     /// <summary>编辑历史需要清空（TI-05 消费；本阶段只记录）。</summary>
     public bool HistoryInvalidationRequested { get; private set; }
+
+    /// <summary>
+    /// 最近一次 <see cref="Apply"/> 的结构化结论；调用方在事务返回后读取，用于决定记录/清理历史。
+    /// </summary>
+    /// <remarks>
+    /// 该结论是<b>逐事务</b>的：每次 <see cref="Apply"/> 开始时先归零，因此不会像
+    /// <see cref="HistoryInvalidationRequested"/> 那样成为粘性标志，历史消费者不需要（也不能）按帧轮询它。
+    /// </remarks>
+    public TextEditTransactionOutcome LastTransaction { get; private set; }
+
+    /// <summary>
+    /// 最近一次 <see cref="Apply"/> 在读取真实文档时是否观测到外部文本/来源/MaxLength 变化。
+    /// </summary>
+    /// <remarks>
+    /// 逐事务的安全网：正常调用方会在事务前同步，但 setter/外部写入仍可能在读取点产生变化；
+    /// 此时历史上下文已不可信，必须清理而不是在旧历史上记录新项。
+    /// </remarks>
+    public bool LastTransactionSawExternalChange { get; private set; }
 
     /// <summary>
     /// 把会话与一次真实回读对齐。第一次调用只初始化；之后任何来源 / 文本 / MaxLength 变化都会推进版本
@@ -135,6 +184,22 @@ internal sealed class TextEditSession
         return value;
     }
 
+    /// <summary>
+    /// 只消费“历史需要清空”的接缝位，保留组合失效位（TI-04 的组合消费者仍能看到需要换 epoch 的事实）。
+    /// </summary>
+    /// <remarks>
+    /// TI-05 的 TextField 历史使用逐事务的 <see cref="LastTransaction"/> 与 <see cref="Sync"/> 返回值来判断，
+    /// 因此不会按帧轮询或清除这个粘性标志；本方法留给需要显式消费该接缝的调用方/测试，
+    /// 与 <see cref="ConsumeCompositionInvalidation"/> 相互独立。
+    /// </remarks>
+    /// <returns>历史是否需要清空。</returns>
+    public bool ConsumeHistoryInvalidation()
+    {
+        var value = HistoryInvalidationRequested;
+        HistoryInvalidationRequested = false;
+        return value;
+    }
+
     /// <summary>取出并清空失效接缝（TI-04 / TI-05 接入后使用；本阶段供测试与后续消费）。</summary>
     public (bool Composition, bool History) ConsumeInvalidation()
     {
@@ -165,17 +230,23 @@ internal sealed class TextEditSession
         ArgumentNullException.ThrowIfNull(read);
         ArgumentNullException.ThrowIfNull(write);
 
+        // 本结论只描述本次事务；每次进入都归零，避免历史消费者读到上一次的结论。
+        LastTransaction = TextEditTransactionOutcome.None;
+        LastTransactionSawExternalChange = false;
+
         // 第一步：读取真实文本。getter 抛错时不改版本、不移动光标/选区，异常原样上抛。
         var beforeText = read() ?? string.Empty;
 
         // 第二步：与真实回读对齐。外部写入 / 来源替换 / MaxLength 变化在这里推进版本并标记失效接缝。
-        Sync(identity, beforeText, maxLength);
+        var sync = Sync(identity, beforeText, maxLength);
+        LastTransactionSawExternalChange = sync.HasExternalChange;
 
         var beforeSelection = SnapSelection(beforeText, selection);
         var before = new TextSnapshot(beforeText, beforeSelection, _version);
 
         if (!operation.TryValidate(out var validationError))
         {
+            LastTransaction = TextEditTransactionOutcome.Rejected;
             return Reject(before, validationError ?? "编辑操作未通过校验。");
         }
 
@@ -184,6 +255,7 @@ internal sealed class TextEditSession
             || !TextGraphemeBoundaries.AllAreBoundaries(beforeText, [range.Start, range.End], out _))
         {
             // 无效 / 越界 / 落在代理对、组合附加符或 ZWJ 序列内部的范围不得拆字写入。
+            LastTransaction = TextEditTransactionOutcome.Rejected;
             return Reject(before, "替换范围越界或落在字素内部：不得拆字写入。");
         }
 
@@ -193,6 +265,7 @@ internal sealed class TextEditSession
         var fitted = FitWholeGraphemes(inserted, capacity);
         if (inserted.Length > 0 && fitted.Length == 0)
         {
+            LastTransaction = TextEditTransactionOutcome.Rejected;
             return Reject(before, "剩余 UTF-16 容量放不下任何完整字素：整体拒绝，不写绑定、不移动选区。");
         }
 
@@ -200,6 +273,7 @@ internal sealed class TextEditSession
         if (string.Equals(candidate, beforeText, StringComparison.Ordinal))
         {
             // 删除空范围等真正的空操作：不调用 setter。
+            LastTransaction = TextEditTransactionOutcome.NoChange;
             return UnchangedResult(before, "候选文本与当前文档一致；未调用绑定 setter。");
         }
 
@@ -216,6 +290,7 @@ internal sealed class TextEditSession
             PendingWrite = null;
 
             // setter 抛错：写入结果不可信，组合/历史保守失效；能回读就按实际值重同步，不能则标记待重同步。
+            LastTransaction = TextEditTransactionOutcome.WriteFailed;
             RequestInvalidation();
             ReadBackAfterFailedWrite(beforeText, read);
             throw;
@@ -231,6 +306,7 @@ internal sealed class TextEditSession
         }
         catch
         {
+            LastTransaction = TextEditTransactionOutcome.ReadFailed;
             MarkRequiresResync();
             throw;
         }
@@ -238,6 +314,7 @@ internal sealed class TextEditSession
         if (string.Equals(actual, beforeText, StringComparison.Ordinal))
         {
             // setter 拒绝写入或把值规范化回旧值：文档实际没有变化，不能按接受处理。
+            LastTransaction = TextEditTransactionOutcome.SetterRefused;
             return Reject(before, "绑定 setter 未改变文档（拒绝写入或规范化回旧值）。");
         }
 
@@ -253,6 +330,10 @@ internal sealed class TextEditSession
         _identity = identity;
         _maxLength = maxLength;
         RequiresResync = false;
+
+        LastTransaction = normalized
+            ? TextEditTransactionOutcome.Normalized
+            : TextEditTransactionOutcome.Applied;
 
         if (normalized)
         {

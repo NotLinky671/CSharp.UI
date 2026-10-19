@@ -15,7 +15,9 @@ internal sealed class TestApp : IDisposable
         Theme? theme = null,
         Action<StubImageService>? configureImages = null,
         WheelScrollSettings? wheelScrollSettings = null,
-        ITextInputService? textInputService = null)
+        ITextInputService? textInputService = null,
+        TextHistoryCapacity? historyCapacity = null,
+        TextEditPlatformKind? editPlatform = null)
     {
         Dispatcher = new HeadlessUiDispatcher();
         Text = new StubTextService();
@@ -35,6 +37,8 @@ internal sealed class TestApp : IDisposable
             Clock = Clock,
             WheelScrollSettings = WheelScroll,
             TextInputService = textInputService,
+            HistoryCapacity = historyCapacity ?? TextHistoryCapacity.Default,
+            EditPlatform = editPlatform ?? TextEditCommandResolver.DefaultPlatform,
         });
 
         Runtime.SetEnvironment(new EnvironmentValues { Theme = theme ?? Theme.Light });

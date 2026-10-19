@@ -73,6 +73,26 @@ internal sealed class TextFieldKeyOwnership
     public bool ShouldDropForCommand(object nativeKeyToken)
         => ShouldOwn(nativeKeyToken) == TextInputKeyDecision.Consume;
 
+    /// <summary>
+    /// 该 token 是否被<b>显式</b>声明为输入法已消费（一次性）；不把“当前正在组合”算作显式消费。
+    /// </summary>
+    /// <remarks>
+    /// 命令键（Ctrl/Command + Z/C/X/V/A 等）需要区分两种情况：输入法明确消费了同一次原生按键
+    /// （例如结束组合的选词键），此时必须让给输入法；而组合期间未被声明的命令仍应先取消预编辑再执行。
+    /// </remarks>
+    public bool IsExplicitlyConsumed(object nativeKeyToken)
+    {
+        ArgumentNullException.ThrowIfNull(nativeKeyToken);
+        if (_pendingToken is not null && _pendingConsumed && ReferenceEquals(_pendingToken, nativeKeyToken))
+        {
+            _pendingToken = null;
+            _pendingConsumed = false;
+            return true;
+        }
+
+        return false;
+    }
+
     /// <summary>清空未消费的按键归属（撤销焦点归属时调用）。</summary>
     public void Reset()
     {

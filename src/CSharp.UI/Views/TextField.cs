@@ -248,6 +248,9 @@ public sealed class TextField : View
         // 鼠标重新定位选区属于取消接缝：先取消未提交组合，再处理点击。
         CancelCompositionForHostAction(node, state);
 
+        // 指针/选区操作（即使随后移回原处）都是分组边界。
+        state.History.BreakMerge();
+
         state.IsDragging = true;
         state.Caret = IndexFromPosition(node, e.Position);
         state.Anchor = state.Caret;
@@ -266,6 +269,7 @@ public sealed class TextField : View
         }
 
         SyncEditor(node, state, invalidate: true);
+        state.History.BreakMerge();
         state.Caret = IndexFromPosition(node, e.Position);
         EnsureCaretVisible(node, state);
         context.MarkHandled();
@@ -282,6 +286,7 @@ public sealed class TextField : View
 
         state.IsDragging = false;
         SyncEditor(node, state, invalidate: true);
+        state.History.BreakMerge();
         state.Caret = IndexFromPosition(node, e.Position);
         return true;
     }
@@ -309,6 +314,10 @@ public sealed class TextField : View
         var state = GetState(node);
         state.BlinkEpoch = node.Runtime.Clock.Now;
         state.IsDragging = false;
+
+        // 焦点变化（进入/离开）是分组边界：不清空历史，但后续键入不得与失焦前的键入合并。
+        state.History.BreakMerge();
+
         if (focused)
         {
             // 焦点变化是安全入口：先按真实绑定值同步会话（外部写入可能已发生），再限制选区。
@@ -396,6 +405,11 @@ public sealed class TextField : View
     /// 通过统一编辑会话执行一次原子替换：写一次绑定、回读确认，只有实际改变文档时才提交选区与滚动。
     /// setter 拒绝、容量整体拒绝或回读与操作前一致时都不移动选区、不推进版本。
     /// </summary>
+    /// <remarks>
+    /// <b>历史记录（TI-05）：</b>只有真实事务精确落地（回读与请求候选一致、节点仍挂载、来源/MaxLength 未变）时
+    /// 才记录增量事务；规范化、setter 明确拒绝、写/读异常与外部变化都清理不可信历史，绝不记录错误逆操作。
+    /// 容量拒绝与真正的空操作既不新增历史，也不凭空清空 redo。
+    /// </remarks>
     private void ApplyEdit(ViewNode node, TextFieldState state, EditOperation operation)
     {
         // 事务期间协调更新是延迟的，node.View 通常仍是本实例；仍按当前视图读取绑定，避免使用过时的描述。
@@ -405,6 +419,7 @@ public sealed class TextField : View
         }
 
         var binding = field.Text;
+        var beforeSelection = new TextSelection(state.Anchor, state.Caret);
 
         EditResult result;
         try
@@ -413,7 +428,7 @@ public sealed class TextField : View
                 binding.Identity,
                 field.MaxLength,
                 operation,
-                new TextSelection(state.Anchor, state.Caret),
+                beforeSelection,
                 () => binding.Read(node) ?? string.Empty,
                 value => binding.Value = value);
         }
@@ -421,6 +436,7 @@ public sealed class TextField : View
         {
             // setter 已改写或回读失败：按会话当前真实文本恢复选区/布局，但不掩盖原异常。
             RecoverAfterTransactionFailure(node, state);
+            state.History.Clear();
             throw;
         }
 
@@ -433,13 +449,27 @@ public sealed class TextField : View
 
         if (!ReferenceEquals(mounted.Text.Identity, binding.Identity) || mounted.MaxLength != field.MaxLength)
         {
+            // 事务期间换源/换配置：历史上下文已不可信。
+            state.History.Clear();
             SyncEditor(node, state, invalidate: true);
             return;
+        }
+
+        // 事务读取点观测到外部文本/来源/MaxLength 变化：旧历史上下文失效（即使范围仍恰好有效）。
+        if (state.Editor.LastTransactionSawExternalChange)
+        {
+            state.History.Clear();
         }
 
         if (!result.Changed)
         {
             // 拒绝 / 未变化：不做投机选区提交，但把会话与选区对齐到真实回读值（外部变化可能已发生）。
+            // setter 明确拒绝写入后回读不可信，必须清理历史；容量拒绝与空操作则保留历史与 redo。
+            if (state.Editor.LastTransaction == TextEditTransactionOutcome.SetterRefused)
+            {
+                state.History.Clear();
+            }
+
             SyncEditor(node, state, invalidate: false);
             return;
         }
@@ -447,8 +477,113 @@ public sealed class TextField : View
         // 回读值才是唯一事实来源：会话已按实际文本吸附光标，这里沿用其结果快照。
         state.Caret = result.After.Selection.Active;
         state.Anchor = result.After.Selection.Anchor;
+
+        if (state.Editor.LastTransaction == TextEditTransactionOutcome.Applied)
+        {
+            state.History.Record(BuildHistoryEntry(result, operation, beforeSelection), node.Runtime.Clock.Now);
+        }
+        else
+        {
+            // 规范化等非精确落地：不记录基于“请求替换”的错误逆操作。
+            state.History.Clear();
+        }
+
         node.Runtime.InvalidateRender();
         EnsureCaretVisible(node, state);
+    }
+
+    /// <summary>
+    /// 把一次精确确认的事务转换为增量历史项：只保存替换起点、真实删除/插入片段与前后方向选区，
+    /// 不保存整份文档快照。
+    /// </summary>
+    /// <remarks>
+    /// <b>跨事务字素安全（TI-05 复审 R1）：</b>一次键入可能改变相邻文本的字素分组（例如先输入 e、再输入组合附加符
+    /// U+0301；分段输入 ZWJ 序列；或插入/删除一个区域指示符从而重排后续 RI 配对）。请求范围在编辑后的文档里可能
+    /// 落在字素内部，甚至“编辑后合法、映射回编辑前非法”。这里在<b>前后两份文档</b>中寻找共同的合法边界：
+    /// 前缀偏移在编辑前后直接对应，后缀偏移按文档长度差对应；起点向左、终点向右取最近的共同安全边界
+    /// （文档两端永远合法，保证终止）。只保留真正受影响的局部片段并计入预算，不关闭字素校验、不拆字写入、
+    /// 也不保存整份文档快照。
+    /// </remarks>
+    private static TextHistoryEntry BuildHistoryEntry(
+        EditResult result,
+        EditOperation operation,
+        TextSelection beforeSelection)
+    {
+        var beforeText = result.Before.Text;
+        var afterText = result.After.Text;
+        var range = operation.Range;
+
+        // 请求的插入区在编辑后文档中的范围是 [range.Start, range.Start + insertedLength)。
+        var insertedLength = afterText.Length - beforeText.Length + range.Length;
+
+        // 每份文档只枚举一次边界：后续用二分查找 + 集合查询，避免循环内反复整段扫描。
+        var beforeBoundaries = TextGraphemeBoundaries.EnumerateBoundaries(beforeText);
+        var afterBoundaries = TextGraphemeBoundaries.EnumerateBoundaries(afterText);
+        var afterSet = new HashSet<int>(afterBoundaries);
+
+        // 起点：不大于请求起点的最近共同边界（0 永远是共同边界，保证终止）。
+        var start = 0;
+        var startIndex = beforeBoundaries.BinarySearch(range.Start);
+        startIndex = startIndex >= 0 ? startIndex : ~startIndex - 1;
+        for (var i = startIndex; i >= 0; i--)
+        {
+            var candidate = beforeBoundaries[i];
+            if (afterSet.Contains(candidate))
+            {
+                start = candidate;
+                break;
+            }
+        }
+
+        // 终点：从请求终点向右找最近的“before 边界 + 按长度差映射后的 after 边界”都为合法的位置。
+        // 文档末尾（before.Length / after.Length）永远满足，因此循环一定终止。
+        var endInBefore = beforeText.Length;
+        var endInAfter = afterText.Length;
+        var endIndex = beforeBoundaries.BinarySearch(range.Start + range.Length);
+        endIndex = endIndex >= 0 ? endIndex : ~endIndex;
+        for (var i = endIndex; i < beforeBoundaries.Count; i++)
+        {
+            var candidate = beforeBoundaries[i];
+            var mapped = candidate - range.Length + insertedLength;
+            if (mapped >= start && mapped <= afterText.Length && afterSet.Contains(mapped))
+            {
+                endInBefore = candidate;
+                endInAfter = mapped;
+                break;
+            }
+        }
+
+        var deleted = beforeText.Substring(start, endInBefore - start);
+        var inserted = afterText.Substring(start, endInAfter - start);
+
+        var expanded = start != range.Start || endInBefore != range.Start + range.Length;
+
+        return new TextHistoryEntry(
+            start,
+            deleted,
+            inserted,
+            result.Before.Selection,
+            result.After.Selection,
+            operation.Kind,
+            expanded ? TextEditMergeKind.None : MergeKindFor(operation, beforeSelection));
+    }
+
+    /// <summary>判断一次事务是否属于可合并类别（折叠光标相邻键入 / 同方向逐字素删除）。</summary>
+    private static TextEditMergeKind MergeKindFor(EditOperation operation, TextSelection beforeSelection)
+    {
+        if (!beforeSelection.IsCollapsed)
+        {
+            // 选区替换独立成项，绝不与相邻键入/删除合并。
+            return TextEditMergeKind.None;
+        }
+
+        return operation.Kind switch
+        {
+            TextEditKind.Typing when operation.Range.IsEmpty => TextEditMergeKind.TypingAppend,
+            TextEditKind.Backspace => TextEditMergeKind.BackspaceDelete,
+            TextEditKind.Delete => TextEditMergeKind.ForwardDelete,
+            _ => TextEditMergeKind.None,
+        };
     }
 
     /// <summary>
@@ -492,7 +627,17 @@ public sealed class TextField : View
         }
 
         var binding = field.Text;
-        var text = knownLayout?.Text ?? binding.Read(node) ?? string.Empty;
+        string text;
+        try
+        {
+            text = knownLayout?.Text ?? binding.Read(node) ?? string.Empty;
+        }
+        catch
+        {
+            // 真实读取失败：历史上下文已不可信，两栈必须实际失效（异常沿用既有契约继续上抛）。
+            state.History.Clear();
+            throw;
+        }
 
         if (state.Editor.IsOwnPendingWrite(text) && state.Editor.MatchesContext(binding.Identity, field.MaxLength))
         {
@@ -503,8 +648,12 @@ public sealed class TextField : View
         var sync = state.Editor.Sync(binding.Identity, text, field.MaxLength);
         if (!sync.HasExternalChange)
         {
+            // 同值回读是真正的空操作：不推进版本、不清历史，也不打断合并。
             return;
         }
+
+        // 外部文本 / 来源 / MaxLength 真正变化：历史上下文失效，清空两栈（同值回读不会走到这里）。
+        state.History.Clear();
 
         // 外部文本 / 来源 / MaxLength 真正变化：先取消未提交组合（预编辑绝不写绑定），再收敛选区。
         // 只在真实外部变化时取消；同节点同绑定重建、Flow/Adaptive 重排不会走到这里。
@@ -535,28 +684,48 @@ public sealed class TextField : View
         }
 
         var state = GetState(node);
-        SyncEditor(node, state, invalidate: false);
-        var command = e.IsCommandPressed;
-
-        // 组合期间方向键/Backspace/Delete/空格/Enter/Escape 归输入法所有；同一原生按键内刚结束的组合
-        // 也不能再进入编辑命令（不能只检查此刻是否 Composing）。Tab 的消费结果同样在这里决定。
-        // 命令快捷键（Ctrl/Command + C/X/A/V 等）不属于输入法编辑键：不在此吞掉，交给下面的既有命令分支。
-        if (!command)
+        try
         {
-            if (state.Composing?.IsComposing == true)
-            {
-                state.BlinkEpoch = node.Runtime.Clock.Now;
-                context.MarkHandled();
-                return true;
-            }
+            return HandleKeyDown(context, node, state, e);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // 命令路径中的真实读取/事务异常（getter、事务回读等）都让历史不可信；
+            // 异常沿用既有契约继续上抛，不能被历史清理掩盖。
+            state.History.Clear();
+            throw;
+        }
+    }
 
-            if (state.IsConsumedOriginatingKey(node.Runtime.KeyOriginToken ?? state.NativeKeyToken))
-            {
-                // 组合在同一原生按键内结束：该按键已由输入法消费，控件不再执行编辑命令，也不做焦点遍历。
-                state.BlinkEpoch = node.Runtime.Clock.Now;
-                context.MarkHandled();
-                return true;
-            }
+    private bool HandleKeyDown(InputContext context, ViewNode node, TextFieldState state, KeyEvent e)
+    {
+        SyncEditor(node, state, invalidate: false);
+
+        // 输入法显式声明消费的同一次原生按键始终优先：带命令修饰符（Ctrl/Command+Z 等）也不能执行编辑命令，
+        // 覆盖“组合在同一原生按键内结束、随后仍进入 KeyDown”。该判定只认显式 token，不把“正在组合”算作已消费。
+        var keyToken = node.Runtime.KeyOriginToken ?? state.NativeKeyToken;
+        if (state.IsExplicitlyConsumedKey(keyToken))
+        {
+            state.BlinkEpoch = node.Runtime.Clock.Now;
+            context.MarkHandled();
+            return true;
+        }
+
+        var command = TextEditCommandResolver.Resolve(e, node.Runtime.EditPlatform);
+        if (command is { } resolved)
+        {
+            state.BlinkEpoch = node.Runtime.Clock.Now;
+            ExecuteCommand(node, state, resolved);
+            return true;
+        }
+
+        // 非命令键：组合期间方向键/Backspace/Delete/空格/Enter/Escape 归输入法所有；Tab 的消费结果同样在这里决定。
+        // 未被输入法消费的 Undo/Redo/Cut/Paste/SelectAll 已经在上面按命令处理（先取消预编辑再执行）。
+        if (state.Composing?.IsComposing == true)
+        {
+            state.BlinkEpoch = node.Runtime.Clock.Now;
+            context.MarkHandled();
+            return true;
         }
 
         var text = Text.Read(node) ?? string.Empty;
@@ -567,18 +736,22 @@ public sealed class TextField : View
         {
             case UiKey.Left:
                 CancelCompositionForHostAction(node, state);
+                state.History.BreakMerge();
                 MoveCaret(node, state, text, backward: true, extend);
                 return true;
             case UiKey.Right:
                 CancelCompositionForHostAction(node, state);
+                state.History.BreakMerge();
                 MoveCaret(node, state, text, backward: false, extend);
                 return true;
             case UiKey.Home:
                 CancelCompositionForHostAction(node, state);
+                state.History.BreakMerge();
                 SetCaret(node, state, 0, extend);
                 return true;
             case UiKey.End:
                 CancelCompositionForHostAction(node, state);
+                state.History.BreakMerge();
                 SetCaret(node, state, text.Length, extend);
                 return true;
             case UiKey.Backspace:
@@ -601,27 +774,201 @@ public sealed class TextField : View
 
                 DeleteSelectionOrGrapheme(node, state, text, backward: false, TextEditKind.Delete);
                 return true;
-            case UiKey.A when command:
-                CancelCompositionForHostAction(node, state);
-                state.Anchor = 0;
-                state.Caret = text.Length;
-                context.MarkHandled();
-                return true;
-            case UiKey.C when command:
-                // 复制只读取已提交选区：组合期间不复制预编辑，也不因此取消组合。
-                CopySelection(node, state, text, cut: false);
-                return true;
-            case UiKey.X when command:
-                CancelCompositionForHostAction(node, state);
-                CopySelection(node, state, text, cut: true);
-                return true;
-            case UiKey.V when command:
-                CancelCompositionForHostAction(node, state);
-                PasteFromClipboard(node, state, text);
-                return true;
             default:
                 return false;
         }
+    }
+
+    /// <summary>
+    /// 执行统一内部编辑命令：Undo/Redo 先取消预编辑（空栈也一样），剪贴板命令与全选先取消预编辑，
+    /// 复制只读取已提交选区且不取消组合。所有命令都是合并分组边界。
+    /// </summary>
+    private void ExecuteCommand(ViewNode node, TextFieldState state, TextEditCommand command)
+    {
+        switch (command)
+        {
+            case TextEditCommand.Copy:
+                // 复制只读取已提交选区：组合期间不复制预编辑，也不因此取消组合；但仍构成分组边界。
+                state.History.BreakMerge();
+                CopySelection(node, state, Text.Read(node) ?? string.Empty, cut: false);
+                break;
+            case TextEditCommand.Cut:
+                CancelCompositionForHostAction(node, state);
+                state.History.BreakMerge();
+                CopySelection(node, state, Text.Read(node) ?? string.Empty, cut: true);
+                break;
+            case TextEditCommand.Paste:
+                CancelCompositionForHostAction(node, state);
+                state.History.BreakMerge();
+                PasteFromClipboard(node, state, Text.Read(node) ?? string.Empty);
+                break;
+            case TextEditCommand.SelectAll:
+                CancelCompositionForHostAction(node, state);
+                state.History.BreakMerge();
+                var text = Text.Read(node) ?? string.Empty;
+                state.Anchor = 0;
+                state.Caret = text.Length;
+                break;
+            case TextEditCommand.Undo:
+                CancelCompositionForHostAction(node, state);
+                state.History.BreakMerge();
+                ReplayHistory(node, state, undo: true);
+                break;
+            case TextEditCommand.Redo:
+                CancelCompositionForHostAction(node, state);
+                state.History.BreakMerge();
+                ReplayHistory(node, state, undo: false);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 撤销/重做一次历史事务：与普通编辑走同一条 TI-03 原子替换通道（写一次绑定、真实回读），
+    /// 只有精确确认成功后才移动栈并恢复存档的方向选区；重放本身不记录新历史。
+    /// </summary>
+    private void ReplayHistory(ViewNode node, TextFieldState state, bool undo)
+    {
+        var history = state.History;
+
+        // 空栈：不调用 setter、不推进版本、不制造事务（预编辑已在调用前取消）。
+        if (undo ? !history.CanUndo : !history.CanRedo)
+        {
+            return;
+        }
+
+        if (node.View is not TextField field)
+        {
+            return;
+        }
+
+        var binding = field.Text;
+        var entry = undo ? history.UndoPeek! : history.RedoPeek!;
+
+        // 文档不再符合历史上下文时拒绝旧记录并清理（增量记录无法安全重放）。
+        string current;
+        try
+        {
+            current = binding.Read(node) ?? string.Empty;
+        }
+        catch
+        {
+            history.Clear();
+            state.Editor.MarkRequiresResync();
+            return;
+        }
+
+        var expected = undo ? entry.Inserted : entry.Deleted;
+        if (!MatchesHistoryContext(current, entry.ReplacementStart, expected))
+        {
+            history.Clear();
+            return;
+        }
+
+        var range = undo
+            ? new TextRange(entry.ReplacementStart, entry.ReplacementStart + entry.Inserted.Length)
+            : new TextRange(entry.ReplacementStart, entry.ReplacementStart + entry.Deleted.Length);
+
+        if (!EditOperation.TryCreate(
+                range,
+                undo ? entry.Deleted : entry.Inserted,
+                undo ? TextEditKind.Undo : TextEditKind.Redo,
+                TextEditReason.History,
+                scrubSingleLine: false,
+                out var operation,
+                out _))
+        {
+            history.Clear();
+            return;
+        }
+
+        EditResult result;
+        try
+        {
+            result = state.Editor.Apply(
+                binding.Identity,
+                field.MaxLength,
+                operation,
+                new TextSelection(state.Anchor, state.Caret),
+                () => binding.Read(node) ?? string.Empty,
+                value => binding.Value = value);
+        }
+        catch
+        {
+            RecoverAfterTransactionFailure(node, state);
+            history.Clear();
+            throw;
+        }
+
+        if (!node.IsMounted || node.View is not TextField mounted)
+        {
+            return;
+        }
+
+        if (!ReferenceEquals(mounted.Text.Identity, binding.Identity) || mounted.MaxLength != field.MaxLength)
+        {
+            // 事务期间换源/换配置：旧事务不得移动栈，也不得把恢复选区写进新客户端。
+            history.Clear();
+            SyncEditor(node, state, invalidate: true);
+            return;
+        }
+
+        if (state.Editor.LastTransactionSawExternalChange)
+        {
+            // 重放读取点观测到外部变化：历史上下文失效，拒绝旧记录并清理。
+            history.Clear();
+            return;
+        }
+
+        if (!result.Changed)
+        {
+            // 拒绝 / 未变化：不假装撤销成功，栈保持原位；setter 明确拒绝写入时历史已不可信。
+            if (state.Editor.LastTransaction == TextEditTransactionOutcome.SetterRefused)
+            {
+                history.Clear();
+            }
+
+            return;
+        }
+
+        if (state.Editor.LastTransaction != TextEditTransactionOutcome.Applied)
+        {
+            // 规范化/写后读错等：不假装成功，清理不可信历史并按实际回读收敛选区。
+            history.Clear();
+            state.Caret = result.After.Selection.Active;
+            state.Anchor = result.After.Selection.Anchor;
+            node.Runtime.InvalidateRender();
+            EnsureCaretVisible(node, state);
+            return;
+        }
+
+        // 精确确认成功后才移动栈；版本由事务单调推进，绝不回退到历史版本。
+        if (undo)
+        {
+            history.CommitUndo();
+        }
+        else
+        {
+            history.CommitRedo();
+        }
+
+        var restored = undo ? entry.SelectionBefore : entry.SelectionAfter;
+        var actual = result.After.Text;
+        state.Anchor = TextGraphemeBoundaries.SnapToBoundary(actual, Math.Clamp(restored.Anchor, 0, actual.Length));
+        state.Caret = TextGraphemeBoundaries.SnapToBoundary(actual, Math.Clamp(restored.Active, 0, actual.Length));
+        node.Runtime.InvalidateRender();
+        EnsureCaretVisible(node, state);
+    }
+
+    /// <summary>当前文档在历史起点处是否仍含有该事务执行后的片段（增量上下文校验）。</summary>
+    private static bool MatchesHistoryContext(string text, int start, string expected)
+    {
+        if (start < 0 || start > text.Length || expected.Length > text.Length - start)
+        {
+            return false;
+        }
+
+        return expected.Length == 0
+            || string.CompareOrdinal(text, start, expected, 0, expected.Length) == 0;
     }
 
     internal override TimeSpan? GetNextWakeup(ViewNode node, TimeSpan now)
@@ -713,7 +1060,18 @@ public sealed class TextField : View
         }
 
         var binding = textField.Text;
-        var text = binding.Read(node) ?? string.Empty;
+        string text;
+        try
+        {
+            text = binding.Read(node) ?? string.Empty;
+        }
+        catch
+        {
+            // 组合回调内的真实读取失败：历史不可信；清理是核心内存操作，异常由外层组合接线收敛。
+            state.History.Clear();
+            throw;
+        }
+
         if (state.Editor.IsOwnPendingWrite(text) && state.Editor.MatchesContext(binding.Identity, textField.MaxLength))
         {
             return;
@@ -726,6 +1084,9 @@ public sealed class TextField : View
         }
 
         invalidated = true;
+
+        // 组合回调内的历史清理只是核心内存操作：不排版、不调用平台服务。
+        state.History.Clear();
         state.Caret = TextGraphemeBoundaries.SnapToBoundary(text, state.Caret);
         state.Anchor = TextGraphemeBoundaries.SnapToBoundary(text, state.Anchor);
     }
@@ -763,13 +1124,14 @@ public sealed class TextField : View
         }
 
         EditResult edit;
+        var beforeSelection = new TextSelection(state.Anchor, state.Caret);
         try
         {
             edit = state.Editor.Apply(
                 identity,
                 maxLength,
                 operation,
-                new TextSelection(state.Anchor, state.Caret),
+                beforeSelection,
                 () => binding.Read(node) ?? string.Empty,
                 value => binding.Value = value);
         }
@@ -777,6 +1139,7 @@ public sealed class TextField : View
         {
             // setter / getter 抛错：按真实回读恢复会话，不伪造成功，也不掩盖原异常。
             // 组合回调内不做文本排版：只用核心字素规则限制选区并标记待布局。
+            state.History.Clear();
             try
             {
                 state.Editor.Sync(identity, binding.Read(node) ?? string.Empty, maxLength);
@@ -796,14 +1159,22 @@ public sealed class TextField : View
         if (!node.IsMounted || node.View is not TextField mounted)
         {
             state.Editor.MarkRequiresResync();
+            state.History.Clear();
             return RejectedCommit("事务期间输入框已卸载；组合结果不写入。");
         }
 
         if (!ReferenceEquals(mounted.Text.Identity, identity) || mounted.MaxLength != maxLength)
         {
             // 事务期间换源/换配置：按新来源真实回读重同步会话（核心字素规则，不做排版），旧事务结果绝不写进新来源。
+            state.History.Clear();
             SyncCompositionContext(node, state);
             return RejectedCommit("事务期间绑定来源或 MaxLength 已变化；旧组合结果不写入新客户端。");
+        }
+
+        if (state.Editor.LastTransactionSawExternalChange)
+        {
+            // 事务读取点观测到外部变化：旧历史上下文失效（清理只是核心内存操作）。
+            state.History.Clear();
         }
 
         if (edit.Changed)
@@ -811,12 +1182,29 @@ public sealed class TextField : View
             state.Caret = edit.After.Selection.Active;
             state.Anchor = edit.After.Selection.Anchor;
 
+            if (state.Editor.LastTransaction == TextEditTransactionOutcome.Applied)
+            {
+                // 一次真实组合 Result 只记录一项；分段结果各自独立。记录只是核心内存操作，不做排版/平台调用。
+                state.History.Record(BuildHistoryEntry(edit, operation, beforeSelection), node.Runtime.Clock.Now);
+            }
+            else
+            {
+                // 规范化等非精确落地：不记录错误逆操作。
+                state.History.Clear();
+            }
+
             // 原生组合回调内不做排版/几何计算：只标记布局失效，由下一次安全布局保证 caret 可见。
             node.Runtime.InvalidateLayout(node);
         }
         else
         {
             // 拒绝 / 未变化：只用核心字素规则把会话与选区对齐到真实文本，不做排版。
+            // setter 明确拒绝写入时历史不可信；容量拒绝/空操作不凭空清空 redo。
+            if (state.Editor.LastTransaction == TextEditTransactionOutcome.SetterRefused)
+            {
+                state.History.Clear();
+            }
+
             SyncCompositionContext(node, state);
             SnapSelectionToText(state, state.Editor.Text);
             node.Runtime.InvalidateLayout(node);
@@ -844,6 +1232,8 @@ public sealed class TextField : View
         }
         catch
         {
+            // 事务之外的组合同步读取失败：历史不可信；清理是核心内存操作，不调用布局/平台服务。
+            state.History.Clear();
             state.Editor.MarkRequiresResync();
             node.Runtime.InvalidateRender();
             return;
@@ -860,6 +1250,8 @@ public sealed class TextField : View
             return;
         }
 
+        // 外部变化发生在组合回调内：历史上下文失效；清理是核心内存操作，不排版、不调用平台服务。
+        state.History.Clear();
         state.Composing?.InvalidateForExternalChange();
         SnapSelectionToText(state, state.Editor.Text);
         node.Runtime.InvalidateLayout(node);
@@ -1114,6 +1506,9 @@ internal sealed class TextFieldState
     /// <summary>原子编辑会话：确认文本、文档版本、来源身份与失效接缝（TI-03）。</summary>
     public TextEditSession Editor { get; } = new();
 
+    /// <summary>每节点有界撤销/重做历史（TI-05）：与运行时节点同寿命。</summary>
+    public TextEditHistory History { get; }
+
     /// <summary>文本输入会话接线（运行时唯一实例）：绑定/解绑焦点客户端并收敛取消（TI-04）。</summary>
     public TextInputServiceSession InputSession { get; }
 
@@ -1132,6 +1527,7 @@ internal sealed class TextFieldState
     {
         ArgumentNullException.ThrowIfNull(runtime);
         InputSession = runtime.TextInputSession;
+        History = new TextEditHistory(runtime.Services.HistoryCapacity);
     }
 
     /// <summary>取得组合客户端；会话使用新 epoch 时创建新客户端，绝不复用已被释放的旧实例。</summary>
@@ -1194,6 +1590,17 @@ internal sealed class TextFieldState
     /// <summary>指定 token 的按键是否已被输入法消费。</summary>
     public bool IsConsumedOriginatingKey(object nativeKeyToken)
         => Composing?.ShouldOwnInputKey(nativeKeyToken) == TextInputKeyDecision.Consume;
+
+    /// <summary>
+    /// 指定 token 的按键是否被<b>显式</b>声明为由输入法消费（一次性）。
+    /// </summary>
+    /// <remarks>
+    /// 与 <see cref="IsConsumedOriginatingKey(object)"/> 不同：这里不把“当前正在组合”当作消费，
+    /// 因此组合期间未被输入法声明的 Undo/Redo/Cut/Paste/SelectAll 仍可先取消预编辑再执行。
+    /// 该判定覆盖“组合在同一原生按键内结束、随后仍进入 KeyDown”的显式 token。
+    /// </remarks>
+    public bool IsExplicitlyConsumedKey(object nativeKeyToken)
+        => Composing?.IsExplicitlyConsumedKey(nativeKeyToken) ?? false;
 
     /// <summary>光标位置的 UTF-16 索引（始终位于字素边界）。</summary>
     public int Caret { get; set; }

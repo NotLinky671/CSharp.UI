@@ -233,6 +233,31 @@ internal static class TextGraphemeBoundaries
             ? boundaries[Math.Min(insertion, boundaries.Count - 1)]
             : boundaries[Math.Max(0, insertion - 1)];
     }
+
+    /// <summary>
+    /// 一次枚举文本的全部字素边界（升序，含 0 与文本长度）。
+    /// </summary>
+    /// <remarks>
+    /// 历史差量需要在<b>前后两份文档</b>之间寻找共同合法边界；先各枚举一次再做查找/集合查询，
+    /// 避免在循环里反复整段扫描文本。返回的列表由调用方独占，不得改写。
+    /// </remarks>
+    internal static List<int> EnumerateBoundaries(string? text)
+    {
+        var value = text ?? string.Empty;
+        var boundaries = new List<int>(Math.Min(value.Length + 1, 64)) { 0 };
+        var enumerator = System.Globalization.StringInfo.GetTextElementEnumerator(value);
+        while (enumerator.MoveNext())
+        {
+            boundaries.Add(enumerator.ElementIndex + ((string)enumerator.Current).Length);
+        }
+
+        if (boundaries[^1] != value.Length)
+        {
+            boundaries.Add(value.Length);
+        }
+
+        return boundaries;
+    }
 }
 
 /// <summary>选区方向：活动端相对锚点的位置，用于保留“向左/向右选择”的语义。</summary>
