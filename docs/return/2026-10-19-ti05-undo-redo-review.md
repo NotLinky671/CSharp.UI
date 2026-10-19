@@ -62,4 +62,4 @@ Codex最终执行结果：
 
 macOS/Linux快捷键仅经过核心模拟映射检查，不宣称真机输入验收。未安装、启用或测试微软拼音，未变更系统输入法配置。原生宿主最终输入路由仍属TI-07，预编辑绘制/候选几何属TI-06；整个文本输入计划尚未完成，不创建计划级交付结论。
 
-提交与推送：Codex已批准本次实现，由DSH按范围执行；实际提交及远程结果完成后补记。
+提交与推送：DSH按批准范围创建实现提交`e4a766bed253f30e2eeaa0c850e0aa704102ecc7`（Implement bounded text editing history and undo redo commands）。DSH沙箱内Git凭据助手出现Win32 error 5，未改凭据、远程或提交历史；Codex通过宿主执行同一条`git push origin main`成功，远程main已从ca7b77c推进至e4a766b。实现提交后工作树干净；后续文档提交仅补记实际推送，不改代码或验收结论。
