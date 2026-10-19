@@ -1,0 +1,34 @@
+C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\Editing\CompositionContracts.cs(106,23): warning CS8601: 可能的 null 引用赋值。 [C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\CSharp.UI.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\Editing\CompositionContracts.cs(109,24): warning CS8601: 可能的 null 引用赋值。 [C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\CSharp.UI.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\Editing\CompositionContracts.cs(129,23): warning CS8601: 可能的 null 引用赋值。 [C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\CSharp.UI.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\Editing\CompositionContracts.cs(131,24): warning CS8601: 可能的 null 引用赋值。 [C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\CSharp.UI.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\Editing\CompositionContracts.cs(155,23): warning CS8601: 可能的 null 引用赋值。 [C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\CSharp.UI.csproj]
+  CSharp.UI -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\bin\Release\net10.0\CSharp.UI.dll
+  CSharp.UI.Text -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.Text\bin\Release\net10.0\CSharp.UI.Text.dll
+  CSharp.UI.OpenTK -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.OpenTK\bin\Release\net10.0\CSharp.UI.OpenTK.dll
+  CSharp.UI.Samples.ControlGallery -> C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.ControlGallery\bin\Release\net10.0\ControlGallery.dll
+  CSharp.UI.Samples.Counter -> C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.Counter\bin\Release\net10.0\Counter.dll
+  CSharp.UI.Samples.TodoList -> C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.TodoList\bin\Release\net10.0\TodoList.dll
+C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\TextFieldCaretAlignmentTests.cs(58,12): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\CSharp.UI.Integration.Tests.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\TextFieldCaretAlignmentTests.cs(62,12): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\CSharp.UI.Integration.Tests.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\FlexIntegrationTests.cs(126,21): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\CSharp.UI.Integration.Tests.csproj]
+  CSharp.UI.Integration.Tests -> C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\bin\Release\net10.0\CSharp.UI.Integration.Tests.dll
+  CSharp.UI.OpenTK.Tests -> C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.OpenTK.Tests\bin\Release\net10.0\CSharp.UI.OpenTK.Tests.dll
+  CSharp.UI.Tests -> C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Tests\bin\Release\net10.0\CSharp.UI.Tests.dll
+  CSharp.UI.Text.Tests -> C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Text.Tests\bin\Release\net10.0\CSharp.UI.Text.Tests.dll
+  CSharp.UI.AssetGenerator -> C:\Users\nothh\code\C#\CSharp.UI\tools\CSharp.UI.AssetGenerator\bin\Release\net10.0\assetgen.dll
+
+已成功生成。
+
+C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\Editing\CompositionContracts.cs(106,23): warning CS8601: 可能的 null 引用赋值。 [C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\CSharp.UI.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\Editing\CompositionContracts.cs(109,24): warning CS8601: 可能的 null 引用赋值。 [C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\CSharp.UI.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\Editing\CompositionContracts.cs(129,23): warning CS8601: 可能的 null 引用赋值。 [C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\CSharp.UI.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\Editing\CompositionContracts.cs(131,24): warning CS8601: 可能的 null 引用赋值。 [C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\CSharp.UI.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\Editing\CompositionContracts.cs(155,23): warning CS8601: 可能的 null 引用赋值。 [C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\CSharp.UI.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\TextFieldCaretAlignmentTests.cs(58,12): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\CSharp.UI.Integration.Tests.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\TextFieldCaretAlignmentTests.cs(62,12): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\CSharp.UI.Integration.Tests.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\FlexIntegrationTests.cs(126,21): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\CSharp.UI.Integration.Tests.csproj]
+    8 个警告
+    0 个错误
+
+已用时间 00:00:27.77

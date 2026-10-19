@@ -1,0 +1,132 @@
+PASS preedit isolated dpi=1 width=320
+PASS texture 1:1 dpi=1 width=320
+FAIL caret actual shaped origin dpi=1 width=320
+FAIL composition geometry dpi=1 width=320
+FAIL published matches client dpi=1 width=320
+PASS same geometry no repeats dpi=1 width=320
+PASS cancel restores display dpi=1 width=320
+PASS preedit isolated dpi=1 width=480
+PASS texture 1:1 dpi=1 width=480
+FAIL caret actual shaped origin dpi=1 width=480
+FAIL composition geometry dpi=1 width=480
+FAIL published matches client dpi=1 width=480
+PASS same geometry no repeats dpi=1 width=480
+PASS cancel restores display dpi=1 width=480
+PASS preedit isolated dpi=1 width=768
+PASS texture 1:1 dpi=1 width=768
+FAIL caret actual shaped origin dpi=1 width=768
+FAIL composition geometry dpi=1 width=768
+FAIL published matches client dpi=1 width=768
+PASS same geometry no repeats dpi=1 width=768
+PASS cancel restores display dpi=1 width=768
+PASS preedit isolated dpi=1 width=1024
+PASS texture 1:1 dpi=1 width=1024
+FAIL caret actual shaped origin dpi=1 width=1024
+FAIL composition geometry dpi=1 width=1024
+FAIL published matches client dpi=1 width=1024
+PASS same geometry no repeats dpi=1 width=1024
+PASS cancel restores display dpi=1 width=1024
+PASS preedit isolated dpi=1.25 width=320
+PASS texture 1:1 dpi=1.25 width=320
+FAIL caret actual shaped origin dpi=1.25 width=320
+FAIL composition geometry dpi=1.25 width=320
+FAIL published matches client dpi=1.25 width=320
+PASS same geometry no repeats dpi=1.25 width=320
+PASS cancel restores display dpi=1.25 width=320
+PASS preedit isolated dpi=1.25 width=480
+PASS texture 1:1 dpi=1.25 width=480
+FAIL caret actual shaped origin dpi=1.25 width=480
+FAIL composition geometry dpi=1.25 width=480
+FAIL published matches client dpi=1.25 width=480
+PASS same geometry no repeats dpi=1.25 width=480
+PASS cancel restores display dpi=1.25 width=480
+PASS preedit isolated dpi=1.25 width=768
+PASS texture 1:1 dpi=1.25 width=768
+FAIL caret actual shaped origin dpi=1.25 width=768
+FAIL composition geometry dpi=1.25 width=768
+FAIL published matches client dpi=1.25 width=768
+PASS same geometry no repeats dpi=1.25 width=768
+PASS cancel restores display dpi=1.25 width=768
+PASS preedit isolated dpi=1.25 width=1024
+PASS texture 1:1 dpi=1.25 width=1024
+FAIL caret actual shaped origin dpi=1.25 width=1024
+FAIL composition geometry dpi=1.25 width=1024
+FAIL published matches client dpi=1.25 width=1024
+PASS same geometry no repeats dpi=1.25 width=1024
+PASS cancel restores display dpi=1.25 width=1024
+PASS preedit isolated dpi=1.5 width=320
+PASS texture 1:1 dpi=1.5 width=320
+FAIL caret actual shaped origin dpi=1.5 width=320
+FAIL composition geometry dpi=1.5 width=320
+FAIL published matches client dpi=1.5 width=320
+PASS same geometry no repeats dpi=1.5 width=320
+PASS cancel restores display dpi=1.5 width=320
+PASS preedit isolated dpi=1.5 width=480
+PASS texture 1:1 dpi=1.5 width=480
+FAIL caret actual shaped origin dpi=1.5 width=480
+FAIL composition geometry dpi=1.5 width=480
+FAIL published matches client dpi=1.5 width=480
+PASS same geometry no repeats dpi=1.5 width=480
+PASS cancel restores display dpi=1.5 width=480
+PASS preedit isolated dpi=1.5 width=768
+PASS texture 1:1 dpi=1.5 width=768
+FAIL caret actual shaped origin dpi=1.5 width=768
+FAIL composition geometry dpi=1.5 width=768
+FAIL published matches client dpi=1.5 width=768
+PASS same geometry no repeats dpi=1.5 width=768
+PASS cancel restores display dpi=1.5 width=768
+PASS preedit isolated dpi=1.5 width=1024
+PASS texture 1:1 dpi=1.5 width=1024
+FAIL caret actual shaped origin dpi=1.5 width=1024
+FAIL composition geometry dpi=1.5 width=1024
+FAIL published matches client dpi=1.5 width=1024
+PASS same geometry no repeats dpi=1.5 width=1024
+PASS cancel restores display dpi=1.5 width=1024
+PASS preedit isolated dpi=2 width=320
+PASS texture 1:1 dpi=2 width=320
+FAIL caret actual shaped origin dpi=2 width=320
+FAIL composition geometry dpi=2 width=320
+FAIL published matches client dpi=2 width=320
+PASS same geometry no repeats dpi=2 width=320
+PASS cancel restores display dpi=2 width=320
+PASS preedit isolated dpi=2 width=480
+PASS texture 1:1 dpi=2 width=480
+FAIL caret actual shaped origin dpi=2 width=480
+FAIL composition geometry dpi=2 width=480
+FAIL published matches client dpi=2 width=480
+PASS same geometry no repeats dpi=2 width=480
+PASS cancel restores display dpi=2 width=480
+PASS preedit isolated dpi=2 width=768
+PASS texture 1:1 dpi=2 width=768
+FAIL caret actual shaped origin dpi=2 width=768
+FAIL composition geometry dpi=2 width=768
+FAIL published matches client dpi=2 width=768
+PASS same geometry no repeats dpi=2 width=768
+PASS cancel restores display dpi=2 width=768
+PASS preedit isolated dpi=2 width=1024
+PASS texture 1:1 dpi=2 width=1024
+FAIL caret actual shaped origin dpi=2 width=1024
+FAIL composition geometry dpi=2 width=1024
+FAIL published matches client dpi=2 width=1024
+PASS same geometry no repeats dpi=2 width=1024
+PASS cancel restores display dpi=2 width=1024
+FAIL long preedit caret visible
+FAIL long preedit actual origin not clamped substitute
+PASS cancel clamps scroll to document
+PASS mouse cancel then hit document at left
+PASS mouse cancellation no binding writes
+PASS nested scroll initial anchor
+PASS fully scrolled out revokes anchor
+PASS scroll back restores anchor
+PASS blur ends session
+PASS opacity zero revokes invisible geometry
+PASS hiding alone preserves composition state
+PASS font change recomputes geometry
+PASS font change preserves composition
+PASS DPI change invalidates display cache
+PASS DPI change preserves composition
+PASS zero viewport revokes anchor
+PASS restoring viewport restores anchor
+PASS released client never exposes stale geometry
+FAIL retraction callback cannot write revoked focus client
+Checks: 80 passed, 51 failed

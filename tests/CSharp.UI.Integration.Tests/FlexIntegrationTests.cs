@@ -118,14 +118,18 @@ public class FlexIntegrationTests
         // 文本末端也必须真的滚入可见区：仅把矢量光标夹在边缘掩盖旧 ScrollX 不算通过。
         Assert.InRange(layout.Size.Width - state.ScrollX, inner.Left, inner.Right + 1.5);
 
+        // 真实光标矩形（含宽度）必须完整落在可见区内；滚动预算包含 caret 宽度与吸附余量，
+        // 因此文本末端不再要求贴死右边缘，但文本仍必须确实滚入可见区（上面的末端检查）。
+        Assert.True(caretScreenX + 1.5 <= inner.Right + 0.5, "真实排版 caret 矩形必须完整可见。");
+
         var commands = runtime.BuildFrame().Commands;
         var caret = Assert.Single(
             commands.OfType<RectangleCommand>().Where(command => command.Bounds.Width <= 2.0 && command.Bounds.Height > 4));
         Assert.InRange(caret.Bounds.X, inner.Left - 0.5, inner.Right + 0.5);
 
-        // 文字纹理右边缘也应接近内容区右边缘（说明确实滚动到了末尾）。
+        // 文字纹理不得越过内容区右边界；末端贴边属于旧滚动预算，不再作为验收目标。
         var texture = Assert.Single(commands.OfType<TextureCommand>());
-        Assert.InRange(texture.Bounds.Right, inner.Right - 1.5, inner.Right + 1.5);
+        Assert.True(texture.Bounds.Right <= inner.Right + 1.5);
     }
 
     [Fact]

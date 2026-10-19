@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+<ItemGroup>
+<Reference Include="CSharp.UI"><HintPath>../../../src/CSharp.UI/bin/Debug/net10.0/CSharp.UI.dll</HintPath></Reference>
+<Reference Include="CSharp.UI.Text"><HintPath>../../../src/CSharp.UI.Text/bin/Debug/net10.0/CSharp.UI.Text.dll</HintPath></Reference>
+<PackageReference Include="SkiaSharp" /><PackageReference Include="SkiaSharp.HarfBuzz" /><PackageReference Include="HarfBuzzSharp" />
+<PackageReference Include="SkiaSharp.NativeAssets.Win32" /><PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" />
+</ItemGroup></Project>

@@ -479,6 +479,20 @@ public sealed class UiRuntime : IDisposable
         // 外部绑定/来源变化换新 epoch，或把本地已取消的组合通知给平台。
         _textInput.FlushPendingNotifications();
 
+        // 候选锚点几何同样只在最终布局与焦点校验之后发布（TI-06）：此时 node.Frame、滚动偏移、
+        // 祖先裁剪与排版缓存都已稳定；发布入口不得触发重排或递归生成帧。
+        // 发布前先同步真实文档：纯重绘发现外部 Binding 变化时会取消组合并请求换 epoch，
+        // 这里立即在安全阶段消费该请求，保证服务收到的几何与实际这一帧显示同版本（不保留陈旧组合锚点）。
+        if (_focus.Focused is { IsMounted: true } focused)
+        {
+            focused.View.PrepareTextInputGeometry(focused);
+            _textInput.FlushPendingNotifications();
+            if (_focus.Focused is { IsMounted: true } current)
+            {
+                current.View.PublishTextInputGeometry(current);
+            }
+        }
+
         if (_renderDirty)
         {
             _needsDraw = true;

@@ -150,6 +150,10 @@ public class FlowIntegrationTests
         // 文本末端必须真的滚入可见区：只把矢量光标夹在边缘不算通过。
         Assert.InRange(layout.Size.Width - state.ScrollX, inner.Left, inner.Right + 1.5);
 
+        // 真实光标矩形（含宽度）必须完整落在可见区内；滚动预算包含 caret 宽度与吸附余量，
+        // 因此文本末端不再要求贴死右边缘，但文本仍必须确实滚入可见区（上面的末端检查）。
+        Assert.True(caretScreenX + 1.5 <= inner.Right + 0.5, "真实排版 caret 矩形必须完整可见。");
+
         var commands = runtime.BuildFrame().Commands;
         var caret = Assert.Single(
             commands.OfType<RectangleCommand>(),
@@ -157,7 +161,7 @@ public class FlowIntegrationTests
         Assert.InRange(caret.Bounds.X, inner.Left - 0.5, inner.Right + 0.5);
 
         var texture = Assert.Single(commands.OfType<TextureCommand>());
-        Assert.InRange(texture.Bounds.Right, inner.Right - 1.5, inner.Right + 1.5);
+        Assert.True(texture.Bounds.Right <= inner.Right + 1.5);
     }
 
     private static Rect InnerRect(Rect frame, TextField field)

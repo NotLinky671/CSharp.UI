@@ -1,0 +1,85 @@
+using CSharp.UI;
+using CSharp.UI.Testing;
+using CSharp.UI.Skia;
+int pass=0,fail=0;
+void Check(bool ok,string name){Console.WriteLine($"{(ok?"PASS":"FAIL")} {name}");if(ok)pass++;else fail++;}
+bool Near(double a,double b)=>Math.Abs(a-b)<0.001;
+foreach(double dpi in new[]{1d,1.25,1.5,2})foreach(double width in new[]{320d,480,768,1024}){
+ var box=new Box();var service=new Fake();using var text=new SkiaTextService();
+ using var runtime=new UiRuntime(new TextField(new Binding<string>(()=>box.Value,v=>{box.Value=v;box.Writes++;})){Height=48}.FillWidth().Padding(7.3),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=text,TextureService=new RecordingTextureService(),TextInputService=service,Clock=new TestUiClock()});
+ runtime.SetViewport(new Size(width,100),dpi);runtime.Start();runtime.BuildFrame();var node=runtime.Root.FindDescendant<TextField>()!;runtime.SetFocus(node);runtime.BuildFrame();var client=service.ActiveClient!;
+ var result=client.ApplyComposition([CompositionEvent.Start(client.Session.SessionId,0,client.Document.Version,0,new(1,3),"nihao",compositionCaret:2,segments:[new(0,2),new(2,5)])]);
+ var frame=runtime.BuildFrame();var texture=frame.Commands.OfType<TextureCommand>().Single();var layout=text.Layout(new TextLayoutRequest("AnihaoD"){Font=FontDescription.Default,PixelScale=dpi});var caret=layout.GetCaretBounds(3,1.5);var geo=service.Last;
+ string label=$"dpi={dpi} width={width}";
+ Check(result.Handled&&client.IsComposing&&box.Value=="ABCD"&&box.Writes==0,"preedit isolated "+label);
+ Check(Near(texture.Bounds.Width*dpi,texture.Texture.PixelWidth)&&Near(texture.Bounds.Height*dpi,texture.Texture.PixelHeight),"texture 1:1 "+label);
+ Check(geo.HasCaret&&Near(geo.CaretBounds.X,texture.Bounds.X+caret.X)&&Near(geo.CaretBounds.Y,texture.Bounds.Y+caret.Y),"caret actual shaped origin "+label);
+ Check(geo.HasComposition&&geo.CompositionBounds.Left>=texture.Bounds.Left&&geo.CompositionBounds.Right<=texture.Bounds.Right+1,"composition geometry "+label);
+ Check(client.GetState().Geometry==geo,"published matches client "+label);
+ int n=service.Publishes;runtime.BuildFrame();runtime.BuildFrame();Check(service.Publishes==n,"same geometry no repeats "+label);
+ client.CancelComposition();runtime.BuildFrame();Check(box.Value=="ABCD"&&box.Writes==0&&!client.GetState().Geometry.HasComposition,"cancel restores display "+label);
+}
+{
+ var box=new Box();var service=new Fake();using var text=new SkiaTextService();using var r=new UiRuntime(new TextField(new Binding<string>(()=>box.Value,v=>{box.Value=v;box.Writes++;})){Width=140},new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=text,TextureService=new RecordingTextureService(),TextInputService=service});r.SetViewport(new Size(200,60),1.5);r.Start();r.BuildFrame();r.SetFocus(r.Root);r.BuildFrame();var c=service.ActiveClient!;
+ c.ApplyComposition([CompositionEvent.Start(c.Session.SessionId,0,0,0,new(1,3),new string('W',80),compositionCaret:80)]);var f=r.BuildFrame();var tex=f.Commands.OfType<TextureCommand>().Single();var layout=text.Layout(new TextLayoutRequest("A"+new string('W',80)+"D"){PixelScale=1.5});var expected=layout.GetCaretBounds(81,1.5);var g=service.Last;
+ Console.WriteLine($"LONG geometry={g} texture={tex.Bounds} shaped={expected}");Check(g.HasCaret&&g.CaretBounds.X>=10&&g.CaretBounds.Right<=r.Root.Frame.Right-9.99,"long preedit caret visible");Check(Near(g.CaretBounds.X,tex.Bounds.X+expected.X),"long preedit actual origin not clamped substitute");
+ c.CancelComposition();r.BuildFrame();var restored=r.BuildFrame().Commands.OfType<TextureCommand>().Single();Check(restored.Bounds.X>=9.6,"cancel clamps scroll to document");
+ c.ApplyComposition([CompositionEvent.Start(c.Session.SessionId,1,0,0,new(1,3),new string('W',80),compositionCaret:80)]);r.BuildFrame();r.DispatchPointer(new(PointerEventKind.Down,new(10,16)));Check(c.Document.Selection.Active==0,"pointer down hit after cancelling long preedit uses document scroll");r.DispatchPointer(new(PointerEventKind.Up,new(10,16)));r.BuildFrame();Check(!c.IsComposing&&c.Document.Selection.Active==0,"mouse cancel then hit document at left");Check(box.Writes==0,"mouse cancellation no binding writes");
+}
+{
+ var service=new Fake();using var text=new SkiaTextService();var field=new TextField(Binding<string>.Constant("ABCD")){Height=40};using var r=new UiRuntime(new ScrollView(new VStack(field,new Rectangle(Color.Black).Frame(height:300))).Frame(height:70).Padding(5),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=text,TextureService=new RecordingTextureService(),TextInputService=service});r.SetViewport(new Size(220,100),1.5);r.Start();r.BuildFrame();var node=r.Root.FindDescendant<TextField>()!;r.SetFocus(node);r.BuildFrame();Check(service.Last.HasCaret,"nested scroll initial anchor");r.DispatchWheel(new(new(30,30),0,-100,Mode:WheelDeltaMode.Pixels));r.BuildFrame();Check(!service.Last.HasCaret&&!service.ActiveClient!.GetState().Geometry.HasCaret,"fully scrolled out revokes anchor");r.DispatchWheel(new(new(30,30),0,100,Mode:WheelDeltaMode.Pixels));r.BuildFrame();Check(service.Last.HasCaret,"scroll back restores anchor");r.SetFocus(null);Check(service.ActiveClient==null,"blur ends session");
+}
+{
+ var service=new Fake();using var text=new SkiaTextService();using var r=new UiRuntime(new TextField(Binding<string>.Constant("ABCD")).Padding(8.25),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=text,TextureService=new RecordingTextureService(),TextInputService=service});r.SetViewport(new Size(250,80),1.5);r.Start();r.BuildFrame();var node=r.Root.FindDescendant<TextField>()!;r.SetFocus(node);r.BuildFrame();var c=service.ActiveClient!;c.ApplyComposition([CompositionEvent.Start(c.Session.SessionId,0,0,0,new(1,3),"nihao",compositionCaret:3)]);r.BuildFrame();var before=service.Last;
+ r.SetEnvironment(new EnvironmentValues{Opacity=0});r.BuildFrame();Check(!service.Last.HasCaret&&!c.GetState().Geometry.HasCaret,"opacity zero revokes invisible geometry");Check(c.IsComposing,"hiding alone preserves composition state");
+ r.SetEnvironment(new EnvironmentValues{Opacity=1,Font=FontDescription.Default.WithSize(22)});r.BuildFrame();Check(service.Last.HasCaret&&service.Last!=before,"font change recomputes geometry");Check(c.IsComposing,"font change preserves composition");
+ r.SetViewport(new Size(320,80),2);var f=r.BuildFrame();var t=f.Commands.OfType<TextureCommand>().Single();Check(Near(t.Bounds.Width*2,t.Texture.PixelWidth)&&Near(t.Bounds.Height*2,t.Texture.PixelHeight),"DPI change invalidates display cache");Check(c.IsComposing,"DPI change preserves composition");
+ r.SetViewport(new Size(0,0),2);r.BuildFrame();Check(!service.Last.HasCaret,"zero viewport revokes anchor");r.SetViewport(new Size(320,80),2);r.BuildFrame();Check(service.Last.HasCaret,"restoring viewport restores anchor");
+ var old=c;r.SetFocus(null);Check(!old.GetState().Geometry.HasCaret,"released client never exposes stale geometry");
+}
+{
+ string value="ABCD";int writes=0;var service=new Fake();using var r=new UiRuntime(new TextField(new Binding<string>(()=>value,v=>{value=v;writes++;})),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=new StubTextService(),TextInputService=service});r.SetViewport(new Size(220,60),1);r.Start();r.BuildFrame();r.SetFocus(r.Root);r.BuildFrame();var old=service.ActiveClient!;
+ service.OnPublish=g=>{if(!g.HasCaret){service.OnPublish=null;old.ApplyComposition([CompositionEvent.Result(old.Session.SessionId,0,old.Document.Version,0,"BAD",new(0,1))]);}};
+ r.SetFocus(null);Check(value=="ABCD"&&writes==0,"retraction callback cannot write revoked focus client");
+}
+{
+ var box=new Box();var service=new Fake();using var text=new SkiaTextService();using var r=new UiRuntime(new TextField(new Binding<string>(()=>box.Value,v=>box.Value=v)),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=text,TextureService=new RecordingTextureService(),TextInputService=service});r.SetViewport(new Size(220,60),1.5);r.Start();r.BuildFrame();r.SetFocus(r.Root);r.BuildFrame();var c=service.ActiveClient!;c.ApplyComposition([CompositionEvent.Start(c.Session.SessionId,0,0,0,new(1,3),"nihao",compositionCaret:2)]);r.BuildFrame();box.Value="X";r.InvalidateRender();var f=r.BuildFrame();Check(!c.IsComposing,"pure repaint observes external binding and cancels preedit");Check(!service.Last.HasComposition,"pure repaint never retains stale composition geometry");
+}
+foreach(double dpi in new[]{1d,1.25,1.5,2}){
+ var service=new Fake();using var text=new SkiaTextService();using var r=new UiRuntime(new TextField(Binding<string>.Constant("")),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=text,TextureService=new RecordingTextureService(),TextInputService=service});r.SetViewport(new Size(200,60),dpi);r.Start();r.BuildFrame();r.SetFocus(r.Root);r.BuildFrame();var c=service.ActiveClient!;string preedit=new string('W',80);c.ApplyComposition([CompositionEvent.Start(c.Session.SessionId,0,0,0,default,preedit,compositionCaret:preedit.Length)]);var f=r.BuildFrame();var t=f.Commands.OfType<TextureCommand>().Single();var l=text.Layout(new TextLayoutRequest(preedit){PixelScale=dpi});var rawX=t.Bounds.X+l.GetCaretX(preedit.Length);var innerRight=r.Root.Frame.Right-10;
+ Check(rawX>=10&&rawX<innerRight,"end preedit actual layout caret intersects content dpi="+dpi);Check(service.Last.HasCaret,"end preedit publishes valid anchor dpi="+dpi);
+}
+{
+ var box=new Box();var service=new Fake();using var text=new SkiaTextService();using var r=new UiRuntime(new TextField(new Binding<string>(()=>box.Value,v=>box.Value=v)),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=text,TextureService=new RecordingTextureService(),TextInputService=service});r.SetViewport(new Size(200,60),1.5);r.Start();r.BuildFrame();r.SetFocus(r.Root);r.BuildFrame();var c=service.ActiveClient!;c.ApplyComposition([CompositionEvent.Start(c.Session.SessionId,0,0,0,new(1,3),new string('W',80),compositionCaret:80)]);r.BuildFrame();box.Value="X";r.InvalidateRender();var f=r.BuildFrame();var t=f.Commands.OfType<TextureCommand>().Single();var g=service.Last;var l=text.Layout(new TextLayoutRequest("X"){PixelScale=1.5});var caret=l.GetCaretBounds(service.ActiveClient!.Document.Selection.Active,1.5);
+ Check(g.HasCaret&&!g.HasComposition,"external shrink after scrolled preedit publishes visible committed caret in same frame");Check(Near(g.CaretBounds.X,t.Bounds.X+caret.X)&&Near(g.CaretBounds.Y,t.Bounds.Y+caret.Y),"external shrink published anchor matches actual emitted text origin");
+}
+{
+ string a="A",b="B";var service=new Fake();using var r=new UiRuntime(new VStack(new TextField(new Binding<string>(()=>a,v=>a=v)),new TextField(new Binding<string>(()=>b,v=>b=v))),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=new StubTextService(),TextInputService=service});r.SetViewport(new Size(220,100),1);r.Start();r.BuildFrame();var first=r.Root.Children[0];var second=r.Root.Children[1];r.SetFocus(first);r.BuildFrame();var old=service.ActiveClient!;
+ service.OnPublish=g=>{if(!g.HasCaret){service.OnPublish=null;r.SetFocus(second);}};r.SetFocus(null);Check(ReferenceEquals(r.FocusedNode,second)&&service.ActiveClient is not null&&!ReferenceEquals(service.ActiveClient,old),"retraction reentry preserves newly focused session");var c=service.ActiveClient;if(c is not null)c.ApplyComposition([CompositionEvent.Result(c.Session.SessionId,0,c.Document.Version,0,"X",new(0,1))]);Check(a=="A"&&b=="X","retraction reentry commits only to new client");
+}
+foreach(double dpi in new[]{1d,1.25,1.5,2}){
+ var service=new Fake();using var text=new SkiaTextService();using var r=new UiRuntime(new TextField(Binding<string>.Constant(new string('W',80))),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=text,TextureService=new RecordingTextureService(),TextInputService=service});r.SetViewport(new Size(200,60),dpi);r.Start();r.BuildFrame();r.SetFocus(r.Root);r.DispatchKey(new(KeyEventKind.Down,UiKey.End));var f=r.BuildFrame();var drawn=f.Commands.OfType<RectangleCommand>().Single(x=>x.Fill==Theme.Light.Foreground);Check(service.Last.HasCaret,"committed long text end has candidate anchor dpi="+dpi);Console.WriteLine($"END delta X={service.Last.CaretBounds.X-drawn.Bounds.X:R} Y={service.Last.CaretBounds.Y-drawn.Bounds.Y:R} W={service.Last.CaretBounds.Width-drawn.Bounds.Width:R} H={service.Last.CaretBounds.Height-drawn.Bounds.Height:R} dpi={dpi}");Check(service.Last.CaretBounds==drawn.Bounds,"committed long text geometry matches drawn caret dpi="+dpi);
+}
+foreach(double dpi in new[]{1d,1.25,1.5,2}){
+ string value="";var service=new Fake();using var text=new SkiaTextService();using var r=new UiRuntime(new TextField(new Binding<string>(()=>value,v=>value=v)),new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=text,TextureService=new RecordingTextureService(),TextInputService=service});r.SetViewport(new Size(200,60),dpi);r.Start();r.BuildFrame();r.SetFocus(r.Root);r.BuildFrame();var c=service.ActiveClient!;string preedit=new string('W',80);c.ApplyComposition([CompositionEvent.Start(c.Session.SessionId,0,0,0,default,preedit,compositionCaret:80)]);r.BuildFrame();c.ApplyComposition([CompositionEvent.Result(c.Session.SessionId,0,0,1,preedit)]);var f=r.BuildFrame();var drawn=f.Commands.OfType<RectangleCommand>().Single(x=>x.Fill==Theme.Light.Foreground);Check(service.Last.HasCaret,"long preedit result retains anchor dpi="+dpi);Check(service.Last.CaretBounds==drawn.Bounds,"long preedit result geometry matches displayed caret dpi="+dpi);
+}
+Console.WriteLine($"Checks: {pass} passed, {fail} failed");Environment.ExitCode=fail==0?0:1;
+sealed class Box{public string Value="ABCD";public int Writes;}
+sealed class Fake:ITextInputService{
+public Action<TextInputGeometry>? OnPublish;public int Publishes;public TextInputGeometry Last;public TextInputCapabilities Capabilities=>TextInputCapabilities.Full;public ITextInputClient? ActiveClient{get;private set;}
+public bool StartSession(ITextInputClient c){ActiveClient=c;return true;}public bool EndSession(){ActiveClient=null;Last=default;return true;}
+public TextInputApplyResult ApplyComposition(IReadOnlyList<CompositionEvent> e)=>ActiveClient!.ApplyComposition(e);public bool RequestCancel()=>ActiveClient?.CancelComposition()??false;
+public bool PublishGeometry(TextInputGeometry g){Publishes++;Last=g;OnPublish?.Invoke(g);return true;}}
+
+
+
+
+
+
+
+
+
+
+
+
+

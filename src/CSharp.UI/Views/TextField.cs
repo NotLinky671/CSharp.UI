@@ -129,13 +129,16 @@ public sealed class TextField : View
         var theme = node.Environment.ResolvedTheme;
         var disabled = node.IsEffectivelyDisabled;
         var state = GetState(node);
+
+        // 记录编辑/命中使用的“文档排版”与绘制使用的“显示串排版”是两份缓存（TI-06）：
+        // 预编辑只进入显示串，绝不写 Binding，也不能污染文档排版（否则命中与编辑范围会按显示文本计算）。
         var layout = GetLayout(node, context.TextService);
 
         // 纯重绘入口也要观测真实绑定值：外部写入可能只请求重绘（没有描述重建、没有重新布局）。
-        // 复用本次排版结果，不递归 GetLayout，也不在这里失效布局。
+        // 复用本次文档排版结果，不递归 GetLayout，也不在这里失效布局。
         SyncEditor(node, state, invalidate: false, knownLayout: layout);
-
-        var text = layout.Text;
+        var display = GetDisplayLayout(node, context.TextService);
+        var text = display.Text;
 
         // 背景与边框。
         var background = disabled
@@ -153,9 +156,8 @@ public sealed class TextField : View
         var inner = InnerRect(node.Frame);
         var opacity = node.Environment.Opacity;
 
-        // 纯重绘观测可能刚刚同步了外部写入的新文档：立刻用同一排版与内容区把横向滚动夹回/保证光标可见，
-        // 否则旧 ScrollX 会把缩短后的文字整个移出可见区域（不递归 GetLayout、不失效布局）。
-        EnsureCaretVisible(node, state, layout, inner);
+        // 组合期间保证的是组合 caret（显示串坐标）可见：长预编辑会横向滚动，而不是把组合 caret 画到内容区外。
+        EnsureCaretVisible(node, state, display.Layout, inner);
 
         if (string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(Placeholder) && !state.HasSelection)
         {
@@ -170,22 +172,20 @@ public sealed class TextField : View
             return;
         }
 
-        // 文字纹理在内容区内垂直居中，因此光标、选区与点击命中都必须从同一个文本原点出发；
+        // 文字纹理在内容区内垂直居中，因此光标、选区、预编辑下划线与点击命中都必须从同一个文本原点出发；
         // 直接用 inner.Y 会让光标随输入框变高/字号变大而向上错位。
-        // 该原点再统一吸附到物理像素：文字纹理、光标、选区与点击命中共用同一变换（见 TextPainter.ResolveOrigin）。
-        var textBounds = new Rect(
-            inner.X - state.ScrollX,
-            TextPainter.VerticalOrigin(inner, layout.Size),
-            layout.Size.Width,
-            layout.Size.Height);
-        var origin = TextPainter.ResolveOrigin(textBounds, layout.Size, TextAlignment.Left, layout.PixelScale);
+        // 该原点再统一吸附到物理像素：文字纹理、光标、选区、下划线与点击命中共用同一变换（见 TextPainter.ResolveOrigin）。
+        // 同一函数也供最终布局后的候选锚点发布使用，避免“绘制位置”与“发布几何”各算一套。
+        var textBounds = DisplayTextBounds(display, inner, state);
+        var origin = TextPainter.ResolveOrigin(textBounds, display.Layout.Size, TextAlignment.Left, display.Layout.PixelScale);
         var originX = origin.X;
         var originY = origin.Y;
 
-        // 选择高亮。
-        if (state.HasSelection && node.IsFocused)
+        // 选择高亮只在已提交文本上绘制：组合期间原选区被预编辑整体替代，显示的是“前缀 + 预编辑 + 后缀”，
+        // 再画文档选区会与替换后的显示不一致。
+        if (!display.Composing && state.HasSelection && node.IsFocused)
         {
-            var selection = layout.GetRangeBounds(state.SelectionStart, state.SelectionEnd);
+            var selection = display.Layout.GetRangeBounds(state.SelectionStart, state.SelectionEnd);
             if (selection.Width > 0 || selection.Height > 0)
             {
                 context.Commands.Add(new RectangleCommand(
@@ -203,25 +203,17 @@ public sealed class TextField : View
             : theme.Foreground;
 
         // 传入已居中的文本原点（高度取排版高度，Paint 的垂直居中偏移因此为 0），
-        // 保证纹理、光标与选区使用同一坐标约定。
-        TextPainter.Paint(context, node, layout, textColor, textBounds, TextAlignment.Left);
+        // 保证纹理、光标、选区与预编辑装饰使用同一坐标约定。
+        TextPainter.Paint(context, node, display.Layout, textColor, textBounds, TextAlignment.Left);
 
-        // 光标。
-        if (node.IsFocused && IsCaretVisible(node, state))
+        if (display.Composing)
         {
-            var caretIndex = layout.SnapToCaretStop(Math.Clamp(state.Caret, 0, text.Length));
-            var caret = layout.GetCaretBounds(caretIndex, 1.5);
-            var caretRect = new Rect(originX + caret.X, originY + caret.Y, caret.Width, caret.Height);
-
-            // 共用吸附后的文本原点；光标是矢量矩形而不是纹理，不需要纹素对齐。
-            // 文本末尾 + 最大横向滚动时，吸附可能把光标推到内容区外不足 1 像素而整条不可见，
-            // 因此把光标夹取回内容区，保证它始终可见；末端偏移包含光标宽度和原点吸附量，
-            // 内部未被裁剪的光标仍与文字原点及排版位置精确一致。
-            if (caretRect.Width <= inner.Width)
-            {
-                caretRect = caretRect with { X = Math.Clamp(caretRect.X, inner.Left, inner.Right - caretRect.Width) };
-            }
-
+            DrawCompositionDecorations(context, node, state, display, theme, origin, inner, opacity);
+        }
+        else if (node.IsFocused && IsCaretVisible(node, state))
+        {
+            // 普通已提交 caret：位置与“发布给候选锚点的几何”共用同一计算（CaretRectAt）。
+            var caretRect = ClampCaretToInner(CaretRectAt(display, state, origin), inner);
             context.Commands.Add(new RectangleCommand(
                 caretRect,
                 textColor,
@@ -232,6 +224,112 @@ public sealed class TextField : View
         }
 
         context.PopClip(restore);
+    }
+
+    /// <summary>
+    /// 绘制预编辑装饰：每段下划线 + 活动段加粗强调色 + 组合 caret（显示串坐标）。
+    /// </summary>
+    /// <remarks>
+    /// 活动段是包含组合 caret 的分段（caret 恰好落在分段边界时取其后一段；caret 在末尾时取最后一段）；
+    /// 没有分段信息时整段预编辑视为一个活动段。所有装饰与文字纹理共用 <paramref name="origin"/>，
+    /// 因此相对位置不受 DPI、Padding 或横向滚动影响。
+    /// </remarks>
+    private void DrawCompositionDecorations(
+        DrawContext context,
+        ViewNode node,
+        TextFieldState state,
+        TextFieldDisplayLayout display,
+        Theme theme,
+        Point origin,
+        Rect inner,
+        double opacity)
+    {
+        var segments = display.Segments.Count > 0
+            ? display.Segments
+            : (IReadOnlyList<TextRange>)[new TextRange(0, display.PreeditLength)];
+        var caretInPreedit = Math.Clamp(display.CaretDisplay - display.PreeditStart, 0, display.PreeditLength);
+        var active = ActiveSegment(segments, caretInPreedit);
+
+        for (var i = 0; i < segments.Count; i++)
+        {
+            var segment = segments[i];
+            var start = display.PreeditStart + Math.Clamp(segment.Start, 0, display.PreeditLength);
+            var end = display.PreeditStart + Math.Clamp(segment.End, 0, display.PreeditLength);
+            if (end <= start)
+            {
+                continue;
+            }
+
+            var bounds = display.Layout.GetRangeBounds(start, end);
+            if (bounds.Width <= 0)
+            {
+                continue;
+            }
+
+            var thickness = i == active ? 2.0 : 1.0;
+            var fill = i == active ? theme.Accent : theme.MutedForeground;
+            context.Commands.Add(new RectangleCommand(
+                new Rect(origin.X + bounds.X, origin.Y + bounds.Bottom - thickness, bounds.Width, thickness),
+                fill,
+                0,
+                null,
+                0,
+                opacity));
+        }
+
+        if (!node.IsFocused || !IsCaretVisible(node, state))
+        {
+            return;
+        }
+
+        // 组合 caret 的 UTF-16 偏移可能不在字素边界上：按排版可用 caret 规则吸附显示位置，
+        // 但绝不改写组合状态里的原生 caret 偏移。
+        var caretRect = ClampCaretToInner(CaretRectAt(display, state, origin), inner);
+        context.Commands.Add(new RectangleCommand(caretRect, theme.Accent, 0, null, 0, opacity));
+    }
+
+    /// <summary>显示串在内容区内的目标矩形（横向滚动 + 垂直居中）；文字纹理、装饰与命中共用。</summary>
+    private static Rect DisplayTextBounds(TextFieldDisplayLayout display, Rect inner, TextFieldState state)
+        => new(
+            inner.X - state.ScrollX,
+            TextPainter.VerticalOrigin(inner, display.Layout.Size),
+            display.Layout.Size.Width,
+            display.Layout.Size.Height);
+
+    /// <summary>
+    /// 按当前显示串解析有效 caret 的未裁剪矩形：组合期间是组合 caret（显示串坐标），
+    /// 否则是已提交文档 caret。位置只由排版原点 + 排版 caret 决定，不受绘制端夹取影响。
+    /// </summary>
+    private static Rect CaretRectAt(TextFieldDisplayLayout display, TextFieldState state, Point origin)
+    {
+        var caretIndex = display.Composing
+            ? display.CaretDisplay
+            : display.Layout.SnapToCaretStop(Math.Clamp(state.Caret, 0, display.Text.Length));
+        var caret = display.Layout.GetCaretBounds(caretIndex, 1.5);
+        return new Rect(origin.X + caret.X, origin.Y + caret.Y, caret.Width, caret.Height);
+    }
+
+    /// <summary>
+    /// 绘制端把 caret 夹回内容区，避免末端吸附/最大滚动造成不足 1 像素的整条不可见；
+    /// 发布几何使用未夹取的 <see cref="CaretRectAt"/> 与真实裁剪求交，绝不用夹取后的位置掩盖文本错位。
+    /// </summary>
+    private static Rect ClampCaretToInner(Rect caretRect, Rect inner)
+        => caretRect.Width <= inner.Width
+            ? caretRect with { X = Math.Clamp(caretRect.X, inner.Left, inner.Right - caretRect.Width) }
+            : caretRect;
+
+    /// <summary>返回包含组合 caret 的活动分段索引；caret 落在分段间隙时取其后一段，末尾取最后一段。</summary>
+    private static int ActiveSegment(IReadOnlyList<TextRange> segments, int caret)
+    {
+        for (var i = 0; i < segments.Count; i++)
+        {
+            if (caret < segments[i].End)
+            {
+                return i;
+            }
+        }
+
+        return segments.Count - 1;
     }
 
     internal override bool OnPointerDown(InputContext context, ViewNode node, PointerEvent e)
@@ -246,7 +344,13 @@ public sealed class TextField : View
         SyncEditor(node, state, invalidate: true);
 
         // 鼠标重新定位选区属于取消接缝：先取消未提交组合，再处理点击。
+        // 命中测试必须随后基于<b>正式文档</b>（GetLayout）而不是组合显示串：取消后再算 caret，
+        // 保证“显示替换”与“点击意图”使用同一份已提交文本；取消本身不会写绑定。
         CancelCompositionForHostAction(node, state);
+
+        // 长预编辑可能留下很大的横向滚动：取消后先按正式文档与恢复后的选区收敛 ScrollX，
+        // 再计算命中；否则 PointerDown 会用显示串的旧滚动把光标落到错误位置。
+        EnsureCaretVisible(node, state);
 
         // 指针/选区操作（即使随后移回原处）都是分组边界。
         state.History.BreakMerge();
@@ -1033,6 +1137,147 @@ public sealed class TextField : View
 
     internal override bool IsLayoutEquivalent(View other) => false;
 
+    /// <summary>
+    /// 发布几何前的安全同步：观测真实绑定值，外部写入会立即取消未提交组合并请求换 epoch。
+    /// 只读取绑定与本地会话；安全阶段允许建立/读取文本排版缓存以收敛选区，但不写 Binding、不重建、
+    /// 不调用平台服务，也不在 GetState/原生组合回调内执行。
+    /// </summary>
+    internal override void PrepareTextInputGeometry(ViewNode node)
+    {
+        if (node.InteractionState is TextFieldState state)
+        {
+            SyncEditor(node, state, invalidate: false);
+        }
+    }
+
+    /// <summary>
+    /// 最终布局后的安全阶段：发布逻辑像素的 caret / 组合 / 排除几何（TI-06）。
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// 几何来自显示串的真实排版原点（已吸附物理像素）与真实 caret，包含 TextField 的 <see cref="TextFieldState.ScrollX"/>、
+    /// 祖先 <see cref="ScrollView"/> 滚动（<see cref="ViewNode.Frame"/> 是绝对坐标）、Padding/Frame、祖先裁剪与自身内容区裁剪。
+    /// 完全被裁出、不可见或没有有效文本输入会话时发布 <see cref="TextInputGeometry.Unavailable"/>，
+    /// 由客户端按同值去重，避免每帧重复唤醒平台。
+    /// </para>
+    /// <para>
+    /// 本方法只在 <see cref="UiRuntime.ProcessPendingWork"/> 的安全阶段被调用：不重建组件、不改变布局树、
+    /// 不递归生成帧，也不在 Build/Measure/Emit 或原生回调中执行。发布前允许读取/建立当前显示串的排版缓存并
+    /// 收敛 <see cref="TextFieldState.ScrollX"/>，保证纯重绘发现外部短文本后，同一帧的锚点与 Emit 实际绘制一致。
+    /// </para>
+    /// </remarks>
+    internal override void PublishTextInputGeometry(ViewNode node)
+    {
+        if (node.InteractionState is not TextFieldState state)
+        {
+            return;
+        }
+
+        if (state.Composing is not { } client
+            || !ReferenceEquals(state.InputSession.ActiveClient, client))
+        {
+            return;
+        }
+
+        TextInputGeometry geometry;
+        try
+        {
+            // 外部文本变短（尤其从长预编辑滚动恢复）时，上一帧的 ScrollX 可能仍很大。
+            // 发布前先按当前正式显示串收敛滚动；这一步在安全阶段执行、只读布局缓存，不等待 Emit 修正。
+            EnsureCaretVisible(node, state);
+            geometry = ComputeInputGeometry(node, state);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // 几何发布是候选锚点的辅助元数据：绑定/文本服务的真实读取失败不得让整个安全阶段中断。
+            // 撤销锚点并把失败写入脱敏诊断，用户体验（候选窗隐藏）优先于把异常抛给宿主循环。
+            node.Runtime.ReportDiagnostic($"发布文本输入几何失败（节点 {node.ShortDebugPath()}）：{ex.GetType().Name}");
+            geometry = TextInputGeometry.Unavailable;
+        }
+
+        client.PublishGeometry(geometry);
+    }
+
+    /// <summary>从最终布局、显示串排版、滚动偏移与裁剪链计算候选锚点几何。</summary>
+    private TextInputGeometry ComputeInputGeometry(ViewNode node, TextFieldState state)
+    {
+        if (!node.IsMounted
+            || !node.IsFocused
+            || node.IsEffectivelyDisabled
+            || node.Environment.Opacity <= 0
+            || node.Frame.IsEmpty)
+        {
+            return TextInputGeometry.Unavailable;
+        }
+
+        var inner = InnerRect(node.Frame);
+        if (inner.IsEmpty)
+        {
+            return TextInputGeometry.Unavailable;
+        }
+
+        var display = GetDisplayLayout(node, node.Runtime.Services.TextService);
+        var clip = EffectiveClip(node, inner);
+        if (clip.IsEmpty)
+        {
+            return TextInputGeometry.Unavailable;
+        }
+
+        var textBounds = DisplayTextBounds(display, inner, state);
+        var origin = TextPainter.ResolveOrigin(textBounds, display.Layout.Size, TextAlignment.Left, display.Layout.PixelScale);
+
+        // 与绘制共用同一 caret 解析：位置来自真实排版原点 + 排版 caret，不使用绘制端夹取后的矢量线。
+        var caretRect = CaretRectAt(display, state, origin);
+
+        // 组合矩形覆盖预编辑整段（显示串坐标），用于宿主换算候选锚点。
+        var compositionRect = display.Composing && display.PreeditLength > 0
+            ? Offset(display.Layout.GetRangeBounds(display.PreeditStart, display.PreeditStart + display.PreeditLength), origin)
+            : Rect.Empty;
+
+        // 完全可见时返回原始矩形（保留与绘制端逐字段相同的坐标）；部分裁出才求交。
+        // 记录结构使用精确 double 相等，不能因 Intersect 的加减舍入让“发布几何 == 绘制 caret”失真。
+        var visibleCaret = clip.Contains(caretRect) ? caretRect : caretRect.Intersect(clip);
+        if (visibleCaret.IsEmpty || visibleCaret.Height <= 0)
+        {
+            // caret 完全被裁出/隐藏：撤销锚点，不把候选定位到窗口原点。
+            return TextInputGeometry.Unavailable;
+        }
+
+        var visibleComposition = compositionRect.IsEmpty ? Rect.Empty : compositionRect.Intersect(clip);
+        return new TextInputGeometry(visibleCaret, visibleComposition, visibleCaret.Union(visibleComposition));
+    }
+
+    /// <summary>
+    /// 节点内容区的有效裁剪矩形：窗口内容区 ∩ 所有祖先的 <see cref="View.GetChildClip"/> ∩ TextField 自身内容区。
+    /// </summary>
+    private static Rect EffectiveClip(ViewNode node, Rect inner)
+    {
+        var viewport = node.Runtime.ViewportSize;
+        var clip = new Rect(0, 0, viewport.Width, viewport.Height);
+        if (clip.IsEmpty)
+        {
+            return Rect.Empty;
+        }
+
+        for (var ancestor = node.Parent; ancestor is not null; ancestor = ancestor.Parent)
+        {
+            if (ancestor.View.GetChildClip(ancestor) is { } childClip)
+            {
+                clip = clip.Intersect(childClip);
+                if (clip.IsEmpty)
+                {
+                    return Rect.Empty;
+                }
+            }
+        }
+
+        return clip.Intersect(inner);
+    }
+
+    private static Rect Offset(Rect bounds, Point origin)
+        => new(origin.X + bounds.X, origin.Y + bounds.Y, bounds.Width, bounds.Height);
+
+
     /// <summary>取消未提交组合的宿主接缝（幂等）：无组合或没有会话时是无操作。</summary>
     private static void CancelCompositionForHostAction(ViewNode node, TextFieldState state)
     {
@@ -1296,6 +1541,56 @@ public sealed class TextField : View
         return layout;
     }
 
+    /// <summary>
+    /// 解析当前显示串及其真实排版（TI-06）：组合期间是“已提交前缀 + 预编辑 + 已提交后缀”，
+    /// 否则就是已提交文本。显示串排版与 <see cref="GetLayout"/> 的文档排版分开缓存，绝不互相污染。
+    /// </summary>
+    /// <remarks>
+    /// 显示串按<b>当前真实绑定文本</b> + 活动替换区构造，而不是复用组合状态里的旧文档快照；这样外部写入在
+    /// 安全入口被发现并取消组合后，显示串不会短暂拼出过期内容。本方法只读取会话/排版缓存，不写绑定、不改组合状态。
+    /// </remarks>
+    private TextFieldDisplayLayout GetDisplayLayout(ViewNode node, ITextService textService)
+    {
+        var text = Text.Read(node) ?? string.Empty;
+        var font = node.Environment.Font ?? FontDescription.Default;
+        var state = node.InteractionState as TextFieldState;
+        if (state?.Composing is not { IsComposing: true } client
+            || client.Composition.Active is not { } anchor)
+        {
+            return new TextFieldDisplayLayout(text, GetLayout(node, textService), Composing: false, 0, 0, 0, []);
+        }
+
+        var preedit = anchor.Preedit;
+        var start = Math.Clamp(anchor.Replacement.Start, 0, text.Length);
+        var end = Math.Clamp(anchor.Replacement.End, start, text.Length);
+        var displayText = string.Concat(text.AsSpan(0, start), preedit, text.AsSpan(end));
+        var pixelScale = node.Runtime.PixelScale;
+
+        TextLayoutResult layout;
+        if (state.DisplayLayoutCache is { } cache
+            && cache.Text == displayText
+            && cache.PixelScale.Equals(pixelScale)
+            && Equals(cache.Font, font))
+        {
+            layout = cache.Layout;
+        }
+        else
+        {
+            layout = textService.Layout(TextPainter.CreateRequest(displayText, font, double.PositiveInfinity, pixelScale));
+            state.DisplayLayoutCache = new TextFieldDisplayCache(displayText, font, pixelScale, layout);
+        }
+
+        var preeditCaret = Math.Clamp(anchor.Caret, 0, preedit.Length);
+        return new TextFieldDisplayLayout(
+            displayText,
+            layout,
+            Composing: true,
+            start,
+            preedit.Length,
+            start + preeditCaret,
+            anchor.Segments);
+    }
+
     private Rect InnerRect(Rect frame)
     {
         var inner = frame.Deflate(new Thickness(HorizontalPadding, 0));
@@ -1450,29 +1745,44 @@ public sealed class TextField : View
     }
 
     /// <summary>
-    /// 保证光标在内容区可见：只调整 <see cref="TextFieldState.ScrollX"/>，不写绑定、不改光标与选区。
+    /// 保证有效 caret 在内容区可见：只调整 <see cref="TextFieldState.ScrollX"/>，不写绑定、不改光标与选区。
     /// 可复用调用方已有的排版结果与内容区矩形，供排列与纯重绘观测路径共用而不递归重排。
     /// </summary>
+    /// <remarks>
+    /// 组合与已提交 caret 使用<b>同一可见性预算</b>：使用当前显示串/文档的真实排版 caret 位置，
+    /// 并计入 caret 宽度与不足 1 物理像素的吸附余量。这样真实排版原点 + caret 矩形完整落在内容区内，
+    /// 绘制与发布的几何一致；不依赖事后夹取矢量 caret，也不把文本末端强行贴死在右边界。
+    /// </remarks>
     private void EnsureCaretVisible(ViewNode node, TextFieldState state, TextLayoutResult? knownLayout = null, Rect? knownInner = null)
     {
-        var layout = knownLayout ?? GetLayout(node, node.Runtime.Services.TextService);
         var inner = knownInner ?? InnerRect(node.Frame);
         if (inner.Width <= 0)
         {
             return;
         }
 
-        var caret = layout.SnapToCaretStop(Math.Clamp(state.Caret, 0, layout.Text.Length));
+        TextFieldDisplayLayout? display = state.Composing?.IsComposing == true
+            ? GetDisplayLayout(node, node.Runtime.Services.TextService)
+            : null;
+        var layout = display?.Layout ?? knownLayout ?? GetLayout(node, node.Runtime.Services.TextService);
+        var caret = display is { Composing: true } composing
+            ? Math.Clamp(composing.CaretDisplay, 0, composing.Text.Length)
+            : layout.SnapToCaretStop(Math.Clamp(state.Caret, 0, layout.Text.Length));
         var caretX = layout.GetCaretX(caret);
-        var maxScroll = Math.Max(0, layout.Size.Width - inner.Width);
 
-        if (caretX - state.ScrollX > inner.Width)
+        // 末尾 caret 的右边缘也必须可见；物理像素吸附可能再平移不足 1 像素。
+        const double CaretWidth = 1.5;
+        var pixelScale = layout.PixelScale <= 0 ? 1.0 : layout.PixelScale;
+        var snapMargin = 1.0 / pixelScale;
+        var maxScroll = Math.Max(0, layout.Size.Width + CaretWidth + snapMargin - inner.Width);
+
+        if (caretX + CaretWidth - state.ScrollX > inner.Width)
         {
-            state.ScrollX = caretX - inner.Width;
+            state.ScrollX = caretX + CaretWidth - inner.Width + snapMargin;
         }
         else if (caretX - state.ScrollX < 0)
         {
-            state.ScrollX = caretX;
+            state.ScrollX = Math.Max(0, caretX - snapMargin);
         }
 
         state.ScrollX = Math.Clamp(state.ScrollX, 0, maxScroll);
@@ -1500,11 +1810,47 @@ public sealed class TextField : View
     }
 }
 
+/// <summary>
+/// TextField 的显示串视图（TI-06）：显示文本、其真实排版、预编辑在显示串中的范围与组合 caret。
+/// </summary>
+/// <param name="Text">显示串（组合期间为“已提交前缀 + 预编辑 + 已提交后缀”，否则为已提交文本）。</param>
+/// <param name="Layout">显示串的真实排版结果；与文档排版分开缓存。</param>
+/// <param name="Composing">是否正在组合。</param>
+/// <param name="PreeditStart">预编辑在显示串中的起始 UTF-16 偏移。</param>
+/// <param name="PreeditLength">预编辑长度（UTF-16）。</param>
+/// <param name="CaretDisplay">组合 caret 在显示串中的 UTF-16 偏移；未组合时为 0。</param>
+/// <param name="Segments">预编辑分段（相对预编辑串的 UTF-16 范围）。</param>
+internal readonly record struct TextFieldDisplayLayout(
+    string Text,
+    TextLayoutResult Layout,
+    bool Composing,
+    int PreeditStart,
+    int PreeditLength,
+    int CaretDisplay,
+    IReadOnlyList<TextRange> Segments);
+
+/// <summary>
+/// 显示串排版缓存：只按“显示文本 + 字体 + DPI”复用排版；caret/分段每次从组合状态实时解析。
+/// </summary>
+internal sealed class TextFieldDisplayCache(string text, FontDescription font, double pixelScale, TextLayoutResult layout)
+{
+    public string Text { get; } = text;
+
+    public FontDescription Font { get; } = font;
+
+    public double PixelScale { get; } = pixelScale;
+
+    public TextLayoutResult Layout { get; } = layout;
+}
+
 /// <summary>TextField 的运行时编辑状态（保存在节点上，组件重建后保持）。</summary>
 internal sealed class TextFieldState
 {
     /// <summary>原子编辑会话：确认文本、文档版本、来源身份与失效接缝（TI-03）。</summary>
     public TextEditSession Editor { get; } = new();
+
+    /// <summary>显示串排版缓存（TI-06）；与 <see cref="ViewNode.ViewCache"/> 中的文档排版严格分开。</summary>
+    public TextFieldDisplayCache? DisplayLayoutCache { get; set; }
 
     /// <summary>每节点有界撤销/重做历史（TI-05）：与运行时节点同寿命。</summary>
     public TextEditHistory History { get; }
@@ -1553,6 +1899,10 @@ internal sealed class TextFieldState
     /// <summary>
     /// 结束本状态上的焦点文本输入会话：只有本节点仍是当前所有者时才结束（先失效、后通知服务）。
     /// </summary>
+    /// <remarks>
+    /// 已发布锚点的撤销由会话接线在“客户端失效之后”发出（见 <see cref="TextInputServiceSession"/>），
+    /// 不能先从本状态调用平台，否则服务同步回调仍能写入尚未失效的旧客户端。
+    /// </remarks>
     /// <returns>确实结束了会话时返回 true；没有会话或已属于其他节点时为 false（幂等）。</returns>
     public bool EndInputSession()
         => Composing is { } client && InputSession.EndForOwner(client);

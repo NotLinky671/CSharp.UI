@@ -26,7 +26,10 @@ public readonly record struct TextInputGeometry
         ExclusionBounds = exclusionBounds;
     }
 
-    /// <summary>已提交文本的 caret 矩形（逻辑像素）。</summary>
+    /// <summary>
+    /// 有效逻辑 caret 矩形（逻辑像素）：组合期间为组合 caret，否则为已提交文本 caret；
+    /// 已与祖先裁剪/内容区裁剪相交，完全不可见时整体为 <see cref="Unavailable"/>。
+    /// </summary>
     public Rect CaretBounds { get; }
 
     /// <summary>预编辑矩形（逻辑像素）；无组合时为空矩形。</summary>

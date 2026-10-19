@@ -61,6 +61,31 @@ public abstract class View
         }
     }
 
+    /// <summary>
+    /// 发布候选锚点几何之前的同步入口（TI-06）：读取真实绑定/会话并收敛本地状态。
+    /// </summary>
+    /// <remarks>
+    /// 运行时在安全阶段先调用本入口，再消费由此产生的 epoch 失效/取消通知，最后才调用
+    /// <see cref="PublishTextInputGeometry"/>，保证纯重绘路径发现外部 Binding 变化时不会发布旧的组合几何。
+    /// 安全阶段允许读取/建立文本排版缓存以收敛选区与滚动；不得写 Binding、重建节点/布局树、递归生成帧或调用平台服务，
+    /// 也不得在原生组合回调与 <c>GetState</c> 内调用。
+    /// </remarks>
+    internal virtual void PrepareTextInputGeometry(ViewNode node)
+    {
+    }
+
+    /// <summary>
+    /// 最终布局之后的安全阶段：焦点文本控件在此发布候选锚点几何（TI-06）。
+    /// </summary>
+    /// <remarks>
+    /// 运行时在 <c>ProcessPendingWork</c> 完成布局与焦点校验后调用，因此实现可以读取最终 <see cref="ViewNode.Frame"/>；
+    /// 安全阶段允许读取/建立文本排版缓存并收敛滚动，但不得重建节点/布局树、递归生成帧或调用平台服务，
+    /// 也不得在 Measure/Arrange/Emit 或原生组合回调中执行。默认无操作。
+    /// </remarks>
+    internal virtual void PublishTextInputGeometry(ViewNode node)
+    {
+    }
+
     /// <summary>节点挂载后调用一次；用于申请资源或订阅。</summary>
     internal virtual void OnMount(ViewNode node)
     {

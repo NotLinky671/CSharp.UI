@@ -4,7 +4,7 @@
 
 设计依据：[IME、编辑事务与撤销重做计划](../plan/2026-10-17-text-input-and-editing-plan.md)。
 
-状态：TI-01 接入路线经 Codex 审核通过（探针86项测试通过；用户免除微软拼音测试）；TI-02～TI-05均经Codex独立复审通过。TI-04验收记录见[组合状态机审核](../return/2026-10-18-ti04-composition-review.md)；TI-05于2026-10-19完成：868项工程测试、49项独立检查及41项TI-04兼容性检查通过，见[撤销重做审核](../return/2026-10-19-ti05-undo-redo-review.md)。TI-06～TI-10 待开始。Windows候选实际定位、取消与生产宿主验收保留至TI-07/TI-10。
+状态：TI-01 接入路线经 Codex 审核通过（探针86项测试通过；用户免除微软拼音测试）；TI-02～TI-05均经Codex独立复审通过。TI-04验收记录见[组合状态机审核](../return/2026-10-18-ti04-composition-review.md)；TI-05于2026-10-19完成：868项工程测试、49项独立检查及41项TI-04兼容性检查通过，见[撤销重做审核](../return/2026-10-19-ti05-undo-redo-review.md)。TI-06于2026-10-19经Codex最终独立复审通过：Debug/Release各916项工程测试、162项独立检查及TI-04/TI-05兼容41/49项全部通过，见[预编辑与几何审核](../return/2026-10-19-ti06-preedit-geometry-review.md)。TI-07～TI-10 待开始。Windows候选实际定位、取消与生产宿主验收保留至TI-07/TI-10。
 
 ## 任务与依赖
 
@@ -15,7 +15,7 @@
 | ☑ | TI-03 | [统一编辑事务与 Binding 同步](03-atomic-editing-and-binding.md) | [TI-02：冻结编辑与文本输入契约](02-editing-and-input-contracts.md) | B |
 | ☑ | TI-04 | [组合会话与预编辑状态机](04-composition-state-machine.md) | [TI-03：统一编辑事务与 Binding 同步](03-atomic-editing-and-binding.md) | B |
 | ☑ | TI-05 | [有界撤销重做与编辑命令](05-undo-redo-and-edit-commands.md) | [TI-04：组合会话与预编辑状态机](04-composition-state-machine.md) | C |
-| ☐ | TI-06 | [预编辑绘制、命中与候选几何](06-preedit-rendering-and-geometry.md) | [TI-04：组合会话与预编辑状态机](04-composition-state-machine.md) | C |
+| ☑ | TI-06 | [预编辑绘制、命中与候选几何](06-preedit-rendering-and-geometry.md) | [TI-04：组合会话与预编辑状态机](04-composition-state-machine.md) | C |
 | ☐ | TI-07 | [Windows IME 桥与宿主输入联调](07-windows-ime-and-host-routing.md) | [TI-01：平台可行性与 Windows 原型](01-platform-feasibility.md)、[TI-05：有界撤销重做与编辑命令](05-undo-redo-and-edit-commands.md)、[TI-06：预编辑绘制、命中与候选几何](06-preedit-rendering-and-geometry.md) | C |
 | ☐ | TI-08 | [跨平台能力查询与兼容回退](08-platform-capabilities-and-fallback.md) | [TI-07：Windows IME 桥与宿主输入联调](07-windows-ime-and-host-routing.md) | D |
 | ☐ | TI-09 | [输入示例、使用指南与验收工具](09-samples-guides-and-ime-tests.md) | [TI-08：跨平台能力查询与兼容回退](08-platform-capabilities-and-fallback.md) | D |
@@ -28,7 +28,7 @@
 - [x] [TI-03：统一编辑事务与 Binding 同步](03-atomic-editing-and-binding.md)
 - [x] [TI-04：组合会话与预编辑状态机](04-composition-state-machine.md)
 - [x] [TI-05：有界撤销重做与编辑命令](05-undo-redo-and-edit-commands.md)
-- [ ] [TI-06：预编辑绘制、命中与候选几何](06-preedit-rendering-and-geometry.md)
+- [x] [TI-06：预编辑绘制、命中与候选几何](06-preedit-rendering-and-geometry.md)
 - [ ] [TI-07：Windows IME 桥与宿主输入联调](07-windows-ime-and-host-routing.md)
 - [ ] [TI-08：跨平台能力查询与兼容回退](08-platform-capabilities-and-fallback.md)
 - [ ] [TI-09：输入示例、使用指南与验收工具](09-samples-guides-and-ime-tests.md)

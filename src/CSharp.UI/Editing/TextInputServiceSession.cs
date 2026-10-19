@@ -215,12 +215,16 @@ internal sealed class TextInputServiceSession
     {
         var lease = _lease;
         var started = _serviceSessionStarted;
-        ++_generation;
+        var generation = ++_generation;
+        var owner = _owner;
 
-        // 先撤销归属并使客户端失效，再通知服务：服务的同步回调不会写入任何新会话。
-        if (_owner is { } owner)
+        // 先撤销归属并使客户端失效，再通知服务：服务的同步回调（包括撤销锚点的回调）不会写入任何新会话。
+        // 几何撤销也必须遵守这个顺序：否则 PublishGeometry(Unavailable) 的同步 Result 仍能写入旧客户端。
+        var retractGeometry = owner?.HasPublishedGeometry == true;
+        if (owner is not null)
         {
             owner.IsReleased = true;
+            owner.MarkGeometryRevoked();
         }
 
         _owner = null;
@@ -235,6 +239,24 @@ internal sealed class TextInputServiceSession
         if (!started)
         {
             return false;
+        }
+
+        if (retractGeometry)
+        {
+            try
+            {
+                Service.PublishGeometry(TextInputGeometry.Unavailable);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                ReportServiceFailure("PublishGeometry", ex);
+            }
+
+            // 撤销回调同步重入并建立了新会话：由代际号保护，不再向服务发送旧会话的 EndSession。
+            if (_generation != generation || _owner is not null)
+            {
+                return true;
+            }
         }
 
         try
@@ -404,6 +426,32 @@ internal sealed class TextInputServiceSession
         }
 
         return caller.ApplyValidated(events);
+    }
+
+    /// <summary>
+    /// 在安全阶段发布当前客户端 caret/组合/排除几何（TI-06）；只接受当前有效归属。
+    /// </summary>
+    /// <remarks>
+    /// 平台调用封装在这里，服务抛错在本地收敛为失败并记录脱敏诊断，不会越过布局后的安全阶段。
+    /// 同值去重由 <see cref="TextFieldCompositionClient"/> 负责。
+    /// </remarks>
+    internal bool PublishGeometry(TextFieldCompositionClient caller, TextInputGeometry geometry)
+    {
+        ArgumentNullException.ThrowIfNull(caller);
+        if (!IsCurrentOwner(caller) || !_serviceSessionStarted)
+        {
+            return false;
+        }
+
+        try
+        {
+            return Service.PublishGeometry(geometry);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            ReportServiceFailure("PublishGeometry", ex);
+            return false;
+        }
     }
 
     private void ReportServiceFailure(string operation, Exception exception)

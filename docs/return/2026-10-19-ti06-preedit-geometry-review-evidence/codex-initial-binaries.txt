@@ -1,0 +1,9 @@
+
+Algorithm : SHA256
+Hash      : 89C0D1DB3708206610C9A0D9768745EAB5801B82247D78E8E02B82807E6C9415
+Path      : C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\bin\Debug\net10.0\CSharp.UI.dll
+
+Algorithm : SHA256
+Hash      : 8B8F1BD9230DC47D3144B1302D6089BF267EBACE4F4968BA4370468E02FAFAC2
+Path      : C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.Text\bin\Debug\net10.0\CSharp.UI.Text.dll
+

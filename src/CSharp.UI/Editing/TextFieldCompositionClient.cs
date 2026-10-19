@@ -34,6 +34,18 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
     /// <summary>正在应用的批次深度；服务在提交回调里同步重入时直接拒绝，避免递归写入。</summary>
     private int _applying;
 
+    /// <summary>是否成功发布过几何（用于“隐藏时撤销锚点”与同值去重）。</summary>
+    private bool _hasPublishedGeometry;
+
+    /// <summary>最近一次请求发布的几何；同值不重复调用平台服务。</summary>
+    private TextInputGeometry _lastPublishedGeometry;
+
+    /// <summary>当前有效几何：与最近一次发布给服务/实际显示一致；释放/失效时查询返回不可用。</summary>
+    private TextInputGeometry _currentGeometry = TextInputGeometry.Unavailable;
+
+    /// <summary>是否已有有效几何（首次发布前查询为不可用）。</summary>
+    private bool _hasCurrentGeometry;
+
     /// <summary>最后一次成功回读的可靠文档；绑定 getter/setter 抛错时用它兜底，绝不在回调里再次调用抛错 getter。</summary>
     private CompositionDocument? _lastReliableDocument;
 
@@ -88,7 +100,12 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
     public TextInputState GetState()
     {
         var document = CurrentDocument();
-        return new TextInputState(document.Snapshot, _composition.Preedit, TextInputGeometry.Unavailable, _composition.IsComposing);
+        // 客户端查询与发布给服务的几何必须同源：不在此处排版，也不返回旧锚点。
+        // 被释放/外部失效的客户端一律报告不可用，避免 TI-07 用陈旧 caret 定位候选窗。
+        var geometry = IsReleased || EpochInvalidationRequested || !_hasCurrentGeometry
+            ? TextInputGeometry.Unavailable
+            : _currentGeometry;
+        return new TextInputState(document.Snapshot, _composition.Preedit, geometry, _composition.IsComposing);
     }
 
     /// <inheritdoc />
@@ -182,6 +199,18 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
                 _node.Runtime.ReportDiagnostic($"组合事件应用失败（节点 {_node.ShortDebugPath()}）：绑定写入异常");
             }
 
+            // 预编辑出现、变化或消失都需要一次最终布局：组合回调内只标记失效（不执行排版、不生成帧），
+            // 由安全阶段重排后绘制显示串/下划线/组合 caret，并重新保证组合 caret 可见。
+            if (_node.IsMounted
+                && (result.Outcome & (TextInputOutcome.Started
+                    | TextInputOutcome.Updated
+                    | TextInputOutcome.Cancelled
+                    | TextInputOutcome.Ended
+                    | TextInputOutcome.ResultCommitted)) != 0)
+            {
+                _node.Runtime.InvalidateLayout(_node);
+            }
+
             return result;
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
@@ -197,6 +226,47 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
         {
             _applying--;
         }
+    }
+
+    /// <summary>
+    /// 发布候选锚点几何（TI-06）：只接受当前有效归属；同值不重复调用平台服务。
+    /// </summary>
+    /// <remarks>
+    /// 调用方必须在最终布局后的安全阶段调用（运行时 <c>ProcessPendingWork</c>），不得在 Build/Measure/Emit
+    /// 或原生组合回调内调用。隐藏/完全裁出时由调用方发布 <see cref="TextInputGeometry.Unavailable"/>，
+    /// 这里同样按同值去重，避免持续唤醒平台。
+    /// </remarks>
+    internal bool PublishGeometry(TextInputGeometry geometry)
+    {
+        if (IsReleased || EpochInvalidationRequested)
+        {
+            return false;
+        }
+
+        _currentGeometry = geometry;
+        _hasCurrentGeometry = true;
+
+        if (_hasPublishedGeometry && _lastPublishedGeometry == geometry)
+        {
+            return false;
+        }
+
+        _hasPublishedGeometry = true;
+        _lastPublishedGeometry = geometry;
+        return _state.InputSession.PublishGeometry(this, geometry);
+    }
+
+    /// <summary>是否已经向平台发布过几何（撤销锚点只需要在发布过时发生）。</summary>
+    internal bool HasPublishedGeometry => _hasPublishedGeometry;
+
+    /// <summary>
+    /// 归属被撤销后标记几何失效（不调用平台）：使 <see cref="GetState"/> 立即不返回旧锚点；
+    /// 平台撤销通知由会话接线在“先失效”之后、代际保护下发出。
+    /// </summary>
+    internal void MarkGeometryRevoked()
+    {
+        _currentGeometry = TextInputGeometry.Unavailable;
+        _hasCurrentGeometry = false;
     }
 
     /// <summary>
