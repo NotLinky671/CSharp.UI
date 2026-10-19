@@ -94,3 +94,7 @@ Codex额外独立运行时检查162/162；TI-04兼容41/41、TI-05兼容49/49，
 ### 本项边界
 
 通过的是平台无关预编辑显示、命中/滚动与逻辑候选几何。真实Skia/GL测试中的组合事件由测试服务产生；未接入Windows原生IME桥、未验证系统候选窗口，窗口位置/屏幕坐标换算及真实输入法联调仍属TI-07/TI-10。未安装、启用或测试微软拼音，未变更系统输入法配置；不宣称macOS/Linux完整IME。本计划尚未整体完成，不创建计划级交付记录。
+
+## 提交与推送结果
+
+DSH按Codex批准范围创建实现提交`ab41a14cc3f27ad727b7d771cc1a5252f61e400e`（Implement preedit rendering and caret geometry）。DSH沙箱凭据助手出现Win32 error 5，未改凭据、远程或提交历史；Codex宿主执行同一条正常`git push origin main`成功，远程main从2a5ba8d推进至ab41a14。实现提交后工作区干净。后续文档提交仅记录这一实际推送结果，不改代码或验收结论。
