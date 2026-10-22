@@ -1,0 +1,326 @@
+[
+  {
+    "seq": 65,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 66,
+    "kind": "text-ext",
+    "start": 0,
+    "end": 0,
+    "rect": "(107,139)-(108,178)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 67,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 71,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 72,
+    "kind": "text-ext",
+    "start": 0,
+    "end": 0,
+    "rect": "(107,139)-(108,178)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 73,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 107,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 108,
+    "kind": "text-ext",
+    "start": 0,
+    "end": 1,
+    "rect": "(107,139)-(125,178)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 109,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 116,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 117,
+    "kind": "text-ext",
+    "start": 0,
+    "end": 1,
+    "rect": "(107,139)-(125,178)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 118,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 141,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 142,
+    "kind": "text-ext",
+    "start": 0,
+    "end": 2,
+    "rect": "(107,139)-(133,178)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 143,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 166,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 167,
+    "kind": "text-ext",
+    "start": 0,
+    "end": 4,
+    "rect": "(107,139)-(159,178)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 168,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 191,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 192,
+    "kind": "text-ext",
+    "start": 0,
+    "end": 5,
+    "rect": "(107,139)-(176,178)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 193,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 216,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 217,
+    "kind": "text-ext",
+    "start": 0,
+    "end": 6,
+    "rect": "(107,139)-(195,178)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 218,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 250,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 252,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 283,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 284,
+    "kind": "text-ext",
+    "start": 0,
+    "end": 6,
+    "rect": "(107,139)-(195,178)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 285,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 311,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 312,
+    "kind": "text-ext",
+    "start": 0,
+    "end": 0,
+    "rect": "(107,139)-(108,178)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 313,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 320,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 321,
+    "kind": "text-ext",
+    "start": 0,
+    "end": 0,
+    "rect": "(107,139)-(108,178)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 322,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  },
+  {
+    "seq": 332,
+    "kind": "screen-ext",
+    "start": null,
+    "end": null,
+    "rect": "(91,125)-(829,489)",
+    "hresult": null,
+    "layout_notify_depth": 1
+  }
+]

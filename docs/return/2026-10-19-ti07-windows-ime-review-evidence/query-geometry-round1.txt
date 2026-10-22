@@ -1,0 +1,35 @@
+PASS IME character query answers actual start, middle and end offsets
+PASS IME character offsets resolve to distinct layout positions
+PASS IME query preserves negative screen coordinates and valid document geometry
+PASS IME query rejects out-of-range offset and undersized structure
+FAIL IME query rejects layout invalidation before next safe pass
+PASS IME query resumes after final layout is rebuilt
+FAIL IME query rejects font changes before next safe pass
+FAIL IME query rejects revoked geometry without default-chain fallback
+FAIL IME query rejects ended focus without default-chain fallback
+PASS original public Result factory method group remains compatible
+PASS ordinary WM_CHAR equal to result must not be swallowed by text matching
+PASS result-clause-only update is not flagless cancellation
+PASS combined result retains next preedit
+PASS combined result preserves next cursor and clauses
+PASS scale change republishes unchanged logical anchor
+PASS SDK composition high bit cleared and all candidate bits retained
+PASS both public void DispatchKey method groups remain compatible
+PASS flagless cancel preserves earlier segmented result
+PASS duplicate native cancel is idempotent
+PASS native composition started without client cannot transfer to newly focused client
+PASS missing HIMC reports committed-only fallback
+PASS committed-only fallback must retain native IME character channel
+PASS next-preedit event freezes caller segment collection
+PASS implicit native preedit establishes composition without START
+PASS implicit native preedit participates in platform cancellation
+PASS implicit native composition cannot leak delayed result across focus epoch
+PASS BMP plus supplementary scalar makes two binding transactions
+PASS native install-context exception restores actual HWND procedure
+PASS native failed install reports failure with zero restore failures
+PASS actual HWND result consumed once without entering original composition chain
+PASS actual HWND ordinary char reaches original procedure despite throwing trace
+PASS actual HWND normal disposal restores predecessor pointer
+PASS tool Query cancels without UI dispatcher pumping
+PASS tool Scenario propagates cancellation instead of continuing
+Audit: passed=30 failed=4

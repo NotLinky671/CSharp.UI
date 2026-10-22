@@ -1,0 +1,22 @@
+{
+  "capture_y_after": 56,
+  "capture_y_before": 80,
+  "candidate_marker_screen_y_after": [
+    169,
+    192
+  ],
+  "candidate_marker_screen_y_before": [
+    193,
+    216
+  ],
+  "candidate_marker_local_y_after": [
+    113,
+    136
+  ],
+  "visual": "pass-for-this-window-move-only",
+  "reason": "Personally inspected both PNGs and read original blue-marker pixels: candidate moves up 24 physical px with host. This does not prove the mechanism of movement.",
+  "candidate_marker_local_y_before": [
+    113,
+    136
+  ]
+}

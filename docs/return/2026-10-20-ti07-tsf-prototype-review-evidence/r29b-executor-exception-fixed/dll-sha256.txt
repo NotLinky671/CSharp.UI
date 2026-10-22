@@ -1,0 +1,5 @@
+
+Algorithm : SHA256
+Hash      : 304A98EC4A047ED2980F99D2CAB6E41903749E5FFDEC9F5CD8279F8C69C80E60
+Path      : C:\Users\nothh\code\C#\CSharp.UI\tools\CSharp.UI.TsfHostCheck\bin\Debug\net10.0\CSharp.UI.TsfHostCheck.dll
+

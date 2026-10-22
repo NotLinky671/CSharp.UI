@@ -1,0 +1,9 @@
+[PASS] Windows CCW QI and native GetStatus vtable
+[PASS] same sink re-advice updates mask
+[PASS] foreign thread cannot grant sink lock
+[PASS] active authoritative snapshot preserves display text and caret
+[PASS] application update cannot mutate inside read grant
+[FAIL] authoritative update cannot reenter during notification: nested update mutated in notification
+[FAIL] authoritative no-op does not advance generation or notify: no-op changed generation or notified
+[FAIL] inline dispatcher cannot notify before RequestLock returns: notification emitted inside RequestLock stack
+Audit failures: 3

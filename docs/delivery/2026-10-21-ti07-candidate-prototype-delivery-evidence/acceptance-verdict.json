@@ -1,0 +1,10 @@
+{
+  "Date": "2026-10-21",
+  "Scope": "isolated-host-drawn-candidate-prototype",
+  "Scroll": "visual-pass",
+  "ClipRestore": "visual-pass",
+  "UniqueChineseCommit": "pass",
+  "Tests": 581,
+  "ProductionMigration": false,
+  "FullTi07Complete": false
+}

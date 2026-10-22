@@ -1441,7 +1441,6 @@ public class TextFieldCompositionTests
 
         Assert.True(secondNode.IsFocused);
         Assert.False(firstNode.IsFocused);
-
         var current = service.ActiveClient;
         Assert.NotNull(current);
         var applied = current!.ApplyComposition(
@@ -1449,6 +1448,141 @@ public class TextFieldCompositionTests
         Assert.False(applied.HasRejection, applied.RejectionReason);
         Assert.Equal("a", first.Text);
         Assert.Equal("X", second.Text);
+    }
+
+    // -------------------------------------------- 取消→结束紧邻序列的同步重入（TI-07 P4 修复回归）
+
+    [Fact]
+    public void EndDeliversPendingNativeCancelAfterOwnershipSevered()
+    {
+        // 窗口失活/失焦紧邻序列：本地已取消 → 会话结束必须把登记的取消真正交给服务（否则 TIP 从未收到
+        // TerminateComposition，Deactivate 后自行决定提交/放弃）；且必须在归属切断之后调用（plan:116）。
+        var binding = new ScriptedTextBinding("ab");
+        var service = new FakeTextInputService();
+        var (app, _, node) = CreateField(service, binding.Binding);
+        using var _app = app;
+
+        var client = Client(node);
+        var epoch = client.Session.SessionId;
+        AssertApplied(service.Apply(CompositionEvent.Start(epoch, 0, 0, 0, new TextRange(2, 2), "n", TextSelection.Caret(2))), TextInputOutcome.Started);
+
+        // 调用次序见证：RequestCancel 到达时归属必须已失效——替身在取消回调里同步投递旧 Result，
+        // 该事件只对已撤销的旧客户端显式拒绝，不得写绑定。
+        var deliveredLate = new List<TextInputApplyResult>();
+        service.OnRequestCancel = () =>
+        {
+            deliveredLate.Add(service.ActiveClient!.ApplyComposition(
+                [CompositionEvent.Result(epoch, 0, 0, 1, "X", new TextRange(2, 2))]));
+        };
+
+        app.Runtime.SetFocus(null);
+        app.Runtime.ProcessPendingWork();
+
+        Assert.Equal(1, service.CancelCount);
+        Assert.Single(deliveredLate);
+        Assert.True(deliveredLate[0].HasRejection);
+        Assert.Equal(0, binding.SetterCalls);
+        Assert.Equal("ab", binding.Text);
+    }
+
+    [Fact]
+    public void RequestCancelSynchronousRefocusKeepsReentrantSessionAndServiceOwner()
+    {
+        // 服务在 RequestCancel 内同步把焦点切到第二字段（重入建立新会话）：
+        // 外层结束不得再发旧会话的 EndSession/几何撤销覆盖新归属，新会话必须可写。
+        var first = new ScriptedTextBinding("a");
+        var second = new ScriptedTextBinding("b");
+        var service = new FakeTextInputService();
+        using var app = new TestApp(
+            new VStack(new TextField(first.Binding) { Width = 120 }, new TextField(second.Binding) { Width = 120 }),
+            new Size(400, 120),
+            textInputService: service);
+        app.Frame();
+
+        var firstNode = app.Runtime.Root.Children[0];
+        var secondNode = app.Runtime.Root.Children[1];
+        app.Runtime.SetFocus(firstNode);
+        app.Runtime.ProcessPendingWork();
+
+        var firstClient = Client(firstNode);
+        AssertApplied(service.Apply(CompositionEvent.Start(firstClient.Session.SessionId, 0, 0, 0, new TextRange(1, 1), "n", TextSelection.Caret(1))), TextInputOutcome.Started);
+
+        // 失焦触发本地取消→EndCore→RequestCancel；服务在取消内同步重入切焦点到第二字段。
+        service.OnRequestCancel = () =>
+        {
+            service.OnRequestCancel = null;
+            app.Runtime.SetFocus(secondNode);
+        };
+
+        app.Runtime.SetFocus(null);
+        app.Runtime.ProcessPendingWork();
+
+        Assert.True(secondNode.IsFocused);
+        var current = service.ActiveClient;
+        Assert.NotNull(current);
+        Assert.Same(Client(secondNode), current);
+        Assert.False(Client(secondNode).IsReleased);
+
+        var applied = current.ApplyComposition(
+            [CompositionEvent.Result(current.Session.SessionId, 0, current.Document.Version, 0, "X", new TextRange(0, 1))]);
+        Assert.False(applied.HasRejection, applied.RejectionReason);
+        Assert.Equal("a", first.Text);
+        Assert.Equal("X", second.Text);
+    }
+
+    [Fact]
+    public void RequestCancelSynchronousEndDoesNotRecurseOrClobber()
+    {
+        // 服务在 RequestCancel 内同步重入会话结束（等同失活→失焦紧邻序列里的重入 End）：
+        // 归属已切断，重入 End 必须是幂等无会话（不递归、不抛错）；回调结果记录到外部断言，
+        // 不在回调里 Assert（异常会被 ServiceFailure 收敛吞掉而失去失败信号）。
+        var binding = new ScriptedTextBinding("ab");
+        var service = new FakeTextInputService();
+        var (app, _, node) = CreateField(service, binding.Binding);
+        using var _app = app;
+
+        var client = Client(node);
+        AssertApplied(service.Apply(CompositionEvent.Start(client.Session.SessionId, 0, 0, 0, new TextRange(2, 2), "n", TextSelection.Caret(2))), TextInputOutcome.Started);
+
+        var reenteredEndResult = new List<bool>();
+        service.OnRequestCancel = () =>
+        {
+            service.OnRequestCancel = null;
+            // 归属已切断后重入按所有者结束：必须是幂等 false（owner 已释放，不递归也不误终）。
+            reenteredEndResult.Add(app.Runtime.TextInputSession.EndForOwner(client));
+        };
+
+        app.Runtime.SetFocus(null);
+        app.Runtime.ProcessPendingWork();
+
+        Assert.Single(reenteredEndResult);
+        Assert.False(reenteredEndResult[0]);
+        Assert.Equal(1, service.CancelCount);
+        Assert.True(client.IsReleased);
+        Assert.Equal(0, binding.SetterCalls);
+        Assert.Equal("ab", binding.Text);
+    }
+
+    [Fact]
+    public void CancelThenEndStillRejectsLateResultAndKeepsCommittedText()
+    {
+        // 本地取消后归属结束：迟到的旧 Result 不得写绑定；已取消段零写，文本保持已提交版本。
+        var binding = new ScriptedTextBinding("ab");
+        var service = new FakeTextInputService();
+        var (app, _, node) = CreateField(service, binding.Binding);
+        using var _app = app;
+
+        var client = Client(node);
+        var epoch = client.Session.SessionId;
+        AssertApplied(service.Apply(CompositionEvent.Start(epoch, 0, 0, 0, new TextRange(2, 2), "n", TextSelection.Caret(2))), TextInputOutcome.Started);
+
+        app.Runtime.SetFocus(null);
+        app.Runtime.ProcessPendingWork();
+
+        var late = client.ApplyComposition([CompositionEvent.Result(epoch, 0, 0, 1, "nihao", new TextRange(2, 2))]);
+        Assert.True(late.HasRejection);
+        Assert.Equal(0, binding.SetterCalls);
+        Assert.Equal("ab", binding.Text);
     }
 
     [Fact]
@@ -1676,7 +1810,8 @@ public class TextFieldCompositionTests
         var firstClient = Client(firstNode);
         AssertApplied(service.Apply(CompositionEvent.Start(firstClient.Session.SessionId, 0, 0, 0, default, "n")), TextInputOutcome.Started);
 
-        // 本地取消排入延迟平台通知，但随后焦点切到新字段并开始新组合；延迟通知不得取消新段。
+        // 本地取消排入延迟平台通知，随后焦点切到新字段：旧归属的取消在结束旧会话时
+        // 必须真正交给服务（plan：失焦先取消未提交段）；不得延迟到新段、不得取消新组合。
         Assert.True(firstClient.CancelComposition());
         app.Runtime.SetFocus(secondNode);
         app.Runtime.ProcessPendingWork();
@@ -1684,7 +1819,7 @@ public class TextFieldCompositionTests
         AssertApplied(service.Apply(CompositionEvent.Start(secondClient.Session.SessionId, 0, 0, 0, default, "m")), TextInputOutcome.Started);
 
         app.Runtime.ProcessPendingWork();
-        Assert.Equal(0, service.CancelCount);
+        Assert.Equal(1, service.CancelCount);
         Assert.True(secondClient.IsComposing);
         Assert.Equal("m", secondClient.Preedit);
     }
@@ -1749,6 +1884,8 @@ public class TextFieldCompositionTests
 
         public Action? OnEndSession { get; set; }
 
+        /// <summary>服务在 <see cref="RequestCancel"/> 内的同步回调（模拟原生终止同步触发焦点/生命周期动作）。</summary>
+        public Action? OnRequestCancel { get; set; }
         public bool StartSession(ITextInputClient client)
         {
             ArgumentNullException.ThrowIfNull(client);
@@ -1786,6 +1923,7 @@ public class TextFieldCompositionTests
         public bool RequestCancel()
         {
             CancelCount++;
+            OnRequestCancel?.Invoke();
             return ActiveClient?.CancelComposition() ?? false;
         }
 

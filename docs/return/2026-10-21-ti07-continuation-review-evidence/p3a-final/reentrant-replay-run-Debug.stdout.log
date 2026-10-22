@@ -1,0 +1,2 @@
+[AUDIT] guarded capture: writes=0, pending=1
+[AUDIT] no further user input: writes=2, hasX=True, pending=0, replayed=2, hasY=True, reentered=False

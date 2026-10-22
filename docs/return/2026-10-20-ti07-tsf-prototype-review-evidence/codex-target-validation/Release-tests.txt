@@ -1,0 +1,8 @@
+tsf-prototype tests: TEMP/TMP -> C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\ti07-tsf-prototype\temp (this process only)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.TsfHostCheck.Tests
+  Discovered:  CSharp.UI.TsfHostCheck.Tests
+  Starting:    CSharp.UI.TsfHostCheck.Tests
+  Finished:    CSharp.UI.TsfHostCheck.Tests (ID = 'ae82a3e019cb4b6719b555876a4045271e115214a117084148864ad0996847eb')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.TsfHostCheck.Tests  Total: 79, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.104s

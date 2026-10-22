@@ -486,7 +486,8 @@ internal sealed class TextFieldComposition
 
         if (committed && after is { } snapshot)
         {
-            // 真实提交后的下一段：按实际 after 选区/caret 重新锚定（通常是折叠范围），保留前后缀。
+            // 真实提交后的下一段：按实际 after 选区/caret 重新锚定（通常是折叠范围），保留前后缀；
+            // 预编辑 caret/分段沿用同一原生消息的真实快照，不重猜（R9）。
             var caret = snapshot.Selection.Range;
             _documentText = snapshot.Text;
             _segmentVersion = snapshot.Version;
@@ -498,8 +499,8 @@ internal sealed class TextFieldComposition
                 caret,
                 snapshot.Selection,
                 e.NextPreedit,
-                e.NextPreedit.Length,
-                []);
+                e.NextPreeditCaret ?? e.NextPreedit.Length,
+                FreezeSegments(e.NextPreeditSegments));
             IsComposing = true;
             _lastSelection = snapshot.Selection;
             _lastVersion = snapshot.Version;
@@ -515,8 +516,8 @@ internal sealed class TextFieldComposition
                 replacement,
                 document.Selection,
                 e.NextPreedit,
-                e.NextPreedit.Length,
-                []);
+                e.NextPreeditCaret ?? e.NextPreedit.Length,
+                FreezeSegments(e.NextPreeditSegments));
             IsComposing = true;
             _documentText = document.Text;
             _segmentVersion = document.Version;
@@ -527,13 +528,14 @@ internal sealed class TextFieldComposition
             return TextInputOutcome.Updated;
         }
 
-        // 结果未真实提交（空/无变化/拒绝）：仍在同一未提交段，保留原替换区；返回快照用真实文档选区。
+        // 结果未真实提交（空/无变化/拒绝）：仍在同一未提交段，保留原替换区；
+        // 下一段的 caret/分段同样沿用同一原生消息的真实快照（R9）。
         var previous = Active.Value;
         Active = previous with
         {
             Preedit = e.NextPreedit,
-            Caret = e.NextPreedit.Length,
-            Segments = [],
+            Caret = e.NextPreeditCaret ?? e.NextPreedit.Length,
+            Segments = FreezeSegments(e.NextPreeditSegments),
         };
         _documentText = document.Text;
         _lastSelection = document.Selection;

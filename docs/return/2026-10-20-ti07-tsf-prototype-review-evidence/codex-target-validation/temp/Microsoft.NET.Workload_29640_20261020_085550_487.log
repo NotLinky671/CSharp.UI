@@ -1,0 +1,14 @@
+[2026-10-20 08:55:50.488] [000073C8] === Logging started ===
+[2026-10-20 08:55:50.495] [000073C8] Executing: "C:\Program Files\dotnet\dotnet.exe" build tests/CSharp.UI.TsfHostCheck.Tests/CSharp.UI.TsfHostCheck.Tests.csproj -c Release --no-restore -v quiet, PID: 29640, PPID: 60648
+[2026-10-20 08:55:50.496] [000073C8] IsElevated: False
+[2026-10-20 08:55:50.496] [000073C8] Is64BitProcess: True
+[2026-10-20 08:55:50.496] [000073C8] RebootPending: False
+[2026-10-20 08:55:50.496] [000073C8] ProcessorArchitecture: amd64
+[2026-10-20 08:55:50.496] [000073C8] HostArchitecture: x64
+[2026-10-20 08:55:50.496] [000073C8] SdkDirectory: 10.0.303
+[2026-10-20 08:55:50.496] [000073C8] VerifySignatures: False
+[2026-10-20 08:55:50.496] [000073C8] SDK feature band: 10.0.300
+[2026-10-20 08:55:51.388] [000073C8] Shutting down
+[2026-10-20 08:55:51.388] [000073C8] Shutdown completed.
+[2026-10-20 08:55:51.388] [000073C8] Restart required: False
+[2026-10-20 08:55:51.388] [000073C8] === Logging ended ===

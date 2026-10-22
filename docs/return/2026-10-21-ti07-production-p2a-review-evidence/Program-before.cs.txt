@@ -1,0 +1,75 @@
+using CSharp.UI;
+using CSharp.UI.OpenTK;
+using CSharp.UI.Testing;
+
+int failures = 0;
+Run("duplicate partial confirmation", h =>
+{
+ var a = h.Adapter(); a.Begin(preedit: "nihao");
+ a.CommitResult("你", "hao"); a.CommitResult("你", "hao");
+ Check(h.Writes == 1, $"same confirmation replay wrote {h.Writes} times; text={h.Text}");
+});
+Run("refresh after external binding change", h =>
+{
+ var a=h.Adapter(); a.Begin(preedit:"ni"); h.Text="external";
+ var snapshot=a.Refresh();
+ Check(snapshot.IsComposing==h.Service.ActiveClient!.IsComposing,
+  $"mirror={snapshot.IsComposing}, core={h.Service.ActiveClient.IsComposing}, display={snapshot.DisplayText}");
+});
+Run("cross-region selection", h =>
+{
+ var a=h.Adapter(); a.Begin(new TextRange(1,3),"ni",2);
+ var result=a.SetNativeSelection(new TextSelection(0,2));
+ Check(result.IsRejected,"unsupported cross-region range reported success");
+});
+Run("snapshot output immutability", h =>
+{
+ var a=h.Adapter(); var s=a.Begin(preedit:"ni",segments:new[]{new TextRange(0,2)}).Snapshot;
+ if(s.Segments is TextRange[] array) array[0]=new TextRange(0,0);
+ Check(s.Segments[0]==new TextRange(0,2),"published snapshot was mutated through array cast");
+});
+Run("selection getter revokes client", h =>
+{
+ var client=h.Service.ActiveClient!; var version=client.Document.Version;
+ h.OnRead=()=>{h.OnRead=null;h.Runtime.SetFocus(null);};
+ bool ok=((ITextInputSelectionTarget)client).TrySetCommittedSelection(client.Session,version,new TextSelection(1,1));
+ Check(!ok,"selection accepted after getter revoked focused client");
+});
+Console.WriteLine($"Independent P2a audit failures={failures}");
+return failures==0?0:1;
+
+void Run(string name,Action<Host> action)
+{
+ try { using var h=new Host(); action(h); Console.WriteLine($"PASS {name}"); }
+ catch(Exception ex) { failures++; Console.WriteLine($"FAIL {name}: {ex.Message}"); }
+}
+static void Check(bool ok,string message) {if(!ok)throw new InvalidOperationException(message);}
+
+sealed class Host:IDisposable
+{
+ public string Text="ABCD";
+ public int Writes;
+ public Action? OnRead;
+ public Service Service=new();
+ public UiRuntime Runtime;
+ public Host()
+ {
+  Runtime=new UiRuntime(new TextField(new Binding<string>(()=>{OnRead?.Invoke();return Text;},v=>{Writes++;Text=v;})),
+   new UiRuntimeServices{Dispatcher=new HeadlessUiDispatcher(),TextService=new StubTextService(),
+    TextureService=new RecordingTextureService(),TextInputService=Service});
+  Runtime.SetViewport(new Size(400,120),1);Runtime.Start();Runtime.BuildFrame();
+  Runtime.SetFocus(Runtime.Root);Runtime.BuildFrame();
+ }
+ public TextInputCompositionSession Adapter()=>new(Service.ActiveClient!,c=>ReferenceEquals(c,Service.ActiveClient));
+ public void Dispose()=>Runtime.Dispose();
+}
+sealed class Service:ITextInputService
+{
+ public TextInputCapabilities Capabilities=>TextInputCapabilities.Full;
+ public ITextInputClient? ActiveClient{get;private set;}
+ public bool StartSession(ITextInputClient c){ActiveClient=c;return true;}
+ public bool EndSession(){ActiveClient=null;return true;}
+ public TextInputApplyResult ApplyComposition(IReadOnlyList<CompositionEvent> e)=>ActiveClient!.ApplyComposition(e);
+ public bool RequestCancel()=>false;
+ public bool PublishGeometry(TextInputGeometry g)=>true;
+}

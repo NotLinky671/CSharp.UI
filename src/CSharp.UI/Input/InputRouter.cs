@@ -304,7 +304,8 @@ internal sealed class InputRouter
     }
 
     /// <summary>分发键盘事件；Tab / Shift+Tab 在无人处理时执行焦点遍历。</summary>
-    public void DispatchKey(KeyEvent e)
+    /// <returns>事件是否被焦点控件消费或经焦点遍历消费；宿主据此决定自身快捷键（如退出）是否继续生效。</returns>
+    public bool DispatchKey(KeyEvent e)
     {
         var context = new InputContext(_runtime);
         var handled = false;
@@ -317,7 +318,10 @@ internal sealed class InputRouter
         {
             _focus.Move(e.Modifiers.HasFlag(KeyModifiers.Shift));
             _runtime.InvalidateRender();
+            handled = true;
         }
+
+        return handled;
     }
 
     /// <summary>分发已提交文本输入；只发送给当前焦点节点。</summary>

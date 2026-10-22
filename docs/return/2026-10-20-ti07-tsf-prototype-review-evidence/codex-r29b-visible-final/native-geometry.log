@@ -1,0 +1,35 @@
+[PASS] own process manifest uses PerMonitorV2: 144
+[PASS] three genuine different windows: 
+[PASS] actual parent chain: 
+[PASS] input process/thread ownership: 
+[PASS] created hidden without ShowWindow: 
+[PASS] actual GetWnd input: 0x13F14D2
+[PASS] hidden surface query no lock: (0,0)-(0,0)
+[PASS] minimized root hides child surface without lock: (0,0)-(0,0)
+[PASS] own viewport update region established: 
+[PASS] viewport WM_PAINT validates actual update region: 
+[PASS] visible actual ancestor intersection: (107,125)-(813,192) expected(107,125)-(813,192)
+[PASS] review own viewport movement succeeds: 
+[PASS] surface intersects root as well as immediate viewport: (107,479)-(813,489) expected(107,479)-(813,489)
+[PASS] surface survives text invalidation without lock: 
+[PASS] GetTextExt still refuses no read lock: 
+[PASS] input moved exactly11: (107,125)-(813,192)->(107,114)-(813,181)
+[PASS] row moved exactly11 without double subtraction: (123,139)-(226,178)->(123,128)-(226,167)
+[PASS] local text padding stable: 
+[PASS] root/viewport stationary: 
+[PASS] partial actual surface clipping: (107,125)-(813,181) expected(107,125)-(813,181)
+[PASS] real focused surface entirely outside viewport: 
+[PASS] fully clipped surface zero no lock: (0,0)-(0,0)
+[PASS] layout clip actual ancestor intersection: (0,0)-(0,0)
+[PASS] actual input geometry restored: 
+[PASS] row geometry restored: 
+[PASS] display surface restored: 
+[PASS] no focus changed by geometry: 
+[PASS] external foreground preserved: 
+[PASS] no binding write/composition: 
+[PASS] viewport follows actual root client resize: root(91,125)-(909,539) viewport(91,125)-(909,539)
+[PASS] input width follows root resize: before(107,125)-(813,192) after(107,125)-(893,192)
+[PASS] UI exits: 
+[PASS] all actual HWND destroyed: 
+[PASS] foreground retained on teardown: 
+RESULT 34/34

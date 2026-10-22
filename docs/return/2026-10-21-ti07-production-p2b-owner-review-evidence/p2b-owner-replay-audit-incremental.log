@@ -1,0 +1,12 @@
+[PASS] End alone cannot confirm nonempty composition before completed edit
+[PASS] insert-before-start range cannot consume committed suffix
+[PASS] native selected replacement retains correct committed suffix
+[PASS] incomplete history cannot continue committing facts
+[PASS] own native synchronization does not invalidate next composition update
+[PASS] completed edit with only updated preedit cannot commit a changed suffix
+[PASS] disposed product sink cannot access a borrowed composition view
+[FAIL] two completed native transactions queued before drain retain separate results: queued results conflated: writes=2, text=ABCD你你你, composing=False
+[PASS] partial confirmation preserves selected replacement, residual and composition token
+[PASS] completed noncomposition native write applies through authoritative transaction
+[FAIL] old completed operation remains rejected after multiple identity-cache rotations: retired operation became new input: composing=True, writes=769, previous=769
+Owner audit failures: 2

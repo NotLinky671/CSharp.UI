@@ -1,0 +1,13 @@
+COMMAND: tests/CSharp.UI.OpenTK.Tests/bin/Debug/net10.0/CSharp.UI.OpenTK.Tests.exe -class CSharp.UI.OpenTK.Tests.CandidateOverlayRenderingTests -method CandidateOverlay_RendersChineseAfterContent_AndConstrainsAndHighlightsSelection
+FILTER: -class CSharp.UI.OpenTK.Tests.CandidateOverlayRenderingTests -method CandidateOverlay_RendersChineseAfterContent_AndConstrainsAndHighlightsSelection
+EXIT_CODE: 0
+--- STDOUT ---
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '46f6427a055eaea5774ac41639f8bd848cbf0fea13555980ed18f5ed08ee0304')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 0
+
+--- STDERR ---

@@ -1,0 +1,32 @@
+[PASS] ScrollFollow ordinary success pending visual: 
+[PASS] ScrollFollow original zero X geometry restored: x=0 y=9 rootY=100
+[PASS] ScrollFollow exact original nonzero X/Y geometry restored: x=5 y=9 rootY=100
+[PASS] ScrollFollow transient failed safe point cannot recover into success: 
+[PASS] ScrollFollow no measurement capture after failed safe point: r29b-baseline
+[PASS] ScrollFollow restore capture failure invalidates experiment: 
+[PASS] ScrollFollow pre-action loss prevents measured mutation: actions=0
+[FAIL] ScrollFollow measurement-capture exception returns failure and restores geometry: escaped=True x=0 y=20 rootY=100
+[FAIL] ScrollFollow wait exception returns failure and restores geometry: escaped=True x=0 y=20 rootY=100
+[FAIL] ScrollFollow restore-capture exception returns failure and restores geometry: escaped=True x=0 y=9 rootY=100
+[PASS] ClipOut ordinary success pending visual: 
+[PASS] ClipOut original zero X geometry restored: x=0 y=9 rootY=100
+[PASS] ClipOut exact original nonzero X/Y geometry restored: x=5 y=9 rootY=100
+[PASS] ClipOut transient failed safe point cannot recover into success: 
+[PASS] ClipOut no measurement capture after failed safe point: r29b-baseline
+[PASS] ClipOut restore capture failure invalidates experiment: 
+[PASS] ClipOut pre-action loss prevents measured mutation: actions=0
+[FAIL] ClipOut measurement-capture exception returns failure and restores geometry: escaped=True x=0 y=150 rootY=100
+[FAIL] ClipOut wait exception returns failure and restores geometry: escaped=True x=0 y=150 rootY=100
+[FAIL] ClipOut restore-capture exception returns failure and restores geometry: escaped=True x=0 y=9 rootY=100
+[PASS] MoveWindow ordinary success pending visual: 
+[PASS] MoveWindow original zero X geometry restored: x=0 y=9 rootY=100
+[PASS] MoveWindow exact original nonzero X/Y geometry restored: x=5 y=9 rootY=100
+[PASS] MoveWindow transient failed safe point cannot recover into success: 
+[PASS] MoveWindow no measurement capture after failed safe point: r29b-baseline
+[PASS] MoveWindow restore capture failure invalidates experiment: 
+[PASS] MoveWindow pre-action loss prevents measured mutation: actions=0
+[FAIL] MoveWindow measurement-capture exception returns failure and restores geometry: escaped=True x=0 y=9 rootY=76
+[FAIL] MoveWindow wait exception returns failure and restores geometry: escaped=True x=0 y=9 rootY=76
+[FAIL] MoveWindow restore-capture exception returns failure and restores geometry: escaped=True x=0 y=9 rootY=100
+[PASS] clipped GetScreenExt must be exact zero RECT: 
+RESULT 22/31

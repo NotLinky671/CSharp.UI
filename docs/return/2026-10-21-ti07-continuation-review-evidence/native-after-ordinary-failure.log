@@ -1,0 +1,2 @@
+[AUDIT] first native then ordinary: text=你x writes=2
+[AUDIT] next native: text=你x writes=2 pending=0 rejected=1

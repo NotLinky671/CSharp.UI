@@ -1,0 +1,10 @@
+[PASS] ThreadMgrEx exists: 
+[PASS] SDK IID: 3e90ade3-7594-4cb0-bb58-69628f5f458c
+[PASS] ComImport: 
+[FAIL] flattened 13 methods: ActivateEx,GetActiveFlags
+[FAIL] CLR actual last COM slot15: 4
+[FAIL] ActivateEx declared at slot14: 3
+[FAIL] GetActiveFlags declared at slot15: 4
+[PASS] PreserveSig on every HRESULT: 
+[FAIL] base signatures match SDK wrapper: 
+ABI audit 4/9; no native COM activation called

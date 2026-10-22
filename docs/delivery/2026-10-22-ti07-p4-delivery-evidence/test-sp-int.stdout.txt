@@ -1,0 +1,7 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.Integration.Tests
+  Discovered:  CSharp.UI.Integration.Tests
+  Starting:    CSharp.UI.Integration.Tests
+  Finished:    CSharp.UI.Integration.Tests (ID = '3b5032de5836e9d2a3a5adee1ab46abd3695fb07fb98f257850cd8b672011649')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.Integration.Tests  Total: 53, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.180s

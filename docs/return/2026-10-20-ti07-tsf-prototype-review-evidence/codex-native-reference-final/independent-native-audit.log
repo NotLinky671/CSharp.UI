@@ -1,0 +1,16 @@
+[PASS] hidden create 
+[PASS] no visible surface 
+[PASS] baseline text applied 
+[PASS] both selection outputs (2, 7)
+[PASS] standard EDIT EM_POSFROMCHAR 0 got0,0 native0,0
+[PASS] standard EDIT EM_POSFROMCHAR 2 got10,0 native10,0
+[PASS] standard EDIT EM_POSFROMCHAR 51 got0,57 native0,57
+[PASS] real one-line scroll 
+[PASS] negative row coordinate 
+[PASS] child exactly 11 physical pixels Rect { Left = 96, Top = 176, Right = 656, Bottom = 596 } -> Rect { Left = 96, Top = 165, Right = 656, Bottom = 585 }
+[PASS] parent and viewport stable 
+[PASS] actual clip action succeeds EDIT moved by dy=-84 so the composition row is fully clipped and still inside the parent evidence region; row=(96,149)-(97,168) viewport=(96,176)-(656,356)
+[PASS] clip row is above viewport and inside evidence rowBottom=168 viewportTop=176 parentTop=80
+[PASS] foreground unchanged 
+[PASS] all HWND destroyed 
+audit 15/15

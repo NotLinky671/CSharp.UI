@@ -1,0 +1,16 @@
+PASS invalid view yields E_INVALIDARG and zero output without lock
+PASS valid surface can be queried without document lock
+PASS text-layout invalidation does not invalidate unchanged display surface
+PASS GetTextExt still requires document read lock
+PASS native audit runs with PerMonitorV2 awareness
+PASS actual own HWND created hidden
+PASS actual hidden window returns S_OK zero rect
+PASS actual shown window returns physical client screen rect without lock
+PASS actual surface survives text-layout-only invalidation
+PASS actual own window move/resize without activation
+PASS actual move and resize return current surface
+PASS actual minimized window returns zero rect
+PASS actual restored window returns current surface
+PASS actual rehidden window returns zero rect
+PASS native surface audit never changes foreground
+Audit failures=0

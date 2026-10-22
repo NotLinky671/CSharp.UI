@@ -1,0 +1,6 @@
+  Discovering: CSharp.UI.Text.Tests
+  Discovered:  CSharp.UI.Text.Tests
+  Starting:    CSharp.UI.Text.Tests
+  Finished:    CSharp.UI.Text.Tests (ID = 'c4a19c1aa793e50c4c3b61fdf78415a4cba4da2c7bba99068ed5476fa98dae19')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.Text.Tests  Total: 67, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.279s

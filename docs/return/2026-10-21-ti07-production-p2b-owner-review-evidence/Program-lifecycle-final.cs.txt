@@ -1,0 +1,260 @@
+using CSharp.UI;
+using CSharp.UI.OpenTK;
+using CSharp.UI.OpenTK.WindowsTsf;
+using CSharp.UI.Testing;
+using System.Runtime.InteropServices;
+
+int failures = 0;
+Run("End alone cannot confirm nonempty composition before completed edit", h =>
+{
+    var (session, owner) = h.CreateOwner(4, 4);
+    using (owner)
+    {
+        owner.Capture(NativeCompositionFactKind.Start, 4, 2, "ni", true);
+        owner.DrainAtSafePhase();
+        owner.Capture(NativeCompositionFactKind.End, 4, 2, "ni", true);
+        owner.DrainAtSafePhase();
+        Check(h.Writes == 0, $"End committed prematurely: writes={h.Writes}");
+    }
+});
+Run("insert-before-start range cannot consume committed suffix", h =>
+{
+    var (session, owner) = h.CreateOwner(2, 2);
+    using (owner)
+    {
+        owner.Capture(NativeCompositionFactKind.Start, 2, 5, "nihao", true);
+        owner.DrainAtSafePhase();
+        Check(session.Snapshot.DisplayText == "ABnihaoCD", $"mirror={session.Snapshot.DisplayText}");
+        Check(h.Writes == 0, "preedit wrote Binding");
+    }
+});
+Run("native selected replacement retains correct committed suffix", h =>
+{
+    var (session, owner) = h.CreateOwner(1, 3);
+    using (owner)
+    {
+        owner.Capture(NativeCompositionFactKind.Start, 1, 5, "nihao", true);
+        owner.DrainAtSafePhase();
+        Check(session.Snapshot.DisplayText == "AnihaoD", $"mirror={session.Snapshot.DisplayText}");
+    }
+});
+Run("incomplete history cannot continue committing facts", h =>
+{
+    var (_, owner) = h.CreateOwner(4, 4);
+    using (owner)
+    {
+        owner.Capture(NativeCompositionFactKind.Start, 4, 2, "ni", true);
+        owner.DrainAtSafePhase();
+        owner.MarkNeedsResync();
+        owner.Capture(NativeCompositionFactKind.End, 4, 2, "ni", true);
+        owner.DrainAtSafePhase();
+        Check(h.Writes == 0, $"resync-required owner committed: writes={h.Writes}");
+    }
+});
+Run("own native synchronization does not invalidate next composition update", h =>
+{
+    var (session, owner) = h.CreateOwner(4, 4);
+    using (owner)
+    {
+        owner.Capture(NativeCompositionFactKind.Start, 4, 2, "ni", true);
+        owner.DrainAtSafePhase();
+        Check(owner.SynchronizeToNative(), "sync failed");
+        owner.Capture(NativeCompositionFactKind.Update, 4, 3, "nih", true);
+        owner.DrainAtSafePhase();
+        Check(!owner.NeedsResync && session.Snapshot.Preedit == "nih", "own synchronization treated as external invalidation");
+    }
+});
+Run("completed edit with only updated preedit cannot commit a changed suffix", h =>
+{
+    var (session, owner) = h.CreateOwner(4, 4);
+    using (owner)
+    {
+        owner.Capture(NativeCompositionFactKind.Start, 4, 2, "ni", true);
+        owner.DrainAtSafePhase();
+        Check(owner.SynchronizeToNative(), "initial sync failed");
+        var token = session.Token;
+        h.ReplaceNativeText("ABCDnih");
+        owner.Capture(NativeCompositionFactKind.Update, 4, 3, "nih", true);
+        owner.CaptureCompletedEdit();
+        owner.DrainAtSafePhase();
+        Check(h.Writes == 0 && h.Text == "ABCD", $"preedit update committed: writes={h.Writes}, text={h.Text}");
+        Check(ReferenceEquals(token, session.Token), "pure update retired native composition token");
+    }
+});
+Run("disposed product sink cannot access a borrowed composition view", h =>
+{
+    var (_, owner) = h.CreateOwner(4, 4);
+    using (owner)
+    {
+        var sink = new NativeCompositionOwnerSink(owner, h.Store);
+        sink.Dispose();
+        var view = new CountingCompositionView();
+        sink.OnStartComposition(view, out var accepted);
+        Check(view.RangeReads == 0 && accepted == 0, "disposed sink accessed borrowed native view");
+    }
+});
+Run("two completed native transactions queued before drain retain separate results", h =>
+{
+    var (session, owner) = h.CreateOwner(4, 4);
+    using (owner)
+    {
+        h.ReplaceNativeText("ABCDni");
+        owner.Capture(NativeCompositionFactKind.Start, 4, 2, "ni", true);
+        h.ReplaceNativeText("ABCD你");
+        owner.Capture(NativeCompositionFactKind.End, 4, 1, "你", true);
+        owner.CaptureCompletedEdit(nativeOperationKey: "native-transaction-1");
+
+        h.ReplaceNativeText("ABCD你ni");
+        owner.Capture(NativeCompositionFactKind.Start, 5, 2, "ni", true);
+        h.ReplaceNativeText("ABCD你你");
+        owner.Capture(NativeCompositionFactKind.End, 5, 1, "你", true);
+        owner.CaptureCompletedEdit(nativeOperationKey: "native-transaction-2");
+
+        owner.DrainAtSafePhase();
+        Check(h.Writes == 2 && h.Text == "ABCD你你" && !session.Snapshot.IsComposing,
+            $"queued results conflated: writes={h.Writes}, text={h.Text}, composing={session.Snapshot.IsComposing}");
+    }
+});
+Run("partial confirmation preserves selected replacement, residual and composition token", h =>
+{
+    var (session, owner) = h.CreateOwner(1, 3);
+    using (owner)
+    {
+        h.ReplaceNativeText("AnihaoD");
+        owner.Capture(NativeCompositionFactKind.Start, 1, 5, "nihao", true);
+        owner.CaptureCompletedEdit();
+        owner.DrainAtSafePhase();
+        Check(h.Writes == 0 && session.Snapshot.DisplayText == "AnihaoD", "initial preedit failed");
+        var token = session.Token;
+        h.ReplaceNativeText("A你haoD");
+        owner.Capture(NativeCompositionFactKind.Update, 2, 3, "hao", true);
+        owner.CaptureCompletedEdit();
+        owner.DrainAtSafePhase();
+        Check(h.Writes == 1 && h.Text == "A你D" && session.Snapshot.DisplayText == "A你haoD",
+            $"partial result mismatch: writes={h.Writes}, text={h.Text}, display={session.Snapshot.DisplayText}");
+        Check(ReferenceEquals(token, session.Token), "partial confirmation replaced composition token");
+    }
+});
+Run("completed noncomposition native write applies through authoritative transaction", h =>
+{
+    var (session, owner) = h.CreateOwner(2, 2);
+    using (owner)
+    {
+        h.ReplaceNativeText("ABXCD");
+        owner.CaptureCompletedEdit(nativeOperationKey: "direct-native-transaction");
+        owner.DrainAtSafePhase();
+        Check(h.Writes == 1 && h.Text == "ABXCD" && !session.Snapshot.IsComposing,
+            $"direct native write lost: writes={h.Writes}, text={h.Text}, composing={session.Snapshot.IsComposing}");
+    }
+});
+Run("foreign-thread sink callbacks cannot access borrowed composition view", h =>
+{
+    var (_, owner) = h.CreateOwner(4, 4);
+    using (owner)
+    using (var sink = new NativeCompositionOwnerSink(owner, h.Store))
+    {
+        var view = new CountingCompositionView();
+        int hr = 0;
+        var thread = new Thread(() => hr = sink.OnStartComposition(view, out _));
+        thread.Start(); Check(thread.Join(5000), "worker timeout");
+        Check(view.RangeReads == 0 && sink.StartCallbacks == 0 && owner.PendingCount == 0,
+            $"foreign callback touched borrowed view: reads={view.RangeReads}, callbacks={sink.StartCallbacks}, pending={owner.PendingCount}, hr={hr:X8}");
+    }
+});
+Run("foreign-thread disposal leaves owner cleanup and connection state untouched", h =>
+{
+    var (_, owner) = h.CreateOwner(4, 4);
+    using (owner)
+    using (var sink = new NativeCompositionOwnerSink(owner, h.Store))
+    {
+        Exception? error = null;
+        var thread = new Thread(() => { try { sink.Dispose(); } catch (Exception ex) { error = ex; } });
+        thread.Start(); Check(thread.Join(5000), "worker timeout");
+        var hr = sink.AdviseEditSink(null!);
+        Check(hr == TsfHResult.E_INVALIDARG,
+            $"foreign dispose permanently retired owner-thread sink: subsequent validation hr={hr:X8}, exception={error?.GetType().Name}");
+    }
+});
+Console.WriteLine($"Owner audit failures: {failures}");
+return failures == 0 ? 0 : 1;
+
+void Run(string name, Action<Host> action)
+{
+    try { using var h = new Host(); action(h); Console.WriteLine($"[PASS] {name}"); }
+    catch (Exception e) { failures++; Console.WriteLine($"[FAIL] {name}: {e.Message}"); }
+}
+static void Check(bool condition, string message)
+{
+    if (!condition) throw new InvalidOperationException(message);
+}
+
+sealed class Host : IDisposable
+{
+    public string Text = "ABCD";
+    public int Writes;
+    public Service Service = new();
+    public UiRuntime Runtime;
+    public AcpTextStore Store = new();
+    public Host()
+    {
+        Runtime = new UiRuntime(new TextField(new Binding<string>(() => Text, value => { Writes++; Text = value; })),
+            new UiRuntimeServices { Dispatcher = new HeadlessUiDispatcher(), TextService = new StubTextService(),
+                TextureService = new RecordingTextureService(), TextInputService = Service });
+        Runtime.SetViewport(new Size(400, 120), 1);
+        Runtime.Start(); Runtime.BuildFrame(); Runtime.SetFocus(Runtime.Root); Runtime.BuildFrame();
+        Store.ResetAuthoritativeText(Text);
+    }
+    public (TextInputCompositionSession, NativeCompositionOwner) CreateOwner(int anchor, int active)
+    {
+        var client = Service.ActiveClient!;
+        if (!((ITextInputSelectionTarget)client).TrySetCommittedSelection(client.Session, client.Document.Version,
+                new TextSelection(anchor, active))) throw new InvalidOperationException("selection failed");
+        var session = new TextInputCompositionSession(client, c => ReferenceEquals(c, Service.ActiveClient));
+        return (session, new NativeCompositionOwner(Store, session, client.Session.SessionId));
+    }
+    public void ReplaceNativeText(string text)
+    {
+        var sink = new WriteSink();
+        var hr = Store.AdviseSink(TsfIids.TextStoreAcpSink, sink, 3);
+        if (hr != 0) throw new InvalidOperationException($"advice failed {hr:X8}");
+        var value = Marshal.StringToHGlobalUni(text);
+        try
+        {
+            sink.Write = () => Store.SetText(0, 0, Store.Document.Length, value, (uint)text.Length, out _);
+            Store.RequestLock(TsfFlags.TS_LF_READWRITE, out var sessionHr);
+            if (sessionHr < 0 || sink.WriteResult < 0) throw new InvalidOperationException("native staging failed");
+        }
+        finally { Marshal.FreeHGlobal(value); Store.UnadviseSink(sink); }
+    }
+    public void Dispose() { Store.Dispose(); Runtime.Dispose(); }
+}
+sealed class WriteSink : ITextStoreACPSink
+{
+    public Func<int>? Write;
+    public int WriteResult;
+    public int OnTextChange(uint flags, ref TsTextChange change) => 0;
+    public int OnSelectionChange() => 0;
+    public int OnLayoutChange(int code, uint view) => 0;
+    public int OnStatusChange(uint flags) => 0;
+    public int OnAttrsChange(int start, int end, uint count, IntPtr attributes) => 0;
+    public int OnLockGranted(uint flags) { WriteResult = Write?.Invoke() ?? 0; return WriteResult; }
+    public int OnStartEditTransaction() => 0;
+    public int OnEndEditTransaction() => 0;
+}
+sealed class CountingCompositionView : ITfCompositionView
+{
+    public int RangeReads;
+    public int GetOwnerClsid(out Guid owner) { owner = Guid.Empty; return 0; }
+    public int GetRange(out IntPtr range) { RangeReads++; range = IntPtr.Zero; return unchecked((int)0x80004005); }
+}
+sealed class Service : ITextInputService
+{
+    public TextInputCapabilities Capabilities => TextInputCapabilities.Full;
+    public ITextInputClient? ActiveClient { get; private set; }
+    public bool StartSession(ITextInputClient client) { ActiveClient = client; return true; }
+    public bool EndSession() { ActiveClient = null; return true; }
+    public TextInputApplyResult ApplyComposition(IReadOnlyList<CompositionEvent> events) => ActiveClient!.ApplyComposition(events);
+    public bool RequestCancel() => false;
+    public bool PublishGeometry(TextInputGeometry geometry) => true;
+}
+

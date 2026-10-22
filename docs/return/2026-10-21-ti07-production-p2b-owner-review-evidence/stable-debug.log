@@ -1,0 +1,16 @@
+[PASS] End alone cannot confirm nonempty composition before completed edit
+[PASS] insert-before-start range cannot consume committed suffix
+[PASS] native selected replacement retains correct committed suffix
+[PASS] incomplete history cannot continue committing facts
+[PASS] own native synchronization does not invalidate next composition update
+[DBG-comp] terminal=False active=(4, 3) base="ABCDni" native="ABCDnih" delta=delta prefix=6 removed=0 insertedLen=1 confirmed="" residual="nih"
+[PASS] completed edit with only updated preedit cannot commit a changed suffix
+[PASS] disposed product sink cannot access a borrowed composition view
+[DBG-comp] terminal=True active= base="ABCD" native="ABCD你" delta=delta prefix=4 removed=0 insertedLen=1 confirmed="你" residual=""
+[DBG-comp] terminal=True active= base="ABCD" native="ABCD你你" delta=delta prefix=4 removed=0 insertedLen=2 confirmed="你你" residual=""
+[FAIL] two completed native transactions queued before drain retain separate results: queued results conflated: writes=2, text=ABCD你你你, composing=False
+[DBG-comp] terminal=False active=(1, 5) base="ABCD" native="AnihaoD" delta=delta prefix=1 removed=2 insertedLen=5 confirmed="" residual="nihao"
+[DBG-comp] terminal=False active=(2, 3) base="AnihaoD" native="A你haoD" delta=delta prefix=1 removed=2 insertedLen=1 confirmed="你" residual="hao"
+[FAIL] partial confirmation preserves selected replacement, residual and composition token: partial confirmation replaced composition token
+[PASS] completed noncomposition native write applies through authoritative transaction
+Owner audit failures: 2

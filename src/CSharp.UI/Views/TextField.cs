@@ -1180,12 +1180,13 @@ public sealed class TextField : View
         }
 
         TextInputGeometry geometry;
+        CompositionCharGeometrySnapshot? charGeometry;
         try
         {
             // 外部文本变短（尤其从长预编辑滚动恢复）时，上一帧的 ScrollX 可能仍很大。
             // 发布前先按当前正式显示串收敛滚动；这一步在安全阶段执行、只读布局缓存，不等待 Emit 修正。
             EnsureCaretVisible(node, state);
-            geometry = ComputeInputGeometry(node, state);
+            geometry = ComputeInputGeometry(node, state, client, out charGeometry);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -1193,14 +1194,23 @@ public sealed class TextField : View
             // 撤销锚点并把失败写入脱敏诊断，用户体验（候选窗隐藏）优先于把异常抛给宿主循环。
             node.Runtime.ReportDiagnostic($"发布文本输入几何失败（节点 {node.ShortDebugPath()}）：{ex.GetType().Name}");
             geometry = TextInputGeometry.Unavailable;
+            charGeometry = null;
         }
 
+        // 逐字符几何快照与锚点同帧同源更新（R17）：平台位置查询只读该快照；
+        // 几何不可用时快照为 null，客户端立即拒绝应答，绝不回落旧位置。
+        client.UpdateCompositionCharGeometry(charGeometry);
         client.PublishGeometry(geometry);
     }
 
     /// <summary>从最终布局、显示串排版、滚动偏移与裁剪链计算候选锚点几何。</summary>
-    private TextInputGeometry ComputeInputGeometry(ViewNode node, TextFieldState state)
+    private TextInputGeometry ComputeInputGeometry(
+        ViewNode node,
+        TextFieldState state,
+        TextFieldCompositionClient client,
+        out CompositionCharGeometrySnapshot? charGeometry)
     {
+        charGeometry = null;
         if (!node.IsMounted
             || !node.IsFocused
             || node.IsEffectivelyDisabled
@@ -1242,6 +1252,30 @@ public sealed class TextField : View
             // caret 完全被裁出/隐藏：撤销锚点，不把候选定位到窗口原点。
             return TextInputGeometry.Unavailable;
         }
+
+        // 逐字符几何快照（R17）：与本帧发布的锚点同源——同一份显示串排版、同一原点、同一有效裁剪，
+        // 平台按它逐偏移应答，原生回调不再访问活动状态。三个身份键（epoch/预编辑/文档版本）
+        // 由客户端在提供时核对，任一变化即拒绝。
+        var preedit = display.Composing
+            && display.PreeditStart >= 0
+            && display.PreeditStart + display.PreeditLength <= display.Text.Length
+                ? display.Text.Substring(display.PreeditStart, display.PreeditLength)
+                : string.Empty;
+        charGeometry = new CompositionCharGeometrySnapshot
+        {
+            Layout = display.Layout,
+            Preedit = preedit,
+            PreeditStart = preedit.Length > 0 ? display.PreeditStart : 0,
+            CaretIndex = display.Composing
+                ? Math.Clamp(display.CaretDisplay, 0, display.Text.Length)
+                : display.Layout.SnapToCaretStop(Math.Clamp(state.Caret, 0, display.Text.Length)),
+            Origin = origin,
+            EditableClip = clip,
+            Epoch = client.Epoch,
+            DocumentVersion = state.Editor.Version,
+            LayoutSerial = node.Runtime.LayoutSerial,
+            ScrollX = state.ScrollX,
+        };
 
         var visibleComposition = compositionRect.IsEmpty ? Rect.Empty : compositionRect.Intersect(clip);
         return new TextInputGeometry(visibleCaret, visibleComposition, visibleCaret.Union(visibleComposition));

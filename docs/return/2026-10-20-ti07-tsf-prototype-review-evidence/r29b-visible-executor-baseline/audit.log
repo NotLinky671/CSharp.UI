@@ -1,0 +1,23 @@
+[PASS] ScrollFollow ordinary success pending visual: 
+[PASS] ScrollFollow original zero X geometry restored: x=0 y=9 rootY=100
+[FAIL] ScrollFollow exact original nonzero X/Y geometry restored: x=0 y=9 rootY=100
+[FAIL] ScrollFollow transient failed safe point cannot recover into success: 
+[FAIL] ScrollFollow no measurement capture after failed safe point: r29b-baseline,r29b-scrolled,r29b-scroll-restored
+[FAIL] ScrollFollow restore capture failure invalidates experiment: 
+[FAIL] ScrollFollow pre-action loss prevents measured mutation: actions=1
+[PASS] ClipOut ordinary success pending visual: 
+[PASS] ClipOut original zero X geometry restored: x=0 y=9 rootY=100
+[FAIL] ClipOut exact original nonzero X/Y geometry restored: x=0 y=9 rootY=100
+[FAIL] ClipOut transient failed safe point cannot recover into success: 
+[FAIL] ClipOut no measurement capture after failed safe point: r29b-baseline,r29b-clipped,r29b-clip-restored
+[FAIL] ClipOut restore capture failure invalidates experiment: 
+[FAIL] ClipOut pre-action loss prevents measured mutation: actions=1
+[PASS] MoveWindow ordinary success pending visual: 
+[PASS] MoveWindow original zero X geometry restored: x=0 y=9 rootY=100
+[PASS] MoveWindow exact original nonzero X/Y geometry restored: x=5 y=9 rootY=100
+[FAIL] MoveWindow transient failed safe point cannot recover into success: 
+[FAIL] MoveWindow no measurement capture after failed safe point: r29b-baseline,r29b-moved,r29b-move-restored
+[FAIL] MoveWindow restore capture failure invalidates experiment: 
+[FAIL] MoveWindow pre-action loss prevents measured mutation: actions=2
+[FAIL] clipped GetScreenExt must be exact zero RECT: 
+RESULT 7/22

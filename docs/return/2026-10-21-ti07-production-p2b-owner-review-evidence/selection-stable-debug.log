@@ -1,0 +1,14 @@
+[PASS] End alone cannot confirm nonempty composition before completed edit
+[PASS] insert-before-start range cannot consume committed suffix
+[PASS] native selected replacement retains correct committed suffix
+[PASS] incomplete history cannot continue committing facts
+[PASS] own native synchronization does not invalidate next composition update
+[PASS] completed edit with only updated preedit cannot commit a changed suffix
+[PASS] disposed product sink cannot access a borrowed composition view
+[PASS] two completed native transactions queued before drain retain separate results
+[PASS] partial confirmation preserves selected replacement, residual and composition token
+[PASS] completed noncomposition native write applies through authoritative transaction
+[FAIL] completed native caret-only edit updates authoritative selection: native caret ignored: selection=4,4, writes=0
+[FAIL] completed native backward selection preserves anchor and active direction: native backward selection ignored: selection=4,4, writes=0
+[FAIL] completed native caret inside preedit moves composition caret without committing: preedit caret ignored: offset=5, writes=0, composing=True
+Owner audit failures: 3

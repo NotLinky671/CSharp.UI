@@ -1,0 +1,9 @@
+C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-immediate-reentrancy-audit\Program.cs(33,44): warning CS8602: 解引用可能出现空引用。 [C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-immediate-reentrancy-audit\Audit.csproj]
+
+已成功生成。
+
+C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-immediate-reentrancy-audit\Program.cs(33,44): warning CS8602: 解引用可能出现空引用。 [C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-immediate-reentrancy-audit\Audit.csproj]
+    1 个警告
+    0 个错误
+
+已用时间 00:00:02.93

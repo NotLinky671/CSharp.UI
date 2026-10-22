@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-20",
+  "reviewer": "Codex",
+  "images_personally_viewed": 7,
+  "execution_exit": 3,
+  "execution_checks_pass": true,
+  "dpi": 144,
+  "profile": "Microsoft Pinyin 81d4e9c9-1d3b-41bc-9e6c-4b40bf79e35e / fa550b04-5ad7-411f-a5ac-ca038ec515d7",
+  "composition": "ni'hao",
+  "composition_survived": true,
+  "result_or_end_before_cleanup": 0,
+  "focus_loss_observed": false,
+  "internal_scroll": {
+    "visual": "FAIL",
+    "text_y_before": 278,
+    "text_y_after": 259,
+    "candidate": "stationary"
+  },
+  "child_move": {
+    "visual": "PASS as reference only",
+    "text_dy": -11,
+    "candidate_dy_visually": -11
+  },
+  "child_clip": {
+    "visual": "FAIL",
+    "row_bottom": 213,
+    "viewport_top": 221,
+    "candidate": "visible, moved upward with child",
+    "restore": "candidate visible again at restored anchor",
+    "note": "Native IME preedit overlay also remains visible outside viewport; no hiding pass"
+  },
+  "ti07_complete": false
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\Hosting\\TextInputCompositionAdapter.cs",
+    "Hash": "3667078D5AD09DB3A8728EAA4A83479D24F287F928193F0A3C86E4A168AC2F97"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\Hosting\\TextInputCompositionSession.cs",
+    "Hash": "CA035588BA0FD016E2C90856664947E01B1ECFE472D988CAB46861305B4251D3"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI\\Editing\\TextInputSelectionTarget.cs",
+    "Hash": "2DC11D12BC5DC900E4D05016EB1DDE75E8F0BBF4BF45CD4F8C7286737CC602DE"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI\\Editing\\TextFieldCompositionClient.cs",
+    "Hash": "55D8E6745472028ADBC9183EC10D43BBBAC0A29B5141419C1EAA61F522F14EB6"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\TextInputCompositionSessionTests.cs",
+    "Hash": "7B5651B3BF93CCFED5532A9A9B702F41B12C731112348096C3989044BBA407D8"
+  }
+]

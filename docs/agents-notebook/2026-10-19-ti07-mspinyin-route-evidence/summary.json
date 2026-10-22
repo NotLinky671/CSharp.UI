@@ -1,0 +1,81 @@
+{
+  "scenario": [
+    "native-mode-readback",
+    "ime-commit"
+  ],
+  "results": [
+    {
+      "name": "native-mode-readback",
+      "status": "PASS",
+      "notes": "ImmSetOpenStatus(true) and CMODE_NATIVE|CMODE_ROMAN were read back from the actual target HIMC (0xE80487) after the profile activation had landed",
+      "details": {
+        "himc": "0xE80487",
+        "applied": true,
+        "open_applied": true,
+        "conversion_applied": true,
+        "readback_native": true,
+        "reason": "open=true and CMODE_NATIVE|CMODE_ROMAN were both read back from this HIMC",
+        "order": "focus\u002Bpump -\u003E profile activation -\u003E pump -\u003E set native/open on target HIMC -\u003E pump\u002Breadback"
+      }
+    },
+    {
+      "name": "ime-commit",
+      "status": "PASS",
+      "notes": "one flagged result commit observed; the same text also arrived through WM_IME_CHAR/WM_CHAR -\u003E TextInput, so the host must apply exactly one channel; committed text verdict: the scenario does not require a Chinese commit result (plain keyboard path), so only presence is asserted",
+      "details": {
+        "keys": "nihao",
+        "commit_key": "VK_SPACE (0x20)",
+        "composition_updates": 6,
+        "result_segments_total": 1,
+        "result_segments_new": [
+          "\\u4F60\\u597D"
+        ],
+        "result_segments_new_text": [
+          "\u4F60\u597D"
+        ],
+        "result_flag_commits": 1,
+        "snapshot_only_result_reads": 0,
+        "text_input_events": 2,
+        "text_inputs_new": [
+          "\u4F60",
+          "\u597D"
+        ],
+        "ime_char_messages": 2,
+        "char_messages": 2,
+        "duplicate_result_and_char_channel_same_text": true,
+        "imm_get_description": "",
+        "ime_file_name": "",
+        "candidate_requests": 2,
+        "commit_requires_chinese": false,
+        "commit_expected_result": "\u4F60\u597D",
+        "commit_content_ok": true,
+        "commit_pinyin_seen_in_session_preedit": true,
+        "commit_content_matched": false,
+        "commit_snapshot_composition_id": 1,
+        "commit_snapshot_preedit_history": [
+          "n",
+          "ni",
+          "ni\u0027h",
+          "ni\u0027ha",
+          "ni\u0027hao"
+        ],
+        "commit_content_reason": "the scenario does not require a Chinese commit result (plain keyboard path), so only presence is asserted",
+        "identity_snapshots": 8,
+        "actual_active_matches_configured_profile_at_end": true,
+        "assertion": "exactly one new GCS_RESULTSTR-flagged commit segment for the typed pinyin, that segment\u0027s committed text equals the expected content when a fixed test string was used, and the injected pinyin was observed in that segment\u0027s own composition preedit history"
+      }
+    }
+  ],
+  "status_legend": {
+    "PASS": "the scenario\u0027s explicit assertion held",
+    "OBSERVED": "message chain / API behaviour observed, but the scenario\u0027s end-to-end acceptance semantics were not established",
+    "UNVERIFIED": "input condition missing; nothing was faked",
+    "SKIP": "precondition missing (foreground/IME/layout)",
+    "FAIL": "probe infrastructure failure or assertion violated"
+  },
+  "timed_out": false,
+  "events": 195,
+  "log": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\artifacts\\ime-work\\ti07-codex-mspinyin-route\\events.jsonl",
+  "identity_snapshots": 8,
+  "identity_snapshot_note": "read-only GetActiveProfile snapshots recorded at scenario begin/end and at the first real composition/result moments; see kind=identity-snapshot in events.jsonl"
+}

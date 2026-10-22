@@ -1,0 +1,7 @@
+PASS nested notification exit restores outer notification ID
+PASS outer notification exit clears scope
+PASS reentrant lock request restores outer ID
+PASS app scope does not leak to another thread on same store
+PASS app scope does not leak to another store
+PASS app scope clears after disposal
+Audit failures=0

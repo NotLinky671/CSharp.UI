@@ -1,0 +1,5 @@
+[FAIL] same sink re-advice updates mask: same sink mask update rejected
+[FAIL] foreign thread cannot grant sink lock: hr=00000000, grants=1
+[FAIL] active authoritative snapshot preserves display text and caret: display text length=9
+[FAIL] application update cannot mutate inside read grant: grant failed 80004005: text changed during read grant
+Audit failures: 4

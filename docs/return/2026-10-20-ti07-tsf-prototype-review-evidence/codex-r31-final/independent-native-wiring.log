@@ -1,0 +1,48 @@
+[PASS] normal result: result=True, stop=None, shows=3
+[PASS] before-text result: result=False, stop=CompositionChanged, shows=0
+[PASS] before-text no Show: 0
+[PASS] before-span result: result=False, stop=CompositionChanged, shows=0
+[PASS] before-span no Show: 0
+[PASS] before-writes result: result=False, stop=CompositionChanged, shows=0
+[PASS] before-writes no Show: 0
+[PASS] after-profile result: result=False, stop=CompositionChanged, shows=1
+[PASS] after-profile no later stages: 1
+[PASS] after-composing result: result=False, stop=CompositionChanged, shows=1
+[PASS] after-composing no later stages: 1
+[PASS] invalid-baseline result: result=False, stop=CompositionChanged, shows=0
+[PASS] invalid-baseline no Show: 0
+[PASS] focus-wait result: result=False, stop=SafePointLost, shows=0
+[PASS] focus-wait no Show: 0
+[PASS] focus reason preserved: SafePointLost
+[PASS] initial-writes result: result=False, stop=CompositionChanged, shows=0
+[PASS] initial-writes no Show: 0
+[PASS] persistent-writes result: result=False, stop=CompositionChanged, shows=0
+[PASS] persistent-writes no Show: 0
+[PASS] initial-lang result: result=False, stop=SafePointLost, shows=0
+[PASS] initial-lang no Show: 0
+[PASS] initial-type result: result=False, stop=SafePointLost, shows=0
+[PASS] initial-type no Show: 0
+[PASS] initial-clsid result: result=False, stop=SafePointLost, shows=0
+[PASS] initial-clsid no Show: 0
+[PASS] initial-profile result: result=False, stop=SafePointLost, shows=0
+[PASS] initial-profile no Show: 0
+[PASS] initial-truncated result: result=False, stop=SafePointLost, shows=0
+[PASS] initial-truncated no Show: 0
+[PASS] teardown still composing not Cleaned: CleanupIncomplete
+[PASS] post-query exception does not replace actual Show S_OK: 0
+[PASS] Show called despite diagnostic result: 1
+[PASS] synchronous End preserves actual Show S_OK: 0
+[PASS] synchronous End skips post IsShown: 1
+[PASS] ended element never called again: 4->4
+[PASS] ordinary show/hide retains results: True/False
+[PASS] Refresh synchronous End stops later COM calls: 2->3
+[PASS] worker differs from actual UI: 4
+[PASS] hidden probe rejects without active foreground: review-hidden-probe: own foreground lost (foreground=0x20BC4)
+[PASS] hidden capture rejected: False
+[PASS] both real methods reached probe: 2
+[PASS] real Probe/Capture bodies on UI thread: 4,4
+[PASS] hidden precondition prevents profile queries: 
+[PASS] invalid capture never marked valid: 1
+[PASS] no screenshot file produced: 
+[PASS] no document write: 0
+Independent lifecycle audit 47/47; includes hidden native wiring, no input

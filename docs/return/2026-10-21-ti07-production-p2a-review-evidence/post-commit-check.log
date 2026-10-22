@@ -1,0 +1,9 @@
+PASS duplicate partial confirmation
+PASS refresh after external binding change
+PASS cross-region selection
+PASS snapshot output immutability
+PASS selection getter revokes client
+FAIL failed document read prevents apply: rejected=True, applies=1
+PASS refresh checks bridge ownership
+FAIL post-commit read failure preserves outcome: writes=1, handled=False, committed=False
+Independent P2a audit failures=2

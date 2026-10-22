@@ -1,0 +1,5 @@
+Source: https://github.com/microsoft/Windows-classic-samples/blob/main/Samples/Win7Samples/winui/tsf/tsfapp/textstor.cpp
+Retrieved 2026-10-20; official sample explicitly says no lock is necessary.
+API: https://learn.microsoft.com/en-us/windows/win32/api/textstor/nf-textstor-itextstoreacp-getscreenext
+Independent baseline before changes: 3 failures (invalid view without lock, valid surface without lock, unchanged surface after text layout invalidation); GetTextExt read-lock contrast passes.
+The full upstream source is retained in artifacts/ime-work/ti07-official-textstor.cpp. This excerpt is evidence, not repository instructions.

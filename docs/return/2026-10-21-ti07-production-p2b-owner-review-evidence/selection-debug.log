@@ -1,0 +1,23 @@
+[PASS] End alone cannot confirm nonempty composition before completed edit
+[PASS] insert-before-start range cannot consume committed suffix
+[PASS] native selected replacement retains correct committed suffix
+[PASS] incomplete history cannot continue committing facts
+[PASS] own native synchronization does not invalidate next composition update
+[ZZ] base="ABCDni" native="ABCDnih" delta=delta prefix=6 removed=0 insertedLen=1 last="" capBase="ABCDni"
+[PASS] completed edit with only updated preedit cannot commit a changed suffix
+[PASS] disposed product sink cannot access a borrowed composition view
+[ZZ] base="ABCD你" native="ABCD你" delta=delta prefix=5 removed=0 insertedLen=0 last="ABCD你" capBase="ABCD"
+[ZZ] base="ABCD你你" native="ABCD你你" delta=delta prefix=6 removed=0 insertedLen=0 last="ABCD你你" capBase="ABCD"
+[FAIL] two completed native transactions queued before drain retain separate results: queued results conflated: writes=0, text=ABCD, composing=False
+[ZZ] base="ABCD" native="AnihaoD" delta=delta prefix=1 removed=2 insertedLen=5 last="" capBase="ABCD"
+[ZZ] base="AnihaoD" native="A你haoD" delta=delta prefix=1 removed=2 insertedLen=1 last="" capBase="AnihaoD"
+[PASS] partial confirmation preserves selected replacement, residual and composition token
+[ZZ] base="ABCD" native="ABXCD" delta=delta prefix=2 removed=0 insertedLen=1 last="" capBase="ABCD"
+[PASS] completed noncomposition native write applies through authoritative transaction
+[ZZ] base="ABCD" native="ABCD" delta=delta prefix=4 removed=0 insertedLen=0 last="" capBase="ABCD"
+[FAIL] completed native caret-only edit updates authoritative selection: native caret ignored: selection=4,4, writes=0
+[ZZ] base="ABCD" native="ABCD" delta=delta prefix=4 removed=0 insertedLen=0 last="" capBase="ABCD"
+[FAIL] completed native backward selection preserves anchor and active direction: native backward selection ignored: selection=4,4, writes=0
+[ZZ] base="ABnihaoCD" native="ABnihaoCD" delta=delta prefix=9 removed=0 insertedLen=0 last="" capBase="ABnihaoCD"
+[FAIL] completed native caret inside preedit moves composition caret without committing: preedit caret ignored: offset=5, writes=0, composing=True
+Owner audit failures: 4

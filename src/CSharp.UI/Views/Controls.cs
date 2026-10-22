@@ -20,6 +20,20 @@ internal static class TextPainter
         double lineHeight = 0)
         => context.TextService.Layout(CreateRequest(text, font, maxWidth, pixelScale, wrapping, trimming, alignment, maxLines, lineHeight));
 
+    /// <summary>绘制阶段的排版入口（帧末追加内容，不需要视图节点）。</summary>
+    public static TextLayoutResult Layout(
+        DrawContext context,
+        string text,
+        FontDescription font,
+        double maxWidth,
+        double pixelScale,
+        TextWrapping wrapping = TextWrapping.NoWrap,
+        TextTrimming trimming = TextTrimming.None,
+        TextAlignment alignment = TextAlignment.Left,
+        int maxLines = 1,
+        double lineHeight = 0)
+        => context.TextService.Layout(CreateRequest(text, font, maxWidth, pixelScale, wrapping, trimming, alignment, maxLines, lineHeight));
+
     /// <summary>测量阶段的排版入口。</summary>
     public static TextLayoutResult Layout(
         LayoutContext context,
@@ -130,6 +144,26 @@ internal static class TextPainter
         Rect bounds,
         TextAlignment alignment = TextAlignment.Left,
         double opacity = 1.0)
+        => PaintCore(context, layout, color, bounds, alignment,
+            node.Environment.Opacity * opacity);
+
+    /// <summary>无视图节点的文本绘制（帧末追加内容）：不继承任何视图透明度。</summary>
+    public static void Paint(
+        DrawContext context,
+        TextLayoutResult layout,
+        Color color,
+        Rect bounds,
+        TextAlignment alignment = TextAlignment.Left,
+        double opacity = 1.0)
+        => PaintCore(context, layout, color, bounds, alignment, opacity);
+
+    private static void PaintCore(
+        DrawContext context,
+        TextLayoutResult layout,
+        Color color,
+        Rect bounds,
+        TextAlignment alignment,
+        double opacity)
     {
         if (layout.Size.IsEmpty || color.A == 0)
         {
@@ -159,7 +193,7 @@ internal static class TextPainter
             ResolveTextureBounds(handle, origin, layout.PixelScale),
             new Rect(0, 0, handle.PixelWidth, handle.PixelHeight),
             color,
-            node.Environment.Opacity * opacity));
+            opacity));
     }
 
     private static double NormalizeScale(double pixelScale)

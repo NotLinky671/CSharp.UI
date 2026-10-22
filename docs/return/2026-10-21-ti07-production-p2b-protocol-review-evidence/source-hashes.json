@@ -1,0 +1,38 @@
+[
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpGeometryProvider.cs",
+    "Hash": "ADDBE53754891EDA167288DB8A7B403E0728E3A42561B246A2D58CBFE3D58C8F"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpStagingBuffer.cs",
+    "Hash": "75AA387B446501BACD9BB9B779F32CD45552E9D10A1E9A7FA99C9BABC16D9DED"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpTextDocument.cs",
+    "Hash": "3050807AFC9613912A9F830B4CD3A9A0ADB597E9850CDD2B878345591FA484FA"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpTextStore.cs",
+    "Hash": "68242BBD407E8C7378383BE9446AE6584E2BC76238923C7A5454408F41336111"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TextStoreLockManager.cs",
+    "Hash": "225EEC18EE014194EC5302149F2A4AF5769128FAD024A288FAC2400FB03B3CCC"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TsfInterop.cs",
+    "Hash": "CDF7A5F2595AD88154015EFF4C0E2F7CE7DEA76E603F6A343B13C5F67FC724B8"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\AcpTextStoreProtocolTests.cs",
+    "Hash": "7F7577A5334BF7DA5DD801D21A961004749B0CB6388495E6BE21D282083D7476"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\TsfNativeWiringTests.cs",
+    "Hash": "548C55A4B5D0E3BF3A88C10671F481B1FF3FE35693357F719C4B5ED807C6AC74"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\artifacts\\ime-work\\p2b-audit\\Program.cs",
+    "Hash": "6ADA5389E0BA16F96C7D8E76B87DFDAE154F530D7DE90D41D13A49D8CF4E18DF"
+  }
+]

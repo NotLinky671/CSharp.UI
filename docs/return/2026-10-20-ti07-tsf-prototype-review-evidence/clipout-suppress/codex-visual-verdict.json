@@ -1,0 +1,6 @@
+{
+  "visual": "fail",
+  "candidate_hides_naturally": false,
+  "reason": "Personally inspected all four PNGs: text fully clipped, candidate still visible. Do not infer Show(FALSE) failed because no live element received it.",
+  "explicit_show_test": "not-executed-no-live-ui-elements"
+}

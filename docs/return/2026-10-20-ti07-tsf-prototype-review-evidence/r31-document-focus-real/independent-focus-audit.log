@@ -1,0 +1,8 @@
+[PASS] COM GetFocus reentry loses native foreground: no restore write
+[PASS] foreign input focus rejects even first COM query
+[PASS] unexpected document while suspended invalidates evidence and releases acquired refs
+[PASS] successful OWN phase query releases acquired doc and context
+[PASS] genuine no-document state passes suspended phase
+[PASS] first release throw still releases second reference and reports failure
+[PASS] GetTop reentry invalidates acquire and releases both refs
+Independent R31 audit: 7/7

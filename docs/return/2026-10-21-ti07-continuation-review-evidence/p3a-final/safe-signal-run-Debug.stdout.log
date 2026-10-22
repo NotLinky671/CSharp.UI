@@ -1,0 +1,3 @@
+[AUDIT] guarded capture: writes=0, pending=1
+[AUDIT] actual TSF safe-boundary wake delta=1
+[AUDIT] no further user input: writes=1, hasX=True, pending=0, replayed=1

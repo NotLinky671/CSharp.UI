@@ -1,0 +1,26 @@
+PASS help does not open a window
+PASS self-test does not open a window
+PASS defaults are valid
+PASS explicit scenario parsed
+PASS unknown scenario rejected
+PASS hidden smoke rejects scenario
+PASS non-positive timeout rejected
+PASS all scenarios known
+PASS only child-clip has restore
+PASS action kinds are distinct
+PASS success with pending visual exits 3
+PASS never returns 0 with pending visual
+PASS failed checks exit 1
+PASS aborted exits 1
+PASS missing precondition exits 2
+PASS hidden smoke can exit 0 (no visual item)
+PASS composition active requires start without end
+PASS composition without compstr is not active
+PASS empty compstr is not an active composition
+PASS committed detection
+PASS baseline pollution detected
+PASS em-posfromchar packing — x=10 y=55 negY=-28
+PASS baseline targets a real line end — lines=80 target=21..26
+PASS rect intersection — (10,20)-(110,50)
+PASS fully clipped detection
+self-test: PASS (0 failed)

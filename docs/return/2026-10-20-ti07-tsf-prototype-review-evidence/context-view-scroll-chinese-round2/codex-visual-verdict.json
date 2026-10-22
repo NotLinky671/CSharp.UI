@@ -1,0 +1,11 @@
+{
+  "profile_before_after": "Microsoft Pinyin exact CLSID/GUID",
+  "valid_chinese_composition": true,
+  "candidate_verdict": "FAIL: candidate stays while text moves up11px",
+  "reviewer": "Codex",
+  "ti07_complete": false,
+  "screenshots_personally_viewed": true,
+  "writes": 0,
+  "geometry_probes": "exact range 0..6; rect/clipped/screen/HWND match; all releases succeeded",
+  "cleanup_failures": 0
+}

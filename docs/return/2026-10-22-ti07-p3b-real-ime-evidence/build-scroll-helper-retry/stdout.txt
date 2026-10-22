@@ -1,0 +1,18 @@
+  正在确定要还原的项目…
+C:\Users\nothh\code\C#\CSharp.UI\tools\CSharp.UI.ImeProbe\CSharp.UI.ImeProbe.csproj : warning NU1900: 获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。 [C:\Users\nothh\code\C#\CSharp.UI\tools\CSharp.UI.ImeHostCheck\CSharp.UI.ImeHostCheck.csproj]
+  所有项目均是最新的，无法还原。
+C:\Users\nothh\code\C#\CSharp.UI\tools\CSharp.UI.ImeProbe\CSharp.UI.ImeProbe.csproj : warning NU1900: 获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。
+  CSharp.UI -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\bin\Debug\net10.0\CSharp.UI.dll
+  CSharp.UI.ImeProbe -> C:\Users\nothh\code\C#\CSharp.UI\tools\CSharp.UI.ImeProbe\bin\Debug\net10.0\imeprobe.dll
+  CSharp.UI.Text -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.Text\bin\Debug\net10.0\CSharp.UI.Text.dll
+  CSharp.UI.OpenTK -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.OpenTK\bin\Debug\net10.0\CSharp.UI.OpenTK.dll
+  CSharp.UI.ImeHostCheck -> C:\Users\nothh\code\C#\CSharp.UI\tools\CSharp.UI.ImeHostCheck\bin\Debug\net10.0\CSharp.UI.ImeHostCheck.dll
+
+已成功生成。
+
+C:\Users\nothh\code\C#\CSharp.UI\tools\CSharp.UI.ImeProbe\CSharp.UI.ImeProbe.csproj : warning NU1900: 获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。 [C:\Users\nothh\code\C#\CSharp.UI\tools\CSharp.UI.ImeHostCheck\CSharp.UI.ImeHostCheck.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\tools\CSharp.UI.ImeProbe\CSharp.UI.ImeProbe.csproj : warning NU1900: 获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。
+    2 个警告
+    0 个错误
+
+已用时间 00:00:04.31

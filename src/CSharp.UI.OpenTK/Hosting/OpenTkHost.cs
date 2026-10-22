@@ -41,6 +41,19 @@ internal sealed class OpenTkHost : IDisposable
     private GlRenderer _renderer = null!;
     private GlfwClipboardService _clipboard = null!;
     private OpenTkInputAdapter _input = null!;
+    private WindowsImeBridge? _ime;
+    private IWindowsInputBridge? _inputBridge;
+
+    /// <summary>TSF 输入桥（内部测试开关启用时非 null）；验收工具读取其状态。</summary>
+    /// <summary>稳定的 Windows 输入路由器（构造期创建，运行时与适配器共同持有）。</summary>
+    private WindowsTsf.WindowsTextInputRouter? _router;
+
+    /// <summary>候选 overlay：帧末、内容之后、提交之前追加；非 Windows 时为 null。</summary>
+    private WindowsTsf.CandidateOverlay? _candidateOverlay;
+
+    /// <summary>文本输入后端选择/回退的准确原因（能力报告用，脱敏）。</summary>
+    private string _textInputBackendReason = "默认 IMM 输入桥。";
+
     private UiRuntime _runtime = null!;
     private UiHostContext _context = null!;
     private IDisposable? _ownedTextService;
@@ -62,6 +75,9 @@ internal sealed class OpenTkHost : IDisposable
     private bool _immediateRedrawPending;
     private bool _frameInProgress;
     private bool _processingWork;
+
+    /// <summary>本轮是否真的交付了延后输入（用于“有进展才立即继续”，避免忙等）。</summary>
+    private bool _deferredProgressThisIteration;
     private int _immediateRedrawCount;
 
     /// <summary>创建宿主：创建窗口与 GL 上下文，组装服务，挂接事件。</summary>
@@ -92,6 +108,64 @@ internal sealed class OpenTkHost : IDisposable
             _textures = new GlTextureService(options.TextureCacheCapacity);
             _clipboard = new GlfwClipboardService(_window);
 
+            // Windows 输入：**先**组装稳定的路由器（TI-07 P3a R7）。
+            // 路由器必须在 UiRuntime 构造之前存在，并被 UiRuntimeServices 与输入适配器**同时**持有，
+            // 否则后端切换只会改宿主字段，运行时/适配器仍指向已释放的旧 IMM。
+            if (OperatingSystem.IsWindows())
+            {
+                var hwnd = WindowsImeBridge.GetWindowHandle(_window);
+                if (hwnd != IntPtr.Zero)
+                {
+                    _ime = new WindowsImeBridge(
+                        hwnd,
+                        new Imm32Interop(hwnd),
+                        _dispatcher,
+                        () => (_window.ClientSize.X, _window.ClientSize.Y));
+                    _ime.InstallSubclass();
+                }
+
+                // 候选 overlay 必须在运行时与 TSF 会话之前存在：运行时的帧末入口直接指向它，
+                // 会话惰性建立时由路由器把同一实例交给 sink/几何发布方。
+                _candidateOverlay = new WindowsTsf.CandidateOverlay();
+
+                // 工厂：TSF 退役/失败后创建**新的**可用 IMM（绝不交回已释放实例）。
+                var immHwnd = hwnd;
+                _router = new WindowsTsf.WindowsTextInputRouter(
+                    _ime,
+                    options.UseTsfInputBridge,
+                    immFactory: () =>
+                    {
+                        try
+                        {
+                            var fresh = new WindowsImeBridge(
+                                immHwnd,
+                                new Imm32Interop(immHwnd),
+                                _dispatcher,
+                                () => (_window.ClientSize.X, _window.ClientSize.Y));
+                            fresh.InstallSubclass();
+                            return fresh;
+                        }
+                        catch (Exception)
+                        {
+                            return null;
+                        }
+                    });
+                _router.AttachHostWindow(hwnd);
+                if (_candidateOverlay is not null)
+                {
+                    _router.AttachCandidateOverlay(_candidateOverlay);
+                }
+
+                // 真实宿主工作状态：重建/布局/帧期间不安全（不得硬编码 false）。
+                // 必须同时纳入 frame：BuildFrame/提交/交换缓冲期间写文档同样是重入。
+                _router.AttachHostWorkGuard(() => _processingWork || _frameInProgress);
+                _inputBridge = _router;
+            }
+            else
+            {
+                _inputBridge = _ime;
+            }
+
             // 宿主组装平台服务：未注入时创建 CSharp.UI.Skia（程序集 CSharp.UI.Text）的 SkiaSharp 实现，
             // 并负责在退出时释放；应用显式传入的实例由应用自行释放。
             var textService = options.TextService;
@@ -119,7 +193,18 @@ internal sealed class OpenTkHost : IDisposable
                 Clipboard = options.ClipboardService ?? _clipboard,
                 Clock = options.Clock ?? new StopwatchUiClock(),
                 WheelScrollSettings = options.WheelScrollSettingsService ?? WindowsWheelScrollSettingsService.Instance,
+                TextInputService = _inputBridge,
             });
+
+            // 宿主后续接线只依赖桥契约：路由器是稳定实例，运行时与适配器共同持有它。
+            _inputBridge?.AttachRuntime(_runtime);
+
+            // 同帧候选入口：BuildFrame 在 Root.View.Emit 之后、命令快照之前调用，位于同一
+            // TextureService.BeginFrame 保护内，不额外 BeginFrame。路由器在活动 TSF 桥上先复核身份。
+            if (_candidateOverlay is not null)
+            {
+                _runtime.FrameOverlay = DrawCandidateOverlay;
+            }
 
             _runtime.SetEnvironment(new EnvironmentValues
             {
@@ -129,7 +214,10 @@ internal sealed class OpenTkHost : IDisposable
             _runtime.ExplicitClearColor = options.ClearColor;
 
             _renderer = new GlRenderer(_textures);
-            _input = new OpenTkInputAdapter(_runtime, () => RequestExit(0), options.ExitOnEscape, options.ExitOnCloseShortcut);
+            _input = new OpenTkInputAdapter(_runtime, () => RequestExit(0), options.ExitOnEscape, options.ExitOnCloseShortcut, _inputBridge);
+
+            // R10：延后输入的唤醒是**事件驱动**的单次请求，不是周期性轮询。
+            AttachDeferredInputSignals();
             _context = new UiHostContext(_runtime, _dispatcher, _textures, GlWindowFactory.DescribeContext(), RequestExit)
             {
                 PixelScale = 1.0,
@@ -145,11 +233,19 @@ internal sealed class OpenTkHost : IDisposable
         catch
         {
             // 初始化失败：先释放需要上下文的 GL 资源，再销毁窗口。
+            if (_runtime is not null)
+            {
+                _runtime.FrameOverlay = null;
+            }
+
+            _candidateOverlay?.Clear();
             _renderer?.Dispose();
             _runtime?.Dispose();
             _textures?.Dispose();
             _ownedTextService?.Dispose();
             _ownedImageService?.Dispose();
+            // 窗口销毁前恢复 IME 子类化（窗口仍有效时可验证恢复）。
+            _inputBridge?.Dispose();
             _window.Dispose();
             throw;
         }
@@ -160,6 +256,24 @@ internal sealed class OpenTkHost : IDisposable
 
     /// <summary>宿主窗口；仅供内部与测试使用，应用不应直接操作其生命周期。</summary>
     internal NativeWindow Window => _window;
+
+    /// <summary>Windows IME 桥（仅 Windows 且取到 HWND 时非 null）；验收工具经 InternalsVisibleTo 观察。</summary>
+    internal WindowsImeBridge? ImeBridge => _ime;
+
+    /// <summary>宿主使用的输入桥契约实例（与 <see cref="ImeBridge"/> 同一对象；非 Windows 时为 null）。</summary>
+    internal IWindowsInputBridge? InputBridge => _inputBridge;
+
+    /// <summary>输入适配器（验收用于读取有序交付计数）。</summary>
+    internal OpenTkInputAdapter? InputAdapter => _input;
+
+    /// <summary>稳定的 Windows 输入路由器（构造期创建；运行时与适配器共同持有）。</summary>
+    internal WindowsTsf.WindowsTextInputRouter? Router => _router;
+
+    /// <summary>当前活动的 TSF 桥（未建立时为 null）。</summary>
+    internal WindowsTsf.TsfInputBridge? TsfBridge => _router?.TsfBridge;
+
+    /// <summary>文本输入后端选择/回退的准确原因（脱敏，用于能力报告）。</summary>
+    internal string TextInputBackendReason => _textInputBackendReason;
 
     /// <summary>已渲染帧数。</summary>
     internal int RenderedFrameCount => _renderedFrameCount;
@@ -199,6 +313,12 @@ internal sealed class OpenTkHost : IDisposable
                 // 1. 先非阻塞排空系统事件，保证输入在绘制之前生效。
                 PumpEvents();
 
+
+                // 1b. TI-07 P3a：在**任何后续工作之前**应用已捕获的原生事实。
+                // COM 回调只捕获；真正的提交/选区/组合变更必须在这里、且排在下一批输入之前完成，
+                // 否则会出现“旧版本被拒 / 文字进错输入框”的顺序倒置。
+                DrainTsfSafePhase();
+
                 // 2. 执行后台线程投递的动作（全部在 UI 线程）。
                 _dispatcher.ProcessPostedActions();
 
@@ -230,6 +350,14 @@ internal sealed class OpenTkHost : IDisposable
                 }
 
                 // 7. 还有工作时立即进入下一个迭代，避免无谓等待。
+                // R10：只有“本轮确实交付了”才立即继续（还有更多待交付）。
+                // 若仍有延后项但当前不安全，**不**在这里周期性请求唤醒——
+                // 改为由真实安全边界（ExitSafePhase）或队列转移单次唤醒（见 AttachDeferredInputSignals）。
+                if (_deferredProgressThisIteration)
+                {
+                    continue;
+                }
+
                 if ((_runtime.NeedsDraw && CanRender()) || _runtime.HasPendingBuild || _dispatcher.HasPendingActions)
                 {
                     continue;
@@ -246,6 +374,147 @@ internal sealed class OpenTkHost : IDisposable
             // 事件循环退出（正常或异常）后，窗口事件只保留状态，不再提交帧；
             // 宿主尚未 Dispose 的间隙也不能因窗口通知绘制。
             _immediateRedrawEnabled = false;
+
+            // 解除延后输入信号，避免循环退出后仍被回调唤醒。
+            DetachDeferredInputSignals();
+        }
+    }
+
+    /// <summary>
+    /// 挂接延后输入的**单次**唤醒信号（TI-07 P3a R10）。
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>为什么不是轮询：</b>上一版在队列不空时每轮 <c>RequestWakeup(1ms)</c>，
+    /// 那是持续的周期性轮询，违反“有界”要求。这里只在两种<b>真实状态转移</b>时请求一次唤醒：
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>队列由空变非空（有新输入被延后）。</description></item>
+    /// <item><description>安全阶段真正退出（<c>ExitSafePhase</c>，可能出现可交付机会）。</description></item>
+    /// </list>
+    /// <para>
+    /// <b>必须订阅路由器而不是某个具体协调器：</b>TSF 接管后，真实 apply 退出发生在
+    /// <b>TSF 桥自己的</b>协调器上。路由器会把本回调跟随活动协调器搬迁（建立/客户端替换/回退/释放），
+    /// 因此这里订阅一次即覆盖默认 IMM 与真实 TSF 两条路径（R10 指出的断链）。
+    /// </para>
+    /// <para>
+    /// 若届时仍不安全，就等下一次真实转移再唤醒——不忙等、不自投递、不持续重绘。
+    /// </para>
+    /// </remarks>
+    private void AttachDeferredInputSignals()
+    {
+        if (_input is null)
+        {
+            return;
+        }
+
+        // 队列转移 → 单次唤醒。
+        _input.DeferredInputQueued += OnDeferredInputSignal;
+        _input.RequestWake = OnDeferredInputSignal;
+
+        // 真实安全边界退出 → 单次唤醒（跟随活动协调器，只在确实有排队项时才需要）。
+        _router?.AttachHostSafePhaseSignal(OnDeferredInputSignal);
+    }
+
+    /// <summary>单次唤醒：仅在确有排队输入时请求一次事件循环唤醒。</summary>
+    private void OnDeferredInputSignal()
+    {
+        // 释放后（或已解绑）任何迟到通知都不得再触碰已释放宿主的调度器。
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (_input is { HasDeferredInput: true } || _router?.HasPendingSafeWork == true)
+        {
+            _dispatcher.RequestWakeup(TimeSpan.Zero);
+        }
+    }
+
+    /// <summary>解除延后输入信号挂接（避免宿主释放后仍被回调）。</summary>
+    private void DetachDeferredInputSignals()
+    {
+        if (_input is not null)
+        {
+            _input.DeferredInputQueued -= OnDeferredInputSignal;
+            _input.RequestWake = null;
+        }
+
+        // 先解绑真实安全边界订阅，再让路由器释放真实 TSF 会话。
+        _router?.DetachHostSafePhaseSignal();
+    }
+
+    /// <summary>
+    /// TI-07 P3a：在安全阶段应用已捕获的 TSF 原生事实（未启用 TSF 时为空操作）。
+    /// </summary>
+    /// <remarks>
+    /// <b>为什么在 pump 之后、其它工作之前：</b>一次消息泵可能连续产生
+    /// “TSF 确认 → 普通字符 → 点击另一输入框”。已确认的事实必须先落地，
+    /// 后续普通输入才能基于最新已提交文档与选区，而不是旧版本。
+    /// <para>
+    /// <b>不安全就延后：</b>锁/通知/重入期间 <see cref="WindowsTsf.TsfInputBridge.DrainSafePhase"/>
+    /// 返回 false 并保留 pending，绝不越过未应用事实交付后续输入。
+    /// </para>
+    /// <para>
+    /// <b>宿主工作中不应用：</b>正在重建/布局/生成帧时不进入安全阶段（避免递归写文档）。
+    /// 此处与注入给桥的 guard 使用同一谓词。
+    /// </para>
+    /// </remarks>
+    private void DrainTsfSafePhase()
+    {
+        if (_router is null)
+        {
+            return;
+        }
+
+        if (_processingWork || _frameInProgress)
+        {
+            // 宿主自身正在重建/布局/帧：此时进入安全阶段的唯一后果是被判为 InsideHostWork 而延后。
+            // 不在这里请求唤醒（不吞掉真实队列转移的唤醒）：宿主工作结束时由
+            // RequestDeferredInputRecoveryWake 明确补一次恢复机会。
+            return;
+        }
+
+        // 1) 先应用已捕获的原生事实（真实 apply 状态由协调器/会话判定）。
+        _router.DrainSafePhase();
+
+        // 1a) 正常安全阶段的一次机会：重试那些原生解绑失败、仍被强根持有的消息钩子。
+        //     只在本循环已有的正常机会调用（不周期轮询、不为此自唤醒）；
+        //     返回值为本次真正完成的退役数，无待清理项时为 0。
+        WindowsTsf.TsfMessageHook.RetryPendingRetirementsForCurrentThread();
+
+        // 2) R10：安全恢复后**主动**按序交付已延后的输入。
+        //    不依赖“下一次用户输入”，不递归 pump，不忙等：这是事件循环的正常阶段。
+        _deferredProgressThisIteration = false;
+        if (_input is { HasDeferredInput: true } adapter)
+        {
+            _deferredProgressThisIteration = adapter.DeliverDeferredAtSafePhase() > 0;
+        }
+    }
+
+    /// <summary>
+    /// 宿主工作结束时的一次恢复机会：若仍有延后输入，请求一次唤醒让事件循环重试安全阶段。
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>为什么需要：</b>宿主工作期间捕获的输入会被判为不安全而延后；若此刻没有任何新的真实边界，
+    /// 队列会滞留到下一次用户输入。这里在<b>宿主工作结束</b>这个真实状态转移上请求一次唤醒。
+    /// </para>
+    /// <para>
+    /// <b>为什么有界：</b>只在“工作结束且确实有延后输入”时请求一次；若届时仍不安全，
+    /// 由下一次真实边界（或有界的一次重试）再唤醒，不周期轮询、不忙等、不自投递。
+    /// </para>
+    /// </remarks>
+    private void RequestDeferredInputRecoveryWake()
+    {
+        if (_disposed || _frameInProgress || _processingWork)
+        {
+            return;
+        }
+
+        if (_input is { HasDeferredInput: true } || _router?.HasPendingSafeWork == true)
+        {
+            _dispatcher.RequestWakeup(TimeSpan.Zero);
         }
     }
 
@@ -260,6 +529,7 @@ internal sealed class OpenTkHost : IDisposable
         finally
         {
             _processingWork = false;
+            RequestDeferredInputRecoveryWake();
         }
     }
 
@@ -276,6 +546,14 @@ internal sealed class OpenTkHost : IDisposable
         _immediateRedrawEnabled = false;
         try
         {
+            // 候选 overlay 先于运行时/输入桥撤销：帧末入口立刻解绑，避免销毁期间再追加命令。
+            if (_runtime is not null)
+            {
+                _runtime.FrameOverlay = null;
+            }
+
+            _candidateOverlay?.Clear();
+
             // 顺序要求：先释放需要 GL 上下文的资源（渲染器/纹理），再销毁窗口；
             // 只在宿主默认组装时释放文本/图片服务，应用注入的服务由应用自行释放。
             _window.MakeCurrent();
@@ -288,6 +566,14 @@ internal sealed class OpenTkHost : IDisposable
         finally
         {
             UnhookContentScaleCallback();
+            // 先解绑真实安全边界/队列唤醒订阅，再释放输入桥（含真实 TSF 会话），
+            // 保证释放后的迟到通知不会进入已释放宿主的调度器。
+            DetachDeferredInputSignals();
+            // 先于窗口销毁恢复 IME 子类化：WM_NCDESTROY 里的恢复路径随后成为幂等空操作。
+            _inputBridge?.Dispose();
+            // 最终解绑机会：会话退役时若原生解绑失败，钩子仍被强根持有；
+            // 这里在所属线程再重试一次（不是轮询；无待清理项时为 0）。
+            WindowsTsf.TsfMessageHook.RetryPendingRetirementsForCurrentThread();
             _window.Dispose();
         }
     }
@@ -299,7 +585,14 @@ internal sealed class OpenTkHost : IDisposable
         // 因此新扩出的区域必须在回调返回前完成清屏与提交，不能只置“需要重绘”等待下一轮循环。
         _window.Resize += _ => OnWindowResized();
         _window.FramebufferResize += _ => OnWindowResized();
-        _window.Move += _ => RunWindowEventSafely(() => UpdateViewport(force: false), "窗口移动");
+        _window.Move += _ => RunWindowEventSafely(
+            () =>
+            {
+                UpdateViewport(force: false);
+                // 窗口移动使系统候选/组合窗的屏幕位置失效：按缓存逻辑几何重新发布（R7）。
+                _inputBridge?.NotifyGeometryInvalidated();
+            },
+            "窗口移动");
         _window.Refresh += OnWindowRefresh;
         _window.FocusedChanged += e => _input.HandleFocusChanged(e.IsFocused);
         _window.Minimized += e => OnMinimizedChanged(e.IsMinimized);
@@ -326,6 +619,7 @@ internal sealed class OpenTkHost : IDisposable
             () =>
             {
                 UpdateViewport(force: false);
+                _inputBridge?.NotifyGeometryInvalidated();
                 TryRedrawImmediately();
             },
             "窗口尺寸");
@@ -542,11 +836,16 @@ internal sealed class OpenTkHost : IDisposable
     private void OnMinimizedChanged(bool minimized)
     {
         _isMinimized = minimized;
-        if (!minimized)
+        if (minimized)
         {
-            // 恢复后需要重新布局与重绘（最小化期间的尺寸变化会被合并处理）。
-            UpdateViewport(force: true);
+            // 最小化：显示表面为零矩形 + S_OK（GetScreenExt 不依赖文本布局），候选几何撤销。
+            _router?.NotifySurfaceUnavailable();
+            return;
         }
+
+        // 恢复后需要重新布局与重绘（最小化期间的尺寸变化会被合并处理）。
+        UpdateViewport(force: true);
+        _inputBridge?.NotifyGeometryInvalidated();
     }
 
     /// <summary>
@@ -583,10 +882,11 @@ internal sealed class OpenTkHost : IDisposable
         var scale = metrics.PixelScale;
 
         _isMinimized = false;
+        var scaleChanged = Math.Abs(scale - _pixelScale) > 0.0001;
         var changed = force
             || logical != _logicalSize
             || physical != _framebufferSize
-            || Math.Abs(scale - _pixelScale) > 0.0001;
+            || scaleChanged;
         _logicalSize = logical;
         _framebufferSize = physical;
         _pixelScale = scale;
@@ -595,8 +895,10 @@ internal sealed class OpenTkHost : IDisposable
         _context.PixelScale = scale;
         _context.IsMinimized = false;
 
-        // 输入换算与视口同步：DPI 变化后缓存过的指针位置会按新比例重新解释。
+        // 输入换算与视口同步：DPI 变化后缓存过的指针位置会按新比例重新解释；
+        // IME 候选锚点走同一换算（逻辑几何 → 窗口客户区像素）。
         _input.UpdatePointerTransform(metrics.PointerScaleX, metrics.PointerScaleY);
+        _inputBridge?.UpdatePointerTransform(metrics.PointerScaleX, metrics.PointerScaleY);
 
         if (!changed)
         {
@@ -606,6 +908,24 @@ internal sealed class OpenTkHost : IDisposable
         // SetViewport 会触发布局失效，并在 DPI 变化时清空文本与纹理缓存。
         _runtime.SetViewport(logical, scale);
         _runtime.InvalidateRender();
+
+        // DPI 变化使已换算的屏幕物理几何立即失效：撤销缓存与候选放置，下一安全布局重发。
+        if (scaleChanged)
+        {
+            _inputBridge?.NotifyGeometryInvalidated();
+        }
+    }
+
+    /// <summary>帧末候选追加：路由器在真实 TSF 桥上复核缓存身份，失效立即清几何。</summary>
+    private void DrawCandidateOverlay(DrawContext context)
+    {
+        if (_router is not null)
+        {
+            _router.DrawCandidates(context);
+            return;
+        }
+
+        _candidateOverlay?.Draw(context);
     }
 
     private void DrawFrame()

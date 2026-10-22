@@ -1,0 +1,70 @@
+[
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpGeometryProvider.cs",
+    "Hash": "ADDBE53754891EDA167288DB8A7B403E0728E3A42561B246A2D58CBFE3D58C8F"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpStagingBuffer.cs",
+    "Hash": "75AA387B446501BACD9BB9B779F32CD45552E9D10A1E9A7FA99C9BABC16D9DED"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpTextDocument.cs",
+    "Hash": "646CED344CAE4BA0ABDEF1E4B245EED51B1889461599A2E876176453D4CFD08F"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpTextStore.cs",
+    "Hash": "7AFC23C64495C5601C79EC43C1B30FCBB13F68EEAAC281EDCE4950BAFC5343EE"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\NativeCompositionFact.cs",
+    "Hash": "3616EA78B9925DE841229A33C49AA7070809081AF108DA67C013CF331E5D9197"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\NativeCompositionOwner.cs",
+    "Hash": "309586749DA671C121A948B4C1FA512B4033CE941481EA0C644DD440F98F1413"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\NativeCompositionOwnerSink.cs",
+    "Hash": "92B07EC0BD048907D30081BC7101C25843BA2A8D06CCD2B2E5FA70D875F2C942"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TextStoreLockManager.cs",
+    "Hash": "225EEC18EE014194EC5302149F2A4AF5769128FAD024A288FAC2400FB03B3CCC"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TsfInterop.cs",
+    "Hash": "004508B8B9C6BA2FB58395F16432C4BC7B77D6D79D1BBB0E6770ADCBCABEFD18"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TsfOwnerInterop.cs",
+    "Hash": "0517CA32090A540FB85FC5181F82A356D2952E1038914C12183530B3BE7AB9FF"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\NativeCompositionOwnerTests.cs",
+    "Hash": "F2BE412311F41C889BA6419DC532029D61F00B0B9D16E7E1ACD6ECDA8B1181FE"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\TsfCompositionOwnerSmokeTests.cs",
+    "Hash": "87620ED53B0B0A5ED00908944EAFC9171B7140292F10C8A04DD7B6FEF74E2C7F"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\artifacts\\ime-work\\p2b-owner-audit\\Program.cs",
+    "Hash": "24812D7DF86B8C376AA6D85929D12641AFCD5681F7422B13ECE7C4C64E46CC79"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\artifacts\\ime-work\\p2b-owner-lifecycle-audit\\Program.cs",
+    "Hash": "985BDCDDC8256F121AD341277FB22FC36068051DE272C9EF4972D067D8E504E4"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\artifacts\\ime-work\\p2b-owner-terminal-audit\\Program.cs",
+    "Hash": "00AF5FEE104256A1CFD93B35FCF5855E5F039A3C3440ABBD4430DCC2FB2A682A"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\artifacts\\ime-work\\p2b-owner-replay-audit\\Program.cs",
+    "Hash": "355DC0050CBA61F61B152B54A2E78B1E80FDFBED2A26373D8DD41F21B1F3488D"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\artifacts\\ime-work\\p2b-owner-selection-audit\\Program.cs",
+    "Hash": "30EC3C414F8A6278385ECE5ABF4CD7929AFFD2A7CB167A6788FCCEE5C044B78E"
+  }
+]

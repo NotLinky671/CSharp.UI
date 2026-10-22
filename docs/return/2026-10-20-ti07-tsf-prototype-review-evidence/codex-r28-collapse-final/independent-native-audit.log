@@ -1,0 +1,28 @@
+[PASS] default matrix remains exactly original three internal-scroll,child-move,child-clip
+[PASS] collapse is explicitly registered 
+[PASS] collapse requires restoration 
+[PASS] collapse action is distinctly identified setwindowpos-child-collapse
+[PASS] hidden create 
+[PASS] no visible surface 
+[PASS] baseline text applied 
+[PASS] both selection outputs (2, 7)
+[PASS] standard EDIT EM_POSFROMCHAR 0 got0,0 native0,0
+[PASS] standard EDIT EM_POSFROMCHAR 2 got10,0 native10,0
+[PASS] standard EDIT EM_POSFROMCHAR 51 got0,57 native0,57
+[PASS] real one-line scroll 
+[PASS] negative row coordinate 
+[PASS] child exactly 11 physical pixels Rect { Left = 96, Top = 176, Right = 656, Bottom = 596 } -> Rect { Left = 96, Top = 165, Right = 656, Bottom = 585 }
+[PASS] parent and viewport stable 
+[PASS] actual clip action succeeds EDIT moved by dy=-84 so the composition row is fully clipped and still inside the parent evidence region; row=(96,149)-(97,168) viewport=(96,176)-(656,356)
+[PASS] clip row is above viewport and inside evidence rowBottom=168 viewportTop=176 parentTop=80
+[PASS] real collapse succeeds 
+[PASS] actual child height and client height zero window=Rect { Left = 96, Top = 176, Right = 656, Bottom = 176 } client=Rect { Left = 0, Top = 0, Right = 560, Bottom = 0 }
+[PASS] collapse preserves child origin and width 
+[PASS] collapse keeps window style 
+[PASS] restore from empty rectangle succeeds 
+[PASS] original geometry restored exactly Rect { Left = 96, Top = 176, Right = 656, Bottom = 596 }->Rect { Left = 96, Top = 176, Right = 656, Bottom = 596 }
+[PASS] collapse restore leaves ancestors unchanged 
+[PASS] collapse restore never changes focus 
+[PASS] foreground unchanged 
+[PASS] all HWND destroyed 
+audit 27/27

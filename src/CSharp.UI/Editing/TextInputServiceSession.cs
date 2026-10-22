@@ -213,6 +213,11 @@ internal sealed class TextInputServiceSession
 
     private bool EndCore()
     {
+        // 绑定本次结束要通知平台取消的那段归属：意图必须绑定旧 owner 与旧代际，
+        // 同步回调重入新建会话后不再适用新段，也不会因本方法清状态而静默丢失。
+        var cancelOwner = _cancelPending ? _cancelPendingOwner : null;
+        var cancelGeneration = _cancelPending ? _cancelPendingGeneration : -1;
+
         var lease = _lease;
         var started = _serviceSessionStarted;
         var generation = ++_generation;
@@ -239,6 +244,32 @@ internal sealed class TextInputServiceSession
         if (!started)
         {
             return false;
+        }
+
+        // “先取消、后结束”边界：归属已失效后才把<b>登记的</b>原生取消请求交给服务（plan：
+        // 先切断旧事件归属，再通知平台，防同步回调串写）。窗口失活/失焦的取消→结束紧邻序列
+        // 必经此处；错过则 TIP 从未收到 TerminateComposition，Deactivate 后自行决定提交/放弃。
+        // 此刻 owner 已释放/租约已撤销：服务在 RequestCancel 内同步投递迟到 Result 只会得到显式拒绝，
+        // 重入新建会话由代际号保护，并且新会话不会收到绑定旧归属的取消。
+        if (cancelOwner is not null
+            && ReferenceEquals(cancelOwner, owner)
+            && cancelGeneration == generation - 1
+            && !owner!.EpochInvalidationRequested)
+        {
+            try
+            {
+                Service.RequestCancel();
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                ReportServiceFailure("RequestCancel", ex);
+            }
+
+            // 取消回调同步重入并建立了新会话：不再对服务发旧会话的几何撤销/EndSession。
+            if (_generation != generation || _owner is not null)
+            {
+                return true;
+            }
         }
 
         if (retractGeometry)

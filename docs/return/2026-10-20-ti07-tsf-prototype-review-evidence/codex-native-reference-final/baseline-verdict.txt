@@ -1,0 +1,19 @@
+2026-10-20 Codex independent native hidden audit. GUI not shown; no key input.
+Reviewer invocation: artifacts/ime-work/ti07-native-reference-codex-audit/bin/Debug/net10.0/Audit.exe
+Exit 1. Output preserved from actual tool result (13 checks):
+[PASS] hidden create
+[PASS] no visible surface
+[PASS] baseline text applied
+[FAIL] both selection outputs (2, 657931)
+[PASS] standard EDIT EM_POSFROMCHAR 0 got0,0 native0,0
+[FAIL] standard EDIT EM_POSFROMCHAR 2 got0,0 native10,0
+[FAIL] standard EDIT EM_POSFROMCHAR 51 got0,0 native0,57
+[PASS] real one-line scroll
+[FAIL] negative row coordinate
+[FAIL] child exactly 11 physical pixels Rect { Left = 96, Top = 96, Right = 656, Bottom = 416 } -> Rect { Left = 112, Top = 101, Right = 672, Bottom = 421 }
+[PASS] parent and viewport stable
+[PASS] foreground unchanged
+[PASS] all HWND destroyed
+audit 8/13
+
+Native audit itself uses 80 lines (not the buggy runner's six lines) to establish the geometry protocol failure independently. The baseline host hidden frame has no non-client caption; after review fix the class/style may differ, so exact absolute positions are not acceptance constants. The required relative child movement is unchanged: dx0, dy-11.

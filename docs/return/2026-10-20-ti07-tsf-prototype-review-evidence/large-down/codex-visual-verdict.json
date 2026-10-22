@@ -1,0 +1,7 @@
+{
+  "visual": "fail",
+  "text_screen_top_after": 289,
+  "candidate_follows": false,
+  "text_screen_top_before": 139,
+  "reason": "Personally inspected both PNGs: fully visible text moved down 150 physical px while candidate stayed at original screen position."
+}

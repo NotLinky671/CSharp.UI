@@ -1,0 +1,11 @@
+STA: before=00000000/3, lease=AlreadyInitialized, hr=00000001
+PASS real STA initialization
+PASS nested STA reference
+PASS STA survives nested disposal
+PASS outer balanced release
+PASS CLR STA reference preserved
+MTA: before=00000000/1, lease=ChangedMode, hr=80010106
+PASS MTA rejected explicitly
+PASS MTA never uninitialized by failed lease
+PASS MTA reference preserved
+Native audit failures=0

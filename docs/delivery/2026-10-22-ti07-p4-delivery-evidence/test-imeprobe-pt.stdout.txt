@@ -1,0 +1,7 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.ImeProbe.Tests
+  Discovered:  CSharp.UI.ImeProbe.Tests
+  Starting:    CSharp.UI.ImeProbe.Tests
+  Finished:    CSharp.UI.ImeProbe.Tests (ID = 'e0755fa8588be18c505161cc83fccc45f0981b821a56ffb894d5e985df4c3109')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.ImeProbe.Tests  Total: 96, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.332s

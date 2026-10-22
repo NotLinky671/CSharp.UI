@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><AssemblyName>CSharp.UI.TsfHostCheck.Tests</AssemblyName><NoWarn>$(NoWarn);CA1416</NoWarn><ApplicationManifest>../../../tools/CSharp.UI.TsfHostCheck/app.manifest</ApplicationManifest></PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CSharp.UI.TsfHostCheck"><HintPath>../../../tools/CSharp.UI.TsfHostCheck/bin/Debug/net10.0/CSharp.UI.TsfHostCheck.dll</HintPath></Reference>
+    <Reference Include="imeprobe"><HintPath>../../../tools/CSharp.UI.ImeProbe/bin/Debug/net10.0/imeprobe.dll</HintPath></Reference>
+  </ItemGroup>
+</Project>

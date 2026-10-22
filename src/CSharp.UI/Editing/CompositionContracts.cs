@@ -157,6 +157,30 @@ public readonly record struct CompositionEvent
         };
     }
 
+    /// <summary>
+    /// <see cref="Result"/> 的平台桥入口：附带下一段预编辑的原生 caret/分段（同一消息的真实快照）。
+    /// internal：不扩大公开契约面；caret/分段相对 <paramref name="nextPreedit"/> 解释。
+    /// </summary>
+    internal static CompositionEvent ResultWithNextPreeditAttributes(
+        int sessionId,
+        int compositionId,
+        int documentVersion,
+        int sequence,
+        string? result,
+        TextRange replacement,
+        string? nextPreedit,
+        int? nextPreeditCaret,
+        IReadOnlyList<TextRange>? nextPreeditSegments)
+    {
+        var e = Result(sessionId, compositionId, documentVersion, sequence, result, replacement, nextPreedit);
+        ValidateCompositionCaret(nextPreeditCaret);
+        return e with
+        {
+            NextPreeditCaret = nextPreeditCaret,
+            NextPreeditSegments = nextPreeditSegments is { } list ? Freeze(list) : null,
+        };
+    }
+
     /// <summary>取消当前未提交的组合段。</summary>
     public static CompositionEvent Cancel(int sessionId, int compositionId, int documentVersion, int sequence = 0)
     {
@@ -214,6 +238,19 @@ public readonly record struct CompositionEvent
 
     /// <summary>结果事件携带的下一段预编辑；不为 null 时按“先结果、后预编辑”处理。</summary>
     public string? NextPreedit { get; init; }
+
+    /// <summary>
+    /// 下一段预编辑的原生 caret（相对 <see cref="NextPreedit"/> 的 UTF-16 偏移）；
+    /// 仅随 <see cref="Result"/> 出厂设置，为空时消费方按自身排版规则（默认末尾）处理。
+    /// internal：平台桥与状态机共享，不改变公开契约面。
+    /// </summary>
+    internal int? NextPreeditCaret { get; init; }
+
+    /// <summary>
+    /// 下一段预编辑的原生分段属性（相对 <see cref="NextPreedit"/> 的 UTF-16 区间）；
+    /// 与 <see cref="NextPreeditCaret"/> 同样仅由 Result 工厂填充，由 TI-04 在重锚后生效。
+    /// </summary>
+    internal IReadOnlyList<TextRange>? NextPreeditSegments { get; init; }
 
     /// <summary>该事件是否请求产生一次原子提交事务（是否真的提交由 TI-04 依据真实事务结果判定）。</summary>
     public bool CommitsResult => Kind == CompositionEventKind.Result;
@@ -341,6 +378,37 @@ public readonly record struct CompositionEvent
         {
             error = "下一段预编辑串包含未配对代理项，不能拆开写入文本。";
             return false;
+        }
+
+        // 下一段预编辑的原生属性（TI-07 结果+下一段同消息）：caret 与分段都必须落在下一段串内。
+        if (NextPreeditCaret is { } nextCaret
+            && (nextCaret < 0 || nextCaret > (NextPreedit?.Length ?? 0)))
+        {
+            error = $"下一段预编辑 caret {nextCaret} 超出下一段串 [0, {NextPreedit?.Length ?? 0}]。";
+            return false;
+        }
+
+        if (NextPreeditSegments is { } nextSegments && nextSegments.Count > 0)
+        {
+            var nextLength = NextPreedit?.Length ?? 0;
+            var nextPreviousEnd = 0;
+            for (var i = 0; i < nextSegments.Count; i++)
+            {
+                var segment = nextSegments[i];
+                if (segment.Start < 0 || segment.End < segment.Start || segment.End > nextLength)
+                {
+                    error = $"下一段预编辑分段 {segment} 超出下一段串 [0, {nextLength}]。";
+                    return false;
+                }
+
+                if (segment.Start < nextPreviousEnd)
+                {
+                    error = $"下一段预编辑分段 {segment} 与前一段重叠或未按顺序排列（前一段结束于 {nextPreviousEnd}）。";
+                    return false;
+                }
+
+                nextPreviousEnd = segment.End;
+            }
         }
 
         if (CompositionCaret is { } caret && (caret < 0 || caret > text.Length))

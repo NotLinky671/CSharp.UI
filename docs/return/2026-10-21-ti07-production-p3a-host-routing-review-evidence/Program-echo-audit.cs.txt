@@ -1,0 +1,655 @@
+using System.Runtime.InteropServices;
+using CSharp.UI;
+using CSharp.UI.OpenTK;
+using CSharp.UI.OpenTK.WindowsTsf;
+
+// TI-07 P3a 原生时序探针（spike）：
+// 用真实的隐藏 OpenTK/GLFW 窗口证明“在 TranslateMessage 之前拦截按键”这一机制可行，
+// 并量化 PM_NOREMOVE、重复消息、无关窗口、hook 拆卸的真实行为。
+// 本工具只做机制验证，不是产品接线，也不代表微软拼音验收。
+internal static class Program
+{
+    private const int PM_NOREMOVE = 0x0000;
+    private const int PM_REMOVE = 0x0001;
+    private const int WM_KEYDOWN = 0x0100;
+    private const int WM_KEYUP = 0x0101;
+    private const int WM_CHAR = 0x0102;
+    private const int WM_SYSKEYDOWN = 0x0104;
+    private const uint WM_QUIT = 0x0012;
+
+    private const int WH_GETMESSAGE = 3;
+    private const int HC_ACTION = 0;
+
+    private static readonly List<string> Log = [];
+
+    private static int _getMessageCalls;
+    private static int _keyDownSeenBeforeTranslate;
+    private static int _keyUpSeenBeforeTranslate;
+    private static int _charSeen;
+    private static int _unrelatedWindowMessages;
+    private static int _unrelatedWindowConsumed;
+    private static readonly Dictionary<int, int> _keyDownRemoveByVk = [];
+    // 真实 GLFW pump 场景状态（与自建循环的统计分开，避免证据混淆）。
+    private static IntPtr _pumpHook;
+    private static IntPtr _pumpHwnd;
+    private static int _pumpSwallowVk;
+    private static int _pumpKeyDownBeforeTranslate;
+    private static int _pumpCharAfter;
+    private static int _pumpSwallowedDown;
+    private static int _pumpSwallowedChar;
+    /// <summary>真实 GLFW pump 场景的失败计数（由 dispatcher 动作累加，Main 汇总）。</summary>
+    private static int _pumpFailures;
+    private static int _noremoveKeyDown;
+    private static int _removeKeyDown;
+    private static int _postRemoveThenRemoveDup;
+    private static int _swallowedKeyDown;
+    private static int _swallowedKeyUp;
+
+    private static IntPtr _ownHwnd;
+    private static IntPtr _otherHwnd;
+    private static uint _ownThreadId;
+
+    // 记录“已消费”的键，用于证明被吞掉后不会产生 WM_CHAR 回声。
+    private static readonly HashSet<int> SwallowedVk = [];
+
+    private static HookProc? _hookDelegate;
+    private static IntPtr _hook;
+
+    [STAThread]
+    private static int Main()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            Console.WriteLine("[spike] SKIP non-windows");
+            return 0;
+        }
+
+        var failures = 0;
+        _ownThreadId = GetCurrentThreadId();
+
+        try
+        {
+            // 真实隐藏 OpenTK 窗口（生产宿主同一创建路径的可见性配置）。
+            var options = new UiApplicationOptions
+            {
+                Title = "CSharp.UI P3a spike (hidden)",
+                Width = 240,
+                Height = 120,
+                VSync = false,
+                StartVisible = false,
+                Started = context =>
+                {
+                    var host = UiApplication.CurrentHost;
+                    var hwnd = host is null ? IntPtr.Zero : WindowsImeBridge.GetWindowHandle(host.Window);
+                    if (hwnd == IntPtr.Zero)
+                    {
+                        Log.Add("[spike] FAIL no own HWND");
+                        failures++;
+                        context.RequestExit(1);
+                        return;
+                    }
+
+                    _ownHwnd = hwnd;
+                    Log.Add($"[spike] own hwnd=0x{hwnd:X} threadId={_ownThreadId}");
+
+                    // 无关窗口：另一个普通 Win32 窗口，必须完全不受影响。
+                    _otherHwnd = CreateUnrelatedWindow();
+                    Log.Add($"[spike] unrelated hwnd=0x{_otherHwnd:X}");
+
+                    failures += InstallHookAndRunScenarios(context);
+                    failures += VerifyKeystrokeMgrAbi();
+
+                    // R2：用**真实 GLFW pump**（OpenTkHost.Run 的 PollEvents/WaitEvents）驱动自有 HWND，
+                    // 而不是探针自建的 PeekMessage 循环。这里只安装钩子并投递消息，随后立即返回；
+                    // 真正的分发由宿主事件循环完成，结果在之后的调度动作里核对。
+                    // 注意：**不能**在这里 RequestExit，否则事件循环还没 pump 就退出，核对永远不会执行。
+                    ScheduleRealGlfwPumpScenario(context, failures);
+                },
+            };
+
+            var exit = UiApplication.Run(new CSharp.UI.Rectangle(CSharp.UI.Color.Parse("#2563EB")), options);
+            failures += exit == 0 ? 0 : 1;
+            failures += _pumpFailures;
+        }
+        catch (Exception ex)
+        {
+            Log.Add($"[spike] EXCEPTION {ex.GetType().Name}: {ex.Message}");
+            failures++;
+        }
+        finally
+        {
+            if (_hook != IntPtr.Zero)
+            {
+                UnhookWindowsHookEx(_hook);
+                _hook = IntPtr.Zero;
+            }
+
+            if (_otherHwnd != IntPtr.Zero)
+            {
+                DestroyWindow(_otherHwnd);
+            }
+        }
+
+        foreach (var line in Log)
+        {
+            Console.WriteLine(line);
+        }
+
+        Console.WriteLine(failures == 0 ? "[spike] RESULT PASS" : $"[spike] RESULT FAIL count={failures}");
+        return failures == 0 ? 0 : 1;
+    }
+
+    private static int InstallHookAndRunScenarios(UiHostContext context)
+    {
+        var failures = 0;
+
+        _hookDelegate = HookCallback;
+        _hook = SetWindowsHookExW(WH_GETMESSAGE, _hookDelegate, IntPtr.Zero, _ownThreadId);
+        if (_hook == IntPtr.Zero)
+        {
+            Log.Add($"[spike] FAIL SetWindowsHookEx err={Marshal.GetLastWin32Error()}");
+            return 1;
+        }
+
+        Log.Add("[spike] thread-local WH_GETMESSAGE installed");
+
+        // 用 PostMessage 合成按键（明确标注为合成证据，不是真实输入法验收）。
+        // 1) 普通按键：必须在 TranslateMessage 之前被看到，且仍产生 WM_CHAR（未消费）。
+        PostKey(_ownHwnd, WM_KEYDOWN, 0x41 /*A*/);
+        PostKey(_ownHwnd, WM_KEYUP, 0x41);
+        PumpFor(60);
+
+        // 2) PM_NOREMOVE：显式用 PM_NOREMOVE 窥视一次，再正常 REMOVE。
+        //    窥视不得消费、不得翻译；REMOVE 仍必须取到同一条消息且只处理一次。
+        PostKey(_ownHwnd, WM_KEYDOWN, 0x42 /*B*/);
+        Thread.Sleep(20);
+        var peeked = PeekMessageW(out var peekedMsg, IntPtr.Zero, 0, 0, PM_NOREMOVE);
+        if (peeked && peekedMsg.Hwnd == _ownHwnd)
+        {
+            Log.Add($"[spike] explicit PM_NOREMOVE peeked msg=0x{peekedMsg.Message:X}");
+        }
+
+        PumpFor(60);
+
+        // 3) 被消费的按键：hook 里吞掉，TranslateMessage 不得再产生 WM_CHAR。
+        SwallowedVk.Add(0x43 /*C*/);
+        PostKey(_ownHwnd, WM_KEYDOWN, 0x43);
+        PostKey(_ownHwnd, WM_KEYUP, 0x43);
+        PumpFor(60);
+
+        // 4) 无关窗口：发给其它 HWND 的按键不得被我们**消费**（观测是线程本地 hook 的必然结果）。
+        PostKey(_otherHwnd, WM_KEYDOWN, 0x44 /*D*/);
+        PumpFor(60);
+
+        // 断言。
+        if (_keyDownSeenBeforeTranslate == 0)
+        {
+            Log.Add("[spike] FAIL keydown never observed in getmessage hook");
+            failures++;
+        }
+        else
+        {
+            Log.Add($"[spike] keydown observed before translate={_keyDownSeenBeforeTranslate} "
+                + $"keyup={_keyUpSeenBeforeTranslate} chars={_charSeen}");
+        }
+
+        if (_charSeen == 0)
+        {
+            Log.Add("[spike] FAIL unconsumed key produced no WM_CHAR");
+            failures++;
+        }
+
+        // 每个未被消费的键必须恰好被移除一次（PM_NOREMOVE 窥视不得重复计数）。
+        var aCount = _keyDownRemoveByVk.GetValueOrDefault(0x41);
+        var bCount = _keyDownRemoveByVk.GetValueOrDefault(0x42);
+        var cCount = _keyDownRemoveByVk.GetValueOrDefault(0x43);
+        if (_noremoveKeyDown == 0)
+        {
+            Log.Add("[spike] FAIL PM_NOREMOVE keydown not observed");
+            failures++;
+        }
+        else if (aCount != 1 || bCount != 1)
+        {
+            Log.Add($"[spike] FAIL per-key remove counts A={aCount} B={bCount} expected 1/1 (no double process)");
+            failures++;
+        }
+        else if (cCount != 1)
+        {
+            Log.Add($"[spike] FAIL swallowed key removed count={cCount} expected 1");
+            failures++;
+        }
+        else
+        {
+            Log.Add("[spike] PM_NOREMOVE peeked without consuming; each key removed exactly once "
+                + $"(A={aCount} B={bCount} C(swallowed)={cCount})");
+        }
+
+        if (_swallowedKeyDown == 0)
+        {
+            Log.Add("[spike] FAIL swallowed keydown not intercepted");
+            failures++;
+        }
+        else
+        {
+            Log.Add($"[spike] swallowed keydown={_swallowedKeyDown} keyup={_swallowedKeyUp} "
+                + $"(no WM_CHAR expected for VK 0x43)");
+        }
+
+        // 线程本地 hook 必然“看到”本线程所有窗口的消息；要求的是**不消费、不改写**无关窗口的输入。
+        if (_unrelatedWindowConsumed != 0)
+        {
+            Log.Add($"[spike] FAIL unrelated window input consumed={_unrelatedWindowConsumed}");
+            failures++;
+        }
+        else
+        {
+            Log.Add($"[spike] unrelated HWND observed but never consumed/rewritten "
+                + $"(observed={_unrelatedWindowMessages})");
+        }
+
+        if (_postRemoveThenRemoveDup != 0)
+        {
+            Log.Add($"[spike] FAIL duplicate remove handling={_postRemoveThenRemoveDup}");
+            failures++;
+        }
+
+        // 拆卸：unhook 后不再收到消息。
+        var beforeUnhook = _getMessageCalls;
+        UnhookWindowsHookEx(_hook);
+        _hook = IntPtr.Zero;
+        PostKey(_ownHwnd, WM_KEYDOWN, 0x45 /*E*/);
+        PumpFor(60);
+        if (_getMessageCalls != beforeUnhook)
+        {
+            Log.Add($"[spike] FAIL hook still receiving after unhook delta={_getMessageCalls - beforeUnhook}");
+            failures++;
+        }
+        else
+        {
+            Log.Add("[spike] hook teardown verified (no messages after unhook)");
+        }
+
+        Log.Add($"[spike] getmessage calls total={_getMessageCalls}");
+        return failures;
+    }
+
+    /// <summary>
+    /// 验证 <c>ITfKeystrokeMgr</c> 的 QI 与 vtable 槽位顺序：错误槽位会静默调用别的方法，
+    /// 因此在接线前必须用真实 COM 对象确认 <c>TestKeyDown</c> 的行为符合官方契约。
+    /// </summary>
+    private static int VerifyKeystrokeMgrAbi()
+    {
+        var failures = 0;
+
+        var hr = TsfNative.TF_CreateThreadMgr(out var threadMgr);
+        if (hr < 0 || threadMgr is null)
+        {
+            Log.Add($"[spike] FAIL TF_CreateThreadMgr hr=0x{hr:X8}");
+            return 1;
+        }
+
+        if (threadMgr.Activate(out _) < 0)
+        {
+            Log.Add("[spike] FAIL Activate");
+            return 1;
+        }
+
+        try
+        {
+            var unknown = Marshal.GetIUnknownForObject(threadMgr);
+            var iid = TsfIids.KeystrokeMgr;
+            var qiHr = Marshal.QueryInterface(unknown, in iid, out var ksPtr);
+            Marshal.Release(unknown);
+            Log.Add($"[spike] QI(ITfKeystrokeMgr) hr=0x{qiHr:X8} ptr={(ksPtr == IntPtr.Zero ? "null" : "ok")}");
+
+            if (qiHr < 0 || ksPtr == IntPtr.Zero)
+            {
+                Log.Add("[spike] FAIL keystroke mgr unavailable");
+                return 1;
+            }
+
+            try
+            {
+                var ks = (ITfKeystrokeMgr)Marshal.GetObjectForIUnknown(ksPtr);
+
+                // 无 key event sink 时官方语义是 S_FALSE（或 S_OK+eaten=false）：都不得消费。
+                var testHr = ks.TestKeyDown((IntPtr)0x41, (IntPtr)1, out var eaten);
+                Log.Add($"[spike] TestKeyDown(A) hr=0x{testHr:X8} eaten={eaten}");
+
+                var decision = TsfKeyRouting.Decide(testHr, eaten != 0, null, false);
+                if (decision != TsfKeyRoutingDecision.PassToApplication)
+                {
+                    Log.Add($"[spike] FAIL no-sink key consumed decision={decision}");
+                    failures++;
+                }
+                else
+                {
+                    Log.Add("[spike] no-sink key correctly passes to application (no premature consume)");
+                }
+
+                // 槽位交叉验证：GetForeground 官方签名是 out CLSID（不是输入 Guid + out IUnknown）。
+                // 无前台文本服务时返回 S_FALSE 且 pclsid 为 Guid.Empty，这是合理结果。
+                var fgHr = ks.GetForeground(out var foregroundClsid);
+                Log.Add($"[spike] GetForeground hr=0x{fgHr:X8} "
+                    + $"clsid={(foregroundClsid == Guid.Empty ? "(empty)" : foregroundClsid.ToString("D"))}");
+
+                if (fgHr != 0 && fgHr != 1)
+                {
+                    Log.Add($"[spike] FAIL GetForeground unexpected hr=0x{fgHr:X8}");
+                    failures++;
+                }
+
+                Marshal.ReleaseComObject(ks);
+            }
+            finally
+            {
+                Marshal.Release(ksPtr);
+            }
+        }
+        finally
+        {
+            threadMgr.Deactivate();
+            Marshal.ReleaseComObject(threadMgr);
+        }
+
+        return failures;
+    }
+
+    /// <summary>
+    /// 用<b>真实 GLFW pump</b>（宿主 <c>GLFW.PollEvents</c>）驱动自有 HWND 的按键路由证据。
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>为什么单独做：</b>自建 <c>PeekMessage/TranslateMessage/DispatchMessage</c> 循环只能证明
+    /// “这段循环可以配合 <c>WH_GETMESSAGE</c>”，不能证明产品实际使用的 GLFW 泵顺序与消费效果。
+    /// </para>
+    /// <para>
+    /// <b>做法：</b>安装线程本地钩子 → 投递按键 → <b>立刻返回</b>，让宿主事件循环的
+    /// <c>GLFW.PollEvents</c> 真正分发这些消息；随后用 dispatcher 投递的核对动作读取计数。
+    /// 不替换产品消息泵。
+    /// </para>
+    /// </remarks>
+    private static void ScheduleRealGlfwPumpScenario(UiHostContext context, int priorFailures)
+    {
+        var hwnd = _ownHwnd;
+        if (hwnd == IntPtr.Zero)
+        {
+            Log.Add("[pump] FAIL no own hwnd");
+            return;
+        }
+
+        // 清空上一阶段的统计，避免与自建循环的证据混在一起。
+        _pumpKeyDownBeforeTranslate = 0;
+        _pumpCharAfter = 0;
+        _pumpSwallowedDown = 0;
+        _pumpSwallowedChar = 0;
+        _pumpHook = SetWindowsHookExW(WH_GETMESSAGE, PumpHookCallback, IntPtr.Zero, GetCurrentThreadId());
+        if (_pumpHook == IntPtr.Zero)
+        {
+            Log.Add($"[pump] FAIL SetWindowsHookEx err={Marshal.GetLastWin32Error()}");
+            return;
+        }
+
+        _pumpHwnd = hwnd;
+        Log.Add("[pump] hook installed; posting keys and letting host GLFW pump dispatch them");
+
+        // 未消费的键：必须产生 WM_CHAR（普通输入不受影响）。
+        PostKey(hwnd, WM_KEYDOWN, 0x41 /*A*/);
+        PostKey(hwnd, WM_KEYUP, 0x41);
+
+        // 被消费的键：不得产生 WM_CHAR。
+        _pumpSwallowVk = 0x43; // C
+        PostKey(hwnd, WM_KEYDOWN, 0x43);
+        PostKey(hwnd, WM_KEYUP, 0x43);
+
+        // 让宿主事件循环跑几帧后再核对（由 dispatcher 在 UI 线程执行）。
+        context.Dispatcher.Post(() => VerifyRealGlfwPumpResult(context, priorFailures));
+    }
+
+    private static void VerifyRealGlfwPumpResult(UiHostContext context, int priorFailures)
+    {
+        _ = context;
+        Log.Add($"[pump] after real GLFW pump: keydown={_pumpKeyDownBeforeTranslate} "
+            + $"char={_pumpCharAfter} swallowedDown={_pumpSwallowedDown} swallowedChar={_pumpSwallowedChar}");
+
+        if (_pumpKeyDownBeforeTranslate == 0)
+        {
+            Log.Add("[pump] FAIL keydown not observed via real GLFW pump");
+            _pumpFailures++;
+        }
+
+        if (_pumpCharAfter == 0)
+        {
+            Log.Add("[pump] FAIL unconsumed key produced no WM_CHAR via real GLFW pump");
+            _pumpFailures++;
+        }
+
+        if (_pumpSwallowedDown == 0)
+        {
+            Log.Add("[pump] FAIL swallowed keydown not intercepted via real GLFW pump");
+            _pumpFailures++;
+        }
+
+        if (_pumpSwallowedChar != 0)
+        {
+            Log.Add($"[pump] FAIL swallowed key still produced WM_CHAR={_pumpSwallowedChar} via real GLFW pump");
+            _pumpFailures++;
+        }
+
+        if (_pumpHook != IntPtr.Zero)
+        {
+            UnhookWindowsHookEx(_pumpHook);
+            _pumpHook = IntPtr.Zero;
+            Log.Add("[pump] hook torn down after real-pump scenario");
+        }
+
+        Log.Add("[pump] real GLFW pump routing verified");
+        context.RequestExit(priorFailures + _pumpFailures == 0 ? 0 : 1);
+    }
+
+    private static IntPtr PumpHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+    {
+        if (nCode >= 0)
+        {
+            var msg = Marshal.PtrToStructure<MSG>(lParam);
+            if (msg.Hwnd == _pumpHwnd && wParam == (IntPtr)PM_REMOVE)
+            {
+                var vk = (int)msg.WParam;
+                switch (msg.Message)
+                {
+                    case WM_KEYDOWN or WM_SYSKEYDOWN:
+                        if (vk == _pumpSwallowVk || vk == _pumpSwallowVk + 0x20)
+                        {
+                            _pumpSwallowedDown++;
+                            return (IntPtr)1;
+                        }
+
+                        _pumpKeyDownBeforeTranslate++;
+                        break;
+
+                    case WM_CHAR: Log.Add($"[audit-synthetic-char] U+{msg.WParam.ToInt64():X4}");
+                        if (vk == _pumpSwallowVk || vk == _pumpSwallowVk + 0x20)
+                        {
+                            _pumpSwallowedChar++;
+                        }
+                        else
+                        {
+                            _pumpCharAfter++;
+                        }
+
+                        break;
+                }
+            }
+        }
+
+        return CallNextHookEx(_pumpHook, nCode, wParam, lParam);
+    }
+
+    private static void PostKey(IntPtr hwnd, int msg, int vk)
+    {
+        // lParam 高字位重复计数=1；这里只关心消息身份与顺序。
+        var lParam = (IntPtr)(1 | (vk << 16));
+        PostMessageW(hwnd, (uint)msg, (IntPtr)vk, lParam);
+    }
+
+    private static void PumpFor(int milliseconds)
+    {
+        var deadline = Environment.TickCount64 + milliseconds;
+        while (Environment.TickCount64 < deadline)
+        {
+            while (PeekMessageW(out var msg, IntPtr.Zero, 0, 0, PM_REMOVE))
+            {
+                if (msg.Message == WM_QUIT)
+                {
+                    return;
+                }
+
+                TranslateMessage(ref msg);
+                DispatchMessageW(ref msg);
+            }
+
+            Thread.Sleep(5);
+        }
+    }
+
+    private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+    {
+        if (nCode < HC_ACTION)
+        {
+            return CallNextHookEx(_hook, nCode, wParam, lParam);
+        }
+
+        _getMessageCalls++;
+
+        var msg = Marshal.PtrToStructure<MSG>(lParam);
+        var isRemoval = wParam == (IntPtr)PM_REMOVE;
+
+        // 只处理自有 HWND；无关窗口完全不碰。
+        if (msg.Hwnd != _ownHwnd)
+        {
+            if (msg.Hwnd == _otherHwnd
+                && (msg.Message is WM_KEYDOWN or WM_KEYUP or WM_CHAR))
+            {
+                _unrelatedWindowMessages++;
+            }
+
+            return CallNextHookEx(_hook, nCode, wParam, lParam);
+        }
+
+        switch (msg.Message)
+        {
+            case WM_KEYDOWN or WM_SYSKEYDOWN:
+            {
+                if (!isRemoval)
+                {
+                    // PM_NOREMOVE 只是窥视：不得消费、不得计数为已处理。
+                    if (_noremoveKeyDown == 0)
+                    {
+                        _noremoveKeyDown++;
+                        Log.Add("[spike] PM_NOREMOVE keydown peeked (not consumed)");
+                    }
+
+                    break;
+                }
+
+                _removeKeyDown++;
+                _keyDownSeenBeforeTranslate++;
+
+                var vk = (int)msg.WParam;
+                _keyDownRemoveByVk[vk] = _keyDownRemoveByVk.GetValueOrDefault(vk) + 1;
+
+                if (SwallowedVk.Contains(vk))
+                {
+                    _swallowedKeyDown++;
+                    // 消费：从队列移除并且不派发/不翻译，因此不会产生 WM_CHAR。
+                    return (IntPtr)1;
+                }
+
+                break;
+            }
+
+            case WM_KEYUP:
+            {
+                if (isRemoval)
+                {
+                    _keyUpSeenBeforeTranslate++;
+                    var vk = (int)msg.WParam;
+                    if (SwallowedVk.Contains(vk))
+                    {
+                        _swallowedKeyUp++;
+                        return (IntPtr)1;
+                    }
+                }
+
+                break;
+            }
+
+            case WM_CHAR: Log.Add($"[audit-synthetic-char] U+{msg.WParam.ToInt64():X4}");
+            {
+                if (isRemoval)
+                {
+                    _charSeen++;
+                }
+
+                break;
+            }
+        }
+
+        return CallNextHookEx(_hook, nCode, wParam, lParam);
+    }
+
+    private static IntPtr CreateUnrelatedWindow()
+    {
+        // 普通隐藏 Win32 窗口：验证 hook 只作用于自有 HWND/线程。
+        return CreateWindowExW(0, "STATIC", "unrelated", 0, 0, 0, 60, 40,
+            IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+    }
+
+    private delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MSG
+    {
+        public IntPtr Hwnd;
+        public uint Message;
+        public IntPtr WParam;
+        public IntPtr LParam;
+        public uint Time;
+        public int PtX;
+        public int PtY;
+    }
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+    private static extern IntPtr SetWindowsHookExW(int idHook, HookProc lpfn, IntPtr hMod, uint dwThreadId);
+
+    [DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
+    private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+    [DllImport("user32.dll", ExactSpelling = true)]
+    private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
+    private static extern bool PostMessageW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    private static extern bool PeekMessageW(out MSG lpMsg, IntPtr hWnd, uint min, uint max, uint remove);
+
+    [DllImport("user32.dll", ExactSpelling = true)]
+    private static extern bool TranslateMessage(ref MSG lpMsg);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    private static extern IntPtr DispatchMessageW(ref MSG lpMsg);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    private static extern IntPtr CreateWindowExW(
+        uint exStyle, string className, string windowName, uint style,
+        int x, int y, int width, int height,
+        IntPtr parent, IntPtr menu, IntPtr instance, IntPtr param);
+
+    [DllImport("user32.dll", ExactSpelling = true)]
+    private static extern bool DestroyWindow(IntPtr hwnd);
+
+    [DllImport("kernel32.dll", ExactSpelling = true)]
+    private static extern uint GetCurrentThreadId();
+}
+

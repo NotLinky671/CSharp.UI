@@ -1,0 +1,16 @@
+{
+  "reviewed_by": "Codex",
+  "date": "2026-10-20",
+  "scenario": "scroll",
+  "protocol_revision": "R24 GetScreenExt no-lock, live display surface",
+  "actual_microsoft_pinyin_before_after": true,
+  "chinese_nihao_candidates_visible": true,
+  "trace_layout_chain": true,
+  "context_view_probe": false,
+  "visual_pass": false,
+  "writes": 0,
+  "cleanup_failures": 0,
+  "script_exit_code": 3,
+  "observation": "Text row moves up 11 physical pixels, candidate stays fixed. Notification9/readlock32 returns updated text rect and live client screen rect; before/after focus and document/top-context match.",
+  "limitation": "TSF callback nesting does not identify the concrete TIP consumer; no production migration validated"
+}

@@ -1,0 +1,30 @@
+[spike] own hwnd=0x310F54 threadId=42012
+[spike] unrelated hwnd=0x3B0E3E
+[spike] thread-local WH_GETMESSAGE installed
+[audit-synthetic-char] U+0061
+[audit-synthetic-char] U+0061
+[spike] PM_NOREMOVE keydown peeked (not consumed)
+[spike] explicit PM_NOREMOVE peeked msg=0x100
+[audit-synthetic-char] U+0062
+[audit-synthetic-char] U+0063
+[audit-synthetic-char] U+0063
+[spike] keydown observed before translate=3 keyup=2 chars=5
+[spike] PM_NOREMOVE peeked without consuming; each key removed exactly once (A=1 B=1 C(swallowed)=1)
+[spike] swallowed keydown=1 keyup=1 (no WM_CHAR expected for VK 0x43)
+[spike] unrelated HWND observed but never consumed/rewritten (observed=2)
+[spike] hook teardown verified (no messages after unhook)
+[spike] getmessage calls total=32
+[spike] QI(ITfKeystrokeMgr) hr=0x00000000 ptr=ok
+[spike] TestKeyDown(A) hr=0x00000000 eaten=0
+[spike] no-sink key correctly passes to application (no premature consume)
+[spike] GetForeground hr=0x00000001 clsid=(empty)
+[pump] hook installed; posting keys and letting host GLFW pump dispatch them
+[audit-synthetic-char] U+0061
+[audit-synthetic-char] U+0061
+[audit-synthetic-char] U+0063
+[audit-synthetic-char] U+0063
+[pump] after real GLFW pump: keydown=1 char=2 swallowedDown=1 swallowedChar=2
+[pump] FAIL swallowed key still produced WM_CHAR=2 via real GLFW pump
+[pump] hook torn down after real-pump scenario
+[pump] real GLFW pump routing verified
+[spike] RESULT FAIL count=2

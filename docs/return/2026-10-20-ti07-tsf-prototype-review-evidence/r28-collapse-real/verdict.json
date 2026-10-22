@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-20",
+  "reviewer": "Codex",
+  "scenario": "child-collapse",
+  "executionExitCode": 3,
+  "visualVerdict": "FAIL",
+  "imagesPersonallyReviewed": ["00-child-collapse-before.png", "01-child-collapse-after.png", "02-child-collapse-restore.png"],
+  "observation": "Candidate visible before collapse, remains visible at height zero, and returns with restored input control. Shrinking the own EDIT surface does not hide the native candidate.",
+  "composition": "ni'hao",
+  "compositionEndsDuringMeasurement": 0,
+  "resultsDuringMeasurement": 0,
+  "editChangesDuringMeasurement": 0,
+  "focusChangesDuringMeasurement": 0,
+  "profile": "Microsoft Pinyin, lang0804, inputprocessor",
+  "editScreenBounds": [[107,221,667,641],[107,221,667,221],[107,221,667,641]],
+  "diagnosticCaveat": "native_caret_screen is mislabeled: GUITHREADINFO.rcCaret is client-relative in this tool. Verdict uses actual screenshots and independently mapped EDIT/composition coordinates, not that field.",
+  "ti07Complete": false
+}

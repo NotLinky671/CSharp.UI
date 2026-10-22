@@ -1,0 +1,31 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+[smoke] store exposes owner composition sink before CreateContext
+[smoke] context ok cookie=1 storeSink=True
+[smoke] SetFocus hr=0x00000000
+[smoke] AssociateFocus hr=0x00000000
+[smoke] edit sink advised cookie=1
+[smoke] composition started, product Start callbacks=1 range=(2, 0) diag=QI=ok GetExtent hr=0x00000000 anchor=2 cch=0 rangeFailures=0
+[smoke] captured ACP range anchor=2 cch=0
+[smoke] preedit drain applied=True actions=[Preedit] writes=0
+[smoke] preedit state display="ABCD" preeditLen=0 repl=[2,2)
+[smoke] native insert hr=0x00000000 nativeText="ABnihaoCD"
+[smoke] post-insert drain actions=[Preedit] preedit="nihao" writes=0
+[smoke] ShiftEnd hr=0x00000000 product Update callbacks=2 (before=1) range=(2, 5)
+[smoke] after ShiftEnd: writes=0 (expected 0)
+[smoke] EndComposition hr=0x00000000 product End callbacks=1
+[smoke] after End: writes=1 actions=[Preedit,Ignore,Commit] endEditCallbacks=2
+[smoke] completed-edit drain applied=False committed=False writes=1 text="ABnihaoCD"
+[smoke] product OnEndEdit callbacks=2 start=1 update=2 end=1 rangeFailures=0
+[smoke] final writes=1 text="ABnihaoCD"
+[conn] contextA advised hr=0x00000000 cookie=1
+[conn] repeated advise idempotent, same cookie=1
+[conn] contextA unadvised hr=0x00000000 state cleared
+[conn] contextB advised hr=0x00000000 cookie=1
+[conn] contextB unadvised hr=0x00000000 state cleared
+[conn] real contextA→contextB connection lifecycle verified
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '46f6427a055eaea5774ac41639f8bd848cbf0fea13555980ed18f5ed08ee0304')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.195s

@@ -1,0 +1,15 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+[cancel] focus hr=0x00000000 assoc hr=0x00000000
+[cancel] start-diag request=0x00000000 session=0x00000000 CreateAcpRangePointer(4,4)=0x188795799A8 storeLen=4 StartComposition hr=0x00000000 created=ok
+[cancel] composition started start=1 range=(4, 0)
+[cancel] preedit display="ABCDnihao" writes=0
+[cancel] RequestCancel applied=True terminateCalls=1 attempted=True lastHr=0x00000000(S_OK) endCallbacks=1(before=0) terminalObserved=True unavailable=0 failures=0
+[cancel] after-cancel drain applied=True committed=False writes=0 text="ABCD" pending=2 resync=False
+[cancel] second composition end hr=0x00000000
+[cancel] final writes=1 text="ABCD好" terminate=1 failures=0 unavailable=0 resync=False
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '714a3074ee569785d367205ccd5169b581c32843b564799c8c2e18419f7bcb8d')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 8, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.220s

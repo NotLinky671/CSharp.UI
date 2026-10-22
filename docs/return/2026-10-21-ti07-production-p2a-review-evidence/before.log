@@ -1,0 +1,6 @@
+FAIL duplicate partial confirmation: same confirmation replay wrote 2 times; text=你你ABCD
+FAIL refresh after external binding change: mirror=True, core=False, display=niexternal
+FAIL cross-region selection: unsupported cross-region range reported success
+FAIL snapshot output immutability: published snapshot was mutated through array cast
+FAIL selection getter revokes client: selection accepted after getter revoked focused client
+Independent P2a audit failures=5

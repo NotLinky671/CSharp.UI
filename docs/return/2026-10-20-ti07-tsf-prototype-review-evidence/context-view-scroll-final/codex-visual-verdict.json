@@ -1,0 +1,13 @@
+{
+  "reviewer": "Codex",
+  "geometry": "composition range 1..5 exact before/after; context/view and store rect/screen/HWND agree; text y139->128",
+  "candidate_follow": "fail in observed images; native popup same screen position",
+  "valid_chinese_composition_acceptance": false,
+  "cleanup_failures": 0,
+  "reason": "first n committed before baseline composition; remaining ihao English candidate; writes=1",
+  "exit_code": 1,
+  "screenshots_personally_viewed": [
+    "s4a-composing.png",
+    "s4b-small-scroll.png"
+  ]
+}

@@ -1,0 +1,50 @@
+using CSharp.UI;
+using CSharp.UI.OpenTK;
+using OpenTK.Windowing.Common;
+internal static class Program
+{
+    [STAThread]
+    static int Main()
+    {
+        var text = "ABCD";
+        var writes = 0;
+        var failed = false; var inSetter = false; var reentered = false; var injected = false;
+        var root = new TextField(new Binding<string>(() => text, value => { if (inSetter) reentered = true; writes++; text = value; if (!injected && value.Contains('x')) { injected = true; inSetter = true; UiApplication.CurrentHost!.InputAdapter!.HandleTextInput(new TextInputEventArgs('y')); inSetter = false; } }));
+        UiApplication.Run(root, new UiApplicationOptions
+        {
+            Title = "Codex safe replay audit (hidden)", Width = 240, Height = 100,
+            StartVisible = false, VSync = false, UseTsfInputBridge = true,
+            Started = context =>
+            {
+                context.Runtime.BuildFrame();
+                context.Runtime.SetFocus(context.Runtime.Root);
+                context.Runtime.BuildFrame();
+                var host = UiApplication.CurrentHost!;
+                var tsf = host.TsfBridge;
+                if (tsf is null) { Console.WriteLine("[FAIL] required real TSF session absent: " + host.TextInputBackendReason); failed=true; context.RequestExit(1); return; }
+                // Controlled inside-apply state of the actual product coordinator.
+                // This is a synthetic reentrancy guard, not a real Microsoft Pinyin input test.
+                var entered = tsf.Coordinator.TryBeginSafePhase(true, true, false);
+                if (!entered.Applied) { Console.WriteLine("[FAIL] cannot enter controlled apply guard"); failed=true; context.RequestExit(1); return; }
+                host.InputAdapter!.HandleTextInput(new TextInputEventArgs('x'));
+                var pendingBefore = host.Router!.Coordinator.DeferredCount;
+                Console.WriteLine($"[AUDIT] guarded capture: writes={writes}, pending={pendingBefore}");
+                if (writes != 0 || pendingBefore != 1) failed = true;
+                tsf.Coordinator.ExitSafePhase();
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(150);
+                    context.Dispatcher.Post(() =>
+                    {
+                        var pendingAfter = host.Router.Coordinator.DeferredCount;
+                        Console.WriteLine($"[AUDIT] no further user input: writes={writes}, hasX={text.Contains('x')}, pending={pendingAfter}, replayed={host.InputAdapter.OrderedReplayedCount}, hasY={text.Contains('y')}, reentered={reentered}");
+                        if (writes != 2 || !text.Contains('x') || !text.Contains('y') || reentered || pendingAfter != 0) failed = true;
+                        context.RequestExit(failed ? 1 : 0);
+                    });
+                });
+            }
+        });
+        return failed ? 1 : 0;
+    }
+}
+

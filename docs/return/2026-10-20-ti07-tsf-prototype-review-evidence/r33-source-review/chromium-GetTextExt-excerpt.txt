@@ -1,0 +1,11 @@
+  }
+  TRACE_EVENT1("ime", "TSFTextStore::GetTextExt", "DIP rect",
+               result_rect->ToString());
+
+  *rect = display::win::GetScreenWin()
+              ->DIPToScreenRect(window_handle_, result_rect.value())
+              .ToRECT();
+  *clipped = FALSE;
+  TRACE_EVENT1("ime", "TSFTextStore::GetTextExt", "screen rect",
+               gfx::Rect(*rect).ToString());
+  return S_OK;

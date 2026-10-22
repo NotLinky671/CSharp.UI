@@ -1,0 +1,31 @@
+# source: execution transcript (proc job no longer retains raw stdout)
+# commands run from repository root:
+#   dotnet build tests/CSharp.UI.OpenTK.Tests/CSharp.UI.OpenTK.Tests.csproj -c Release -v q -nologo
+#   ./tests/CSharp.UI.OpenTK.Tests/bin/Release/net10.0/CSharp.UI.OpenTK.Tests.exe \
+#     -class CSharp.UI.OpenTK.Tests.TsfUiElementSinkTests \
+#     -class CSharp.UI.OpenTK.Tests.HostAcpGeometryProviderTests \
+#     -class CSharp.UI.OpenTK.Tests.CandidateOverlayRenderingTests \
+#     -class CSharp.UI.OpenTK.Tests.TsfHostIntegrationTests \
+#     -class CSharp.UI.OpenTK.Tests.TsfSessionLifetimeTests \
+#     -class CSharp.UI.OpenTK.Tests.AcpTextStoreProtocolTests
+
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '714a3074ee569785d367205ccd5169b581c32843b564799c8c2e18419f7bcb8d')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 101, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 1.007s
+EXIT=0
+
+# final increment after independent-surface initialization / sink boundary fixes:
+#   ... -class TsfHostIntegrationTests -class TsfUiElementSinkTests \
+#       -class HostAcpGeometryProviderTests -class CandidateOverlayRenderingTests
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '714a3074ee569785d367205ccd5169b581c32843b564799c8c2e18419f7bcb8d')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 28, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.828s
+EXIT=0

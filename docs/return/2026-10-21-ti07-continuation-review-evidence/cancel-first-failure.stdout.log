@@ -1,0 +1,18 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+    CSharp.UI.OpenTK.Tests.TsfCancellationTests.宿主忙碌时取消延后且零写入随后安全阶段执行 [FAIL]
+      System.InvalidOperationException : 真实 TSF 桥建立失败：当前线程已被 MTA 占用（RPC_E_CHANGED_MODE）；需要 [STAThread] 入口。
+      Stack Trace:
+        tests\CSharp.UI.OpenTK.Tests\TsfCancellationTests.cs(628,0): at CSharp.UI.OpenTK.Tests.TsfCancellationTests.CancelHost..ctor(String initial)
+        tests\CSharp.UI.OpenTK.Tests\TsfCancellationTests.cs(145,0): at CSharp.UI.OpenTK.Tests.TsfCancellationTests.宿主忙碌时取消延后且零写入随后安全阶段执行()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.OpenTK.Tests.TsfCancellationTests.核心先取消再到service请求取消时迟到End与完成编辑不写绑定 [FAIL]
+      System.InvalidOperationException : 无法创建隐藏窗口。
+      Stack Trace:
+        tests\CSharp.UI.OpenTK.Tests\TsfCancellationTests.cs(613,0): at CSharp.UI.OpenTK.Tests.TsfCancellationTests.CancelHost..ctor(String initial)
+        tests\CSharp.UI.OpenTK.Tests\TsfCancellationTests.cs(47,0): at CSharp.UI.OpenTK.Tests.TsfCancellationTests.核心先取消再到service请求取消时迟到End与完成编辑不写绑定()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)

@@ -1,0 +1,20 @@
+{"seq":1,"t_ms":6.8291,"wall":"2026-10-19T21:36:41.1083743\u002B08:00","managed_tid":2,"win32_tid":57592,"pid":49956,"session":8,"stage":"probe","source":"ProbeLog","kind":"log-open","path":"C:\\Users\\nothh\\code\\C#\\CSharp.UI\\artifacts\\ime-work\\ti07-codex-tool-selftest\\ime-host-check.jsonl","managed_thread_id":2,"win32_thread_id":57592,"unit":"json-lines"}
+{"seq":2,"t_ms":43.4101,"wall":"2026-10-19T21:36:41.1448412\u002B08:00","managed_tid":2,"win32_tid":57592,"pid":49956,"session":8,"stage":"env","source":"tool","kind":"start","os":"Microsoft Windows NT 10.0.26200.0","arch":"x64","main_tid":2,"ui_thread_apartment":"MTA","coget_apartment_type":"hr=0x00000000 type=1 qualifier=0","note":"\u751F\u4EA7\u5BBF\u4E3B\u4E0D\u5728\u4E3B\u7EBF\u7A0B\u521D\u59CB\u5316 COM\uFF1B\u8FD9\u91CC\u8BB0\u5F55\u7684\u662F\u771F\u5B9E\u7EBF\u7A0B\u72B6\u6001\uFF08\u4E0D\u5047\u8BBE\u63A2\u9488\u7684 STA\uFF09\u3002","out":"C:\\Users\\nothh\\code\\C#\\CSharp.UI\\artifacts\\ime-work\\ti07-codex-tool-selftest","timeout_ms":300000,"foreground_wait_ms":180000,"manual_wait_ms":90000,"manual_english":false,"scenario_filter":"(all)"}
+{"seq":3,"t_ms":288.7784,"wall":"2026-10-19T21:36:41.3902096\u002B08:00","managed_tid":2,"win32_tid":57592,"pid":49956,"session":8,"stage":"script","source":"selftest","kind":"check","name":"timeout-never-pressed","pass":true,"detail":"keypolls=8"}
+selftest timeout-never-pressed: pass keypolls=8
+{"seq":4,"t_ms":291.0798,"wall":"2026-10-19T21:36:41.3925106\u002B08:00","managed_tid":2,"win32_tid":57592,"pid":49956,"session":8,"stage":"script","source":"selftest","kind":"check","name":"cancel-throws-oce","pass":true,"detail":""}
+selftest cancel-throws-oce: pass 
+{"seq":5,"t_ms":291.2244,"wall":"2026-10-19T21:36:41.3926545\u002B08:00","managed_tid":2,"win32_tid":57592,"pid":49956,"session":8,"stage":"script","source":"selftest","kind":"check","name":"host-exited-false","pass":true,"detail":""}
+selftest host-exited-false: pass 
+{"seq":6,"t_ms":476.2357,"wall":"2026-10-19T21:36:41.5776667\u002B08:00","managed_tid":2,"win32_tid":57592,"pid":49956,"session":8,"stage":"script","source":"selftest","kind":"check","name":"own-foreground-press-release","pass":true,"detail":""}
+selftest own-foreground-press-release: pass 
+{"seq":7,"t_ms":1010.0134,"wall":"2026-10-19T21:36:42.1114454\u002B08:00","managed_tid":2,"win32_tid":57592,"pid":49956,"session":8,"stage":"script","source":"selftest","kind":"check","name":"foreign-foreground-ignored","pass":true,"detail":""}
+selftest foreign-foreground-ignored: pass 
+{"seq":8,"t_ms":1625.5393,"wall":"2026-10-19T21:36:42.7269749\u002B08:00","managed_tid":2,"win32_tid":57592,"pid":49956,"session":8,"stage":"script","source":"selftest","kind":"check","name":"foreground-lost-while-held","pass":true,"detail":""}
+selftest foreground-lost-while-held: pass 
+{"seq":9,"t_ms":1896.2213,"wall":"2026-10-19T21:36:42.9976537\u002B08:00","managed_tid":2,"win32_tid":57592,"pid":49956,"session":8,"stage":"script","source":"selftest","kind":"check","name":"held-at-start-ignored","pass":true,"detail":""}
+selftest held-at-start-ignored: pass 
+{"seq":10,"t_ms":2143.7072,"wall":"2026-10-19T21:36:43.2451403\u002B08:00","managed_tid":2,"win32_tid":57592,"pid":49956,"session":8,"stage":"script","source":"selftest","kind":"check","name":"repress-after-release","pass":true,"detail":""}
+selftest repress-after-release: pass 
+{"seq":11,"t_ms":2143.9811,"wall":"2026-10-19T21:36:43.2454116\u002B08:00","managed_tid":2,"win32_tid":57592,"pid":49956,"session":8,"stage":"script","source":"selftest","kind":"done","all_passed":true}
+selftest done: all pass

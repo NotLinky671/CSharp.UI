@@ -23,7 +23,7 @@ namespace CSharp.UI;
 /// 不产生平台副作用，也不在组合回调里递归处理待办工作。
 /// </para>
 /// </remarks>
-internal sealed class TextFieldCompositionClient : ITextInputClient
+internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositionCharGeometrySource, ICompositionIdentitySource, IGeometryPublishInvalidationSink, ITextInputSelectionTarget
 {
     private readonly ViewNode _node;
     private readonly TextFieldState _state;
@@ -49,6 +49,12 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
     /// <summary>最后一次成功回读的可靠文档；绑定 getter/setter 抛错时用它兜底，绝不在回调里再次调用抛错 getter。</summary>
     private CompositionDocument? _lastReliableDocument;
 
+    /// <summary>
+    /// 最终布局捕获的组合字符几何快照（R17）：只在安全阶段由视图重建/清空，
+    /// 平台逐字符位置查询只读它，绝不在回调里重新排版。
+    /// </summary>
+    private CompositionCharGeometrySnapshot? _charGeometry;
+
     internal TextFieldCompositionClient(ViewNode node, TextFieldState state, int epoch)
     {
         _node = node;
@@ -64,6 +70,13 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
 
     /// <summary>该客户端创建时固化的焦点 epoch；撤销后不会改变。</summary>
     internal int Epoch => _epoch;
+
+    // 组合身份只读接缝（诊断/验收）：不扩张公开 ITextInputClient 契约。
+    int ICompositionIdentitySource.Epoch => _epoch;
+
+    int ICompositionIdentitySource.CompositionId => _composition.CompositionId;
+
+    bool ICompositionIdentitySource.IsComposing => _composition.IsComposing;
 
     /// <summary>检测到来源/绑定变化、需要换 epoch 时置位；由生命周期接线在安全阶段消费。</summary>
     internal bool EpochInvalidationRequested { get; private set; }
@@ -86,6 +99,35 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
 
     /// <summary>把显示串偏移映射为文档位置（TI-06 消费）。</summary>
     public TextCompositionDisplayMap MapDisplayToDocument(int displayOffset) => _composition.MapDisplayToDocument(displayOffset);
+
+    /// <summary>
+    /// 在安全阶段（最终布局后）重建/清空逐字符几何快照；与锚点发布同帧同源（R17）。
+    /// 传入 null 表示当前没有可用的字符几何（裁出/不可用）。
+    /// </summary>
+    internal void UpdateCompositionCharGeometry(CompositionCharGeometrySnapshot? snapshot)
+        => _charGeometry = snapshot;
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// 快照全部身份键匹配才有效：epoch（释放/换 epoch 后旧快照隔离）、当前预编辑串
+    /// （组合回调更新后、下一次安全阶段重建前的旧快照不得应答）、已提交文档版本（外部写入失效）、
+    /// 布局失效序号与横向滚动（字体/环境/DPI/祖先滚动/显式失效到重建之间的旧快照立即拒绝，
+    /// 绝不用旧排版应答）；仅按核心状态核对，不触发任何排版/布局。
+    /// </remarks>
+    CompositionCharGeometrySnapshot? ICompositionCharGeometrySource.CompositionCharGeometry
+        => _charGeometry is { } snapshot
+            && !IsReleased
+            && !EpochInvalidationRequested
+            && snapshot.Epoch == _epoch
+            && snapshot.DocumentVersion == _state.Editor.Version
+            && snapshot.LayoutSerial == _node.Runtime.LayoutSerial
+            && snapshot.ScrollX == _state.ScrollX
+            && string.Equals(snapshot.Preedit, _composition.Preedit, StringComparison.Ordinal)
+            && (snapshot.Preedit.Length > 0
+                || snapshot.CaretIndex == snapshot.Layout.SnapToCaretStop(
+                    Math.Clamp(_state.Caret, 0, _state.Editor.Text.Length)))
+            ? snapshot
+            : null;
 
     /// <summary>当前预编辑 caret（相对预编辑串的 UTF-16 偏移）。</summary>
     public int PreeditCaret => _composition.PreeditCaret;
@@ -246,6 +288,12 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
         _currentGeometry = geometry;
         _hasCurrentGeometry = true;
 
+        // 不可用几何（裁出/隐藏）意味着逐字符快照同样失效：立即清空，绝不保留旧几何（R17）。
+        if (!geometry.HasCaret)
+        {
+            _charGeometry = null;
+        }
+
         if (_hasPublishedGeometry && _lastPublishedGeometry == geometry)
         {
             return false;
@@ -254,6 +302,18 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
         _hasPublishedGeometry = true;
         _lastPublishedGeometry = geometry;
         return _state.InputSession.PublishGeometry(this, geometry);
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// 窗口 Move/Resize/DPI/失活恢复等平台失效不改变逻辑几何，但平台缓存已清空；
+    /// 只重置“已发布”去重标记，让下一次安全阶段的同值 <see cref="PublishGeometry"/> 真正调用服务（R7）。
+    /// 当前有效几何保留：逻辑锚点仍真实，不能用 Unavailable 冒充。
+    /// </remarks>
+    void IGeometryPublishInvalidationSink.InvalidatePublishedGeometry()
+    {
+        _hasPublishedGeometry = false;
+        _lastPublishedGeometry = default;
     }
 
     /// <summary>是否已经向平台发布过几何（撤销锚点只需要在发布过时发生）。</summary>
@@ -267,6 +327,7 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
     {
         _currentGeometry = TextInputGeometry.Unavailable;
         _hasCurrentGeometry = false;
+        _charGeometry = null;
     }
 
     /// <summary>
@@ -307,6 +368,102 @@ internal sealed class TextFieldCompositionClient : ITextInputClient
 
     /// <summary>撤销归属时清空未消费的按键接缝。</summary>
     internal void ResetKeyOwnership() => _keyOwnership.Reset();
+
+    /// <summary>
+    /// 按 epoch + 已提交文档版本设置已提交选区（TI-07 P2a 平台桥接缝）。
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>只动选区：</b>不写绑定、不记录历史、不产生编辑事务、不调用平台服务；端点按核心字素规则吸附，
+    /// 只标记布局失效（组合回调内不做排版）。
+    /// </para>
+    /// <para>
+    /// <b>拒绝条件（全部无副作用）：</b>epoch 不匹配、客户端已撤销/待换 epoch、组合进行中（预编辑期间的
+    /// 选区必须走 <see cref="CompositionEvent.Update"/> 的组合内 caret）、正在应用组合批次（重入）、
+    /// 期望版本与真实回读版本不一致（外部写入已经发生）。
+    /// </para>
+    /// <para>
+    /// <b>R5 重入校验：</b><see cref="CurrentDocument"/> 会调用用户 Binding getter，getter 可能同步切换焦点、
+    /// 卸载或换源——此时旧客户端已被释放。因此<b>每次</b>可重入回读之后、写入之前都必须重新校验
+    /// 释放状态、当前焦点租约/所有者、epoch、版本与非组合状态，不能只比较版本。
+    /// </para>
+    /// </remarks>
+    public bool TrySetCommittedSelection(TextInputSession session, int documentVersion, TextSelection selection)
+    {
+        if (!IsSelectionTargetValid(session, documentVersion))
+        {
+            return false;
+        }
+
+        // 真实回读：外部绑定变化会让期望版本失效（同步失败时 CurrentDocument 已请求换 epoch）。
+        // 这一步会调用用户 getter，可能同步撤销本客户端的归属。
+        var document = CurrentDocument();
+
+        // R5：回读之后、写入之前重新校验全部身份条件（getter 内可能已失焦/卸载/换源）。
+        if (!IsSelectionTargetValid(session, documentVersion))
+        {
+            return false;
+        }
+
+        if (document.Version != documentVersion)
+        {
+            return false;
+        }
+
+        var text = document.Text;
+        var anchor = TextGraphemeBoundaries.SnapToBoundary(text, Math.Clamp(selection.Anchor, 0, text.Length));
+        var active = TextGraphemeBoundaries.SnapToBoundary(text, Math.Clamp(selection.Active, 0, text.Length));
+        if (_state.Anchor == anchor && _state.Caret == active)
+        {
+            // 同值不重复标记布局失效。
+            return true;
+        }
+
+        _state.Anchor = anchor;
+        _state.Caret = active;
+
+        // 选区变化影响 caret 可见性与候选锚点几何：只标记失效，由安全阶段重排。
+        _node.Runtime.InvalidateLayout(_node);
+        return true;
+    }
+
+    /// <summary>
+    /// 选区接缝的身份校验（R5）：释放状态、epoch、非组合、非重入、版本参数合法，以及
+    /// <b>仍是当前焦点租约的所有者</b>（getter 内失焦/换焦点/卸载后必须为 false）。
+    /// </summary>
+    /// <remarks>该方法本身不读绑定、不排版、不调用平台，可在回读前后重复调用。</remarks>
+    private bool IsSelectionTargetValid(TextInputSession session, int documentVersion)
+    {
+        if (IsReleased || EpochInvalidationRequested || _applying > 0)
+        {
+            return false;
+        }
+
+        // 预编辑期间的选区属于未提交内容：不能当作已提交文本去移动，必须通过 Update 改组合内 caret。
+        if (_composition.IsComposing)
+        {
+            return false;
+        }
+
+        if (session.SessionId != _epoch || documentVersion < 0)
+        {
+            return false;
+        }
+
+        // 当前焦点租约/所有者校验：旧客户端在失焦/卸载/换源后不再是所有者，绝不能写入。
+        if (!_state.InputSession.IsCurrentOwner(this))
+        {
+            return false;
+        }
+
+        // 节点必须仍挂载且仍可输入；卸载/禁用后的旧引用不得移动选区。
+        if (!_node.IsMounted || _node.IsEffectivelyDisabled || _node.View is not TextField)
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     /// <summary>
     /// 真实事务提交入口：把一段结果作为一次原子替换交给节点的 TI-03 会话，并返回真实事务结果。

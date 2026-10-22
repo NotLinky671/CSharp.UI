@@ -1,0 +1,11 @@
+C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-echo-audit\Program.cs(44,24): warning CS0649: 从未对字段“Program._postRemoveThenRemoveDup”赋值，字段将一直保持其默认值 0 [C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-echo-audit\Audit.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-echo-audit\Program.cs(30,24): warning CS0649: 从未对字段“Program._unrelatedWindowConsumed”赋值，字段将一直保持其默认值 0 [C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-echo-audit\Audit.csproj]
+
+已成功生成。
+
+C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-echo-audit\Program.cs(44,24): warning CS0649: 从未对字段“Program._postRemoveThenRemoveDup”赋值，字段将一直保持其默认值 0 [C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-echo-audit\Audit.csproj]
+C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-echo-audit\Program.cs(30,24): warning CS0649: 从未对字段“Program._unrelatedWindowConsumed”赋值，字段将一直保持其默认值 0 [C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\p3a-echo-audit\Audit.csproj]
+    2 个警告
+    0 个错误
+
+已用时间 00:00:02.39

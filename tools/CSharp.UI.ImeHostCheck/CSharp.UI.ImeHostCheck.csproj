@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CSharp.UI.ImeHostCheck</RootNamespace>
+    <AssemblyName>CSharp.UI.ImeHostCheck</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <!-- SendInput/截图帮助复用探针实现；宿主窗口指针互操作需要 unsafe。 -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- 验收工具只在 Windows 上有意义；保留 net10.0 目标使解决方案在其它平台仍可编译（运行时会拒绝）。 -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CSharp.UI.OpenTK\CSharp.UI.OpenTK.csproj" />
+    <ProjectReference Include="..\CSharp.UI.ImeProbe\CSharp.UI.ImeProbe.csproj" />
+  </ItemGroup>
+
+</Project>

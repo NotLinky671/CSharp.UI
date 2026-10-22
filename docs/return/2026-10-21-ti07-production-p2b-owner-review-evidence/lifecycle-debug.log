@@ -1,0 +1,13 @@
+[PASS] End alone cannot confirm nonempty composition before completed edit
+[PASS] insert-before-start range cannot consume committed suffix
+[PASS] native selected replacement retains correct committed suffix
+[PASS] incomplete history cannot continue committing facts
+[PASS] own native synchronization does not invalidate next composition update
+[PASS] completed edit with only updated preedit cannot commit a changed suffix
+[PASS] disposed product sink cannot access a borrowed composition view
+[PASS] two completed native transactions queued before drain retain separate results
+[PASS] partial confirmation preserves selected replacement, residual and composition token
+[PASS] completed noncomposition native write applies through authoritative transaction
+[FAIL] foreign-thread sink callbacks cannot access borrowed composition view: foreign callback touched borrowed view: reads=1, callbacks=1, pending=1, hr=00000000
+[FAIL] foreign-thread disposal leaves owner cleanup and connection state untouched: foreign dispose permanently retired owner-thread sink: subsequent validation hr=800401FD, exception=
+Owner audit failures: 2

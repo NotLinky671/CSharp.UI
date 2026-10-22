@@ -17,6 +17,14 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="CSharp.UI.ImeProbe.Tests" />
+    <!-- TI-07：生产宿主验收工具复用已审核的 SendInput/截图/日志/TSF 只读查询实现。 -->
+    <InternalsVisibleTo Include="CSharp.UI.ImeHostCheck" />
+    <!-- TI-07 隔离 TSF 原型：复用同一套日志/截图/原生声明，不复制第二份验收基础设施。 -->
+    <InternalsVisibleTo Include="CSharp.UI.TsfHostCheck" />
+    <InternalsVisibleTo Include="CSharp.UI.TsfHostCheck.Tests" />
+    <!-- TI-07 R25：原生 EDIT 对照只复用同一套日志/截图/原生声明/输入安全门，不复制基础设施。 -->
+    <InternalsVisibleTo Include="CSharp.UI.NativeEditReference" />
+    <InternalsVisibleTo Include="CSharp.UI.NativeEditReference.Tests" />
   </ItemGroup>
 
 </Project>

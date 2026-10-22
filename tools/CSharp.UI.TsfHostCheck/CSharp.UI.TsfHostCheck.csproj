@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CSharp.UI.TsfHostCheck</RootNamespace>
+    <AssemblyName>CSharp.UI.TsfHostCheck</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <!-- 仅原型 exe：PerMonitorV2 DPI awareness；生产宿主与系统设置不改。 -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- COM vtable 查询、GDI 文本度量与窗口过程需要 unsafe。 -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- 工具只在 Windows 上有意义；保留 net10.0 目标使其它平台仍能编译（运行时会拒绝）。 -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 复用已审核的 ProbeLog / ScreenCapture / NativeMethods / SendInput 构造；不引用生产 CSharp.UI 程序集。 -->
+    <ProjectReference Include="..\CSharp.UI.ImeProbe\CSharp.UI.ImeProbe.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CSharp.UI.TsfHostCheck.Tests" />
+  </ItemGroup>
+
+</Project>

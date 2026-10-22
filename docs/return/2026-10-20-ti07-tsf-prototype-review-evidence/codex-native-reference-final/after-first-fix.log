@@ -1,0 +1,14 @@
+[PASS] hidden create 
+[PASS] no visible surface 
+[PASS] baseline text applied 
+[PASS] both selection outputs (2, 7)
+[PASS] standard EDIT EM_POSFROMCHAR 0 got0,0 native0,0
+[PASS] standard EDIT EM_POSFROMCHAR 2 got10,0 native10,0
+[PASS] standard EDIT EM_POSFROMCHAR 51 got0,57 native0,57
+[PASS] real one-line scroll 
+[PASS] negative row coordinate 
+[PASS] child exactly 11 physical pixels Rect { Left = 96, Top = 96, Right = 656, Bottom = 516 } -> Rect { Left = 96, Top = 85, Right = 656, Bottom = 505 }
+[PASS] parent and viewport stable 
+[PASS] foreground unchanged 
+[PASS] all HWND destroyed 
+audit 13/13

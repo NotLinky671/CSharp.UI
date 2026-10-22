@@ -8,7 +8,9 @@ namespace CSharp.UI.ImeProbe;
 /// </summary>
 /// <remarks>
 /// <para>
-/// 安全边界：每次发送前都确认 <c>GetForegroundWindow()</c> 就是本探针窗口，且其进程就是本进程；
+/// 安全边界：每次发送前按序过两道门——可选 <c>BeforeSendGuard</c> 先求值
+/// （返回非空/抛异常即拒绝，此时连 <c>MapVirtualKey</c>/<c>SendInput</c> 都不会发生），
+/// 然后确认 <c>GetForegroundWindow()</c> 就是本探针窗口才注入；
 /// 一旦前台窗口不是自己的窗口就立即中止脚本，绝不把按键发给其他窗口（不操控 DSH 桌面 UI）。
 /// </para>
 /// <para>
@@ -23,6 +25,8 @@ internal sealed class InputScript
     private const int InputSizeX86 = 28;
     private const int KeyboardOffsetX64 = 8;
     private const int KeyboardOffsetX86 = 4;
+
+    private static readonly SendNativeFacts DefaultFacts = new();
 
     private readonly ProbeLog _log;
     private readonly IntPtr _hwnd;
@@ -50,14 +54,65 @@ internal sealed class InputScript
     /// </summary>
     internal bool UseScanCodes { get; set; }
 
+    /// <summary>
+    /// R29B 可选的逐键前置守卫（默认 <c>null</c> = 不启用，行为完全不变）。
+    /// 返回 string 拒绝原因（null/空 = 允许）；在<b>本次发送的全部原生键调用之前</b>求值
+    /// （含 scancode 映射的 <c>MapVirtualKey</c> 与 <c>SendInput</c>），返回非空或抛异常
+    /// 都如实置 <see cref="Aborted"/> 并拒绝本次发送（fail closed）。
+    /// 用于在 opt-in 输入 surface 下补充自有 input 焦点/进程/UI 线程归属检查；不改变既有
+    /// <c>GetForegroundWindow()==own</c> 守卫（两者都要过）。
+    /// </summary>
+    internal Func<string?>? BeforeSendGuard { get; set; }
+
+    /// <summary>
+    /// R29B 可注入的原生事实/发送委托组（默认 <c>null</c> = 直连 user32，行为完全不变）。
+    /// 共享同一个发送门：<see cref="BeforeSendGuard"/> 求值在前，<see cref="SendNativeFacts.GetForegroundWindow"/>
+    /// 复核本窗前台在后，任何一步拒绝都不会到达 <see cref="SendNativeFacts.SendInput"/> 或
+    /// <see cref="SendNativeFacts.MapVirtualKeyToScanCode"/>。仅托管测试注入桩体；
+    /// 生产路径不设它，走真实 user32。
+    /// </summary>
+    internal SendNativeFacts? NativeFacts { get; set; }
+
+    /// <summary>
+    /// 一次发送所需的原生入口。所有委托都是“真实 user32 的等价物”：
+    /// 生产默认实现直连 <see cref="NativeMethods"/>；测试注入桩体以验证
+    /// 守卫拒绝时<b>没有任何</b>原生键注入发生。
+    /// </summary>
+    internal sealed class SendNativeFacts
+    {
+        /// <summary>当前前台窗口（生产 = user32 GetForegroundWindow）。</summary>
+        internal Func<IntPtr> GetForegroundWindow { get; init; }
+            = NativeMethods.GetForegroundWindow;
+
+        /// <summary>虚拟键 → 真实扫描码（生产 = user32 MapVirtualKey MAPVK_VK_TO_VSC）。</summary>
+        internal Func<ushort, ushort> MapVirtualKeyToScanCode { get; init; }
+            = vk => (ushort)NativeMethods.MapVirtualKey(vk, NativeMethods.MAPVK_VK_TO_VSC);
+
+        /// <summary>实际注入键事件（生产 = user32 SendInput）；返回注入的 INPUT 条数。</summary>
+        internal Func<byte[], uint> SendInput { get; init; }
+            = input => NativeMethods.SendInput(1, input, input.Length);
+
+        /// <summary>取最近一次 Win32 错误（生产 = Marshal.GetLastWin32Error）。</summary>
+        internal Func<int> GetLastError { get; init; }
+            = Marshal.GetLastWin32Error;
+
+        /// <summary>
+        /// 拒绝日志里的窗口描述（生产 = user32 GetWindowThreadProcessId/GetClassNameW）。
+        /// 注入 <see cref="NativeFacts"/> 时若未提供本委托，则退化为纯句柄十六进制
+        /// （<b>不</b>再回退到真实 user32），这样“整个控制流无原生调用”的托管测试才成立；
+        /// 生产默认实现保持与既有日志逐字段一致。
+        /// </summary>
+        internal Func<IntPtr, string>? DescribeWindow { get; init; }
+    }
+
     internal int InputStructSize => IntPtr.Size == 8 ? InputSizeX64 : InputSizeX86;
 
-    /// <summary>构造一次按下/抬起：可选真实扫描码模式。</summary>
+    /// <summary>构造一次按下/抬起：可选真实扫描码模式。只在发送门全部通过后才调用。</summary>
     private byte[] BuildKeyInput(ushort virtualKey, bool keyUp)
     {
         if (UseScanCodes)
         {
-            var scan = (ushort)NativeMethods.MapVirtualKey(virtualKey, NativeMethods.MAPVK_VK_TO_VSC);
+            var scan = (NativeFacts ?? DefaultFacts).MapVirtualKeyToScanCode(virtualKey);
             var flags = NativeMethods.KEYEVENTF_SCANCODE | (keyUp ? NativeMethods.KEYEVENTF_KEYUP : 0u);
             return BuildKeyboardInput(0, scan, flags);
         }
@@ -145,16 +200,16 @@ internal sealed class InputScript
         return ok;
     }
 
-    /// <summary>按下并释放一个虚拟键。</summary>
+    /// <summary>按下并释放一个虚拟键；down/up 共用同一个发送门（各自独立再评估守卫）。</summary>
     internal bool PressVirtualKey(ushort virtualKey, string label, int holdMs = 25)
     {
-        if (!SendRaw(BuildKeyInput(virtualKey, keyUp: false), $"{label}:down", virtualKey))
+        if (!SendRaw(() => BuildKeyInput(virtualKey, keyUp: false), $"{label}:down", virtualKey))
         {
             return false;
         }
 
         Pause(Math.Max(1, holdMs));
-        return SendRaw(BuildKeyInput(virtualKey, keyUp: true), $"{label}:up", virtualKey);
+        return SendRaw(() => BuildKeyInput(virtualKey, keyUp: true), $"{label}:up", virtualKey);
     }
 
     // 说明：这里刻意不提供“组合键（如 Ctrl+Space）”注入。
@@ -178,7 +233,7 @@ internal sealed class InputScript
     {
         for (var i = 0; i < Math.Max(1, repeatCount); i++)
         {
-            if (!SendRaw(BuildKeyboardInput(virtualKey, 0, 0), $"{label}:down[{i}]", virtualKey))
+            if (!SendRaw(() => BuildKeyboardInput(virtualKey, 0, 0), $"{label}:down[{i}]", virtualKey))
             {
                 return false;
             }
@@ -186,19 +241,19 @@ internal sealed class InputScript
             Pause(Math.Max(20, holdMs));
         }
 
-        return SendRaw(BuildKeyboardInput(virtualKey, 0, NativeMethods.KEYEVENTF_KEYUP), $"{label}:up", virtualKey);
+        return SendRaw(() => BuildKeyboardInput(virtualKey, 0, NativeMethods.KEYEVENTF_KEYUP), $"{label}:up", virtualKey);
     }
 
     /// <summary>用 KEYEVENTF_UNICODE 发送一个 UTF-16 码元（合成边界测试，不经输入法）。</summary>
     internal bool SendUnicodeCodeUnit(ushort codeUnit, string label)
     {
-        if (!SendRaw(BuildKeyboardInput(0, codeUnit, NativeMethods.KEYEVENTF_UNICODE), $"{label}:down", null))
+        if (!SendRaw(() => BuildKeyboardInput(0, codeUnit, NativeMethods.KEYEVENTF_UNICODE), $"{label}:down", null))
         {
             return false;
         }
 
         Pause(20);
-        return SendRaw(BuildKeyboardInput(0, codeUnit, NativeMethods.KEYEVENTF_UNICODE | NativeMethods.KEYEVENTF_KEYUP), $"{label}:up", null);
+        return SendRaw(() => BuildKeyboardInput(0, codeUnit, NativeMethods.KEYEVENTF_UNICODE | NativeMethods.KEYEVENTF_KEYUP), $"{label}:up", null);
     }
 
     /// <summary>按 a-z / 数字的虚拟键码逐字发送（拼音串等 ASCII）。</summary>
@@ -271,14 +326,53 @@ internal sealed class InputScript
         return ok;
     }
 
-    private bool SendRaw(byte[] input, string label, ushort? virtualKey)
+    /// <summary>
+    /// 全部发送入口（keydown/keyup/unicode）共用的**唯一**发送门：
+    /// <see cref="BeforeSendGuard"/> 在前、本窗前台复核在后，两者都过了才允许
+    /// <paramref name="build"/> 构造 INPUT（scancode 模式此时才发生 MapVirtualKey 原生调用）
+    /// 与最终 SendInput。任一拒绝都不会到达任何原生键调用——守卫拒绝后
+    /// 连扫描码映射都不会发生。
+    /// </summary>
+    private bool SendRaw(Func<byte[]> build, string label, ushort? virtualKey)
     {
         if (_aborted)
         {
             return false;
         }
 
-        var foreground = NativeMethods.GetForegroundWindow();
+        var facts = NativeFacts ?? DefaultFacts;
+
+        // R29B：额外逐键守卫（可选，默认 null 即不启用）。在本次发送的全部原生键调用
+        // 之前求值（含 MapVirtualKey/SendInput）；返回非空原因或抛异常都 fail closed，
+        // 绝不向任何窗口发送键，也不产生扫描码映射。
+        if (BeforeSendGuard is { } guard)
+        {
+            string? refused;
+            try
+            {
+                refused = guard();
+            }
+            catch (Exception ex)
+            {
+                refused = $"guard-threw:{ex.GetType().Name}";
+            }
+
+            if (!string.IsNullOrEmpty(refused))
+            {
+                _aborted = true;
+                _log.Record("script", "sendinput", "aborted-before-send-guard", new Dictionary<string, object?>
+                {
+                    ["label"] = _label,
+                    ["step"] = label,
+                    ["reason"] = refused,
+                    ["note"] = "guard refused before any native key call (no MapVirtualKey, no SendInput); "
+                        + "no key event was sent",
+                });
+                return false;
+            }
+        }
+
+        var foreground = facts.GetForegroundWindow();
         if (foreground != _hwnd)
         {
             _aborted = true;
@@ -286,14 +380,17 @@ internal sealed class InputScript
             {
                 ["label"] = _label,
                 ["step"] = label,
-                ["foreground"] = DescribeWindow(foreground),
+                ["foreground"] = DescribeWindow(facts, foreground),
                 ["note"] = "no key event was sent to any other window",
             });
             return false;
         }
 
-        var sent = NativeMethods.SendInput(1, input, input.Length);
-        var error = sent == 1 ? 0 : Marshal.GetLastWin32Error();
+        // 守卫+前台都过了才允许构造 INPUT：scancode 模式的 MapVirtualKey 原生调用
+        // 只在这一行之后才会发生，拒绝路径上绝不存在。
+        var input = build();
+        var sent = facts.SendInput(input);
+        var error = sent == 1 ? 0 : facts.GetLastError();
         _log.Record("script", "sendinput", "key-event", new Dictionary<string, object?>
         {
             ["label"] = _label,
@@ -312,6 +409,27 @@ internal sealed class InputScript
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// 发送门共享的窗口描述。优先级：<see cref="SendNativeFacts.DescribeWindow"/> 显式注入 &gt;
+    /// 测试注入路径的非原生纯句柄退化 &gt; 生产默认真实 user32 描述。
+    /// 当 <see cref="NativeFacts"/> 已注入但描述委托缺省时退化为十六进制——注入后绝不再
+    /// 静默走真实 user32（否则会破坏“无原生调用”的测试不变量）。
+    /// </summary>
+    private string DescribeWindow(SendNativeFacts facts, IntPtr hwnd)
+    {
+        if (facts.DescribeWindow is { } describe)
+        {
+            return describe(hwnd);
+        }
+
+        if (!ReferenceEquals(facts, DefaultFacts))
+        {
+            return hwnd == IntPtr.Zero ? "(null)" : $"0x{hwnd.ToInt64():X}";
+        }
+
+        return DescribeWindow(hwnd);
     }
 
     private string DescribeWindow(IntPtr hwnd)

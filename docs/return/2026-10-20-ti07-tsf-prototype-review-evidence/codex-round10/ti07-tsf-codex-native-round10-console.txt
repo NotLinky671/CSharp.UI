@@ -1,0 +1,41 @@
+[native-smoke MTA] PASS register-class — atom=49896 class=CSharp.UI.TsfHostCheck.NativeSmoke.17792.MTA
+[native-smoke MTA] PASS create-hidden-window — hwnd=0x18013C visible=False
+[native-smoke MTA] PASS dpi-awareness-per-monitor-v2 — context=0x22 awareness=2 per_monitor_v2=True
+[native-smoke MTA] PASS window-dpi — dpi=144 process=awareness=2
+[native-smoke MTA] PASS engage — S_OK
+[native-smoke MTA] PASS actual-apartment — type=1 qualifier=0
+[native-smoke MTA] PASS store-sink-advised — mask=0x1F
+[native-smoke MTA] PASS owner-ccw-itextstoreacp
+[native-smoke MTA] PASS owner-ccw-composition-sink
+[native-smoke MTA] PASS activate/push/associate/focus/uielement — SessionResourceState { ComInitialized = True, Activated = True, ContextPushed = True, Associated = True, FocusSet = True, UiAdvised = True, HasThreadManager = True, HasDocumentManager = True, HasContext = True }
+[native-smoke MTA] PASS get-focus — S_OK same_as_document=True
+[native-smoke MTA] PASS is-thread-focus — S_OK focus=0
+[native-smoke MTA] PASS message-pump — 200ms
+[native-smoke MTA] PASS cleanup — failures=0
+[native-smoke MTA] PASS set-focus-null-hresult — S_OK
+[native-smoke MTA] PASS resources-released — SessionResourceState { ComInitialized = False, Activated = False, ContextPushed = False, Associated = False, FocusSet = False, UiAdvised = False, HasThreadManager = False, HasDocumentManager = False, HasContext = False }
+[native-smoke MTA] PASS composition-cleared
+[native-smoke MTA] PASS layout-destroy-before-teardown — destroy=23 unadvise=24 pop=28
+[native-smoke MTA] PASS destroy-window
+[native-smoke MTA] PASS unregister-class — ok=True
+[native-smoke STA] PASS register-class — atom=49892 class=CSharp.UI.TsfHostCheck.NativeSmoke.17792.STA
+[native-smoke STA] PASS create-hidden-window — hwnd=0x2A0BCC visible=False
+[native-smoke STA] PASS dpi-awareness-per-monitor-v2 — context=0x22 awareness=2 per_monitor_v2=True
+[native-smoke STA] PASS window-dpi — dpi=144 process=awareness=2
+[native-smoke STA] PASS engage — S_OK
+[native-smoke STA] PASS actual-apartment — type=3 qualifier=0
+[native-smoke STA] PASS store-sink-advised — mask=0x1F
+[native-smoke STA] PASS owner-ccw-itextstoreacp
+[native-smoke STA] PASS owner-ccw-composition-sink
+[native-smoke STA] PASS activate/push/associate/focus/uielement — SessionResourceState { ComInitialized = True, Activated = True, ContextPushed = True, Associated = True, FocusSet = True, UiAdvised = True, HasThreadManager = True, HasDocumentManager = True, HasContext = True }
+[native-smoke STA] PASS get-focus — S_OK same_as_document=True
+[native-smoke STA] PASS is-thread-focus — S_OK focus=0
+[native-smoke STA] PASS message-pump — 200ms
+[native-smoke STA] PASS cleanup — failures=0
+[native-smoke STA] PASS set-focus-null-hresult — S_OK
+[native-smoke STA] PASS resources-released — SessionResourceState { ComInitialized = False, Activated = False, ContextPushed = False, Associated = False, FocusSet = False, UiAdvised = False, HasThreadManager = False, HasDocumentManager = False, HasContext = False }
+[native-smoke STA] PASS composition-cleared
+[native-smoke STA] PASS layout-destroy-before-teardown — destroy=23 unadvise=24 pop=28
+[native-smoke STA] PASS destroy-window
+[native-smoke STA] PASS unregister-class — ok=True
+native-selftest: PASS (2/2 apartments)

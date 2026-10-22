@@ -1,0 +1,8 @@
+PASS duplicate partial confirmation
+PASS refresh after external binding change
+PASS cross-region selection
+PASS snapshot output immutability
+FAIL selection getter revokes client: selection accepted after getter revoked focused client
+FAIL failed document read prevents apply: rejected=False, applies=1
+FAIL refresh checks bridge ownership: revoked bridge ownership retained composing mirror
+Independent P2a audit failures=3

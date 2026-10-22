@@ -1,0 +1,187 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.ImeProbe.Tests
+  Discovered:  CSharp.UI.ImeProbe.Tests
+  Starting:    CSharp.UI.ImeProbe.Tests
+    CSharp.UI.ImeProbe.Tests.ImeProbeHelperTests.PngWriter_ProducesDecodableRgbaImage [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\imeprobe-png-84f5a8c8dd654fff812095a398df9a00.png' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ScreenCapture.cs(19,0): at CSharp.UI.ImeProbe.PngWriter.WriteRgba(String path, Int32 width, Int32 height, Byte[] rgba)
+        tests\CSharp.UI.ImeProbe.Tests\ImeProbeHelperTests.cs(127,0): at CSharp.UI.ImeProbe.Tests.ImeProbeHelperTests.PngWriter_ProducesDecodableRgbaImage()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.ProbeLogTests.FileOrderMatchesSequenceNumbers_UnderConcurrentWriters [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\imeprobe-log-9b466446c68f4bdba768434bbafbedfb.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\ProbeLogTests.cs(18,0): at CSharp.UI.ImeProbe.Tests.ProbeLogTests.FileOrderMatchesSequenceNumbers_UnderConcurrentWriters()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.InputScriptGuardTests.ForeignForegroundStillAbortsAfterGuardPasses [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\inputscript-guard-2b9de2bc6fef4dfb84ba8e19a9f679d6.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\InputScriptGuardTests.cs(22,0): at CSharp.UI.ImeProbe.Tests.InputScriptGuardTests..ctor()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Constructor(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.InputScriptGuardTests.SendInputFailureAborts [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\inputscript-guard-22a9f329ec1b401981fbdfee2808b4d1.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\InputScriptGuardTests.cs(22,0): at CSharp.UI.ImeProbe.Tests.InputScriptGuardTests..ctor()
+           at InvokeStub_InputScriptGuardTests..ctor(Object, Object, IntPtr*)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.InputScriptGuardTests.DownAndUpShareTheSameGate [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\inputscript-guard-4a7d6e8430cd49d388ddfaeeada9ceca.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\InputScriptGuardTests.cs(22,0): at CSharp.UI.ImeProbe.Tests.InputScriptGuardTests..ctor()
+           at InvokeStub_InputScriptGuardTests..ctor(Object, Object, IntPtr*)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.InputScriptGuardTests.ScanCodeMappingIsSkippedOnGuardRefusal [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\inputscript-guard-f3a43ee66fb242b1b71ad9a5a8ac3096.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\InputScriptGuardTests.cs(22,0): at CSharp.UI.ImeProbe.Tests.InputScriptGuardTests..ctor()
+           at InvokeStub_InputScriptGuardTests..ctor(Object, Object, IntPtr*)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.InputScriptGuardTests.GuardAllowThenSendCallsNativeInOrder [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\inputscript-guard-41ad5c7e81874b95a081c2b23c87f4a2.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\InputScriptGuardTests.cs(22,0): at CSharp.UI.ImeProbe.Tests.InputScriptGuardTests..ctor()
+           at InvokeStub_InputScriptGuardTests..ctor(Object, Object, IntPtr*)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.InputScriptGuardTests.GuardRefusalAbortsBeforeAnyNativeKeyCall [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\inputscript-guard-3217d48e2494434ea1915111c07d896f.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\InputScriptGuardTests.cs(22,0): at CSharp.UI.ImeProbe.Tests.InputScriptGuardTests..ctor()
+           at InvokeStub_InputScriptGuardTests..ctor(Object, Object, IntPtr*)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.ProbeLogTests.RecordsCarryManagedAndWin32ThreadIdsSeparately [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\imeprobe-log-d18609e1fef84dcc882f666cd0c8b604.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\ProbeLogTests.cs(57,0): at CSharp.UI.ImeProbe.Tests.ProbeLogTests.RecordsCarryManagedAndWin32ThreadIdsSeparately()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.InputScriptGuardTests.NullGuardPreservesSendPath [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\inputscript-guard-5c94ee005fda4da1b1181d19b2b2d633.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\InputScriptGuardTests.cs(22,0): at CSharp.UI.ImeProbe.Tests.InputScriptGuardTests..ctor()
+           at InvokeStub_InputScriptGuardTests..ctor(Object, Object, IntPtr*)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.InputScriptGuardTests.SendRepeatBurstStopsAtFirstRefusal [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\inputscript-guard-855558a64b504a8b95968287794fcf38.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\InputScriptGuardTests.cs(22,0): at CSharp.UI.ImeProbe.Tests.InputScriptGuardTests..ctor()
+           at InvokeStub_InputScriptGuardTests..ctor(Object, Object, IntPtr*)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.ProbeLogTests.FaultInjectedWriteFailure_IsCountedAndDoesNotCorruptTheLog [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\imeprobe-log-a75b0224b2eb4028822c110600b08ebb.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\ProbeLogTests.cs(95,0): at CSharp.UI.ImeProbe.Tests.ProbeLogTests.FaultInjectedWriteFailure_IsCountedAndDoesNotCorruptTheLog()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.InputScriptGuardTests.GuardExceptionFailsClosed [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\inputscript-guard-9e60354c30264135b9ec9511f797a69e.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\InputScriptGuardTests.cs(22,0): at CSharp.UI.ImeProbe.Tests.InputScriptGuardTests..ctor()
+           at InvokeStub_InputScriptGuardTests..ctor(Object, Object, IntPtr*)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.InputScriptGuardTests.InjectedFactsWithoutDescribeWindowNeverCallsNativeDescribe [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\inputscript-guard-d9c4bef177994ebdba7b4bcd781757ec.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\InputScriptGuardTests.cs(22,0): at CSharp.UI.ImeProbe.Tests.InputScriptGuardTests..ctor()
+           at InvokeStub_InputScriptGuardTests..ctor(Object, Object, IntPtr*)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.ImeProbe.Tests.TsfProfileManagementTests.ProbeLog_RecordsCorrectManagedThreadId_AndGuardsKernel32ByPlatform [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\imeprobe-log-aa0e1ccd477d4159bd54685f4c5859b6.jsonl' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share)
+        tools\CSharp.UI.ImeProbe\ProbeLog.cs(32,0): at CSharp.UI.ImeProbe.ProbeLog..ctor(String path, Boolean echo)
+        tests\CSharp.UI.ImeProbe.Tests\TsfProfileManagementTests.cs(331,0): at CSharp.UI.ImeProbe.Tests.TsfProfileManagementTests.ProbeLog_RecordsCorrectManagedThreadId_AndGuardsKernel32ByPlatform()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    CSharp.UI.ImeProbe.Tests (ID = 'e0755fa8588be18c505161cc83fccc45f0981b821a56ffb894d5e985df4c3109')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.ImeProbe.Tests  Total: 96, Errors: 0, Failed: 15, Skipped: 0, Not Run: 0, Time: 0.109s

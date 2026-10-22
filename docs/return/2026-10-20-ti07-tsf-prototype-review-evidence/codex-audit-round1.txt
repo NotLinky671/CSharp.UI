@@ -1,0 +1,12 @@
+PASS sink accepts protocol IID
+PASS TSF replacement succeeds with write lock
+FAIL TSF SetText must not echo OnTextChange into its own locked sink
+FAIL TSF SetSelection must not echo OnSelectionChange
+FAIL run-only GetText scans document and advances ACP without plain-text buffer
+FAIL laid-out fully invisible text returns S_OK and zero rectangle
+PASS invalidated layout remains distinct from clipped text
+PASS same-length preedit replacement preserves composition extent
+PASS same-length final composition yields actual result
+FAIL ordinary app text advances insertion caret in original input order
+FAIL CreateContext owner object exposes composition sink through same COM identity
+Audit: passed=5 failed=6

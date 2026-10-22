@@ -147,6 +147,20 @@ public sealed record UiApplicationOptions
 
     /// <summary>每渲染一帧后调用（主线程），可用于统计或测试。</summary>
     public Action<UiHostContext>? FrameRendered { get; init; }
+    /// <summary>
+    /// <b>内部测试开关</b>：让生产宿主改用 TSF 输入桥（TI-07 P3a）。
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>不是公开 API：</b>internal，仅供本仓库验收工具经 <c>InternalsVisibleTo</c> 设置。
+    /// 默认 <c>false</c>，生产默认仍使用既有 IMM 桥；未暴露“后端选择器”。
+    /// </para>
+    /// <para>
+    /// <b>失败即回退：</b>TSF 建立失败（MTA/初始化/冲突等）时，宿主按显式原因回退到 IMM，
+    /// 并把原因记录在 <see cref="UiHostContext.TextInputBackendReason"/>，不并行启用两个写入来源。
+    /// </para>
+    /// </remarks>
+    internal bool UseTsfInputBridge { get; init; }
 
     /// <summary>校验配置；非法值抛出 <see cref="ArgumentOutOfRangeException"/>。</summary>
     internal void Validate()

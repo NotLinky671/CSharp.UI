@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType><AssemblyName>CSharp.UI.OpenTK.Tests</AssemblyName><NuGetAudit>false</NuGetAudit></PropertyGroup>
+ <ItemGroup>
+  <Reference Include="CSharp.UI.OpenTK"><HintPath>../../../src/CSharp.UI.OpenTK/bin/$(Configuration)/net10.0/CSharp.UI.OpenTK.dll</HintPath></Reference>
+  <Reference Include="CSharp.UI"><HintPath>../../../src/CSharp.UI/bin/$(Configuration)/net10.0/CSharp.UI.dll</HintPath></Reference>
+ </ItemGroup>
+</Project>

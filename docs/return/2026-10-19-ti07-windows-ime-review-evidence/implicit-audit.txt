@@ -1,0 +1,19 @@
+C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\ti07-codex-audit\audit.csproj : warning NU1900: 获取包漏洞数据时出错: 无法加载源 https://api.nuget.org/v3/index.json 的服务索引。
+PASS original public Result factory method group remains compatible
+PASS ordinary WM_CHAR equal to result must not be swallowed by text matching
+PASS result-clause-only update is not flagless cancellation
+PASS combined result retains next preedit
+PASS combined result preserves next cursor and clauses
+PASS scale change republishes unchanged logical anchor
+PASS SDK composition high bit cleared and all candidate bits retained
+PASS both public void DispatchKey method groups remain compatible
+PASS flagless cancel preserves earlier segmented result
+PASS duplicate native cancel is idempotent
+PASS native composition started without client cannot transfer to newly focused client
+PASS missing HIMC reports committed-only fallback
+PASS committed-only fallback must retain native IME character channel
+PASS next-preedit event freezes caller segment collection
+PASS implicit native preedit establishes composition without START
+FAIL implicit native preedit participates in platform cancellation
+FAIL implicit native composition cannot leak delayed result across focus epoch
+Audit: passed=15 failed=2

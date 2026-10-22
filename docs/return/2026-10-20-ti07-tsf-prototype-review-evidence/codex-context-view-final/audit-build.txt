@@ -1,0 +1,9 @@
+C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\ti07-tsf-codex-audit\Program.cs(146,63): warning CS9191: 与 “in” 参数对应的参数 2 的 “ref” 修饰符等效于 “in”。请考虑改用 “in”。 [C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\ti07-tsf-codex-audit\audit.csproj]
+
+已成功生成。
+
+C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\ti07-tsf-codex-audit\Program.cs(146,63): warning CS9191: 与 “in” 参数对应的参数 2 的 “ref” 修饰符等效于 “in”。请考虑改用 “in”。 [C:\Users\nothh\code\C#\CSharp.UI\artifacts\ime-work\ti07-tsf-codex-audit\audit.csproj]
+    1 个警告
+    0 个错误
+
+已用时间 00:00:01.41

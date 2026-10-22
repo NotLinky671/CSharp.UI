@@ -1,0 +1,32 @@
+
+> STDMETHODIMP CTSFEditWnd::GetScreenExt(TsViewCookie vcView, RECT *prc)
+  {
+      OutputDebugString(TEXT("CTSFEditWnd::GetScreenExt \n"));
+  
+      if(NULL == prc)
+      {
+          return E_INVALIDARG;
+      }
+  
+      ZeroMemory(prc, sizeof(RECT));
+  
+      if(EDIT_VIEW_COOKIE != vcView)
+      {
+          return E_INVALIDARG;
+      }
+  
+      //no lock is necessary for this method.
+  
+      GetClientRect(m_hwndEdit, prc);
+      MapWindowPoints(m_hwndEdit, NULL, (LPPOINT)prc, 2);
+  
+      return S_OK;
+  }
+  
+  /**************************************************************************
+  
+     CTSFEditWnd::GetWnd()
+  
+  **************************************************************************/
+
+

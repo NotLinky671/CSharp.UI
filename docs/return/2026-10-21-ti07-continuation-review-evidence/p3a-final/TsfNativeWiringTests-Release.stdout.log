@@ -1,0 +1,15 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+[P2b] store has no sink before CreateContext
+[P2b] hidden window + store ready (no sink)
+[P2b] TF_CreateThreadMgr hr=0x00000000
+[P2b] Activate hr=0x00000000 clientId=32
+[P2b] CreateContext hr=0x00000000 cookie=1 storeHasSink=False
+[P2b] after CreateContext+Push: storeHasSink=True mask=0x1F
+[P2b] Push hr=0x00000000 lock hr=0x00000000 session=0x00000000
+[P2b] wiring probe completed, failures=0
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '714a3074ee569785d367205ccd5169b581c32843b564799c8c2e18419f7bcb8d')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.116s

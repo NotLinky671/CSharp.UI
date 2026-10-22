@@ -1,0 +1,10 @@
+[
+  {
+    "File": "artifacts/ime-work/r33-firefox-TSFTextStore.cpp",
+    "SHA256": "3C8894B19809DCCFFBD5EF740D5014DD81ACFF13F272789A0769D76CDB1483E0"
+  },
+  {
+    "File": "artifacts/ime-work/r33-chromium-tsf_text_store.cc",
+    "SHA256": "4B182FDC35EEFD01A11C23D91086A0CEBE2E67A382B076FB079E5AE9BEE8A296"
+  }
+]

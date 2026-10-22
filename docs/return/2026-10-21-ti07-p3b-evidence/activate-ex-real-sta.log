@@ -1,0 +1,23 @@
+COMMAND: artifacts/ime-work/p3b-activation-smoke/bin/Debug/net10.0/CSharp.UI.OpenTK.Tests.exe
+EXIT_CODE: 0
+--- STDOUT ---
+thread=2 apartment=STA
+CoInitializeEx=AlreadyInitialized hr=0x00000001
+TF_CreateThreadMgr hr=0x00000000 manager=non-null
+PASS TF_CreateThreadMgr S_OK
+PASS QI ITfThreadMgrEx
+GetActiveFlags(before) hr=0x00000000 flags=0x00000000
+PASS GetActiveFlags before S_OK
+ActivateEx(flags=0x00000004) hr=0x00000000 clientId=32
+PASS ActivateEx S_OK
+GetActiveFlags(active) hr=0x00000000 flags=0x80000004
+PASS GetActiveFlags active S_OK
+PASS TF_TMF_ACTIVATED set
+PASS TF_TMF_UIELEMENTENABLEDONLY set
+Deactivate hr=0x00000000
+PASS exactly one Deactivate S_OK
+GetActiveFlags(after Deactivate) hr=0x00000000 flags=0x00000000
+PASS GetActiveFlags inactive S_OK
+PASS TF_TMF_ACTIVATED cleared after Deactivate
+RESULT failures=0
+--- STDERR ---

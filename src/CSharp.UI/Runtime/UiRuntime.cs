@@ -135,6 +135,12 @@ public sealed class UiRuntime : IDisposable
     /// <summary>清屏色；默认使用根环境主题的背景色。</summary>
     public Color? ExplicitClearColor { get; set; }
 
+    /// <summary>
+    /// 帧末追加绘制命令的内部入口（TI-07 候选 overlay）：内容 Emit 之后、命令快照之前调用。
+    /// 核心不依赖候选类型；回调不得再次生成帧、重开纹理帧或抛出异常。
+    /// </summary>
+    internal Action<DrawContext>? FrameOverlay { get; set; }
+
     /// <summary>是否需要重绘。宿主据此决定是否交换缓冲。</summary>
     public bool NeedsDraw => _needsDraw;
 
@@ -193,6 +199,12 @@ public sealed class UiRuntime : IDisposable
         }
     }
 
+    /// <summary>
+    /// 布局失效序号（R17 字符几何快照的失效键）：每次 <see cref="InvalidateLayout"/> 单调递增。
+    /// 只随失效请求推进、与实际是否完成一次布局无关——失效到重建之间的窗口天然区分新旧快照。
+    /// </summary>
+    internal int LayoutSerial { get; private set; }
+
     /// <summary>注册为全局 UI 调度器目标并请求首帧。</summary>
     public void Start()
     {
@@ -218,6 +230,7 @@ public sealed class UiRuntime : IDisposable
 
         InvalidateSubtree(node);
         _layoutDirty = true;
+        LayoutSerial++;
         InvalidateRender();
     }
 
@@ -557,6 +570,9 @@ public sealed class UiRuntime : IDisposable
             var options = new RenderFrameOptions(ViewportSize, PixelScale, ClearColor);
             var context = new DrawContext(this, Services.TextService, Services.TextureService, Services.ImageService, PixelScale, options);
             Root.View.Emit(Root, context);
+            // 帧末追加内容（TI-07 候选 overlay）：在内容之后、命令快照之前执行。
+            // 核心不认识候选类型；回调必须只追加绘制命令，不得再次生成帧或重开纹理帧。
+            FrameOverlay?.Invoke(context);
             _needsDraw = false;
             return new RenderFrame(context.ToArray(), ViewportSize, PixelScale, ClearColor);
         }
@@ -618,11 +634,22 @@ public sealed class UiRuntime : IDisposable
     /// 而不是控件内部常量；本重载让宿主不必取得任何内部对象即可正确声明与消费该按键。
     /// </remarks>
     public void DispatchKey(KeyEvent e, object? nativeKeyOriginToken)
+        => _ = DispatchKeyHandled(e, nativeKeyOriginToken);
+
+    /// <summary>
+    /// 宿主接缝（TI-07，internal）：分发键盘事件并返回焦点控件/焦点遍历是否已消费。
+    /// </summary>
+    /// <remarks>
+    /// 公开 <see cref="DispatchKey(KeyEvent)"/> 与 <see cref="DispatchKey(KeyEvent, object?)"/> 保持 void 签名不变；
+    /// OpenTK 宿主经 InternalsVisibleTo 调用本入口，把消费结果回传输入适配器（IME/控件已消费的按键
+    /// 不触发宿主级快捷键）。
+    /// </remarks>
+    internal bool DispatchKeyHandled(KeyEvent e, object? nativeKeyOriginToken)
     {
         _keyOriginToken = nativeKeyOriginToken;
         try
         {
-            _router.DispatchKey(e);
+            return _router.DispatchKey(e);
         }
         finally
         {

@@ -1,0 +1,9 @@
+[PASS] End alone cannot confirm nonempty composition before completed edit
+[PASS] insert-before-start range cannot consume committed suffix
+[PASS] native selected replacement retains correct committed suffix
+[PASS] incomplete history cannot continue committing facts
+[PASS] own native synchronization does not invalidate next composition update
+[PASS] completed edit with only updated preedit cannot commit a changed suffix
+[FAIL] disposed product sink cannot access a borrowed composition view: disposed sink accessed borrowed native view
+[FAIL] two completed native transactions queued before drain retain separate results: queued results conflated: writes=0, text=ABCD, composing=True
+Owner audit failures: 2

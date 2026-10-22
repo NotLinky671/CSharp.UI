@@ -1,0 +1,100 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.Text.Tests
+  Discovered:  CSharp.UI.Text.Tests
+  Starting:    CSharp.UI.Text.Tests
+    CSharp.UI.Skia.Tests.FontResolutionTests.字体文件内容无效_记录诊断并回退 [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\csharp-ui-text-10b5e7b591d844d19a27fcdde5d5a510.ttf' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.File.OpenHandle(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize)
+           at System.IO.File.WriteToFile(String path, FileMode mode, ReadOnlySpan`1 contents, Encoding encoding)
+           at System.IO.File.WriteAllText(String path, String contents, Encoding encoding)
+        tests\CSharp.UI.Text.Tests\FontResolutionTests.cs(65,0): at CSharp.UI.Skia.Tests.FontResolutionTests.字体文件内容无效_记录诊断并回退()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Skia.Tests.FontResolutionTests.字体文件有效_按文件解析字体族 [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\csharp-ui-text-1eede9639e7f4cb9a23c3e79cb64a88b.ttf' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.File.OpenHandle(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize)
+           at System.IO.File.WriteAllBytes(String path, ReadOnlySpan`1 bytes)
+           at System.IO.File.WriteAllBytes(String path, Byte[] bytes)
+        tests\CSharp.UI.Text.Tests\FontResolutionTests.cs(96,0): at CSharp.UI.Skia.Tests.FontResolutionTests.字体文件有效_按文件解析字体族()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Skia.Tests.SkiaImageServiceTests.解码PNG_自然尺寸与预乘像素格式正确 [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\csharp-ui-text-1e9dd5b130c647b48529c18017595c94.png' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.File.OpenHandle(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize)
+           at System.IO.File.WriteAllBytes(String path, ReadOnlySpan`1 bytes)
+           at System.IO.File.WriteAllBytes(String path, Byte[] bytes)
+        tests\CSharp.UI.Text.Tests\SkiaImageServiceTests.cs(24,0): at CSharp.UI.Skia.Tests.SkiaImageServiceTests.WritePng(Int32 width, Int32 height, Byte alpha)
+        tests\CSharp.UI.Text.Tests\SkiaImageServiceTests.cs(42,0): at CSharp.UI.Skia.Tests.SkiaImageServiceTests.解码PNG_自然尺寸与预乘像素格式正确()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Skia.Tests.SkiaImageServiceTests.清空缓存_释放全部资源 [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\csharp-ui-text-6b669ad9ae0341d48d799e6cb2b00a7d.png' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.File.OpenHandle(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize)
+           at System.IO.File.WriteAllBytes(String path, ReadOnlySpan`1 bytes)
+           at System.IO.File.WriteAllBytes(String path, Byte[] bytes)
+        tests\CSharp.UI.Text.Tests\SkiaImageServiceTests.cs(24,0): at CSharp.UI.Skia.Tests.SkiaImageServiceTests.WritePng(Int32 width, Int32 height, Byte alpha)
+        tests\CSharp.UI.Text.Tests\SkiaImageServiceTests.cs(125,0): at CSharp.UI.Skia.Tests.SkiaImageServiceTests.清空缓存_释放全部资源()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Skia.Tests.SkiaImageServiceTests.容量上限_超出的来源被淘汰并释放 [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\csharp-ui-text-829ca66d1df542e0b4bb96365a5b5a82.png' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.File.OpenHandle(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize)
+           at System.IO.File.WriteAllBytes(String path, ReadOnlySpan`1 bytes)
+           at System.IO.File.WriteAllBytes(String path, Byte[] bytes)
+        tests\CSharp.UI.Text.Tests\SkiaImageServiceTests.cs(24,0): at CSharp.UI.Skia.Tests.SkiaImageServiceTests.WritePng(Int32 width, Int32 height, Byte alpha)
+        tests\CSharp.UI.Text.Tests\SkiaImageServiceTests.cs(94,0): at CSharp.UI.Skia.Tests.SkiaImageServiceTests.容量上限_超出的来源被淘汰并释放()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Skia.Tests.SkiaImageServiceTests.释放后_不再可用 [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\csharp-ui-text-27c39656df15490c84f82b48d6a80091.png' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.File.OpenHandle(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize)
+           at System.IO.File.WriteAllBytes(String path, ReadOnlySpan`1 bytes)
+           at System.IO.File.WriteAllBytes(String path, Byte[] bytes)
+        tests\CSharp.UI.Text.Tests\SkiaImageServiceTests.cs(24,0): at CSharp.UI.Skia.Tests.SkiaImageServiceTests.WritePng(Int32 width, Int32 height, Byte alpha)
+        tests\CSharp.UI.Text.Tests\SkiaImageServiceTests.cs(188,0): at CSharp.UI.Skia.Tests.SkiaImageServiceTests.释放后_不再可用()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Skia.Tests.SkiaImageServiceTests.同一来源_复用同一实例且只解码一次 [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\csharp-ui-text-281aa761af034caba329ef5f74cd2acd.png' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.File.OpenHandle(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize)
+           at System.IO.File.WriteAllBytes(String path, ReadOnlySpan`1 bytes)
+           at System.IO.File.WriteAllBytes(String path, Byte[] bytes)
+        tests\CSharp.UI.Text.Tests\SkiaImageServiceTests.cs(24,0): at CSharp.UI.Skia.Tests.SkiaImageServiceTests.WritePng(Int32 width, Int32 height, Byte alpha)
+        tests\CSharp.UI.Text.Tests\SkiaImageServiceTests.cs(74,0): at CSharp.UI.Skia.Tests.SkiaImageServiceTests.同一来源_复用同一实例且只解码一次()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    CSharp.UI.Skia.Tests.SkiaImageServiceTests.内容无效_TryLoad返回false且Load抛出 [FAIL]
+      System.UnauthorizedAccessException : Access to the path 'C:\Users\nothh\AppData\Local\Temp\csharp-ui-text-2b4685d4213c4a86bd195c668498d2a6.png' is denied.
+      Stack Trace:
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+           at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+           at System.IO.File.OpenHandle(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize)
+           at System.IO.File.WriteToFile(String path, FileMode mode, ReadOnlySpan`1 contents, Encoding encoding)
+           at System.IO.File.WriteAllText(String path, String contents, Encoding encoding)
+        tests\CSharp.UI.Text.Tests\SkiaImageServiceTests.cs(162,0): at CSharp.UI.Skia.Tests.SkiaImageServiceTests.内容无效_TryLoad返回false且Load抛出()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    CSharp.UI.Text.Tests (ID = 'c4a19c1aa793e50c4c3b61fdf78415a4cba4da2c7bba99068ed5476fa98dae19')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.Text.Tests  Total: 67, Errors: 0, Failed: 8, Skipped: 0, Not Run: 0, Time: 0.765s

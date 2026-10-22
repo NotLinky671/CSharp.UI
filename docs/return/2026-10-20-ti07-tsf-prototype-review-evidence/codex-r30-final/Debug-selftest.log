@@ -1,0 +1,90 @@
+PASS document: surrogate pair is two ACP units
+PASS document: high surrogate readable
+PASS document: low surrogate readable
+PASS document: half-pair GetText
+PASS document: insert in middle
+PASS document: version increments
+PASS document: change range
+PASS document: invalid range rejected
+PASS document: selection clamped on replace
+PASS lock: no sink -> phrSession E_FAIL
+PASS lock: sync grant
+PASS lock: nested sync while held -> TS_E_SYNCHRONOUS
+PASS lock: async queued -> TS_S_ASYNC
+PASS lock: queued async granted after release
+PASS lock: queue drained
+PASS lock: unknown/write-only flags rejected
+PASS lock: read->write upgrade coalesced
+PASS lock: drain limit posts continuation
+PASS lock: continuation grants promised upgrade
+PASS notify: app text change delivered
+PASS notify: selection masked out
+PASS notify: TSF-origin SetText does not echo OnTextChange
+PASS notify: TSF-origin SetSelection does not echo
+PASS notify: layout masked out
+PASS notify: layout delivered when masked in
+PASS notify: layout create before change
+PASS notify: unadvised sink gets nothing
+PASS notify: deferred until after RequestLock returns
+PASS notify: delivered in safe phase
+PASS notify: no dispatcher keeps pending
+PASS notify: manual same-thread flush delivers
+PASS geometry: fresh range
+PASS geometry: stale after text change -> TS_E_NOLAYOUT
+PASS geometry: invalidated -> TS_E_NOLAYOUT
+PASS geometry: fully invisible -> S_OK + zero rect
+PASS geometry: partially clipped flag
+PASS geometry: hit test
+PASS geometry: run-only GetText advances
+PASS geometry: invalid view is E_INVALIDARG
+PASS geometry: GetScreenExt works without a document lock
+PASS geometry: rejected query is traced with HRESULT
+PASS attribution: composition commits once
+PASS attribution: repeated end is idempotent
+PASS attribution: cancel writes nothing
+PASS attribution: app character writes once
+PASS attribution: initial insertion advances caret
+PASS attribution: mid-document insertion advances caret
+PASS composition: owner exposes and delegates sink
+PASS cleanup: continues after failures
+PASS cleanup: later step executed
+PASS cleanup: idempotent without engagement
+PASS identity: Microsoft Pinyin profile matches
+PASS identity: other profile guid is rejected
+PASS identity: wrong langid is rejected
+PASS host: MTA is the default CoInitializeEx flag
+PASS host: MTA keeps the entry thread, STA self-selects a dedicated thread
+PASS host: only S_OK/S_FALSE own a COM reference
+PASS host: requested apartment must be the real one
+PASS host: --hidden-host defaults to MTA and hidden mode
+PASS host: --hidden-host accepts explicit STA
+PASS host: --hidden-host rejects --scenario instead of silently ignoring it
+PASS context-view: read-only session flags are SYNC|READ only
+PASS context-view: range prefers composition span, else caret
+PASS context-view: range match requires same start and same length
+PASS context-view: status classification preserves refusals
+PASS context-view: unknown extent is session failure, not range mismatch
+PASS context-view: disabled probe does nothing
+PASS context-view: missing context is reported without retry
+PASS context-view: CLI default off, explicit switch on
+PASS layout-chain: disabled chain reports unknown and adds nothing
+PASS layout-chain: notification id pairs and clears on exit
+PASS layout-chain: application scope restores after nested exception
+PASS layout-chain: enrich keeps old fields and adds attribution
+PASS layout-chain: nested notification/lock exits restore outer IDs
+PASS layout-chain: app scope does not leak to another thread
+PASS layout-chain: throwing logger does not escape focus snapshot
+PASS uielement: CLI default off, explicit switch on
+PASS uielement: switch does not enable other diagnostics
+PASS uielement: ITfThreadMgrEx ABI (13 flattened methods, end slot 15)
+PASS uielement: default session keeps plain activation
+PASS uielement: explicit mode is not a fake activation
+PASS uielement: native-ui-lifecycle scenario is registered
+PASS visibility: hide applies and reports was-visible
+PASS visibility: show applies
+PASS visibility: foreign/destroyed hwnd refused without write
+PASS visibility: native false reported honestly
+PASS visibility: native throw contained and reported
+PASS visibility: originally-hidden child is not spuriously shown
+PASS visibility: applied hide but still visible is a failure
+selftest: 89 passed, 0 failed

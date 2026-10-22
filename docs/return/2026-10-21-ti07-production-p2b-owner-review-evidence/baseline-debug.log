@@ -1,0 +1,6 @@
+[FAIL] End alone cannot confirm nonempty composition before completed edit: End committed prematurely: writes=1
+[FAIL] insert-before-start range cannot consume committed suffix: mirror=ABnihao
+[FAIL] native selected replacement retains correct committed suffix: mirror=Anihao
+[FAIL] incomplete history cannot continue committing facts: resync-required owner committed: writes=1
+[FAIL] own native synchronization does not invalidate next composition update: own synchronization treated as external invalidation
+Owner audit failures: 5

@@ -1,0 +1,7 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.NativeEditReference.Tests
+  Discovered:  CSharp.UI.NativeEditReference.Tests
+  Starting:    CSharp.UI.NativeEditReference.Tests
+  Finished:    CSharp.UI.NativeEditReference.Tests (ID = 'bd027aab17aaaada51bea21b0b06c85c2e0ec9b971ccf8dd194f17d7f82af46d')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.NativeEditReference.Tests  Total: 41, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.116s

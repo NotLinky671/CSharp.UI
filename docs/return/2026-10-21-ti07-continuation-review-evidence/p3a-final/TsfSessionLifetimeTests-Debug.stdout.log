@@ -1,0 +1,22 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+[life] TryCreate#1 succeeded=True failure=None reason=
+[life] lease after create#1 = lease#1 Tsf hwnd=0x310FE6
+[life] Focus#1 hr=0x00000000 Focus#2 hr=0x00000000 alreadyApplied=1 pushed=True focused=True
+[life] GetTop hr=0x00000000 topIsOwnContext=True
+[life] Blur hr=0x00000000 (S_OK) focused=False pushed=True blurFailures=0 foreignRejects=0
+[life] thread focus ownership after Blur = OwnParking (blurHr=0x00000000 S_OK)
+[life] resume Focus hr=0x00000000 pushed=True focused=True
+[life] cross-thread Dispose rejected=1 disposed=False leaseStillHeld=True
+[life] Dispose#1 disposed=True leaseReleased=True pushed=False teardownPopHr=0x00000000 popFailures=0 unadviseFailures=0
+[life] Dispose#1 repeated; wrongThread=1
+[life] TryCreate#2 succeeded=True failure=None reason=
+[life] second Focus hr=0x00000000 pushed=True focused=True
+[life] stale Blur hr=0x00000000 (first disposed=True) secondFocusOwnership=Own secondFocused=True
+[life] Dispose#2 disposed=True leaseReleased=True pushed=False teardownPopHr=0x00000000 popFailures=0
+[life] final registeredWindows=0
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '46f6427a055eaea5774ac41639f8bd848cbf0fea13555980ed18f5ed08ee0304')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.157s

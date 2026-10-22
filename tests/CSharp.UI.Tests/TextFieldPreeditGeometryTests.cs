@@ -452,6 +452,7 @@ public class TextFieldPreeditGeometryTests
         Assert.Equal(service.LastGeometry, service.ActiveClient!.GetState().Geometry);
     }
 
+
     [Fact]
     public void 节点卸载撤销归属并让旧客户端几何失效()
     {

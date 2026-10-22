@@ -1,0 +1,15 @@
+{
+  "reviewed_by": "Codex",
+  "date": "2026-10-20",
+  "scenario": "scroll",
+  "context_view_probe": false,
+  "trace_layout_chain": true,
+  "actual_microsoft_pinyin_before_after": true,
+  "chinese_nihao_candidates_visible": true,
+  "visual_pass": false,
+  "writes": 0,
+  "cleanup_failures": 0,
+  "script_exit_code": 3,
+  "limitation": "tsf-callback labels show nesting, not concrete TIP identity or candidate consumption",
+  "observation": "Text moves up 11 physical pixels; native candidate stays fixed. Before/after foreground and Win32 focus own; TSF document/top context match. Notification9 lock32 text-ext returns new generation11 rect."
+}

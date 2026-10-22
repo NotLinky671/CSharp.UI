@@ -1,0 +1,3 @@
+[AUDIT] true core snapshot: text=ABCDxy selection=6->4 (Backward) version=2 writes=2
+[AUDIT] replacement: ended=False started=True created=2
+[AUDIT] initial native snapshot: text=ABCDxy selection=6->4 (Backward) nativeRevision=1 coreVersion=2 focused=True pushed=True

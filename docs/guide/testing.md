@@ -55,6 +55,12 @@ CSHARPUI_SMOKE_FRAMES=5 dotnet run --project samples/CSharp.UI.Samples.Counter -
 CSHARPUI_SMOKE_FRAMES=5 ./artifacts/publish/win-x64/ControlGallery.exe
 ```
 
+## Windows IME 验收
+
+- TSF 路径的宿主 smoke 与真实输入验收必须在 `[STAThread]` 入口运行；MTA 只用于验证“明确失败并回退 IMM”。
+- 真实 IME 场景使用实际微软拼音：预编辑、键盘选词/翻页、取消、唯一提交与候选随几何移动/裁出隐藏。合成按键、fake owner 或受控元素事实不能替代该验收。
+- 候选鼠标选择当前不支持，不得用“点击候选文本”绕过输入法写入绑定。
+
 ## 断言与验证要点
 
 状态与协调更新：

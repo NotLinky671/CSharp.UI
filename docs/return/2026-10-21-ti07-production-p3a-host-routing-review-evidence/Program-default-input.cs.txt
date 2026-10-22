@@ -1,0 +1,32 @@
+using CSharp.UI;
+using CSharp.UI.OpenTK;
+using OpenTK.Windowing.Common;
+internal static class Program
+{
+    [STAThread]
+    static int Main()
+    {
+        var text = "ABCD";
+        var writes = 0;
+        var failed = false;
+        var root = new TextField(new Binding<string>(() => text, value => { writes++; text = value; }));
+        UiApplication.Run(root, new UiApplicationOptions
+        {
+            Title = "Codex default-input audit (hidden)", Width = 240, Height = 100,
+            StartVisible = false, VSync = false, UseTsfInputBridge = false,
+            Started = context =>
+            {
+                context.Runtime.BuildFrame();
+                context.Runtime.SetFocus(context.Runtime.Root);
+                context.Runtime.BuildFrame();
+                var host = UiApplication.CurrentHost!;
+                host.InputAdapter!.HandleTextInput(new TextInputEventArgs('x'));
+                var queued = host.Router?.Coordinator.DeferredCount ?? 0;
+                failed = writes != 1 || !text.Contains('x') || queued != 0;
+                Console.WriteLine($"[AUDIT] default IMM ordinary text: writes={writes}, hasX={text.Contains('x')}, deferred={queued}, delivered={host.InputAdapter.OrderedDeliveredCount}");
+                context.RequestExit(failed ? 1 : 0);
+            }
+        });
+        return failed ? 1 : 0;
+    }
+}

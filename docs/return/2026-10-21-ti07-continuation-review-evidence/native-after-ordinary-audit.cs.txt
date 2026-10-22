@@ -1,0 +1,52 @@
+using CSharp.UI;
+using CSharp.UI.OpenTK;
+using OpenTK.Windowing.Common;
+
+internal static class Program
+{
+    [STAThread]
+    private static int Main()
+    {
+        var text = "";
+        var writes = 0;
+        var failed = false;
+        UiApplication.Run(new TextField(new Binding<string>(() => text, value => { text = value; writes++; })), new UiApplicationOptions
+        {
+            Title = "TI07 controlled native after ordinary audit (hidden)",
+            StartVisible = false, VSync = false, Width = 320, Height = 160, UseTsfInputBridge = true,
+            Started = context =>
+            {
+                context.Runtime.BuildFrame();
+                context.Runtime.SetFocus(context.Runtime.Root);
+                context.Runtime.BuildFrame();
+                var host = UiApplication.CurrentHost!;
+                var first = host.TsfBridge;
+                if (first is null)
+                {
+                    Console.WriteLine("[FAIL] real TSF session missing: " + host.Router?.BackendReason);
+                    failed = true;
+                    context.RequestExit(1);
+                    return;
+                }
+                // Controlled product store/owner facts; this is not a real Pinyin test.
+                if (!first.Session.Store.ResetAuthoritativeText("你")) failed = true;
+                first.Session.Owner.CaptureCompletedEdit();
+                host.InputAdapter!.HandleTextInput(new TextInputEventArgs('x'));
+                Console.WriteLine($"[AUDIT] first native then ordinary: text={text} writes={writes}");
+                failed |= text != "你x" || writes != 2;
+                var next = host.TsfBridge;
+                if (next is null) failed = true;
+                else
+                {
+                    if (!next.Session.Store.ResetAuthoritativeText("你x好")) failed = true;
+                    next.Session.Owner.CaptureCompletedEdit();
+                    host.Router!.DrainSafePhase();
+                    Console.WriteLine($"[AUDIT] next native: text={text} writes={writes} pending={next.Session.Owner.PendingCount} rejected={next.Session.Owner.RejectedFactCount}");
+                    failed |= text != "你x好" || writes != 3 || next.Session.Owner.PendingCount != 0;
+                }
+                context.RequestExit(failed ? 1 : 0);
+            }
+        });
+        return failed ? 1 : 0;
+    }
+}

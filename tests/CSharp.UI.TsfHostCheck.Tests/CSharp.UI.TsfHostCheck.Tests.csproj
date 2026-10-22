@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CSharp.UI.TsfHostCheck.Tests</RootNamespace>
+    <AssemblyName>CSharp.UI.TsfHostCheck.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 只测试隔离 TSF 原型的纯托管 ACP/锁/几何/归属/清理逻辑；不创建窗口、不初始化 COM、不调用输入法。 -->
+    <ProjectReference Include="..\..\tools\CSharp.UI.TsfHostCheck\CSharp.UI.TsfHostCheck.csproj" />
+  </ItemGroup>
+
+</Project>

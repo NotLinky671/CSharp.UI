@@ -1,0 +1,22 @@
+[PASS] ThreadMgrEx exists: 
+[PASS] SDK IID: 3e90ade3-7594-4cb0-bb58-69628f5f458c
+[PASS] ComImport: 
+[PASS] flattened 13 methods: Activate,Deactivate,CreateDocumentMgr,EnumDocumentMgrs,GetFocus,SetFocus,AssociateFocus,IsThreadFocus,GetFunctionProvider,EnumFunctionProviders,GetGlobalCompartment,ActivateEx,GetActiveFlags
+[PASS] CLR actual last COM slot15: 15
+[PASS] ActivateEx declared at slot14: 14
+[PASS] GetActiveFlags declared at slot15: 15
+[PASS] PreserveSig on every HRESULT: 
+[PASS] base signatures match SDK wrapper: 
+[PASS] flags failure after successful activation result: -2147467259
+[PASS] flags failure after successful activation exactly-once Deactivate: 1
+[PASS] flags failure after successful activation ownership cleared: SessionResourceState { ComInitialized = False, Activated = False, ContextPushed = False, Associated = False, FocusSet = False, UiAdvised = False, HasThreadManager = False, HasDocumentManager = False, HasContext = False }
+[PASS] missing flag after successful activation result: -2147467259
+[PASS] missing flag after successful activation exactly-once Deactivate: 1
+[PASS] missing flag after successful activation ownership cleared: SessionResourceState { ComInitialized = False, Activated = False, ContextPushed = False, Associated = False, FocusSet = False, UiAdvised = False, HasThreadManager = False, HasDocumentManager = False, HasContext = False }
+[PASS] successful activation result: 0
+[PASS] successful activation exactly-once Deactivate: 1
+[PASS] successful activation ownership cleared: SessionResourceState { ComInitialized = False, Activated = False, ContextPushed = False, Associated = False, FocusSet = False, UiAdvised = False, HasThreadManager = False, HasDocumentManager = False, HasContext = False }
+[PASS] failed activation result: -2147467259
+[PASS] failed activation exactly-once Deactivate: 0
+[PASS] failed activation ownership cleared: SessionResourceState { ComInitialized = False, Activated = False, ContextPushed = False, Associated = False, FocusSet = False, UiAdvised = False, HasThreadManager = False, HasDocumentManager = False, HasContext = False }
+ABI/lifecycle audit 21/21; no native COM activation called

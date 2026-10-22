@@ -1,0 +1,14 @@
+[2026-10-19 22:35:27.640] [0000E3D8] === Logging started ===
+[2026-10-19 22:35:27.647] [0000E3D8] Executing: "C:\Program Files\dotnet\dotnet.exe" build CSharp.UI.slnx -c Release --no-restore --disable-build-servers -v minimal, PID: 58328, PPID: 48484
+[2026-10-19 22:35:27.648] [0000E3D8] IsElevated: False
+[2026-10-19 22:35:27.648] [0000E3D8] Is64BitProcess: True
+[2026-10-19 22:35:27.648] [0000E3D8] RebootPending: False
+[2026-10-19 22:35:27.648] [0000E3D8] ProcessorArchitecture: amd64
+[2026-10-19 22:35:27.648] [0000E3D8] HostArchitecture: x64
+[2026-10-19 22:35:27.648] [0000E3D8] SdkDirectory: 10.0.303
+[2026-10-19 22:35:27.648] [0000E3D8] VerifySignatures: False
+[2026-10-19 22:35:27.648] [0000E3D8] SDK feature band: 10.0.300
+[2026-10-19 22:35:31.804] [0000E3D8] Shutting down
+[2026-10-19 22:35:31.804] [0000E3D8] Shutdown completed.
+[2026-10-19 22:35:31.804] [0000E3D8] Restart required: False
+[2026-10-19 22:35:31.804] [0000E3D8] === Logging ended ===

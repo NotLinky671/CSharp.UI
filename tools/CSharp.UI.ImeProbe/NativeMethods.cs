@@ -47,6 +47,9 @@ internal static class NativeMethods
     internal const uint WM_IME_CHAR = 0x0286;
     internal const uint WM_IME_REQUEST = 0x0288;
 
+    // WM_IME_CONTROL 命令（imm.h）
+    internal const uint IMC_SETCANDIDATEPOS = 0x0008;
+
     // IMM32 组合串索引
     internal const uint GCS_COMPREADSTR = 0x0001;
     internal const uint GCS_COMPSTR = 0x0008;
@@ -94,6 +97,8 @@ internal static class NativeMethods
     internal const uint IME_CMODE_NOCONVERSION = 0x0100;
 
     // ImmNotifyIME
+    internal const uint NI_OPENCANDIDATE = 0x0010;
+    internal const uint NI_CLOSECANDIDATE = 0x0011;
     internal const uint NI_COMPOSITIONSTR = 0x0015;
     internal const uint CPS_COMPLETE = 0x0001;
     internal const uint CPS_CONVERT = 0x0002;
@@ -111,7 +116,10 @@ internal static class NativeMethods
     internal const int SW_SHOW = 5;
     internal const uint SWP_NOSIZE = 0x0001;
     internal const uint SWP_NOMOVE = 0x0002;
+    internal const uint SWP_NOZORDER = 0x0004;
+    internal const uint SWP_NOACTIVATE = 0x0010;
     internal const uint SWP_SHOWWINDOW = 0x0040;
+    internal const uint SWP_HIDEWINDOW = 0x0080;
 
     internal const uint SRCCOPY = 0x00CC0020;
     internal const uint DIB_RGB_COLORS = 0;
@@ -268,6 +276,64 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     internal static extern IntPtr GetKeyboardLayout(uint idThread);
 
+    /// <summary>只读异步键盘状态（高位=当前按下）；用于人工确认键检测，不注入任何输入。</summary>
+    [DllImport("user32.dll")]
+    internal static extern short GetAsyncKeyState(int vKey);
+
+    // --- 线程 caret（诊断用途：隐藏 caret 定位对照，绝不 ShowCaret） ---
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct GUITHREADINFO
+    {
+        public uint cbSize;
+        public uint flags;
+        public IntPtr hwndActive;
+        public IntPtr hwndFocus;
+        public IntPtr hwndCapture;
+        public IntPtr hwndMenuOwner;
+        public IntPtr hwndMoveSize;
+        public IntPtr hwndCaret;
+        public RECT rcCaret;
+    }
+
+    /// <summary>GUI_CARETBLINKING：GUITHREADINFO.flags 位，caret 正在闪烁（可见）。</summary>
+    internal const uint GUI_CARETBLINKING = 0x00000001;
+
+    /// <summary>获取指定线程的 GUI 信息（含 hwndCaret）；idThread=0 表示调用线程。</summary>
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetGUIThreadInfo(uint idThread, ref GUITHREADINFO lpgui);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool CreateCaret(IntPtr hWnd, IntPtr hBitmap, int nWidth, int nHeight);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool SetCaretPos(int x, int y);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetCaretPos(out POINT lpPoint);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool DestroyCaret();
+
+    /// <summary>调用线程消息队列的键盘焦点窗口（不等于前台窗口）。</summary>
+    [DllImport("user32.dll")]
+    internal static extern IntPtr GetFocus();
+
+    // NotifyWinEvent 常量（本机 SDK winuser.h 10.0.26100.0 核对）：
+    // EVENT_OBJECT_LOCATIONCHANGE=0x800B；OBJID_CARET=(LONG)0xFFFFFFF8；CHILDID_SELF=0。
+    internal const uint EVENT_OBJECT_LOCATIONCHANGE = 0x800B;
+    internal const int OBJID_CARET = unchecked((int)0xFFFFFFF8);
+    internal const int CHILDID_SELF = 0;
+
+    /// <summary>向无障碍/IME 兼容层报告对象事件；诊断仅用于报告自有 caret 的真实位置变化。</summary>
+    [DllImport("user32.dll")]
+    internal static extern void NotifyWinEvent(uint event_, IntPtr hwnd, int idObject, int idChild);
+
     [DllImport("kernel32.dll")]
     private static extern uint GetCurrentThreadId();
 
@@ -303,6 +369,12 @@ internal static class NativeMethods
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+    internal const uint SMTO_NORMAL = 0x0000;
+
+    [DllImport("user32.dll", SetLastError = true, EntryPoint = "SendMessageTimeoutW")]
+    internal static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, IntPtr wParam,
+        IntPtr lParam, uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
 
     /// <summary>该探针只在 Windows 上有意义。</summary>
     internal static bool IsWindowsHost() => OperatingSystem.IsWindows();

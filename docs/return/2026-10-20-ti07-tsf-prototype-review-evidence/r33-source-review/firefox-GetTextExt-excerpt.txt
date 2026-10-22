@@ -1,0 +1,48 @@
+  // IMEs don't like empty rects, fix here
+  if (queryTextRectEvent.mReply->mRect.Width() <= 0) {
+    queryTextRectEvent.mReply->mRect.SetWidth(1);
+  }
+  if (queryTextRectEvent.mReply->mRect.Height() <= 0) {
+    queryTextRectEvent.mReply->mRect.SetHeight(1);
+  }
+
+  // convert to unclipped screen rect
+  nsWindow* refWindow =
+      static_cast<nsWindow*>(!!queryTextRectEvent.mReply->mFocusedWidget
+                                 ? queryTextRectEvent.mReply->mFocusedWidget
+                                 : static_cast<nsIWidget*>(mWidget.get()));
+  // Result rect is in top level widget coordinates
+  refWindow = refWindow->GetTopLevelWindow(false);
+  if (!refWindow) {
+    MOZ_LOG(gIMELog, LogLevel::Error,
+            ("0x%p   TSFTextStore::GetTextExt() FAILED due to "
+             "no top level window",
+             this));
+    return E_FAIL;
+  }
+
+  queryTextRectEvent.mReply->mRect.MoveBy(refWindow->WidgetToScreenOffset());
+
+  // get bounding screen rect to test for clipping
+  if (!GetScreenExtInternal(*prc)) {
+    MOZ_LOG(gIMELog, LogLevel::Error,
+            ("0x%p   TSFTextStore::GetTextExt() FAILED due to "
+             "GetScreenExtInternal() failure",
+             this));
+    return E_FAIL;
+  }
+
+  // clip text rect to bounding rect
+  RECT textRect;
+  ::SetRect(&textRect, queryTextRectEvent.mReply->mRect.X(),
+            queryTextRectEvent.mReply->mRect.Y(),
+            queryTextRectEvent.mReply->mRect.XMost(),
+            queryTextRectEvent.mReply->mRect.YMost());
+  if (!::IntersectRect(prc, prc, &textRect))
+    // Text is not visible
+    ::SetRectEmpty(prc);
+
+  // not equal if text rect was clipped
+  *pfClipped = !::EqualRect(prc, &textRect);
+
+  // ATOK 2011 - 2016 refers native caret position and size on windows whose

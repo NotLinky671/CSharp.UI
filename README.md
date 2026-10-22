@@ -56,7 +56,7 @@ See the [getting started guide](docs/guide/getting-started.md) for details.
 - [Getting started](docs/guide/getting-started.md)
 - [Public API reference](docs/guide/api-reference.md)
 - [Responsive layout: usage and migration](docs/guide/responsive-layout.md)
-- [Text input and editing plan](docs/plan/2026-10-17-text-input-and-editing-plan.md) (planned; not implemented)
+- [Text input and editing plan](docs/plan/2026-10-17-text-input-and-editing-plan.md) (TI-01–TI-07 delivered; TI-07 Windows TSF production acceptance completed 2026-10-22 — see [P4 delivery](docs/delivery/2026-10-22-ti07-p4-delivery.md); TI-08–TI-10 not started)
 - [State and lifecycle](docs/guide/state-lifecycle.md)
 - [Modifier order](docs/guide/modifier-order.md)
 - [Keys and dynamic lists](docs/guide/keys-and-lists.md)
@@ -96,11 +96,12 @@ See [responsive layout: usage and migration](docs/guide/responsive-layout.md) fo
 Included: `VStack`/`HStack`/`ZStack`/`Spacer`/`ScrollView`, `Text`/`Image`/`Rectangle`,
 `Button`/`Toggle`/`Slider`/`TextField`, `Padding`/`Frame`/`Background`/`Foreground`/`Border`/`CornerRadius`/`Opacity`/`Clip`/`Disabled`/`Key`,
 `ForEach`, light and dark themes, font/color environment inheritance, mouse/keyboard/wheel/focus/pointer capture,
-and Chinese text display with committed text input.
+and Chinese text display with committed text input on the default IMM path.
 
-Not included: full IME composition text and candidate windows, multi-line editing, an animation system, list
-virtualization, full bidirectional text, color emoji glyph atlases, mobile/browser/host embedding, and system
-accessibility bridges.
+Pre-release Windows TSF path (internal opt-in `UseTsfInputBridge`, not a public option): composition/preedit, a UI-less framework-drawn candidate panel that follows the final text geometry, and accurate return to IMM on failure. It requires an `[STAThread]` entry point. Production acceptance (P4) completed 2026-10-22 on a single-DPI (150%) mspinyin environment — see [P4 delivery record](docs/delivery/2026-10-22-ti07-p4-delivery.md); multi-DPI evidence is an environment boundary. Candidate mouse selection is not supported; keyboard candidate selection is handled by the IME itself.
+
+Not included in the default release: multi-line editing, an animation system, list virtualization, full
+bidirectional text, color emoji glyph atlases, mobile/browser/host embedding, and system accessibility bridges.
 
 ## Package status
 

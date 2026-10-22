@@ -1,0 +1,170 @@
+[
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpGeometryProvider.cs",
+    "Hash": "ADDBE53754891EDA167288DB8A7B403E0728E3A42561B246A2D58CBFE3D58C8F"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpStagingBuffer.cs",
+    "Hash": "75AA387B446501BACD9BB9B779F32CD45552E9D10A1E9A7FA99C9BABC16D9DED"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpTextDocument.cs",
+    "Hash": "646CED344CAE4BA0ABDEF1E4B245EED51B1889461599A2E876176453D4CFD08F"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\AcpTextStore.cs",
+    "Hash": "7AFC23C64495C5601C79EC43C1B30FCBB13F68EEAAC281EDCE4950BAFC5343EE"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\DeferredInputAction.cs",
+    "Hash": "6EAEB69B54011FD74A5F65D73EA21517A28D8B5CBD867D71428597273333FBD6"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\HostInputCoordinator.cs",
+    "Hash": "2A3947040D178659BEFC1CCA66165824109BBB8D94C6B05872C6D55EC6A963A7"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\HostWriterRegistry.cs",
+    "Hash": "2D5286C9DAC0ACCF12B305FE729A3DC1FFFB7FDB9A2E1EE04654D8533519708A"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\NativeCompositionFact.cs",
+    "Hash": "3616EA78B9925DE841229A33C49AA7070809081AF108DA67C013CF331E5D9197"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\NativeCompositionOwner.cs",
+    "Hash": "CAA4D11414AF508A9E0B765BE243F6DDA6D97F8389B79DC488BCC4EF3778DFE7"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\NativeCompositionOwnerSink.cs",
+    "Hash": "92B07EC0BD048907D30081BC7101C25843BA2A8D06CCD2B2E5FA70D875F2C942"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TextStoreLockManager.cs",
+    "Hash": "225EEC18EE014194EC5302149F2A4AF5769128FAD024A288FAC2400FB03B3CCC"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TsfHostBridgeResult.cs",
+    "Hash": "6A838AC6B2A6A3288125FB0C1BB4ACD1E83EC07A5934BBA6CC57BF8FF2A020BE"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TsfHostSession.cs",
+    "Hash": "20C6B88ECD43A24F99505241E3E7CFEECFC1FCC6326CF62FEC84EF914BD97ED0"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TsfInputBridge.cs",
+    "Hash": "74FB7DB464992FE58B8B73C0FB411C9175B2BC8E8992A76C3174C1F29E28449A"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TsfInterop.cs",
+    "Hash": "BFE359433E2366F6A8D6BC7DCCE13DF34A8F0EC078089F71C6552AFC53D3F8F6"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TsfKeyRouting.cs",
+    "Hash": "D400AD4B85EABC266C254AD746B308207ED742ACB470153293960BEDFFDF3A9B"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TsfMessageHook.cs",
+    "Hash": "5721F18732971C02E93296BEDBE5399132548FD8F4ADF9337E336FFDDB93227A"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TsfMessageHookPolicy.cs",
+    "Hash": "DD4633CFED32900F8407640FCCF15BD76D7580B9EB893DD7AD944B7D34A7EB01"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\TsfOwnerInterop.cs",
+    "Hash": "AE9DB09F8E0D55C4A07BC5515F4F858857B0EA3852CE6A29384F9C28F8FAFD6E"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\WindowsTsf\\WindowsTextInputRouter.cs",
+    "Hash": "76EFE494A9C2307FA9836A6D328BB69B4890C20B132C11512B438E82DFD66C81"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\Hosting\\OpenTkHost.cs",
+    "Hash": "F66F790AA07C34FF5118176924F69D9E53610CA4A38D63C40244D3C820F28353"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\Hosting\\OpenTkInputAdapter.cs",
+    "Hash": "84A07C0A7A8F006535B41B65BD1A02F60F916A78E0B01F36678FE7B307059BF8"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\Hosting\\WindowsImeBridge.cs",
+    "Hash": "B6492485FDA8E30D336CF3582E68764BA4568E6B8384CD5F51603B050EA40B69"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\Hosting\\WindowsInputBridge.cs",
+    "Hash": "2B96E65A9682345D19778B3445D2B05F86F3461EABA7111EE86D123160931D67"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\Hosting\\TextInputCompositionSession.cs",
+    "Hash": "355D421F818E8B627C0F72E0577BA5EF4BE4B441005E58C9E1B954ED659A3514"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\src\\CSharp.UI.OpenTK\\Hosting\\StaComApartmentLease.cs",
+    "Hash": "4081B58ADC673B5FB2499B9A153B71AA28B633B3A4DC45E204EDDA9280282C66"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\RouterFallbackTests.cs",
+    "Hash": "23B845260225052BD0E8EA747227B93CEE85DDCD38AC471F01C379FA82A31583"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\TsfCancellationTests.cs",
+    "Hash": "5260FDCD7603CF3D9E6F8FDAD722A5A7F5AE6A5DAD861A562FB17700A1A1B403"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\WindowsImeSubclassRetirementTests.cs",
+    "Hash": "4BDADF628F33876FECC7A5BC194E7BD28F77853DB5757B8AADB21166E22E22BA"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\NativeCompositionOwnerTests.cs",
+    "Hash": "F2BE412311F41C889BA6419DC532029D61F00B0B9D16E7E1ACD6ECDA8B1181FE"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\AcpTextStoreProtocolTests.cs",
+    "Hash": "7F7577A5334BF7DA5DD801D21A961004749B0CB6388495E6BE21D282083D7476"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\TsfCompositionOwnerSmokeTests.cs",
+    "Hash": "32BCB9A5C6E0EC1E1ED3CE610D772F01A85A2223B416CC6145280F6C19398CC8"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\OrderedInputDeliveryTests.cs",
+    "Hash": "A43E474A4745EA9C1DD0A39045AEE9593EFD49ACAD43C33230F60E2ED8718ADA"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\SafeBoundarySignalTests.cs",
+    "Hash": "E63ED20903ADD358DCDDFE3058939C51B62D467739753E235E9E8FA2549CD224"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\TsfHookRetirementTests.cs",
+    "Hash": "2792265534D27F6174F0F6A1456CF03D3784484EB2F0EF2CFD424CC091610CA9"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\WindowsImeBridgeTests.cs",
+    "Hash": "B58B79E5A13D02C24CEFA527056A5A2D6F21617A6015C3959BB9BA908BB64DF4"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\TsfSessionLifetimeTests.cs",
+    "Hash": "4832F752B02A62CF5DDDA621CAE557ED4668B66A5BD442B933502DEEF3392D6C"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\TextInputCompositionSessionTests.cs",
+    "Hash": "6D87239545702B1A35DDC3D126B974AA45ADB6CB4E2BA994F33AE6BFCCC2BF82"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\HostRoutingContractTests.cs",
+    "Hash": "966E3569201FBBB6DD0EE72AC36B150701F1A7EEE2C84D3150C468E97AA5B5DD"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\WindowsInputBridgeContractTests.cs",
+    "Hash": "D00C63FF00B27A64718E07FE75433ABCC258EE2B6CA17D3864F6AFC9C8789113"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\StaComApartmentLeaseTests.cs",
+    "Hash": "54FF424EDC0150150809A8ADA4C82BF44B6F03EA848F1080308B40A807B59C83"
+  },
+  {
+    "Path": "C:\\Users\\nothh\\code\\C#\\CSharp.UI\\tests\\CSharp.UI.OpenTK.Tests\\TsfNativeWiringTests.cs",
+    "Hash": "548C55A4B5D0E3BF3A88C10671F481B1FF3FE35693357F719C4B5ED807C6AC74"
+  }
+]
