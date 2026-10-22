@@ -89,17 +89,40 @@ dotnet run --project tools/CSharp.UI.AssetGenerator
 - 按字素边界的光标移动、删除、选择、剪切/复制/粘贴与横向滚动；
 - 光标闪烁（仅在获得焦点时定时重绘）。
 
-Windows TSF 预发布路径（当前为**内部开关** `UseTsfInputBridge`，不是公开 API/默认路径，仍在生产验收）：
+Windows TSF 预发布路径（**内部开关** `UseTsfInputBridge`，不是公开 API/默认路径；TI-07 已于 2026-10-22 完成 P1–P4 验收并经主代理批准，边界见下）：
 
 - 入口必须声明 `[STAThread]`；TSF 会话只在该线程建立，MTA 会明确失败并回退 IMM；
 - 支持组合/预编辑与 UI-less 自绘候选通路；候选由框架在内容之后、同一 GL 帧内绘制；真实微软拼音下几何跟随/完全裁出隐藏与恢复、横向滚动、失焦/失活/最小化/隐藏取消零写及恢复后唯一提交已经 P4 真实验收（150% 单 DPI 环境，见[P4 交付记录](../delivery/2026-10-22-ti07-p4-delivery.md)）；DPI 变化与多显示器矩阵未覆盖，属环境边界；
 - 键盘选词/翻页由输入法自身处理；**不支持鼠标点选候选**；
 - 激活、flags 或 UIElement sink 任一不可用时整个 TSF 会话失败并回退 IMM，不并行启用两个写入来源；
-- TI-07 整体勾选与提交推送待最终复核，因此本路径仍为预发布内部开关，不宣称“完整 IME 支持”。
+- 本路径仍为预发布内部开关，不宣称“完整 IME 支持”。
+
+### 能力查询与平台分级（TI-08）
+
+应用可经公开路径查询当前文本输入能力：
+
+```csharp
+var capabilities = TextInputForwarder.EffectiveService(
+    context.Runtime.Services.TextInputService).Capabilities;
+```
+
+`TextInputCapabilities` 分三项声明：已提交文本（`CommittedText`）、组合/预编辑（`Composition`）、候选锚点（`CandidateAnchor`）；`Reason` 给出当前平台/后端的实际限制文案。服务为 `null` 时归一化为 `NoTextInputService`（仅已提交文本）。能力不随焦点变化：组合/锚点不支持与“暂时无焦点”（`ActiveClient==null`）是两种不同状态，前者按平台静态声明，后者不影响 `Capabilities`。
+
+| 平台 | 已提交文本 | 组合/预编辑 | 候选锚点 | 验证级别 |
+|---|---|---|---|---|
+| Windows（默认 IMM） | ✅ 真机 | ⚠️ 历史真机：TI-01 WeType 真实预编辑/单次结果（`docs/agents-notebook/2026-10-17-ime-platform-decision.md` §3）；本轮微软拼音正式验收走 TSF opt-in（下行），IMM 组合未在本轮按 mspinyin 复验 | ⚠️ `ImmSetCandidateWindow`/`ImmGetCandidateWindow` API 往返已验；系统候选窗实际屏幕位置未观测 | 真机（含历史证据标注） |
+| Windows（`UseTsfInputBridge` 内部开关） | ✅ 真机 | ✅ 真机（微软拼音 P4 验收，[P4 交付记录](../delivery/2026-10-22-ti07-p4-delivery.md)） | ✅ UI-less 自绘候选（P4 真实验收，150% 单 DPI） | 真机 |
+| macOS | ✅ GLFW char 回调（源码级判读：GLFW `NSTextInputClient` committed 字符通道；本仓库 shared managed code 编译覆盖，osx-x64/arm64 运行时未验） | ❌ 预编辑在 GLFW 视图内部消费，公共 API 无暴露；禁止 delegate 覆盖/method swizzle | ❌ 未接入 | 源码级；macOS 真机未验证 |
+| Linux/X11 | ✅ GLFW XIM → char 回调（UTF-8；源码级判读 + 二进制佐证） | ❌ XIM 预编辑在 GLFW 内部处理，未暴露 | ❌ 未接入 | 源码/二进制级 + WSL Linux 程序集加载 smoke（非 IME 路径，无 GLFW 窗口）；真机未验证 |
+| Linux/Wayland | ✅ GLFW `wl_keyboard` → libxkbcommon/xkb compose → char 回调（源码级判读 + 二进制佐证：`libglfw.so.3` 含 xkb 动态加载符号） | ❌ GLFW 3.4 Wayland 后端无 `zwp_text_input_v3`/text-input 协议（源码 + 二进制 0 命中） | ❌ 未接入 | 源码/二进制级 + WSL Linux 程序集加载 smoke（非 IME 路径，无 GLFW 窗口）；真机未验证 |
+
+说明：Wayland 行“无 text-input 协议”只否定 **IME 协议级**组合与候选；普通键盘字符经 xkb 键映射/compose 仍可达 char 回调，因此 `CommittedText` 为 true。二进制符号存在/缺失是佐证，不单独证明运行通路。
+
+非 Windows 宿主注入的平台服务是 `NoTextInputService` 的分级实例：能力为 committed-only（`Composition`/`CandidateAnchor` 恒 false），`Reason` 按 `GLFW.GetPlatform()` 真实值区分 macOS / X11 / Wayland / 未知。隔离的真实边界是“不加载/调用 Windows 原生库”：Windows 原生桥（`WindowsImeBridge`、`WindowsTextInputRouter`、TSF interop 类型）只在 `OperatingSystem.IsWindows()` 分支内实例化；WindowsTsf 命名空间中的纯托管类型（如输入交付协调器）仍可能被引用，不能从命名空间推出隔离，隔离判据为 OS 防护分支 + 真实运行未触发 Windows P/Invoke（当前为源码级判读，非 Windows 真机加载路径 UNVERIFIED）。
 
 默认发布**不包含**：
 
-- 把自绘候选或 TSF 路径作为公开/默认选项（生产验收完成前）；
+- 把自绘候选或 TSF 路径作为公开/默认选项；
 - 鼠标候选选择、多行编辑、富文本、彩色 Emoji 字形图集、完整双向文本排版；
 - 系统无障碍桥接、动画系统、列表虚拟化、移动端与浏览器目标。
 

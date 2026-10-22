@@ -23,7 +23,7 @@
 | ☑ | TI-05 | [有界撤销重做与编辑命令](05-undo-redo-and-edit-commands.md) | [TI-04：组合会话与预编辑状态机](04-composition-state-machine.md) | C |
 | ☑ | TI-06 | [预编辑绘制、命中与候选几何](06-preedit-rendering-and-geometry.md) | [TI-04：组合会话与预编辑状态机](04-composition-state-machine.md) | C |
 | ☑ | TI-07 | [Windows IME 桥与宿主输入联调](07-windows-ime-and-host-routing.md) | [TI-01：平台可行性与 Windows 原型](01-platform-feasibility.md)、[TI-05：有界撤销重做与编辑命令](05-undo-redo-and-edit-commands.md)、[TI-06：预编辑绘制、命中与候选几何](06-preedit-rendering-and-geometry.md) | C |
-| ☐ | TI-08 | [跨平台能力查询与兼容回退](08-platform-capabilities-and-fallback.md) | [TI-07：Windows IME 桥与宿主输入联调](07-windows-ime-and-host-routing.md) | D |
+| ☑ | TI-08 | [跨平台能力查询与兼容回退](08-platform-capabilities-and-fallback.md) | [TI-07：Windows IME 桥与宿主输入联调](07-windows-ime-and-host-routing.md) | D |
 | ☐ | TI-09 | [输入示例、使用指南与验收工具](09-samples-guides-and-ime-tests.md) | [TI-08：跨平台能力查询与兼容回退](08-platform-capabilities-and-fallback.md) | D |
 | ☐ | TI-10 | [完整回归、真实 IME 验收与交付](10-final-validation-and-delivery.md) | [TI-09：输入示例、使用指南与验收工具](09-samples-guides-and-ime-tests.md) | D |
 
@@ -36,7 +36,7 @@
 - [x] [TI-05：有界撤销重做与编辑命令](05-undo-redo-and-edit-commands.md)
 - [x] [TI-06：预编辑绘制、命中与候选几何](06-preedit-rendering-and-geometry.md)
 - [x] [TI-07：Windows IME 桥与宿主输入联调](07-windows-ime-and-host-routing.md)
-- [ ] [TI-08：跨平台能力查询与兼容回退](08-platform-capabilities-and-fallback.md)
+- [x] [TI-08：跨平台能力查询与兼容回退](08-platform-capabilities-and-fallback.md)
 - [ ] [TI-09：输入示例、使用指南与验收工具](09-samples-guides-and-ime-tests.md)
 - [ ] [TI-10：完整回归、真实 IME 验收与交付](10-final-validation-and-delivery.md)
 

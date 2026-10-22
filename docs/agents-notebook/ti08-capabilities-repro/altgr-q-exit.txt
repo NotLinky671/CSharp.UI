@@ -1,0 +1,20 @@
+TI-08 AltGr+Q 退出快捷键反例（before/after），2026-10-22
+环境：Win32，真实生产 OpenTkInputAdapter + UiRuntime + TextField（throwaway 程序集名 CSharp.UI.HostRoutingSpike 走 InternalsVisibleTo）。
+命令：dotnet build repro.csproj && dotnet bin/Debug/net10.0/CSharp.UI.HostRoutingSpike.dll
+驱动：HandleKeyDown(Keys.Q, mods) 后 HandleTextInput('@')（模拟 AltGr+Q：key-down 先、GLFW 后交付组合字符）。
+
+=== 修复前（src/CSharp.UI.OpenTK.dll @ 修复前）===
+AltGr+Q (Control|Alt + '@'): exits=1  text='@'   ← 缺陷：误把 Ctrl+Alt 当 Ctrl+Q 退出
+Ctrl+Q   (Control only)     : exits=1  text=''
+plain Q                     : exits=0  text='@'
+
+=== 修复后（OpenTkInputAdapter.DeliverCapturedCore Q 分支加 !Alt 排除）===
+AltGr+Q (Control|Alt + '@'): exits=0  text='@'   ← Alt 排除后不再误退；字符正常落地
+Ctrl+Q   (Control only)     : exits=1  text=''   ← Ctrl+Q 退出边界保留
+plain Q                     : exits=0  text='@'
+
+说明：AltGr（常见布局 Ctrl+Alt）按下触发 key-down 时 IsCommandPressed=true（Control 位），
+原 Q 退出分支未排除 Alt → 误 RequestExit()；此时 GLFW 仍交付 '@' 字符，但宿主已退出。
+修复只加 Alt 排除，Ctrl/Meta 退出策略与 Esc 路径不变；编辑 resolver 的 Ctrl+Alt 拒绝规则
+不覆盖此独立宿主退出路径（不同代码路径）。
+throwaway 工程在 C:/tmp/ti08altgr（repro.cs/repro.csproj），未跟踪、可清理。

@@ -121,7 +121,20 @@ internal sealed class TextInputServiceSession
         }
 
         var service = Service;
-        if (!service.Capabilities.Composition)
+        bool canCompose;
+        try
+        {
+            canCompose = service.Capabilities.Composition;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // 能力查询失败（TI-08）：异常不穿透 SetFocus；收敛为“无组合能力”并记录脱敏诊断，
+            // 不造 Full、不重试、不影响已提交字符通道。
+            ReportServiceFailure("Capabilities", ex);
+            return false;
+        }
+
+        if (!canCompose)
         {
             return false;
         }

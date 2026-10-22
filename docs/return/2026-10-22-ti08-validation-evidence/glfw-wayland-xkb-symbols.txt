@@ -1,0 +1,32 @@
+# GLFW 3.4.0.44 linux-x64 libglfw.so.3 — xkb/text-input symbol extraction (corroborating evidence)
+# binary: C:/Users/nothh/.nuget/packages/opentk.redist.glfw/3.4.0.44/runtimes/linux-x64/native/libglfw.so.3
+# sha256: d22d2cc22cae6e65e155a8f06b2d293cf6b3e9b9ee505c4df1d928625c29698d
+# extraction: grep -aoE 'xkb_[a-z0-9_]+|libxkbcommon(\.so\.0)?|_glfwInputChar|xkb_unicode\.c' libglfw.so.3 | sort -u
+# zwp_text_input_v3 / text_input string hits: 0 (grep -aoE 'zwp_text_input_v3|text_input' → no output, exit 1)
+# caveat: string presence/absence is corroborating only; it is not a full Wayland runtime
+# path proof nor proof that no native libraries load on non-Windows.
+
+_glfwInputChar
+libxkbcommon
+libxkbcommon.so.0
+xkb_compose_state_feed
+xkb_compose_state_get_one_sym
+xkb_compose_state_get_status
+xkb_compose_state_new
+xkb_compose_state_unref
+xkb_compose_table_new_from_locale
+xkb_compose_table_unref
+xkb_context_new
+xkb_context_unref
+xkb_keymap_key_get_syms_by_level
+xkb_keymap_key_repeats
+xkb_keymap_mod_get_index
+xkb_keymap_new_from_string
+xkb_keymap_unref
+xkb_state_key_get_layout
+xkb_state_key_get_syms
+xkb_state_mod_index_is_active
+xkb_state_new
+xkb_state_unref
+xkb_state_update_mask
+xkb_unicode

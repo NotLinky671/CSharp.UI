@@ -1,0 +1,18 @@
+TI-08 §5b 修复后复现（after-fix），2026-10-22
+命令: throwaway 工程 /tmp/ti08repro2 `dotnet build repro.csproj -v:q && dotnet bin/Debug/net10.0/repro.dll`
+工程: net10.0, Reference=src/CSharp.UI/bin/Debug/net10.0/CSharp.UI.dll（本次实现构建，HEAD 30b15cb + TI-08 改动）
+注入: 同 before（Capabilities getter => throw InvalidOperationException("caps boom")）
+
+实际 stdout (exit=0):
+SetFocus: no throw
+focused=True binding='ab'
+committed-after-caps-throw: binding='Zab' diagnostics=1
+  diag: 文本输入服务 Capabilities 失败：InvalidOperationException
+focus-toggle throws=0/6 diagnostics=3
+control: binding='Zab' (expect abZ) focused=True
+
+对照 before:
+- SetFocus 不再抛 InvalidOperationException（catch→ReportServiceFailure("Capabilities")→return false）
+- 每次 focus→focusable 记录一条有界诊断（3/3 focus 各 1 条；SetFocus(null) 不触发），diagnostics=3，非零且非每帧重复
+- committed 文本仍写 binding（'Zab'）
+- 焦点/绑定行为与 CommittedTextOnly 对照一致

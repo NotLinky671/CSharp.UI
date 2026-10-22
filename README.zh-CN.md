@@ -56,7 +56,7 @@ dotnet run --project tests/CSharp.UI.Tests
 - [入门](docs/guide/getting-started.md)
 - [公开 API 参考](docs/guide/api-reference.md)
 - [响应式布局：使用与迁移](docs/guide/responsive-layout.md)
-- [文本输入与编辑计划](docs/plan/2026-10-17-text-input-and-editing-plan.md)（TI-01～TI-06 已交付；Windows TSF 生产验收进行中）
+- [文本输入与编辑计划](docs/plan/2026-10-17-text-input-and-editing-plan.md)（TI-01～TI-08 已交付；TI-07 Windows TSF 生产验收 2026-10-22 完成——见 [P4 交付记录](docs/delivery/2026-10-22-ti07-p4-delivery.md)；TI-08 非 Windows 平台如实报告仅已提交文本能力，仅源码级与 CPU 模拟验证、无真机 IME 证据；TI-09～TI-10 未开始）
 - [状态与生命周期](docs/guide/state-lifecycle.md)
 - [修饰符顺序](docs/guide/modifier-order.md)
 - [Key 与动态列表](docs/guide/keys-and-lists.md)
@@ -93,7 +93,7 @@ static View Search(State<string> query) =>
 
 包含：`VStack`/`HStack`/`ZStack`/`Spacer`/`ScrollView`、`Text`/`Image`/`Rectangle`、`Button`/`Toggle`/`Slider`/`TextField`、`Padding`/`Frame`/`Background`/`Foreground`/`Border`/`CornerRadius`/`Opacity`/`Clip`/`Disabled`/`Key`、`ForEach`、明暗主题、字体/颜色环境继承、鼠标/键盘/滚轮/焦点/指针捕获、中文显示与**默认 IMM 路径**的已提交文本输入。
 
-Windows TSF 预发布路径（内部开关，不是公开选项）：组合/预编辑、随最终文字几何移动的 UI-less 框架自绘候选，以及失败时准确回退 IMM。入口必须声明 `[STAThread]`；该路径仍在生产验收中，不是已完成的公开功能。不支持鼠标点选候选；键盘选词由输入法自身处理。
+Windows TSF 预发布路径（内部开关 `UseTsfInputBridge`，不是公开选项/默认路径）：组合/预编辑、随最终文字几何移动的 UI-less 框架自绘候选，以及失败时准确回退 IMM。入口必须声明 `[STAThread]`。生产验收（P4）已于 2026-10-22 在单 DPI（150%）微软拼音环境完成——见 [P4 交付记录](docs/delivery/2026-10-22-ti07-p4-delivery.md)；多 DPI 证据属环境边界。不支持鼠标点选候选；键盘选词由输入法自身处理。
 
 默认发布不包含：多行编辑、动画系统、列表虚拟化、完整双向文本、彩色 Emoji 字形图集、移动端/浏览器/宿主嵌入、系统无障碍桥接。
 

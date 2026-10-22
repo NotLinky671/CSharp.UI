@@ -1,0 +1,19 @@
+TI-08 §5b 最小复现（before-fix），2026-10-22
+命令: 在 throwaway 工程 /tmp/ti08repro 中 `dotnet build repro.csproj -v:q && dotnet bin/Debug/net10.0/repro.dll`
+工程: net10.0, Reference=tests/CSharp.UI.Tests/bin/Debug/net10.0/CSharp.UI.dll (HEAD 30b15cb 已编译)
+注入: ITextInputService 实现，Capabilities getter => throw new InvalidOperationException("caps boom")
+场景: 真实 UiRuntime + 真实 TextField(Binding<string>) + UiRuntimeServices{Dispatcher=HeadlessUiDispatcher, TextService=StubTextService, TextInputService=ThrowCaps}；SetViewport(400,60,1)→Start→ProcessPendingWork→BuildFrame→SetFocus(Root)
+
+实际 stdout (exit=0):
+SetFocus THREW InvalidOperationException: caps boom
+after throw: node1.IsFocused=True FocusedNode-same=True binding='ab'
+committed-after-throw: binding='Zab'
+diagnostics=0
+focus-toggle throws=3/6 diagnostics=0
+control: binding='Zab' (expect abZ) focused=True
+
+结论（已证实边界，非推断）:
+- service.Capabilities 在 TextInputServiceSession.Start:124 无 catch → InvalidOperationException 穿透 UiRuntime.SetFocus
+- IsFocused 已在 InputRouter.SetFocus:92 先行置位 → 焦点成立但能力查询失败路径未收敛、零诊断
+- 已提交文本 DispatchTextInput 不经 Capabilities → binding 仍写入 ('Zab')
+- 每次 focus→focusable 都抛（3/6 含 SetFocus(null) 不抛）且 diagnostics=0

@@ -288,6 +288,73 @@ public class TextInputServiceContractTests
         Assert.Equal("abc", binding.Value);
         Assert.Equal("abc", host.Text!.PeekValue());
     }
+
+    [Fact]
+    public void FailingCapabilities_FocusAndCommittedTextStillWork_NoRetryOrSelfWake()
+    {
+        // TI-08 §5b（主审收敛版）：注入能力查询抛错的服务——
+        // 焦点照常建立、异常不穿透 SetFocus、已提交字符按真实事务写绑定（setter 精确计数），
+        // 此后无输入的帧推进/待办处理不产生新诊断、不改文本——不自动重试/不自激。
+        var writes = 0;
+        var value = "ab";
+        var binding = new Binding<string>(() => value, v => { writes++; value = v; });
+        var service = new ThrowingCapabilitiesService();
+        using var runtime = new UiRuntime(new TextField(binding), new UiRuntimeServices
+        {
+            Dispatcher = new HeadlessUiDispatcher(),
+            TextService = new StubTextService(),
+            TextInputService = service,
+        });
+        runtime.SetViewport(new Size(400, 60), 1);
+        runtime.Start();
+        runtime.ProcessPendingWork();
+        runtime.BuildFrame();
+        var node = runtime.Root;
+
+        var diagnosticsBefore = runtime.Diagnostics.Count;
+        runtime.SetFocus(node);                                     // 异常不穿透
+        runtime.ProcessPendingWork();
+
+        Assert.True(node.IsFocused);
+        // 恰好一条有界诊断（能力查询失败已记录；不重复、不静默）。
+        Assert.Equal(diagnosticsBefore + 1, runtime.Diagnostics.Count);
+
+        // 已提交字符按真实编辑事务写绑定：恰好一次 setter、值精确。
+        runtime.DispatchTextInput(new TextInputEvent("Z"));
+        runtime.ProcessPendingWork();
+        Assert.Equal(1, writes);
+        Assert.Equal("Zab", value);
+
+        // 无新输入的多轮待办/帧推进：诊断不再增长、文本不变、无待办自激。
+        var stableDiagnostics = runtime.Diagnostics.Count;
+        for (var i = 0; i < 3; i++)
+        {
+            runtime.ProcessPendingWork();
+            runtime.BuildFrame();
+        }
+
+        Assert.Equal(stableDiagnostics, runtime.Diagnostics.Count);
+        Assert.Equal("Zab", value);
+        Assert.Equal(1, writes);
+        Assert.False(runtime.HasPendingBuild);
+    }
+
+    [Fact]
+    public void Forwarder_FailingCapabilities_RejectWithoutThrowingOrWriting()
+    {
+        // ApplyComposition 对抛错 getter 返回显式 Rejected：异常不泄漏、不写目标、不重投、不伪报已执行。
+        var service = new ThrowingCapabilitiesService();
+        var result = TextInputForwarder.ApplyComposition(
+            service,
+            [CompositionEvent.Result(0, 0, 0, 0, "你好", new TextRange(0, 0))]);
+
+        Assert.False(result.Handled);
+        Assert.Equal(TextInputOutcome.Rejected, result.Outcome);
+        Assert.True(result.IsNoOp);
+        Assert.Equal(TextSnapshot.Empty, result.Document);            // 未写任何目标
+        Assert.Equal(0, result.AppliedEventCount);                    // 未执行任何事件
+        Assert.False(result.Outcome.HasFlag(TextInputOutcome.ResultCommitted));
+    }
 }
 
 /// <summary>记录调用的文本输入服务替身；能力可配置，不引用任何平台类型。</summary>
@@ -428,4 +495,23 @@ internal sealed class RecordingTextInputClient : ITextInputClient
         Preedit = string.Empty;
         return true;
     }
+}
+
+/// <summary>能力查询 getter 抛错的替身服务（TI-08 §5b）；其余成员返回显式拒绝。</summary>
+internal sealed class ThrowingCapabilitiesService : ITextInputService
+{
+    public TextInputCapabilities Capabilities => throw new InvalidOperationException("能力查询失败（注入）");
+
+    public ITextInputClient? ActiveClient => null;
+
+    public bool StartSession(ITextInputClient client) => false;
+
+    public bool EndSession() => false;
+
+    public TextInputApplyResult ApplyComposition(IReadOnlyList<CompositionEvent> events)
+        => TextInputApplyResult.Rejected(TextSnapshot.Empty, "注入服务不执行组合。");
+
+    public bool RequestCancel() => false;
+
+    public bool PublishGeometry(TextInputGeometry geometry) => false;
 }

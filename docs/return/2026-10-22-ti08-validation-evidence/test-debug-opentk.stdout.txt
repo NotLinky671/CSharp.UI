@@ -1,0 +1,5 @@
+[RL-08]   820→逻辑 820×760 fb(1230, 1140) renderer1230×1140 frames13->15 pending0
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '46f6427a055eaea5774ac41639f8bd848cbf0fea13555980ed18f5ed08ee0304')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 668, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 14.325s
+EXIT=0

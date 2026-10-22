@@ -568,7 +568,8 @@ internal sealed class OpenTkInputAdapter
                 if (!handled
                     && !key.ConsumedByIme
                     && ((key.Key == UiKey.Escape && _exitOnEscape)
-                        || (key.Key == UiKey.Q && _exitOnCloseShortcut && keyEvent.IsCommandPressed)))
+                        || (key.Key == UiKey.Q && _exitOnCloseShortcut && keyEvent.IsCommandPressed
+                            && !keyEvent.Modifiers.HasFlag(KeyModifiers.Alt))))
                 {
                     RequestExit();
                     return;

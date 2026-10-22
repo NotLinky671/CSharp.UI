@@ -1,0 +1,91 @@
+无法创建 OpenTK/GLFW 窗口或 OpenGL 上下文（UiApplication.Run 宿主窗口）。
+平台：Arch Linux（X64，X64 进程，.NET 10.0.11）
+GLFW：3.4.0 Wayland X11 GLX Null EGL OSMesa monotonic shared
+GLFW 最近错误：NotInitialized：The GLFW library is not initialized
+OpenGL 请求：3.3 Core
+窗口设置：标题="TI-08 WSLg real window"，客户区=200×80，边框=Resizable，VSync=Off，可见=True，Flags=Default
+用途：UiApplication.Run 宿主窗口
+OpenGL 实际：当前线程没有 GL 上下文
+原因：NullReferenceException：Object reference not set to an instance of an object.
+xists: internal
+
+== B. DescribeCommittedOnlyReason(Platform) pure map (real helper) ==
+   reason(Cocoa) = macOS：GLFW 的 NSTextInputClient 实现把 marked text 消费在视图内部，公共 API 无组合/候选暴露；已提交字符经 char 回调可用。
+[PASS] map.Cocoa: macOS：GLFW 的 NSTextInputClient 实现把 marked text 消费在视图内部，公共 API 无组合/候选暴露；已提交字符经 char 回调可用。
+[PASS] svc(Cocoa).committed-only: committed=True composition=False anchor=False (macOS：GLFW 的 NSTextInputClient 实现把 marked text 消费在视图内部，公共 API 无组合/候选暴露；已提交字符经 char 回调可用。)
+[PASS] svc(Cocoa).no-session: refused
+   reason(X11) = Linux/X11：GLFW 内部使用 XIM（预编辑在 GLFW 内消费）；已提交字符经 char 回调可用。
+[PASS] map.X11: Linux/X11：GLFW 内部使用 XIM（预编辑在 GLFW 内消费）；已提交字符经 char 回调可用。
+[PASS] svc(X11).committed-only: committed=True composition=False anchor=False (Linux/X11：GLFW 内部使用 XIM（预编辑在 GLFW 内消费）；已提交字符经 char 回调可用。)
+[PASS] svc(X11).no-session: refused
+   reason(Wayland) = Linux/Wayland：GLFW 3.4 Wayland 后端无 text-input 协议；普通字符经 xkb/char 回调可达，IME 协议级组合/候选缺失。
+[PASS] map.Wayland: Linux/Wayland：GLFW 3.4 Wayland 后端无 text-input 协议；普通字符经 xkb/char 回调可达，IME 协议级组合/候选缺失。
+[PASS] svc(Wayland).committed-only: committed=True composition=False anchor=False (Linux/Wayland：GLFW 3.4 Wayland 后端无 text-input 协议；普通字符经 xkb/char 回调可达，IME 协议级组合/候选缺失。)
+[PASS] svc(Wayland).no-session: refused
+   reason(Null) = 当前平台：框架只提供已提交字符通道（GLFW char 回调）；组合/候选未接入，未判定本机原生 IME 可用性。
+[PASS] map.Null: 当前平台：框架只提供已提交字符通道（GLFW char 回调）；组合/候选未接入，未判定本机原生 IME 可用性。
+[PASS] svc(Null).committed-only: committed=True composition=False anchor=False (当前平台：框架只提供已提交字符通道（GLFW char 回调）；组合/候选未接入，未判定本机原生 IME 可用性。)
+[PASS] svc(Null).no-session: refused
+
+== C. graded service → UiRuntime → TextField (real commit/edit path) ==
+   [Cocoa] EditPlatform=MacOS (expected=MacOS)
+[PASS] Cocoa.effective-service: committed=True composition=False anchor=False (macOS：GLFW 的 NSTextInputClient 实现把 marked text 消费在视图内部，公共 API 无组合/候选暴露；已提交字符经 char 回调可用。)
+[PASS] Cocoa.reason: macOS：GLFW 的 NSTextInputClient 实现把 marked text 消费在视图内部，公共 API 无组合/候选暴露；已提交字符经 char 回调可用。
+[PASS] Cocoa.committed-chars: field=hi
+[PASS] Cocoa.copy-to-clipboard: hi
+[PASS] Cocoa.paste: field=hi
+[PASS] Cocoa.typed-new: field=new
+[PASS] Cocoa.undo: field=hi
+[PASS] Cocoa.redo: field=new
+[PASS] Cocoa.altgr-no-undo: field=new
+[PASS] Cocoa.altgr-q-no-exit: field=new
+[PASS] Cocoa.composition-rejected-no-write: outcome=Rejected field=new
+   [X11] EditPlatform=Linux (expected=Linux)
+[PASS] X11.effective-service: committed=True composition=False anchor=False (Linux/X11：GLFW 内部使用 XIM（预编辑在 GLFW 内消费）；已提交字符经 char 回调可用。)
+[PASS] X11.reason: Linux/X11：GLFW 内部使用 XIM（预编辑在 GLFW 内消费）；已提交字符经 char 回调可用。
+[PASS] X11.committed-chars: field=hi
+[PASS] X11.copy-to-clipboard: hi
+[PASS] X11.paste: field=hi
+[PASS] X11.typed-new: field=new
+[PASS] X11.undo: field=hi
+[PASS] X11.redo: field=new
+[PASS] X11.altgr-no-undo: field=new
+[PASS] X11.altgr-q-no-exit: field=new
+[PASS] X11.composition-rejected-no-write: outcome=Rejected field=new
+   [Wayland] EditPlatform=Linux (expected=Linux)
+[PASS] Wayland.effective-service: committed=True composition=False anchor=False (Linux/Wayland：GLFW 3.4 Wayland 后端无 text-input 协议；普通字符经 xkb/char 回调可达，IME 协议级组合/候选缺失。)
+[PASS] Wayland.reason: Linux/Wayland：GLFW 3.4 Wayland 后端无 text-input 协议；普通字符经 xkb/char 回调可达，IME 协议级组合/候选缺失。
+[PASS] Wayland.committed-chars: field=hi
+[PASS] Wayland.copy-to-clipboard: hi
+[PASS] Wayland.paste: field=hi
+[PASS] Wayland.typed-new: field=new
+[PASS] Wayland.undo: field=hi
+[PASS] Wayland.redo: field=new
+[PASS] Wayland.altgr-no-undo: field=new
+[PASS] Wayland.altgr-q-no-exit: field=new
+[PASS] Wayland.composition-rejected-no-write: outcome=Rejected field=new
+   [Null] EditPlatform=Linux (expected=Linux)
+[PASS] Null.effective-service: committed=True composition=False anchor=False (当前平台：框架只提供已提交字符通道（GLFW char 回调）；组合/候选未接入，未判定本机原生 IME 可用性。)
+[PASS] Null.reason: 当前平台：框架只提供已提交字符通道（GLFW char 回调）；组合/候选未接入，未判定本机原生 IME 可用性。
+[PASS] Null.committed-chars: field=hi
+[PASS] Null.copy-to-clipboard: hi
+[PASS] Null.paste: field=hi
+[PASS] Null.typed-new: field=new
+[PASS] Null.undo: field=hi
+[PASS] Null.redo: field=new
+[PASS] Null.altgr-no-undo: field=new
+[PASS] Null.altgr-q-no-exit: field=new
+[PASS] Null.composition-rejected-no-write: outcome=Rejected field=new
+
+== D. real GLFW backend query on Linux (no window) ==
+   DescribeCurrentPlatformReason() = 当前平台：框架只提供已提交字符通道（GLFW char 回调）；组合/候选未接入，未判定本机原生 IME 可用性。
+[PASS] real helper returned a reason: 当前平台：框架只提供已提交字符通道（GLFW char 回调）；组合/候选未接入，未判定本机原生 IME 可用性。
+[PASS] reason graded (Linux-tier or unknown-tier, not Cocoa): 当前平台：框架只提供已提交字符通道（GLFW char 回调）；组合/候选未接入，未判定本机原生 IME 可用性。
+   GLFW.GetPlatform() = 0
+[PASS] GLFW.GetPlatform callable: 0
+
+== E. real GLFW window on WSLg (StubTextService+StubImageService, no Skia) ==
+[FAIL] UiApplication.Run threw (boundary): Object reference not set to an instance of an object.
+
+RESULT: FAIL (1)
+REAL_EXIT=0

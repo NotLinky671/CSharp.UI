@@ -1,0 +1,40 @@
+TI-08 phase-2 environment probe (read-only, low side effect)
+Date: 2026-10-22
+Purpose: verify whether a real Linux runtime is available for assembly-load /
+CPU-path validation before declaring "all non-Windows can only be simulated".
+
+Commands and results (all read-only, nothing installed/started/modified):
+
+1) `wsl -l -v` (exit 0):
+       NAME         STATE           VERSION
+     * archlinux    Stopped         2
+
+2) `wsl -d archlinux -- uname -a` (exit 0):
+     Linux LinkyY7000p 6.6.87.2-microsoft-standard-WSL2 #1 SMP ... x86_64 GNU/Linux
+
+3) .NET runtime search inside archlinux (all negative, exit 1/no output):
+     - `command -v dotnet` → not found
+     - `ls /usr/share/dotnet /usr/lib/dotnet /opt/dotnet ~/.dotnet /usr/local/share/dotnet` → none exist
+     - `pacman -Q dotnet-sdk dotnet-runtime aspnet-runtime` / `pacman -Qs dotnet` → nothing installed
+     - `mono --version` → command not found
+     - `find / -maxdepth 4 -name "dotnet" -type f` → no results
+
+4) Display/session env inside archlinux (read-only):
+     DISPLAY=:0
+     WAYLAND_DISPLAY=wayland-0   (WSLg)
+     XDG_SESSION_TYPE=(unset)
+
+Conclusion:
+  A real Linux kernel environment exists (WSL2 archlinux, distro Stopped→started
+  on demand by `wsl -d`), but it has NO .NET runtime (no dotnet, no mono).
+  Per constraints (no installing new runtimes/services, no global changes),
+  .NET assembly-load and CPU-path checks on Linux are NOT runnable here.
+  This is an environment boundary, recorded as such — not inferred from
+  "host OS is Windows".
+
+  WSLg provides both DISPLAY=:0 and WAYLAND_DISPLAY=wayland-0, but without a
+  .NET runtime neither X11 nor Wayland GLFW paths can be exercised; and even
+  with a runtime, WSLg would still not constitute a bare-metal Linux IME
+  environment (would need explicit caveats, not "real Wayland IME" claims).
+
+  No new virtualization/runtime was installed for this task.

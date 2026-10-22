@@ -1,0 +1,22 @@
+OS: Microsoft Windows 10.0.26200 (X64)
+.NET: .NET 10.0.11
+---- capabilities (public chain) ----
+service.type=CSharp.UI.OpenTK.WindowsTsf.WindowsTextInputRouter
+before focus: committed=True composition=True anchor=True
+after  focus: committed=True composition=True anchor=True
+reason: 
+[PASS] before.CommittedText: committed=True composition=True anchor=True
+[PASS] before.Composition: committed=True composition=True anchor=True
+[PASS] after.CommittedText: committed=True composition=True anchor=True
+[PASS] after.Composition: committed=True composition=True anchor=True
+[PASS] Reason not non-Windows stub: null (healthy IMM, no failure reason)
+[PASS] TextField node found: ViewNode
+[PASS] focus on TextField: focused=ViewNode
+[PASS] committed chars land: field=A你
+[PASS] clipboard service present: CSharp.UI.OpenTK.GlfwClipboardService
+[PASS] clipboard roundtrip: clipboard-text
+[PASS] Ctrl+Z undo (merged typing): field=
+[PASS] Ctrl+Y redo: field=A你
+[PASS] AltGr does not trigger undo: field=A你
+exit=0 errors=0
+EXIT=0

@@ -1,0 +1,64 @@
+TI-08 phase-2 real-Linux smoke (WSL2 archlinux, app-local self-contained)
+Date: 2026-10-22
+Boundary: real Linux kernel + real .NET 10.0.11 runtime on real ELF binary;
+          NOT a bare-metal Wayland/X11 IME environment (WSLg display stack only);
+          no GL/GLFW window run (deps incomplete, fontconfig missing).
+
+Commands:
+
+  dotnet publish -c Release -r linux-x64 --self-contained true \
+      artifacts/ti08-wsl-smoke/Ti08Smoke -o artifacts/ti08-wsl-smoke/publish-linux
+    → exit 0 (existing CA1416 warnings only; linux runtime pack restored from NuGet)
+
+  wsl -d archlinux -- sh -c 'cd /mnt/c/.../publish-linux && ./Ti08Smoke'
+    → exit 0, all checks PASS (10/10)
+
+Results (verbatim):
+
+  OS: Arch Linux (X64)
+  .NET: .NET 10.0.11
+  IsLinux=True IsWindows=False IsMacOS=False
+  [PASS] load CSharp.UI.OpenTK: CSharp.UI.OpenTK, Version=0.1.0.0
+  [PASS] load CSharp.UI: CSharp.UI, Version=0.1.0.0
+  [PASS] load CSharp.UI.Text: CSharp.UI.Text, Version=0.1.0.0
+  [PASS] NoTextInputService.CommittedOnly: committed=True composition=False anchor=False
+         (当前宿主只提供已提交文本；组合输入与候选锚点未接入。)
+  [PASS] NoTextInputService.ActiveClient-null: null
+  [PASS] NoTextInputService.StartSession-false: refused without binding
+  [PASS] EffectiveService(null)→committed-only: same committed-only report
+  [PASS] ApplyComposition→Rejected(no replay): Rejected
+  [PASS] capabilities-guard: rejected composition without committed
+  [PASS] OpenTkHost type resolvable: CSharp.UI.OpenTK.OpenTkHost
+  RESULT: PASS
+
+Native dependency check (ldd on the real ELF binary):
+
+  Ti08Smoke: 8 deps, only linux-vdso/libdl/libpthread/libstdc++/libm/libgcc_s/libc/ld-linux
+  — no user32/imm32/msctf/ole32/kernel32 imports (expected: .NET host, not native app)
+
+  libglfw.so.3 (bundled OpenTK.redist.glfw 3.4.0.44 linux-x64):
+    linux-vdso + libm + libc + ld-linux only (cleanly loadable)
+
+  libSkiaSharp.so:
+    libfontconfig.so.1 => not found   (missing in WSL archlinux base;
+    CPU font/shaping paths would fail; not installed, environment boundary)
+
+Environment facts (read-only):
+
+  WSL distro: archlinux (WSL2, kernel 6.6.87.2-microsoft-standard-WSL2)
+  DISPLAY=:0, WAYLAND_DISPLAY=wayland-0 (WSLg)
+  No system dotnet/mono installed (checked earlier); runtime is app-local publish.
+
+What this smoke proves (and does not prove):
+
+  PROVES: the managed assemblies CSharp.UI / CSharp.UI.Text / CSharp.UI.OpenTK
+          load on real Linux; the committed-only service contract behaves
+          correctly; no Windows P/Invoke eagerly breaks assembly load;
+          NoTextInputService(string reason) graded instances work on Linux.
+
+  DOES NOT prove: actual GLFW window creation, X11 vs Wayland backend selection,
+          real char-callback input, real clipboard, real IME behavior, or
+          GL/Skia rendering (fontconfig missing; no attempt to install deps).
+
+Artifacts: publish output under artifacts/ti08-wsl-smoke/ (gitignored; cleaned
+after evidence capture). This file is the durable evidence record.

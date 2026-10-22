@@ -13,19 +13,34 @@ namespace CSharp.UI;
 /// <c>Handled=false</c>，绝不把请求阶段（Started/Updated/ResultCommitted…）映射成“已执行”的动作，
 /// 也不要求宿主把该批次重投到当前焦点。
 /// </para>
-/// <para>它是无状态、线程安全的（所有成员只返回常量），因此可以作为默认实例重复使用。</para>
+/// <para>它是无状态、线程安全的（所有成员只返回常量/构造期固定值），<see cref="Instance"/> 可作为默认实例重复使用；</para>
+/// <para>internal Reason 构造（TI-08）只为非 Windows 平台分级诊断注入，不改变任何语义。</para>
 /// </remarks>
 public sealed class NoTextInputService : ITextInputService
 {
     /// <summary>共享实例。</summary>
     public static NoTextInputService Instance { get; } = new();
 
+    private readonly TextInputCapabilities _capabilities;
+
     private NoTextInputService()
     {
+        _capabilities = TextInputCapabilities.CommittedTextOnly;
+    }
+
+    /// <summary>
+    /// TI-08：按平台分级 Reason 创建“只有已提交文本”的服务实例。
+    /// 本服务永远 committed=true/composition=false/anchor=false；只注入脱敏诊断原因
+    /// （例如“X11：GLFW 内部 XIM 消费预编辑”），不接受任意能力组合。
+    /// </summary>
+    internal NoTextInputService(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        _capabilities = new TextInputCapabilities(committedText: true, reason: reason);
     }
 
     /// <inheritdoc />
-    public TextInputCapabilities Capabilities => TextInputCapabilities.CommittedTextOnly;
+    public TextInputCapabilities Capabilities => _capabilities;
 
     /// <inheritdoc />
     public ITextInputClient? ActiveClient => null;
@@ -120,7 +135,20 @@ public static class TextInputForwarder
                 "没有文本输入服务；组合事件未执行，也不重投到当前焦点。");
         }
 
-        if (!service.Capabilities.Composition)
+        TextInputCapabilities capabilities;
+        try
+        {
+            capabilities = service.Capabilities;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // 能力查询失败（TI-08）：收敛为显式拒绝，异常不穿透到批次调用方；不重投、不造能力。
+            return TextInputApplyResult.Rejected(
+                TextSnapshot.Empty,
+                $"文本输入服务能力查询失败（{ex.GetType().Name}）；组合事件未执行，也不重投到当前焦点。");
+        }
+
+        if (!capabilities.Composition)
         {
             return TextInputApplyResult.Rejected(
                 service.ActiveClient?.Document ?? TextSnapshot.Empty,

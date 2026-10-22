@@ -305,10 +305,32 @@ internal sealed class WindowsTextInputRouter : IWindowsInputBridge
 
             if (tsf is not null)
             {
-                return tsf.Capabilities;
+                try
+                {
+                    return tsf.Capabilities;
+                }
+                catch (Exception ex) when (ex is not OutOfMemoryException)
+                {
+                    // 子桥能力查询失败（TI-08）：只报告诚实保守快照 + 脱敏 Reason，
+                    // 不切换/释放/重试真实后端，也不与仍活动的 TSF 形成双写入。
+                    return new TextInputCapabilities(
+                        committedText: true,
+                        reason: $"TSF 桥能力查询失败（{ex.GetType().Name}）；按仅已提交文本报告。");
+                }
             }
 
-            var actualImm = imm?.Capabilities;
+            TextInputCapabilities? actualImm;
+            try
+            {
+                actualImm = imm?.Capabilities;
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                // IMM 子桥能力查询失败：如实回退到仅已提交文本，不造 Full、不影响真实后端。
+                actualImm = new TextInputCapabilities(
+                    committedText: true,
+                    reason: $"IMM 桥能力查询失败（{ex.GetType().Name}）；按仅已提交文本报告。");
+            }
             if (actualImm is { } existing && (existing.Composition || !canAttemptTsf))
                 return existing;
 

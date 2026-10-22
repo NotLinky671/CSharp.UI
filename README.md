@@ -56,7 +56,7 @@ See the [getting started guide](docs/guide/getting-started.md) for details.
 - [Getting started](docs/guide/getting-started.md)
 - [Public API reference](docs/guide/api-reference.md)
 - [Responsive layout: usage and migration](docs/guide/responsive-layout.md)
-- [Text input and editing plan](docs/plan/2026-10-17-text-input-and-editing-plan.md) (TI-01–TI-07 delivered; TI-07 Windows TSF production acceptance completed 2026-10-22 — see [P4 delivery](docs/delivery/2026-10-22-ti07-p4-delivery.md); TI-08–TI-10 not started)
+- [Text input and editing plan](docs/plan/2026-10-17-text-input-and-editing-plan.md) (TI-01–TI-08 delivered; TI-07 Windows TSF production acceptance completed 2026-10-22 — see [P4 delivery](docs/delivery/2026-10-22-ti07-p4-delivery.md); TI-08 non-Windows platforms report committed-text-only capability, verified at source level and by CPU simulation without real-device IME evidence; TI-09–TI-10 not started)
 - [State and lifecycle](docs/guide/state-lifecycle.md)
 - [Modifier order](docs/guide/modifier-order.md)
 - [Keys and dynamic lists](docs/guide/keys-and-lists.md)

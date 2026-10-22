@@ -1,0 +1,5 @@
+[R17] "中文边缘 English 123" 14px DPI=1.25 alpha=128 opacity=0.63：mean=0.1016 max=2
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '714a3074ee569785d367205ccd5169b581c32843b564799c8c2e18419f7bcb8d')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 668, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 13.304s
+EXIT=0

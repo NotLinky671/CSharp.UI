@@ -1,0 +1,71 @@
+// TI-08 throwaway smoke: real assembly load + public capability query on Linux.
+// Not a product tool; run under WSL after `dotnet publish -r linux-x64`.
+// Validates: NoTextInputService graded instance (committed-only, Reason),
+// StartSession→false/ActiveClient null/ApplyComposition→Rejected,
+// and that CSharp.UI/CSharp.UI.OpenTK assemblies load without Windows natives.
+using System.Runtime.InteropServices;
+using CSharp.UI;
+
+var errors = new List<string>();
+void Check(bool cond, string name, string detail)
+{
+    Console.WriteLine($"[{(cond ? "PASS" : "FAIL")}] {name}: {detail}");
+    if (!cond) errors.Add(name);
+}
+
+Console.WriteLine($"OS: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
+Console.WriteLine($".NET: {RuntimeInformation.FrameworkDescription}");
+Console.WriteLine($"IsLinux={OperatingSystem.IsLinux()} IsWindows={OperatingSystem.IsWindows()} IsMacOS={OperatingSystem.IsMacOS()}");
+
+// Assembly load check: OpenTK + core + text load on linux without DllNotFound.
+Type? openTkType = null;
+try { openTkType = typeof(UiApplication); Check(true, "load CSharp.UI.OpenTK", openTkType.Assembly.FullName!); }
+catch (Exception ex) { Check(false, "load CSharp.UI.OpenTK", ex.GetType().Name + ": " + ex.Message); }
+try { Check(true, "load CSharp.UI", typeof(UiRuntime).Assembly.FullName!); } catch (Exception ex) { Check(false, "load CSharp.UI", ex.Message); }
+try { Check(true, "load CSharp.UI.Text", typeof(CSharp.UI.Skia.SkiaTextService).Assembly.FullName!); } catch (Exception ex) { Check(false, "load CSharp.UI.Text", ex.Message); }
+
+// Service contract: default NoTextInputService committed-only, no session binding.
+var svc = NoTextInputService.Instance;
+Check(svc.Capabilities.CommittedText && !svc.Capabilities.Composition && !svc.Capabilities.CandidateAnchor,
+      "NoTextInputService.CommittedOnly", svc.Capabilities.ToString());
+Check(svc.ActiveClient is null, "NoTextInputService.ActiveClient-null", svc.ActiveClient?.GetType().Name ?? "null");
+Check(!svc.StartSession(new DummyClient()), "NoTextInputService.StartSession-false", "refused without binding");
+
+// EffectiveService normalization: null → committed-only.
+var eff = TextInputForwarder.EffectiveService(null);
+Check(eff.Capabilities.CommittedText && !eff.Capabilities.Composition,
+      "EffectiveService(null)→committed-only", eff.Capabilities.ToString());
+
+// ApplyComposition rejects without replay.
+var rejected = TextInputForwarder.ApplyComposition(svc,
+    new[] { CompositionEvent.Result(0, 0, 0, 0, "你好", new TextRange(0, 0)) });
+Check(!rejected.Handled, "ApplyComposition→Rejected(no replay)", rejected.Outcome.ToString());
+
+// TextInputCapabilities consistency guard.
+try { var _ = new TextInputCapabilities(committedText: false, composition: true); Check(false, "capabilities-guard", "no exception"); }
+catch (ArgumentException) { Check(true, "capabilities-guard", "rejected composition without committed"); }
+
+// Windows native isolation: OpenTkHost type resolvable (assembly P/Invoke table
+// loadable on Linux; actual Windows DllImport calls are OS-gated). ldd also
+// shows no user32/imm32/msctf/ole32 dependencies.
+try
+{
+    var hostType = openTkType!.Assembly.GetType("CSharp.UI.OpenTK.OpenTkHost");
+    Check(hostType is not null, "OpenTkHost type resolvable", hostType?.FullName ?? "null");
+}
+catch (Exception ex) { Check(false, "OpenTkHost type resolvable", ex.Message); }
+
+Console.WriteLine(errors.Count == 0 ? "RESULT: PASS" : $"RESULT: FAIL ({errors.Count})");
+return errors.Count == 0 ? 0 : 1;
+
+sealed class DummyClient : ITextInputClient
+{
+    public TextSnapshot Document => TextSnapshot.Empty;
+    public TextInputSession Session => new(0, 0);
+    public bool IsComposing => false;
+    public string Preedit => string.Empty;
+    public TextInputState GetState() => new(TextSnapshot.Empty, string.Empty, TextInputGeometry.Unavailable);
+    public TextInputApplyResult ApplyComposition(IReadOnlyList<CompositionEvent> events)
+        => TextInputApplyResult.Rejected(TextSnapshot.Empty, "dummy");
+    public bool CancelComposition() => false;
+}

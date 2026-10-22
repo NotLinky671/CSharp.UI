@@ -9,6 +9,8 @@ TestResults/
 .vs/
 .vscode/
 .idea/
+*.log
+build-full.log*
 
 ## NuGet local package caches (repository-local, if configured)
 .packages/

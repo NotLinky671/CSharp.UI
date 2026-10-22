@@ -51,8 +51,8 @@ internal sealed class OpenTkHost : IDisposable
     /// <summary>候选 overlay：帧末、内容之后、提交之前追加；非 Windows 时为 null。</summary>
     private WindowsTsf.CandidateOverlay? _candidateOverlay;
 
-    /// <summary>文本输入后端选择/回退的准确原因（能力报告用，脱敏）。</summary>
-    private string _textInputBackendReason = "默认 IMM 输入桥。";
+    /// <summary>非 Windows 平台化 committed-only 文本输入服务（Windows 为 null）。</summary>
+    private ITextInputService? _platformTextInput;
 
     private UiRuntime _runtime = null!;
     private UiHostContext _context = null!;
@@ -145,7 +145,7 @@ internal sealed class OpenTkHost : IDisposable
                             fresh.InstallSubclass();
                             return fresh;
                         }
-                        catch (Exception)
+                        catch (Exception ex) when (ex is not OutOfMemoryException)
                         {
                             return null;
                         }
@@ -163,7 +163,9 @@ internal sealed class OpenTkHost : IDisposable
             }
             else
             {
-                _inputBridge = _ime;
+                // TI-08：非 Windows 只有已提交文本通道——分级 Reason 如实报告平台接入限制，
+                // 不实例化任何 Windows 桥类型，也不触发 Windows 原生库。
+                _platformTextInput = new NoTextInputService(DescribeCurrentPlatformReason());
             }
 
             // 宿主组装平台服务：未注入时创建 CSharp.UI.Skia（程序集 CSharp.UI.Text）的 SkiaSharp 实现，
@@ -193,7 +195,7 @@ internal sealed class OpenTkHost : IDisposable
                 Clipboard = options.ClipboardService ?? _clipboard,
                 Clock = options.Clock ?? new StopwatchUiClock(),
                 WheelScrollSettings = options.WheelScrollSettingsService ?? WindowsWheelScrollSettingsService.Instance,
-                TextInputService = _inputBridge,
+                TextInputService = (ITextInputService?)_inputBridge ?? _platformTextInput,
             });
 
             // 宿主后续接线只依赖桥契约：路由器是稳定实例，运行时与适配器共同持有它。
@@ -273,7 +275,61 @@ internal sealed class OpenTkHost : IDisposable
     internal WindowsTsf.TsfInputBridge? TsfBridge => _router?.TsfBridge;
 
     /// <summary>文本输入后端选择/回退的准确原因（脱敏，用于能力报告）。</summary>
-    internal string TextInputBackendReason => _textInputBackendReason;
+    internal string TextInputBackendReason
+        => _router?.BackendReason
+            ?? _platformTextInput?.Capabilities.Reason
+            ?? "默认 IMM 输入桥。";
+
+    /// <summary>
+    /// 非 Windows committed-only 能力的平台分级 Reason（TI-08）：按真实 GLFW 后端如实描述，
+    /// committedText 恒 true（GLFW char 回调通道），不写成“无字符”。
+    /// </summary>
+    /// <param name="platform">
+    /// 当前 OS 判定结果；生产由 <see cref="DescribeCurrentPlatformReason"/> 传入
+    /// （macOS=Cocoa、Linux=真实 <see cref="GLFW.GetPlatform"/>、其余=Null），
+    /// throwaway/测试可传入任意档位驱动同一映射。
+    /// </param>
+    internal static string DescribeCommittedOnlyReason(Platform platform) => platform switch
+    {
+        Platform.Cocoa =>
+            "macOS：GLFW 的 NSTextInputClient 实现把 marked text 消费在视图内部，公共 API 无组合/候选暴露；已提交字符经 char 回调可用。",
+        Platform.X11 =>
+            "Linux/X11：GLFW 内部使用 XIM（预编辑在 GLFW 内消费）；已提交字符经 char 回调可用。",
+        Platform.Wayland =>
+            "Linux/Wayland：GLFW 3.4 Wayland 后端无 text-input 协议；普通字符经 xkb/char 回调可达，IME 协议级组合/候选缺失。",
+        _ =>
+            "当前平台：框架只提供已提交字符通道（GLFW char 回调）；组合/候选未接入，未判定本机原生 IME 可用性。",
+    };
+
+    /// <summary>
+    /// 取当前平台的 committed-only Reason（TI-08）：macOS→Cocoa 档；Linux→真实
+    /// <see cref="GLFW.GetPlatform"/>（GLFW 初始化后调用）；其余/查询失败→unknown 档。
+    /// 本机 Windows 分支不经过此函数（Windows 由桥如实报告）。
+    /// </summary>
+    internal static string DescribeCurrentPlatformReason()
+    {
+        if (OperatingSystem.IsMacOS())
+        {
+            return DescribeCommittedOnlyReason(Platform.Cocoa);
+        }
+
+        if (OperatingSystem.IsLinux())
+        {
+            Platform platform;
+            try
+            {
+                platform = GLFW.GetPlatform();
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                platform = Platform.Null;
+            }
+
+            return DescribeCommittedOnlyReason(platform);
+        }
+
+        return DescribeCommittedOnlyReason(Platform.Null);
+    }
 
     /// <summary>已渲染帧数。</summary>
     internal int RenderedFrameCount => _renderedFrameCount;

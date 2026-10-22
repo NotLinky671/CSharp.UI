@@ -167,7 +167,6 @@ public sealed class RouterFallbackTests
         Assert.Null(router.ActiveClient);
         Assert.Null(router.TsfBridge);
         Assert.False(router.Capabilities.Composition);
-        Assert.Contains("没有可用的 IMM 输入后端", router.BackendReason, StringComparison.Ordinal);
 
         // 已提交字符通道与路由器无关：焦点字段仍收到一次真实写入。
         h.Runtime.DispatchTextInput(new TextInputEvent("x"));
@@ -189,7 +188,6 @@ public sealed class RouterFallbackTests
 
         Assert.Null(router.ActiveClient);
         Assert.Equal(1, imm.StartCalls);
-        Assert.Contains("IMM 拒绝建立会话", router.BackendReason, StringComparison.Ordinal);
 
         // 没有归属也不能阻断已提交字符通道。
         h.Runtime.DispatchTextInput(new TextInputEvent("x"));
@@ -214,5 +212,63 @@ public sealed class RouterFallbackTests
             Assert.Null(router.ActiveClient);
         }
     }
+
+    [Fact]
+    public void IMM子桥能力查询抛错时如实回退_不造Full不穿透_committed仍落地()
+    {
+        // TI-08 §5b（主审收敛版）：子桥 getter 失败 → 诚实保守快照；
+        // enableTsf=false 排除 TSF 惰性握手。可见边界：能力守恒、后端未被构建/切换、
+        // 真实 TextField 字符恰一次落地（不 pin Reason 文案，诊断内容交 smoke 原始输出）。
+        var imm = new ThrowingCapabilitiesBridge();
+        var router = new WindowsTextInputRouter(imm, enableTsf: false);
+
+        var capabilities = router.Capabilities;
+        Assert.True(capabilities.CommittedText);
+        Assert.False(capabilities.Composition);
+        Assert.False(capabilities.CandidateAnchor);
+
+        // 能力查询失败不穿透焦点建立、不写客户端归属（不虚报接受）。
+        using var h = new Harness(router);
+        Assert.Null(router.TsfBridge);
+        Assert.Null(router.ActiveClient);
+
+        // 已提交字符通道不受影响：真实 TextField 恰一次写入。
+        h.Runtime.DispatchTextInput(new TextInputEvent("x"));
+        Assert.Equal(1, h.Writes);
+        Assert.Equal("xABCD", h.Text);
+    }
+}
+
+/// <summary>Capabilities getter 抛错的 IMM 子桥替身（TI-08 §5b）。</summary>
+internal sealed class ThrowingCapabilitiesBridge : IWindowsInputBridge
+{
+    public TextInputCapabilities Capabilities => throw new InvalidOperationException("注入能力查询失败");
+
+    public ITextInputClient? ActiveClient => null;
+
+    public object? CurrentKeyToken => null;
+
+    public bool CurrentKeyConsumedByIme => false;
+
+    public void AttachRuntime(UiRuntime runtime) { }
+
+    public void NotifyGeometryInvalidated() { }
+
+    public void UpdatePointerTransform(double scaleX, double scaleY) { }
+
+    public bool StartSession(ITextInputClient client) => false;
+
+    public bool EndSession() => false;
+
+    public TextInputApplyResult ApplyComposition(IReadOnlyList<CompositionEvent> events)
+        => TextInputApplyResult.Rejected(TextSnapshot.Empty, "注入桥不执行组合。");
+
+    public bool RequestCancel() => false;
+
+    public bool PublishGeometry(TextInputGeometry geometry) => false;
+
+    public void NotifyCommittedBaselineChanged() { }
+
+    public void Dispose() { }
 }
 

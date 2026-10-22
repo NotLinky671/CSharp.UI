@@ -157,7 +157,7 @@ public sealed record UiApplicationOptions
     /// </para>
     /// <para>
     /// <b>失败即回退：</b>TSF 建立失败（MTA/初始化/冲突等）时，宿主按显式原因回退到 IMM，
-    /// 并把原因记录在 <see cref="UiHostContext.TextInputBackendReason"/>，不并行启用两个写入来源。
+    /// 并把原因记录在宿主内部诊断（<c>OpenTkHost.TextInputBackendReason</c> → 路由器 <c>BackendReason</c>），不并行启用两个写入来源。
     /// </para>
     /// </remarks>
     internal bool UseTsfInputBridge { get; init; }

@@ -271,6 +271,42 @@ public sealed class OpenTkInputAdapterTests
     }
 
     [Fact]
+    public void AltGr加Q不退出且字符落地_CtrlQ仍退出()
+    {
+        // TI-08 §5.1b：AltGr（常见布局 Ctrl+Alt）Q 不得误匹配 Ctrl+Q 退出键；
+        // '@' 由 GLFW char 通道落地（真实生产 adapter+runtime，非 mock）。
+        var exits = 0;
+        var value = "";
+        var binding = new Binding<string>(() => value, v => value = v);
+        using var runtime = new UiRuntime(new TextField(binding), new UiRuntimeServices
+        {
+            Dispatcher = new HeadlessUiDispatcher(),
+            TextService = new StubTextService(),
+        });
+        runtime.SetViewport(new Size(400, 60), 1);
+        runtime.Start();
+        runtime.ProcessPendingWork();
+        runtime.BuildFrame();
+        var adapter = new OpenTkInputAdapter(runtime, () => exits++, exitOnEscape: true, exitOnCloseShortcut: true);
+        runtime.SetFocus(runtime.Root);
+        runtime.ProcessPendingWork();
+
+        // AltGr+Q：Control|Alt key-down + '@' char 交付 → 不退出、字符恰一次落地。
+        adapter.HandleKeyDown(new KeyboardKeyEventArgs(Keys.Q, 0, GlfwKeyModifiers.Control | GlfwKeyModifiers.Alt, false));
+        adapter.HandleTextInput(new TextInputEventArgs('@'));
+        runtime.ProcessPendingWork();
+        runtime.BuildFrame();
+
+        Assert.Equal(0, exits);
+        Assert.Equal("@", value);
+
+        // Ctrl+Q：退出边界保留。
+        adapter.HandleKeyDown(new KeyboardKeyEventArgs(Keys.Q, 0, GlfwKeyModifiers.Control, false));
+        Assert.Equal(1, exits);
+
+    }
+
+    [Fact]
     public void 关闭退出快捷键后Esc不再退出()
     {
         var exitRequests = 0;
