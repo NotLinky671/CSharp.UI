@@ -2,7 +2,7 @@
 
 创建日期：2026-10-23
 
-状态：已完成并经主审批准（2026-10-23；Gallery 多行区真实渲染与 `CSHARPUI_SMOKE_FRAMES=5` smoke 通过；同进程 driver 真实 UNICODE 输入绑定校验通过——证据见 [te05 证据](../return/te05-gallery-evidence/)，driver 在 ~/.omp/tmp/te05-realui）。设计依据 [TextEditor 计划](../plan/2026-10-23-text-editor-plan.md) §1、§3、§5。
+状态：已完成并经主审批准（2026-10-23；Gallery 多行区真实渲染与 `CSHARPUI_SMOKE_FRAMES=5` smoke 通过；同进程 driver 真实 UNICODE 输入绑定校验通过——证据见 [te05 证据](../../return/te05-gallery-evidence/)，driver 在 ~/.omp/tmp/te05-realui）。设计依据 [TextEditor 计划](../../plan/2026-10-23-text-editor-plan.md) §1、§3、§5。
 
 [返回任务索引](README.md)
 
@@ -27,5 +27,5 @@
 ## 验收
 
 - Gallery 多行编辑区可见可用：输入多行、换行、选区、滚动；`CSHARPUI_SMOKE_FRAMES=5` smoke 通过。
-- 指南描述与已实现代码一致（不提前宣称 TE-06 真机结论）；README 链接指向 `docs/task/README.md` 与新计划。
+- 指南描述与已实现代码一致（不提前宣称 TE-06 真机结论）；README 链接指向 `docs/archive/2026-10-23-text-editor-tasks/README.md` 与新计划。
 - 既有文档断言（TextField/IME/快捷键/平台能力表）不被破坏。

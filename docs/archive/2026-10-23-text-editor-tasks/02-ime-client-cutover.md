@@ -2,7 +2,7 @@
 
 创建日期：2026-10-23
 
-状态：已完成（2026-10-23 主审核准；独立复审记录见 [2026-10-23-te02-ime-client-cutover-review.md](../return/2026-10-23-te02-ime-client-cutover-review.md)：22/22 场景 smoke + 234/179 定向回归；最终复验计入[交付证据](../delivery/2026-10-23-text-editor-delivery-evidence/)）。设计依据 [TextEditor 计划](../plan/2026-10-23-text-editor-plan.md) §3.3。
+状态：已完成（2026-10-23 主审核准；独立复审记录见 [2026-10-23-te02-ime-client-cutover-review.md](../../return/2026-10-23-te02-ime-client-cutover-review.md)：22/22 场景 smoke + 234/179 定向回归；最终复验计入[交付证据](../../delivery/2026-10-23-text-editor-delivery-evidence/)）。设计依据 [TextEditor 计划](../../plan/2026-10-23-text-editor-plan.md) §3.3。
 
 [返回任务索引](README.md)
 

@@ -66,8 +66,8 @@ driver 路径说明:文本键经 `SendInput`(真实键);选区经真实指针拖
 
 ## 文档状态更新
 
-- `docs/task/06-graphics-and-real-ime.md`:真实 IMM 段已验收 ☑(证据 `docs/return/2026-10-23-te06-real-ime-evidence/`);图形段随 good 修复已全绿(OpenTK 678/678 双配置)。
-- `docs/task/README.md`:TE-01~TE-07 状态同步全部 ☑。
+- `docs/archive/2026-10-23-text-editor-tasks/06-graphics-and-real-ime.md`:真实 IMM 段已验收 ☑(证据 `docs/return/2026-10-23-te06-real-ime-evidence/`);图形段随 good 修复已全绿(OpenTK 678/678 双配置)。
+- `docs/archive/2026-10-23-text-editor-tasks/README.md`:TE-01~TE-07 状态同步全部 ☑。
 - `docs/return/README.md`:已关闭条目按实际链接更新。
 - `README.md` / `docs/guide/platform-notes.md` / `testing.md` / `api-reference.md`:TE-06 之前的 "pending" 表述改为已验证事实并链接本交付。
 - `docs/plan/2026-10-23-text-editor-plan.md` 状态:已实施,见本交付。

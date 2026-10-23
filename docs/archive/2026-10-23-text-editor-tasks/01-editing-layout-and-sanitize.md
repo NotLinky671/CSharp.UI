@@ -2,7 +2,7 @@
 
 创建日期：2026-10-23
 
-状态：已完成（2026-10-23 主审核准；R1–R7 返修全部关闭，见[返修复审记录](../return/2026-10-23-te01-editing-layout-review.md)）。设计依据 [TextEditor 计划](../plan/2026-10-23-text-editor-plan.md) §3.1、§3.2、§3.5。
+状态：已完成（2026-10-23 主审核准；R1–R7 返修全部关闭，见[返修复审记录](../../return/2026-10-23-te01-editing-layout-review.md)）。设计依据 [TextEditor 计划](../../plan/2026-10-23-text-editor-plan.md) §3.1、§3.2、§3.5。
 
 [返回任务索引](README.md)
 

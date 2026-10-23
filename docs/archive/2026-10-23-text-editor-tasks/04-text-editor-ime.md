@@ -2,7 +2,7 @@
 
 创建日期：2026-10-23
 
-状态：已完成并经主审批准（2026-10-23；独立源码审查 + 独立 29 项 API smoke + TextEditor 41 项核心 / 18 项文本几何定向测试全绿，证据见 ~/.omp/tmp/te04-smoke 输出与主审记录）。设计依据 [TextEditor 计划](../plan/2026-10-23-text-editor-plan.md) §3.3、§3.4、§3.5、§3.7。
+状态：已完成并经主审批准（2026-10-23；独立源码审查 + 独立 29 项 API smoke + TextEditor 41 项核心 / 18 项文本几何定向测试全绿，证据见 ~/.omp/tmp/te04-smoke 输出与主审记录）。设计依据 [TextEditor 计划](../../plan/2026-10-23-text-editor-plan.md) §3.3、§3.4、§3.5、§3.7。
 
 [返回任务索引](README.md)
 
@@ -46,7 +46,7 @@
 | `src/CSharp.UI/Editing/ITextEditSessionOwner.cs` | 新增 `TextAffinity CaretAffinity { get; }`。 |
 | `src/CSharp.UI/Views/TextField.cs` | `TextFieldState.CaretAffinity => Unspecified`（:1909-1911）。 |
 | `src/CSharp.UI/Editing/TextCompositionClient.cs` | 快照身份键加 `snapshot.Affinity == _state.CaretAffinity`（:130）。 |
-| `docs/task/03-text-editor-core.md` | 更正「Composing 恒 null」误记——TE-03 已接 `InputSession.Start`/`RequireComposing`，TE-04 补的是安全阶段几何发布与快照。 |
+| `docs/archive/2026-10-23-text-editor-tasks/03-text-editor-core.md` | 更正「Composing 恒 null」误记——TE-03 已接 `InputSession.Start`/`RequireComposing`，TE-04 补的是安全阶段几何发布与快照。 |
 
 ### 桥/契约面零改动确认
 

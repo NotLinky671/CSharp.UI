@@ -2,7 +2,7 @@
 
 创建日期：2026-10-23
 
-状态：完成。真实 Windows IMM + 微软拼音验收通过（2026-10-23 第三轮修正跑：27 项场景 check 全过,outcome=PASS,exit 0；证据 [2026-10-23-te06-real-ime-evidence](../return/2026-10-23-te06-real-ime-evidence/)。S8 三快照证明:WM_MOUSEWHEEL 送达→ScrollY 0→96 持久→锚点 (132,223)→(132,79) 按 `TextOrigin−ScrollY` 重发 publish 70→71)。图形集成段随 good 修复收口:`TextEditorPreeditRenderingGpuTests`/`GalleryBreakpointInputTests` 已全绿,OpenTK.Tests 678/678 双配置过（汇总见[交付记录](../delivery/2026-10-23-text-editor-delivery.md)）。设计依据 [TextEditor 计划](../plan/2026-10-23-text-editor-plan.md) §3.2、§3.4、§3.6、§5。
+状态：完成。真实 Windows IMM + 微软拼音验收通过（2026-10-23 第三轮修正跑：27 项场景 check 全过,outcome=PASS,exit 0；证据 [2026-10-23-te06-real-ime-evidence](../../return/2026-10-23-te06-real-ime-evidence/)。S8 三快照证明:WM_MOUSEWHEEL 送达→ScrollY 0→96 持久→锚点 (132,223)→(132,79) 按 `TextOrigin−ScrollY` 重发 publish 70→71)。图形集成段随 good 修复收口:`TextEditorPreeditRenderingGpuTests`/`GalleryBreakpointInputTests` 已全绿,OpenTK.Tests 678/678 双配置过（汇总见[交付记录](../../delivery/2026-10-23-text-editor-delivery.md)）。设计依据 [TextEditor 计划](../../plan/2026-10-23-text-editor-plan.md) §3.2、§3.4、§3.6、§5。
 
 [返回任务索引](README.md)
 
@@ -58,7 +58,7 @@
 `dotnet build CSharp.UI.slnx` 0 警 0 错（含 samples）。`TextEditorPreeditRenderingGpuTests` 10/10 绿。
 
 - **首轮全套**（gallery 节新增后、测试维护前）：`CSharp.UI.Tests` 592、`CSharp.UI.Text.Tests` 85、`CSharp.UI.Integration.Tests` 53 全绿；`CSharp.UI.OpenTK.Tests` 674/678——4 项失败见上节归因（目标 TextField 被新节推出视口）。
-- **最终全套**（上文测试维护修正后 + good stub 小修冻结）：`dotnet build CSharp.UI.slnx` Debug/Release 均 0 警 0 错；`dotnet exec tests/CSharp.UI.OpenTK.Tests/bin/{Debug,Release}/net10.0/CSharp.UI.OpenTK.Tests.dll` **678/678、exit 0**；`CSharp.UI.Tests` 593/593、`CSharp.UI.Text.Tests` 85/85、`CSharp.UI.Integration.Tests` 53/53 全绿、exit 0（合计 1409×2）。原始完整 stdout/stderr 见交付证据日志 [test-*.log 与 build-*.log](../delivery/2026-10-23-text-editor-delivery-evidence/)(SHA256SUMS 校验)。
+- **最终全套**（上文测试维护修正后 + good stub 小修冻结）：`dotnet build CSharp.UI.slnx` Debug/Release 均 0 警 0 错；`dotnet exec tests/CSharp.UI.OpenTK.Tests/bin/{Debug,Release}/net10.0/CSharp.UI.OpenTK.Tests.dll` **678/678、exit 0**；`CSharp.UI.Tests` 593/593、`CSharp.UI.Text.Tests` 85/85、`CSharp.UI.Integration.Tests` 53/53 全绿、exit 0（合计 1409×2）。原始完整 stdout/stderr 见交付证据日志 [test-*.log 与 build-*.log](../../delivery/2026-10-23-text-editor-delivery-evidence/)(SHA256SUMS 校验)。
 
 ### 边界
 

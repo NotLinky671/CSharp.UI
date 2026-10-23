@@ -2,7 +2,7 @@
 
 日期：2026-10-23。审核：texteditor-doc-review（独立）。状态：**返修中**（good 已认领全部条目并正在修，freeze 后复审）。
 
-依据：`docs/task/01-editing-layout-and-sanitize.md` + `docs/plan/2026-10-23-text-editor-plan.md` §3.1/§3.2。审阅快照：`src/CSharp.UI/Text/TextContracts.cs`（含 `TextLayoutResult` 新 API）、`src/CSharp.UI.Text/TextLayoutBuilder.cs`、`src/CSharp.UI/Input/InputEvents.cs`、`src/CSharp.UI/Editing/TextInputContracts.cs`、`src/CSharp.UI/Testing/TestDoubles.cs`。
+依据：`docs/archive/2026-10-23-text-editor-tasks/01-editing-layout-and-sanitize.md` + `docs/plan/2026-10-23-text-editor-plan.md` §3.1/§3.2。审阅快照：`src/CSharp.UI/Text/TextContracts.cs`（含 `TextLayoutResult` 新 API）、`src/CSharp.UI.Text/TextLayoutBuilder.cs`、`src/CSharp.UI/Input/InputEvents.cs`、`src/CSharp.UI/Editing/TextInputContracts.cs`、`src/CSharp.UI/Testing/TestDoubles.cs`。
 
 ## R1：非编辑路径也建编辑 caret 表（热路径分配）
 
@@ -98,7 +98,7 @@ good freeze 通知后：独立 `git diff` 读全部 touched code → 跑新增�
 
 ## 剩余待办（不阻塞 TE-01 完成判定，交主审决定）
 
-- TE-01 任务文件 `docs/task/01-editing-layout-and-sanitize.md` 契约节可补"硬换行后 offset 唯一下行 + GetRangeRects 三区段"措辞（good 询问中）。
+- TE-01 任务文件 `docs/archive/2026-10-23-text-editor-tasks/01-editing-layout-and-sanitize.md` 契约节可补"硬换行后 offset 唯一下行 + GetRangeRects 三区段"措辞（good 询问中）。
 - TE-01 完成状态勾选与提交由主审 read 本记录后决定；我未 commit/push。
 
 ## 复审 4（next-step-validation 独立接手，2026-10-23 晚；throwaway `~/.omp/tmp/te01b-smoke`，真实 Skia，程序集 `CSharp.UI.Text.dll` 写时间 2026-10-23T14:26:09 —— 当前源码新构）
