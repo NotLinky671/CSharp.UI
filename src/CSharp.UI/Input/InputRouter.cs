@@ -402,11 +402,13 @@ internal sealed class InputRouter
             return null;
         }
 
+        var insideAncestorClip = clip.ContainsInclusive(position);
+
         var childClip = node.View.GetChildClip(node);
         var effectiveClip = childClip.HasValue ? clip.Intersect(childClip.Value) : clip;
-        var insideClip = effectiveClip.ContainsInclusive(position);
+        var insideEffectiveClip = effectiveClip.ContainsInclusive(position);
 
-        if (insideClip)
+        if (insideEffectiveClip)
         {
             // 逆序：后绘制的子项在上层，优先命中。
             for (var i = node.ChildList.Count - 1; i >= 0; i--)
@@ -424,7 +426,9 @@ internal sealed class InputRouter
             return null;
         }
 
-        return insideClip && node.View.HitTestSelf(node, position) ? node : null;
+        // 自身命中按祖先 clip + HitTestSelf(frame)；childClip 只约束子项，不限制 owner
+        // （否则 ScrollView gutter 区永远无法被 owner 命中）。
+        return insideAncestorClip && node.View.HitTestSelf(node, position) ? node : null;
     }
 
     private void UpdateHover(PointerEvent e, InputContext context)

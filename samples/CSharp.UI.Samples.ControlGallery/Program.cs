@@ -27,6 +27,9 @@ public sealed class GalleryApp : Component
 
     /// <summary>“布局”区域切换横/纵排列的演示阈值。</summary>
     private const double LayoutBreakpoint = 840;
+    /// <summary>“滚动条”演示区多行编辑器的初始文本（仅首次 UseState 求值用，避免每次重建分配）。</summary>
+    private static readonly string ScrollbarDemoText =
+        string.Join("\n", Enumerable.Range(1, 20).Select(i => $"滚动条演示第 {i} 行：内容超视口时右侧显示滚动条"));
 
     protected override View Build()
     {
@@ -38,6 +41,9 @@ public sealed class GalleryApp : Component
         var notes = UseState("notes", string.Empty);
         var editDemo = UseState("editDemo", "选中这段文字后输入、粘贴或按 Ctrl+Z 撤销");
         var notesMulti = UseState("notesMulti", "第一行：输入或粘贴多行文本\n第二行：Enter 换行、Shift+方向键选区、Ctrl+Z 撤销");
+        var scrollbarLong = UseState("scrollbarLong", true);
+        var scrollbarTall = UseState("scrollbarTall", false);
+        var scrollbarText = UseState("scrollbarText", ScrollbarDemoText);
 
         var current = theme.Value;
         var logoPath = Path.Combine(AppContext.BaseDirectory, "shared", "Assets", "logo.png");
@@ -134,7 +140,42 @@ public sealed class GalleryApp : Component
                             new Text($"多行内容用于演示单轴滚动；下面共 {40} 行。").Wrap(),
                             new ForEach<int>(Enumerable.Range(1, 40), i => new Text($"第 {i} 行：滚动内容"), i => i))
                         .Spacing(4))
+                        .Key("gallery-nested-scroll")
                         .Frame(height: 120)),
+                    // SB-05 滚动条演示：同一 ScrollView 节点（Key 固定）在 40 行与 4 行之间切换，
+                    // 长→短展示滚动条隐藏并 clamp 偏移、槽仍恒占 12 逻辑像素宽。
+                    Section("滚动条", new VStack(
+                        new Flow(
+                            new Button(scrollbarLong.Value ? "切换为短内容（隐藏滚动条）" : "切换为长列表（显示滚动条）",
+                                () => scrollbarLong.Value = !scrollbarLong.Value),
+                            new Toggle(scrollbarTall.ToBinding(), "加高视口（尺寸变化回归）"))
+                            .Spacing(8)
+                            .LineSpacing(8),
+                        new Text("纵向 ScrollView：内容溢出显示滚动条；缩内容后隐藏但轨道槽恒占 12 逻辑像素（persistent gutter，无布局回流）。拖动滑块或点轨道翻页一次（无自动重复）。").Wrap(),
+                        new ScrollView(
+                                new VStack(
+                                    new ForEach<int>(
+                                        Enumerable.Range(1, scrollbarLong.Value ? 40 : 4),
+                                        i => new Text($"纵向滚动第 {i} 行"), i => i))
+                                .Spacing(4),
+                                ScrollAxis.Vertical)
+                            .Key("scrollbar-vertical-demo")
+                            .Frame(height: scrollbarTall.Value ? 180 : 120),
+                        new Text("横向 ScrollView：宽内容溢出在底部显示横向滚动条（同一套共享几何/交互）。").Wrap(),
+                        new ScrollView(
+                            new HStack(
+                                new ForEach<int>(Enumerable.Range(1, 30), i => new Text($"列{i:D2}").Padding(8), i => i))
+                            .Spacing(4),
+                            ScrollAxis.Horizontal)
+                            .Frame(height: 56),
+                        new Text("多行 TextEditor：内容超过视口显示纵向滚动条；组合期间用滑块浏览时候选锚点跟随 caret——caret 被裁出视口时锚点撤除但组合保活，真实新预编辑/caret 推进后重新锚定（同值通知不回弹）。Ctrl+End 到底后滚轮上滚到顶，继续滚则冒泡给外层整页滚动。").Wrap(),
+                        new TextEditor(scrollbarText.ToBinding(), "行数超视口出滚动条")
+                        {
+                            MinLines = 4,
+                            Height = 140,
+                        }
+                            .FillWidth())
+                        .Spacing(6)),
                     // TextEditor 多行编辑区：固定 MinLines 视口 + 内部 ScrollY（不随内容增高），
                     // 行数超过视口时滚轮先由编辑器消费、到边界后冒泡给外层整页 ScrollView。
                     Section("多行编辑", new VStack(
@@ -165,7 +206,8 @@ public sealed class GalleryApp : Component
             .Background(current.Background)
             .Foreground(current.Foreground)
             .Theme(current)
-            .Font(FontDescription.Default.WithSize(14));
+            .Font(FontDescription.Default.WithSize(14))
+            .Key("gallery-root-scroll");
     }
 
     /// <summary>页头：窄时纵向排列，主题按钮始终可见；宽时标题在左、按钮在右。</summary>

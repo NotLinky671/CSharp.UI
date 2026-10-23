@@ -16,7 +16,8 @@ public enum ScrollAxis
 /// <remarks>
 /// <para>
 /// 滚动偏移保存在运行时节点上，因此组件重新构建后位置保持不变；内容或视口变化后偏移会被重新限制到有效范围。
-/// 首版不显示滚动条、不做列表虚拟化。
+/// 内容溢出时沿滚动轴在 persistent 12 逻辑像素轨道槽内绘制滚动条（滑块可拖拽、轨道点击按视口翻页一次、无自动重复）；
+/// 无溢出时轨道槽仍占宽留空，避免显隐切换引起布局回流。不做列表虚拟化。
 /// </para>
 /// <para>
 /// 滚轮事件默认以归一化步数（一格为 1）表示，本视图按
@@ -39,7 +40,6 @@ public sealed class ScrollView : View
         _children = [content];
     }
 
-    /// <summary>被滚动的内容。</summary>
     public View Content { get; }
 
     /// <summary>滚动轴。</summary>
@@ -63,12 +63,24 @@ public sealed class ScrollView : View
     internal override void Measure(ViewNode node, LayoutConstraints constraints, LayoutContext context)
     {
         var child = node.ChildList[0];
+        var gutter = ScrollbarMetrics.Thickness;
         var childConstraints = Axis == ScrollAxis.Vertical
-            ? new LayoutConstraints(constraints.MinWidth, constraints.MaxWidth, 0, double.PositiveInfinity)
-            : new LayoutConstraints(0, double.PositiveInfinity, constraints.MinHeight, constraints.MaxHeight);
+            ? new LayoutConstraints(
+                Math.Max(0, constraints.MinWidth - gutter),
+                Math.Max(0, constraints.MaxWidth - gutter),
+                0, double.PositiveInfinity)
+            : new LayoutConstraints(
+                0, double.PositiveInfinity,
+                Math.Max(0, constraints.MinHeight - gutter),
+                Math.Max(0, constraints.MaxHeight - gutter));
 
         context.Measure(child, childConstraints);
-        node.DesiredSize = constraints.Constrain(child.DesiredSize);
+
+        // 期望尺寸 = 内容 + gutter（cross 方向）；父约束最后收敛。
+        var desired = Axis == ScrollAxis.Vertical
+            ? new Size(child.DesiredSize.Width + gutter, child.DesiredSize.Height)
+            : new Size(child.DesiredSize.Width, child.DesiredSize.Height + gutter);
+        node.DesiredSize = constraints.Constrain(desired);
     }
 
     internal override void Arrange(ViewNode node, Rect bounds, LayoutContext context)
@@ -77,18 +89,30 @@ public sealed class ScrollView : View
         var child = node.ChildList[0];
         var contentSize = child.DesiredSize;
 
+        // 几何变化取消 bar-gesture（自身 offset 写回除外——Arrange 在 drag 写 offset 后也会跑）。
+        var state = ScrollbarStateOf(node);
+        if (state is not null)
+        {
+            var contentR = ContentRect(bounds);
+            var track = TrackRect(bounds);
+            var contentExtent = Axis == ScrollAxis.Horizontal ? contentSize.Width : contentSize.Height;
+            var viewportExtent = Axis == ScrollAxis.Horizontal ? contentR.Width : contentR.Height;
+            state.SyncGeometry(Axis, track, contentExtent, viewportExtent);
+        }
+
         double maxOffsetX = Axis == ScrollAxis.Horizontal ? Math.Max(0, contentSize.Width - bounds.Width) : 0;
         double maxOffsetY = Axis == ScrollAxis.Vertical ? Math.Max(0, contentSize.Height - bounds.Height) : 0;
 
         node.ScrollOffsetX = Math.Clamp(node.ScrollOffsetX, 0, maxOffsetX);
         node.ScrollOffsetY = Math.Clamp(node.ScrollOffsetY, 0, maxOffsetY);
 
-        var childWidth = Axis == ScrollAxis.Horizontal ? Math.Max(contentSize.Width, bounds.Width) : bounds.Width;
-        var childHeight = Axis == ScrollAxis.Vertical ? Math.Max(contentSize.Height, bounds.Height) : bounds.Height;
+        var contentRect = ContentRect(bounds);
+        var childWidth = Axis == ScrollAxis.Horizontal ? Math.Max(contentSize.Width, contentRect.Width) : contentRect.Width;
+        var childHeight = Axis == ScrollAxis.Vertical ? Math.Max(contentSize.Height, contentRect.Height) : contentRect.Height;
 
         context.Arrange(child, new Rect(
-            bounds.X - node.ScrollOffsetX,
-            bounds.Y - node.ScrollOffsetY,
+            contentRect.X - node.ScrollOffsetX,
+            contentRect.Y - node.ScrollOffsetY,
             childWidth,
             childHeight));
     }
@@ -106,15 +130,26 @@ public sealed class ScrollView : View
             return;
         }
 
-        foreach (var child in node.ChildList)
+        // 记录 frame clip（含祖先 intersection）供内容区 pop 后恢复；
+        // 不能直接用 node.Frame（祖先 clip 收窄后 node.Frame 反而扩大）。
+        var frameClip = context.CurrentClip;
+        var contentRect = ContentRect(node.Frame);
+        if (context.PushClip(contentRect))
         {
-            context.EmitChild(child);
+            foreach (var child in node.ChildList)
+            {
+                context.EmitChild(child);
+            }
+
+            context.PopClip(frameClip);
         }
+
+        EmitScrollbar(node, context);
 
         context.PopClip(restore);
     }
 
-    internal override Rect? GetChildClip(ViewNode node) => node.Frame;
+    internal override Rect? GetChildClip(ViewNode node) => ContentRect(node.Frame);
 
     // 滚动容器在滚动轴上吸收父级剩余空间（fill 语义）；否则在不定尺寸的堆叠中会撑到内容高度而永远无法滚动。
     internal override double FlexGrow(ViewNode node, bool horizontal)
@@ -204,6 +239,191 @@ public sealed class ScrollView : View
 
     internal override bool LayoutPropertiesEquivalent(View other)
         => other is ScrollView scroll && scroll.Axis == Axis;
+
+    // ------------------------------------------------------------------ 滚动条（persistent gutter，owner 自绘）
+
+    /// <summary>内容区（frame 扣掉 gutter；纵滚右侧、横滚底部）。</summary>
+    private Rect ContentRect(Rect frame)
+    {
+        var gutter = Math.Min(ScrollbarMetrics.Thickness, Math.Max(0, Axis == ScrollAxis.Vertical ? frame.Width : frame.Height));
+        return Axis == ScrollAxis.Vertical
+            ? new Rect(frame.X, frame.Y, Math.Max(0, frame.Width - gutter), frame.Height)
+            : new Rect(frame.X, frame.Y, frame.Width, Math.Max(0, frame.Height - gutter));
+    }
+
+    /// <summary>轨道区（gutter 槽）。</summary>
+    private Rect TrackRect(Rect frame)
+    {
+        var gutter = Math.Min(ScrollbarMetrics.Thickness, Math.Max(0, Axis == ScrollAxis.Vertical ? frame.Width : frame.Height));
+        return Axis == ScrollAxis.Vertical
+            ? new Rect(frame.Right - gutter, frame.Y, gutter, frame.Height)
+            : new Rect(frame.X, frame.Bottom - gutter, frame.Width, gutter);
+    }
+
+    private static ScrollbarState? ScrollbarStateOf(ViewNode node)
+        => node.InteractionState as ScrollbarState;
+
+    private static ScrollbarState ScrollbarStateOrCreate(ViewNode node)
+        => node.InteractionState as ScrollbarState ?? (ScrollbarState)(node.InteractionState = new ScrollbarState());
+
+    private static void CancelBarGesture(ScrollbarState state) => state.ReleaseGesture();
+
+    private void EmitScrollbar(ViewNode node, DrawContext context)
+    {
+        var horizontal = Axis == ScrollAxis.Horizontal;
+        var track = TrackRect(node.Frame);
+        var contentRect = ContentRect(node.Frame);
+        var child = node.ChildList[0];
+        var contentExtent = horizontal ? child.DesiredSize.Width : child.DesiredSize.Height;
+        var viewportExtent = horizontal ? contentRect.Width : contentRect.Height;
+        var offset = horizontal ? node.ScrollOffsetX : node.ScrollOffsetY;
+        ScrollbarPainter.Draw(node, context, ScrollbarStateOf(node), track, horizontal,
+            viewportExtent, contentExtent, offset);
+    }
+
+    internal override bool OnPointerEnter(InputContext context, ViewNode node, PointerEvent e)
+    {
+        ScrollbarStateOrCreate(node).LastPointerPoint = e.Position;
+        return false;
+    }
+
+    internal override bool OnPointerMove(InputContext context, ViewNode node, PointerEvent e)
+    {
+        var state = ScrollbarStateOrCreate(node);
+        state.LastPointerPoint = e.Position;
+
+        if (state.IsDraggingBar)
+        {
+            var horizontal = Axis == ScrollAxis.Horizontal;
+            var track = TrackRect(node.Frame);
+            var contentRect = ContentRect(node.Frame);
+            var child = node.ChildList[0];
+            var contentExtent = horizontal ? child.DesiredSize.Width : child.DesiredSize.Height;
+            var viewportExtent = horizontal ? contentRect.Width : contentRect.Height;
+            var next = ScrollbarMetrics.DragToOffset(
+                track, horizontal, viewportExtent, contentExtent,
+                state.BarDragAnchor, e.Position,
+                horizontal ? node.ScrollOffsetX : node.ScrollOffsetY);
+
+            if (horizontal)
+            {
+                node.ScrollOffsetX = next;
+            }
+            else
+            {
+                node.ScrollOffsetY = next;
+            }
+
+            node.Runtime.InvalidateLayout(node);
+            context.MarkHandled();
+            return true;
+        }
+
+        return false;
+    }
+
+    internal override bool OnPointerDown(InputContext context, ViewNode node, PointerEvent e)
+    {
+        var state = ScrollbarStateOrCreate(node);
+        state.LastPointerPoint = e.Position;
+
+        if (node.IsEffectivelyDisabled)
+        {
+            return false;
+        }
+
+        var horizontal = Axis == ScrollAxis.Horizontal;
+        var track = TrackRect(node.Frame);
+        var contentRect = ContentRect(node.Frame);
+        var child = node.ChildList[0];
+        var contentExtent = horizontal ? child.DesiredSize.Width : child.DesiredSize.Height;
+        var viewportExtent = horizontal ? contentRect.Width : contentRect.Height;
+        var hit = ScrollbarMetrics.HitTest(track, horizontal, viewportExtent, contentExtent,
+            horizontal ? node.ScrollOffsetX : node.ScrollOffsetY, e.Position);
+
+        if (!ScrollbarMetrics.ShowScrollbar(viewportExtent, contentExtent,
+                ScrollbarMetrics.TrackLength(track, horizontal)))
+        {
+            // 空槽仍属 owner 区域：消费不冒泡、不夺焦、不进子路径。
+            if (track.Contains(e.Position))
+            {
+                context.MarkHandled();
+                return true;
+            }
+            return false;
+        }
+
+        switch (hit)
+        {
+            case ScrollbarTrackHit.Thumb:
+                state.BeginThumbDrag(
+                    Axis, track, contentExtent, viewportExtent,
+                    ScrollbarMetrics.DragGrabAnchor(
+                        track, horizontal, viewportExtent, contentExtent,
+                        horizontal ? node.ScrollOffsetX : node.ScrollOffsetY, e.Position));
+                context.MarkHandled();
+                return true;
+
+            case ScrollbarTrackHit.Before:
+            case ScrollbarTrackHit.After:
+                state.BeginTrackPress(Axis, track, contentExtent, viewportExtent);
+                var maxOffset = Math.Max(0, contentExtent - viewportExtent);
+                var next = ScrollbarMetrics.PageOffset(hit, viewportExtent,
+                    horizontal ? node.ScrollOffsetX : node.ScrollOffsetY, maxOffset);
+                if (horizontal)
+                {
+                    node.ScrollOffsetX = next;
+                }
+                else
+                {
+                    node.ScrollOffsetY = next;
+                }
+                node.Runtime.InvalidateLayout(node);
+                context.MarkHandled();
+                return true;
+        }
+
+        return false;
+    }
+
+    internal override bool OnPointerUp(InputContext context, ViewNode node, PointerEvent e)
+    {
+        var state = ScrollbarStateOrCreate(node);
+        state.LastPointerPoint = e.Position;
+
+        if (state.PressKind != ScrollbarPressKind.None)
+        {
+            state.ReleaseGesture();
+            context.MarkHandled();
+            return true;
+        }
+
+        return false;
+    }
+
+    internal override bool OnPointerCancel(InputContext context, ViewNode node)
+    {
+        var state = ScrollbarStateOf(node);
+        if (state is not null && state.PressKind != ScrollbarPressKind.None)
+        {
+            state.ReleaseGesture();
+        }
+
+        return false;
+    }
+
+    internal override void OnUpdate(ViewNode node, View previous)
+    {
+        // Axis 变化（immutable View 重建可换值）→ 取消 bar-gesture。
+        if (previous is ScrollView prev && prev.Axis != Axis)
+        {
+            var state = ScrollbarStateOf(node);
+            if (state is not null)
+            {
+                CancelBarGesture(state);
+            }
+        }
+    }
 }
 
 /// <summary>图片缩放方式。</summary>

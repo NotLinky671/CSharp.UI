@@ -184,8 +184,10 @@ public sealed class GalleryTextSamplingTests
             Runtime.Start();
             Runtime.ProcessPendingWork();
 
-            ScrollViews = [.. Runtime.Root.FindDescendants<ScrollView>()];
-            Assert.Equal(2, ScrollViews.Count);
+            // 通过示例注入的 Key 定位；新增 demo ScrollView 不影响命中。
+            var outerNode = GalleryScrollLookup.RootScroll(Runtime);
+            var innerNode = GalleryScrollLookup.NestedScroll(Runtime);
+            ScrollViews = [outerNode, innerNode];
         }
 
         public UiRuntime Runtime { get; }

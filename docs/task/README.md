@@ -2,9 +2,9 @@
 
 创建日期：2026-10-23
 
-设计依据：[Scrollbar 实施计划](../plan/2026-10-23-scrollbar-plan.md)。本文档与任务文件均为设计实施规格；文档建立不表示功能已实现。
+设计依据：[Scrollbar 实施计划](../plan/2026-10-23-scrollbar-plan.md)。任务规格与验收记录见各任务及交付文档。
 
-状态：SB-01~SB-07 待实施（planning-only，未改 src；待用户授权开始）。TE-01~TE-07 多行文本编辑器任务组已完成并归档至 [docs/archive/2026-10-23-text-editor-tasks/](../archive/2026-10-23-text-editor-tasks/README.md)。
+状态：SB-01~SB-07 已实施并主审验收通过；提交推送关联本次实现提交（见 Git 历史）。用户已授权实施。TE-01~TE-07 多行文本编辑器任务组已完成并归档至 [docs/archive/2026-10-23-text-editor-tasks/](../archive/2026-10-23-text-editor-tasks/README.md)。
 
 ## 核心决策（已定，实施见各任务）
 - **persistent gutter**：轨道槽恒占 `ScrollbarThickness` 宽；`overflow` 只决定画不画 track/thumb——槽位固定免宽度回流环；无 overflow 空槽仍属 owner（不透内容，wheel 仍 owner/ancestor）。
@@ -17,13 +17,13 @@
 
 | 完成 | ID | 任务 | 前置依赖 | 阶段 |
 |---|---|---|---|---|
-| ☐ | SB-01 | [共享滚动条几何与交互 helper](01-scrollbar-shared-metrics.md) | 无 | A |
-| ☐ | SB-02 | [ScrollView 接线（persistent gutter + owner 绘/拖）](02-scrollview-wiring.md) | SB-01 | B |
-| ☐ | SB-03 | [TextEditor 接线（inner 恒扣 + bar 优先 + 状态边界）](03-texteditor-wiring.md) | SB-01 | B |
-| ☐ | SB-04 | [图形/输入回归（hit 优先/嵌套冒泡/边界清理/IME）](04-input-regression.md) | SB-02、SB-03 | C |
-| ☐ | SB-05 | [示例（ControlGallery 演示）](05-samples.md) | SB-02、SB-03、SB-04 | C |
-| ☐ | SB-06 | [文档更新](06-docs.md) | SB-02~SB-05 | C |
-| ☐ | SB-07 | [交付（构建+真实 smoke+记录）](07-delivery.md) | SB-06 | D |
+| ☑ | SB-01 | [共享滚动条几何与交互 helper](01-scrollbar-shared-metrics.md) | 无 | A |
+| ☑ | SB-02 | [ScrollView 接线（persistent gutter + owner 绘/拖）](02-scrollview-wiring.md) | SB-01 | B |
+| ☑ | SB-03 | [TextEditor 接线（inner 恒扣 + bar 优先 + 状态边界）](03-texteditor-wiring.md) | SB-01 | B |
+| ☑ | SB-04 | [图形/输入回归（hit 优先/嵌套冒泡/边界清理/IME）](04-input-regression.md) | SB-02、SB-03 | C |
+| ☑ | SB-05 | [示例（ControlGallery 演示）](05-samples.md) | SB-02、SB-03、SB-04 | C |
+| ☑ | SB-06 | [文档更新](06-docs.md) | SB-02~SB-05 | C |
+| ☑ | SB-07 | [交付（构建+真实 smoke+记录）](07-delivery.md) | SB-06 | D |
 
 ## 阶段门槛
 

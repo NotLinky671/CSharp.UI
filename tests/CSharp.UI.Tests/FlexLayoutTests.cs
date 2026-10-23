@@ -270,13 +270,16 @@ public class FlexLayoutTests
             Assert.Equal(400, text.LastConstraints.MaxWidth, 3);
         }
 
-        // ScrollView 的内容同样必须把有效提案传到嵌套 Flex（滚动轴无界时按契约回退自然尺寸）。
+        // ScrollView 的内容区 = frame − 右侧 gutter：嵌套 Flex 收到的是该 contentRect 宽，不是 frame 宽。
         using (var app = new TestApp(
             new ScrollView(new VStack(new HStack(new Text("nested").Flex(basis: 80)))),
             new Size(400, 600)))
         {
             app.Frame();
-            Assert.Equal(400, app.Runtime.Root.Require<Text>().Frame.Width, 3);
+            var scroll = app.Runtime.Root.Require<ScrollView>();
+            var text = app.Runtime.Root.Require<Text>();
+            Assert.Equal(scroll.Frame.Width - ScrollbarMetrics.Thickness, text.Frame.Width, 3);
+            Assert.Equal(scroll.Frame.Right - ScrollbarMetrics.Thickness, text.Frame.Right, 3);
         }
     }
 

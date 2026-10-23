@@ -43,12 +43,13 @@ public class ResponsiveTests
 
         var responsive = app.Runtime.Root.Require<Responsive>();
         var tail = app.Runtime.Root.Require<Text>();
-
-        // 没有 .Flex/.FillWidth 也不能停在自然测量：必须收到扣除 Padding 后的 300-40=260。
-        Assert.Equal<double>(new[] { 260d }, widths);
+        var scroll = app.Runtime.Root.Require<ScrollView>();
+        // 响应式收到的是 ScrollView contentRect − Padding 的可用宽度（不是 frame 宽）。
+        var expectedWidth = scroll.Frame.Width - ScrollbarMetrics.Thickness - 40;
+        Assert.Equal<double>(new[] { expectedWidth }, widths);
 
         // 有界宽度占满分配宽度，高度由内容自然决定。
-        Assert.Equal(260, responsive.Frame.Width, 3);
+        Assert.Equal(expectedWidth, responsive.Frame.Width, 3);
         Assert.Equal(30, responsive.Frame.Height, 3);
         Assert.Single(responsive.Children);
 
@@ -77,15 +78,16 @@ public class ResponsiveTests
         var tail = app.Runtime.Root.Require<Text>();
         var content = app.Runtime.Root.Children[0];
 
+        var scroll = app.Runtime.Root.Require<ScrollView>();
         Assert.Equal(80, tail.Frame.Y, 3);
-        Assert.Equal(260, responsive.Frame.Width, 3);
 
         app.Runtime.SetViewport(new Size(180, 120), 1.0);
         app.Runtime.ProcessPendingWork();
 
-        // 变窄：builder 以最终父宽度 180-40=140 重建，内容变高并向上重新汇总自然高度。
-        Assert.Equal(140, widths[^1], 3);
-        Assert.Equal(140, responsive.Frame.Width, 3);
+        // 变窄：builder 以最终 ScrollView contentRect − Padding 宽度重建，内容变高并向上重新汇总自然高度。
+        var narrowExpected = scroll.Frame.Width - ScrollbarMetrics.Thickness - 40;
+        Assert.Equal(narrowExpected, widths[^1], 3);
+        Assert.Equal(narrowExpected, responsive.Frame.Width, 3);
         Assert.Equal(150, responsive.Frame.Height, 3);
         Assert.Equal(190, tail.Frame.Y, 3);
         Assert.Equal(content.DesiredSize.Height, tail.Frame.Bottom, 3);

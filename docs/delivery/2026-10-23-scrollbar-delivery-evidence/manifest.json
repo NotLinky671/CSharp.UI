@@ -1,0 +1,575 @@
+{
+ "generated": "2026-10-23T21:54:13+0800",
+ "runs": [
+  {
+   "name": "build-Debug",
+   "argv": [
+    "dotnet",
+    "build",
+    "CSharp.UI.slnx",
+    "-c",
+    "Debug",
+    "--no-incremental",
+    "--nologo",
+    "-v",
+    "minimal",
+    "-m:1",
+    "-nodeReuse:false"
+   ],
+   "exit": 0,
+   "stdout": "build-Debug.stdout.txt",
+   "stderr": "build-Debug.stderr.txt",
+   "seconds": 7.9
+  },
+  {
+   "name": "build-Release",
+   "argv": [
+    "dotnet",
+    "build",
+    "CSharp.UI.slnx",
+    "-c",
+    "Release",
+    "--no-incremental",
+    "--nologo",
+    "-v",
+    "minimal",
+    "-m:1",
+    "-nodeReuse:false"
+   ],
+   "exit": 0,
+   "stdout": "build-Release.stdout.txt",
+   "stderr": "build-Release.stderr.txt",
+   "seconds": 7.5
+  },
+  {
+   "name": "Debug-CSharp.UI.Tests",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "tests/CSharp.UI.Tests",
+    "--no-build",
+    "-c",
+    "Debug"
+   ],
+   "exit": 0,
+   "stdout": "Debug-CSharp.UI.Tests.stdout.txt",
+   "stderr": "Debug-CSharp.UI.Tests.stderr.txt",
+   "seconds": 4.4
+  },
+  {
+   "name": "Debug-CSharp.UI.Text.Tests",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "tests/CSharp.UI.Text.Tests",
+    "--no-build",
+    "-c",
+    "Debug"
+   ],
+   "exit": 0,
+   "stdout": "Debug-CSharp.UI.Text.Tests.stdout.txt",
+   "stderr": "Debug-CSharp.UI.Text.Tests.stderr.txt",
+   "seconds": 4.2
+  },
+  {
+   "name": "Debug-CSharp.UI.Integration.Tests",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "tests/CSharp.UI.Integration.Tests",
+    "--no-build",
+    "-c",
+    "Debug"
+   ],
+   "exit": 0,
+   "stdout": "Debug-CSharp.UI.Integration.Tests.stdout.txt",
+   "stderr": "Debug-CSharp.UI.Integration.Tests.stderr.txt",
+   "seconds": 3.9
+  },
+  {
+   "name": "Release-CSharp.UI.Tests",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "tests/CSharp.UI.Tests",
+    "--no-build",
+    "-c",
+    "Release"
+   ],
+   "exit": 0,
+   "stdout": "Release-CSharp.UI.Tests.stdout.txt",
+   "stderr": "Release-CSharp.UI.Tests.stderr.txt",
+   "seconds": 4.3
+  },
+  {
+   "name": "Release-CSharp.UI.Text.Tests",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "tests/CSharp.UI.Text.Tests",
+    "--no-build",
+    "-c",
+    "Release"
+   ],
+   "exit": 0,
+   "stdout": "Release-CSharp.UI.Text.Tests.stdout.txt",
+   "stderr": "Release-CSharp.UI.Text.Tests.stderr.txt",
+   "seconds": 4.1
+  },
+  {
+   "name": "Release-CSharp.UI.Integration.Tests",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "tests/CSharp.UI.Integration.Tests",
+    "--no-build",
+    "-c",
+    "Release"
+   ],
+   "exit": 0,
+   "stdout": "Release-CSharp.UI.Integration.Tests.stdout.txt",
+   "stderr": "Release-CSharp.UI.Integration.Tests.stderr.txt",
+   "seconds": 3.8
+  },
+  {
+   "name": "sample-build-Debug-CSharp.UI.Samples.Counter",
+   "argv": [
+    "dotnet",
+    "build",
+    "samples/CSharp.UI.Samples.Counter",
+    "-c",
+    "Debug",
+    "--no-incremental",
+    "--nologo",
+    "-v",
+    "minimal",
+    "-m:1",
+    "-nodeReuse:false"
+   ],
+   "exit": 0,
+   "stdout": "sample-build-Debug-CSharp.UI.Samples.Counter.stdout.txt",
+   "stderr": "sample-build-Debug-CSharp.UI.Samples.Counter.stderr.txt",
+   "seconds": 2.6
+  },
+  {
+   "name": "sample-build-Debug-CSharp.UI.Samples.TodoList",
+   "argv": [
+    "dotnet",
+    "build",
+    "samples/CSharp.UI.Samples.TodoList",
+    "-c",
+    "Debug",
+    "--no-incremental",
+    "--nologo",
+    "-v",
+    "minimal",
+    "-m:1",
+    "-nodeReuse:false"
+   ],
+   "exit": 0,
+   "stdout": "sample-build-Debug-CSharp.UI.Samples.TodoList.stdout.txt",
+   "stderr": "sample-build-Debug-CSharp.UI.Samples.TodoList.stderr.txt",
+   "seconds": 2.8
+  },
+  {
+   "name": "sample-build-Debug-CSharp.UI.Samples.ControlGallery",
+   "argv": [
+    "dotnet",
+    "build",
+    "samples/CSharp.UI.Samples.ControlGallery",
+    "-c",
+    "Debug",
+    "--no-incremental",
+    "--nologo",
+    "-v",
+    "minimal",
+    "-m:1",
+    "-nodeReuse:false"
+   ],
+   "exit": 0,
+   "stdout": "sample-build-Debug-CSharp.UI.Samples.ControlGallery.stdout.txt",
+   "stderr": "sample-build-Debug-CSharp.UI.Samples.ControlGallery.stderr.txt",
+   "seconds": 3.0
+  },
+  {
+   "name": "sample-build-Release-CSharp.UI.Samples.Counter",
+   "argv": [
+    "dotnet",
+    "build",
+    "samples/CSharp.UI.Samples.Counter",
+    "-c",
+    "Release",
+    "--no-incremental",
+    "--nologo",
+    "-v",
+    "minimal",
+    "-m:1",
+    "-nodeReuse:false"
+   ],
+   "exit": 0,
+   "stdout": "sample-build-Release-CSharp.UI.Samples.Counter.stdout.txt",
+   "stderr": "sample-build-Release-CSharp.UI.Samples.Counter.stderr.txt",
+   "seconds": 6.8
+  },
+  {
+   "name": "sample-build-Release-CSharp.UI.Samples.TodoList",
+   "argv": [
+    "dotnet",
+    "build",
+    "samples/CSharp.UI.Samples.TodoList",
+    "-c",
+    "Release",
+    "--no-incremental",
+    "--nologo",
+    "-v",
+    "minimal",
+    "-m:1",
+    "-nodeReuse:false"
+   ],
+   "exit": 0,
+   "stdout": "sample-build-Release-CSharp.UI.Samples.TodoList.stdout.txt",
+   "stderr": "sample-build-Release-CSharp.UI.Samples.TodoList.stderr.txt",
+   "seconds": 4.5
+  },
+  {
+   "name": "sample-build-Release-CSharp.UI.Samples.ControlGallery",
+   "argv": [
+    "dotnet",
+    "build",
+    "samples/CSharp.UI.Samples.ControlGallery",
+    "-c",
+    "Release",
+    "--no-incremental",
+    "--nologo",
+    "-v",
+    "minimal",
+    "-m:1",
+    "-nodeReuse:false"
+   ],
+   "exit": 0,
+   "stdout": "sample-build-Release-CSharp.UI.Samples.ControlGallery.stdout.txt",
+   "stderr": "sample-build-Release-CSharp.UI.Samples.ControlGallery.stderr.txt",
+   "seconds": 4.3
+  },
+  {
+   "name": "Debug-CSharp.UI.OpenTK.Tests",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "tests/CSharp.UI.OpenTK.Tests",
+    "--no-build",
+    "-c",
+    "Debug"
+   ],
+   "exit": 0,
+   "stdout": "Debug-CSharp.UI.OpenTK.Tests.stdout.txt",
+   "stderr": "Debug-CSharp.UI.OpenTK.Tests.stderr.txt",
+   "seconds": 9.8
+  },
+  {
+   "name": "smoke-Debug-CSharp.UI.Samples.Counter",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "samples/CSharp.UI.Samples.Counter",
+    "--no-build",
+    "-c",
+    "Debug"
+   ],
+   "exit": 0,
+   "stdout": "smoke-Debug-CSharp.UI.Samples.Counter.stdout.txt",
+   "stderr": "smoke-Debug-CSharp.UI.Samples.Counter.stderr.txt",
+   "seconds": 3.2
+  },
+  {
+   "name": "smoke-Debug-CSharp.UI.Samples.TodoList",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "samples/CSharp.UI.Samples.TodoList",
+    "--no-build",
+    "-c",
+    "Debug"
+   ],
+   "exit": 0,
+   "stdout": "smoke-Debug-CSharp.UI.Samples.TodoList.stdout.txt",
+   "stderr": "smoke-Debug-CSharp.UI.Samples.TodoList.stderr.txt",
+   "seconds": 3.3
+  },
+  {
+   "name": "smoke-Debug-CSharp.UI.Samples.ControlGallery",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "samples/CSharp.UI.Samples.ControlGallery",
+    "--no-build",
+    "-c",
+    "Debug"
+   ],
+   "exit": 0,
+   "stdout": "smoke-Debug-CSharp.UI.Samples.ControlGallery.stdout.txt",
+   "stderr": "smoke-Debug-CSharp.UI.Samples.ControlGallery.stderr.txt",
+   "seconds": 3.4
+  },
+  {
+   "name": "Release-CSharp.UI.OpenTK.Tests",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "tests/CSharp.UI.OpenTK.Tests",
+    "--no-build",
+    "-c",
+    "Release"
+   ],
+   "exit": 0,
+   "stdout": "Release-CSharp.UI.OpenTK.Tests.stdout.txt",
+   "stderr": "Release-CSharp.UI.OpenTK.Tests.stderr.txt",
+   "seconds": 10.0
+  },
+  {
+   "name": "smoke-Release-CSharp.UI.Samples.Counter",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "samples/CSharp.UI.Samples.Counter",
+    "--no-build",
+    "-c",
+    "Release"
+   ],
+   "exit": 0,
+   "stdout": "smoke-Release-CSharp.UI.Samples.Counter.stdout.txt",
+   "stderr": "smoke-Release-CSharp.UI.Samples.Counter.stderr.txt",
+   "seconds": 3.3
+  },
+  {
+   "name": "smoke-Release-CSharp.UI.Samples.TodoList",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "samples/CSharp.UI.Samples.TodoList",
+    "--no-build",
+    "-c",
+    "Release"
+   ],
+   "exit": 0,
+   "stdout": "smoke-Release-CSharp.UI.Samples.TodoList.stdout.txt",
+   "stderr": "smoke-Release-CSharp.UI.Samples.TodoList.stderr.txt",
+   "seconds": 3.3
+  },
+  {
+   "name": "smoke-Release-CSharp.UI.Samples.ControlGallery",
+   "argv": [
+    "dotnet",
+    "run",
+    "--project",
+    "samples/CSharp.UI.Samples.ControlGallery",
+    "--no-build",
+    "-c",
+    "Release"
+   ],
+   "exit": 0,
+   "stdout": "smoke-Release-CSharp.UI.Samples.ControlGallery.stdout.txt",
+   "stderr": "smoke-Release-CSharp.UI.Samples.ControlGallery.stderr.txt",
+   "seconds": 3.3
+  }
+ ],
+ "evidence_files": {
+  ".gitattributes": {
+   "size": 8,
+   "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+  },
+  "build-Debug.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "build-Debug.stdout.txt": {
+   "size": 1560,
+   "sha256": "8fdb5568d25e22a37b4f8e3e0d1cb1acd35456153c42c55ef9813c9b65094c3f"
+  },
+  "build-Release.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "build-Release.stdout.txt": {
+   "size": 1582,
+   "sha256": "e4ff903c13fa0c8f723e2bc76149df6b25a2004ea8335c324739f1f0feea4e3b"
+  },
+  "Debug-CSharp.UI.Integration.Tests.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "Debug-CSharp.UI.Integration.Tests.stdout.txt": {
+   "size": 457,
+   "sha256": "4066dd6c1145847d7c39bf11434d7ba07a9cbd43f86db1672979a848bc9e0999"
+  },
+  "Debug-CSharp.UI.OpenTK.Tests.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "Debug-CSharp.UI.OpenTK.Tests.stdout.txt": {
+   "size": 8451,
+   "sha256": "b273d08cfe57e6b1c781a40f481bae060add83ae1ab1583121001be73a90f6af"
+  },
+  "Debug-CSharp.UI.Tests.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "Debug-CSharp.UI.Tests.stdout.txt": {
+   "size": 398,
+   "sha256": "3da04d04c8b6ac041c1ea8a33f6bcf5803f07dd86eb297abdc05996f9305b691"
+  },
+  "Debug-CSharp.UI.Text.Tests.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "Debug-CSharp.UI.Text.Tests.stdout.txt": {
+   "size": 422,
+   "sha256": "84b973149aca84478bea67a98661620f17747a5b057b7038d83c99eb139ce122"
+  },
+  "Release-CSharp.UI.Integration.Tests.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "Release-CSharp.UI.Integration.Tests.stdout.txt": {
+   "size": 457,
+   "sha256": "459efa43f3a3a72ce943a32bf0171dd1341e5e21c8ea72eb4161eff2d47294d2"
+  },
+  "Release-CSharp.UI.OpenTK.Tests.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "Release-CSharp.UI.OpenTK.Tests.stdout.txt": {
+   "size": 8451,
+   "sha256": "a91bea177c966d3a97ac3efe107731c0651cb02cf6584faeac59427bc1a1ed72"
+  },
+  "Release-CSharp.UI.Tests.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "Release-CSharp.UI.Tests.stdout.txt": {
+   "size": 398,
+   "sha256": "c672608aeb3d75d0e0fb8f961d4726ddba251bd5d81a57e17ab62a8d5e16ed11"
+  },
+  "Release-CSharp.UI.Text.Tests.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "Release-CSharp.UI.Text.Tests.stdout.txt": {
+   "size": 422,
+   "sha256": "f8b4c7e0c37800004f7348a2f6b7c2be8cc35f88e1240edc29aae5f6324ba56c"
+  },
+  "sample-build-Debug-CSharp.UI.Samples.ControlGallery.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "sample-build-Debug-CSharp.UI.Samples.ControlGallery.stdout.txt": {
+   "size": 641,
+   "sha256": "8a38370d7aeb44615b25a4df77284c95e119771de2e11b08ef9328e802caf70d"
+  },
+  "sample-build-Debug-CSharp.UI.Samples.Counter.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "sample-build-Debug-CSharp.UI.Samples.Counter.stdout.txt": {
+   "size": 620,
+   "sha256": "ba9be4dd6ad503697b3eee04dd1ba7daae31bce32500dcdead0b33072fbaa25e"
+  },
+  "sample-build-Debug-CSharp.UI.Samples.TodoList.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "sample-build-Debug-CSharp.UI.Samples.TodoList.stdout.txt": {
+   "size": 623,
+   "sha256": "ffdb66f7383aaadb60b5a177250a48dff3739adb20e00af2ec1cdfea99b2eee4"
+  },
+  "sample-build-Release-CSharp.UI.Samples.ControlGallery.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "sample-build-Release-CSharp.UI.Samples.ControlGallery.stdout.txt": {
+   "size": 649,
+   "sha256": "d634a1a6f1eb82cdb366377a599558d633e725ef1205e5d3d8a27b85e97b8594"
+  },
+  "sample-build-Release-CSharp.UI.Samples.Counter.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "sample-build-Release-CSharp.UI.Samples.Counter.stdout.txt": {
+   "size": 628,
+   "sha256": "8b290316baf983f388f10a5287fae23ff51eebf2b90831027510c25e463ae4fa"
+  },
+  "sample-build-Release-CSharp.UI.Samples.TodoList.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "sample-build-Release-CSharp.UI.Samples.TodoList.stdout.txt": {
+   "size": 631,
+   "sha256": "963c1dc58c01ccd502363fd475403fbdc50eb5a23b9c74f240e5da3a58e813b9"
+  },
+  "smoke-Debug-CSharp.UI.Samples.ControlGallery.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "smoke-Debug-CSharp.UI.Samples.ControlGallery.stdout.txt": {
+   "size": 227,
+   "sha256": "0da28edd23c09ea6b0ec1702797359e703c34859eabd3b7e3ee1bd4804f9254f"
+  },
+  "smoke-Debug-CSharp.UI.Samples.Counter.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "smoke-Debug-CSharp.UI.Samples.Counter.stdout.txt": {
+   "size": 218,
+   "sha256": "47f68c167f095b41cbb44662e900f6cb1a5abf9a0ddf0b0a5803bc2e31bdde1c"
+  },
+  "smoke-Debug-CSharp.UI.Samples.TodoList.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "smoke-Debug-CSharp.UI.Samples.TodoList.stdout.txt": {
+   "size": 220,
+   "sha256": "aba72a2161549acc0565be66d6ce22d1f4596539b5605baff911a41342d7bb15"
+  },
+  "smoke-Release-CSharp.UI.Samples.ControlGallery.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "smoke-Release-CSharp.UI.Samples.ControlGallery.stdout.txt": {
+   "size": 227,
+   "sha256": "0da28edd23c09ea6b0ec1702797359e703c34859eabd3b7e3ee1bd4804f9254f"
+  },
+  "smoke-Release-CSharp.UI.Samples.Counter.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "smoke-Release-CSharp.UI.Samples.Counter.stdout.txt": {
+   "size": 218,
+   "sha256": "47f68c167f095b41cbb44662e900f6cb1a5abf9a0ddf0b0a5803bc2e31bdde1c"
+  },
+  "smoke-Release-CSharp.UI.Samples.TodoList.stderr.txt": {
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "smoke-Release-CSharp.UI.Samples.TodoList.stdout.txt": {
+   "size": 220,
+   "sha256": "aba72a2161549acc0565be66d6ce22d1f4596539b5605baff911a41342d7bb15"
+  },
+  "source-sha256.json": {
+   "size": 28120,
+   "sha256": "8a0071aa9d896f2da9e952b6c972db5e121485458c3e443793156f249e069224"
+  }
+ }
+}

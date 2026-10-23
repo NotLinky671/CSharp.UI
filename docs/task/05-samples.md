@@ -2,7 +2,7 @@
 
 创建日期：2026-10-23
 
-状态：待开始
+状态：已完成（2026-10-23；`.Key` 已注入 `gallery-root-scroll`/`gallery-nested-scroll`/`scrollbar-vertical-demo` 供测试定位，演示用例代码与文档已落；SB-07 双 config fresh 构建/真机 smoke 通过；fast 独立 Gallery **真实示例 offscreen 渲染 + UiRuntime 指针/滚轮切换** 32/32——长短切换消隐、height toggle 120→180、内/外层 wheel 分流；IME 组合锚点跟随为单独 OS 真实窗口验证）。证据见 [交付记录](../delivery/2026-10-23-scrollbar-delivery.md) 与 [审查记录](../return/2026-10-23-scrollbar-review.md)。
 
 阶段：C
 

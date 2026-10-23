@@ -2,7 +2,7 @@
 
 计划日期：2026-10-23
 
-状态：规划定稿（待用户授权实施）。实施未开始；任务 SB-01~SB-07 见 [docs/task/README.md](../task/README.md)。
+状态：实施与验收完成；提交推送关联本次实现提交（见 Git 历史）。任务 SB-01~SB-07 见 [docs/task/README.md](../task/README.md)。
 
 关联：[文本编辑器计划](2026-10-23-text-editor-plan.md)、[滚动回跳修复计划](2026-10-23-text-editor-scroll-bounce-fix.md)、[修复记录](../return/2026-10-23-texteditor-scroll-bounce-repair.md)。
 

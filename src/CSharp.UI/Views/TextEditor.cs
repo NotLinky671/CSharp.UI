@@ -18,6 +18,12 @@ namespace CSharp.UI;
 /// 结果经 <see cref="ApplyCompositionCommit"/> 一次真实事务落地；焦点/失活/卸载/外部变化/
 /// 编辑命令/鼠标改选区的“先取消组合”接缝与 TextField 一致。
 /// </para>
+/// <para>
+/// 滚动条（仅纵向）：内容超出视口时在右侧 persistent 12 逻辑像素槽内绘制轨道与滑块，可拖拽/点击轨道翻页
+/// （无自动重复）；无溢出时槽留空但不参与文本命中。滚动条交互不改 caret、选区、撤销历史与绑定写入。
+/// IME 组合期间用户经滚轮/滚动条浏览属持久意图：caret 被裁出视口时输入几何返回 Unavailable（候选锚点
+/// 撤除、组合保活不取消），真实新预编辑或 caret 推进后重新锚定；同值通知/时钟/平移不回弹。
+/// </para>
 /// </remarks>
 public sealed class TextEditor : View
 {
@@ -167,14 +173,14 @@ public sealed class TextEditor : View
         var text = Text.Read(node) ?? string.Empty;
         var font = node.Environment.Font ?? FontDescription.Default;
 
-        // 排版宽 = 最终 content 宽 = frameWidth − 2×HorizontalPadding（唯一来源）：
+        // 排版宽 = 最终 content 宽 = frame − padding − 右侧滚动条槽（与 InnerRect 同源；含 0 宽情形）。
         //  - Width 显式 → frame = Width；
         //  - 父级 tight → frame = MaxWidth；
         //  - 其余 → frame = 默认下限（140 或更小，视父级上限），与下方 DesiredSize 同一公式。
         var available = constraints.HasBoundedWidth ? Math.Max(0, constraints.MaxWidth) : double.PositiveInfinity;
         var minimum = Math.Min(DefaultMinimumWidth, available);
         var frameWidth = Width ?? (constraints.IsWidthTight ? constraints.MaxWidth : minimum);
-        var wrapWidth = Math.Max(1, frameWidth - (HorizontalPadding * 2));
+        var wrapWidth = InnerRect(new Rect(0, 0, frameWidth, 0)).Width;
 
         // Editing=true：硬换行分段 + 尾随空段 + caretsByLine —— 同一份排版供给 Measure/Arrange/Emit/命中。
         var request = TextPainter.CreateRequest(
@@ -187,7 +193,10 @@ public sealed class TextEditor : View
 
         var width = Width ?? (constraints.IsWidthTight
             ? constraints.MaxWidth
-            : Math.Clamp(layout.Size.Width + (HorizontalPadding * 2), minimum, available));
+            : Math.Clamp(
+                layout.Size.Width + (HorizontalPadding * 2)
+                    + Math.Min(ScrollbarMetrics.Thickness, Math.Max(0, layout.Size.Width + (HorizontalPadding * 2))),
+                minimum, available));
 
         // 高度统一：先按 preferredHeight（MinLines 行 + 内边距）再由父级夹取；
         // 父级 Frame(height:)/Flex 强制分配的最终 bounds 由 Arrange 接收，这里只给期望。
@@ -204,12 +213,17 @@ public sealed class TextEditor : View
         {
             SyncEditor(node, state, invalidate: false);
 
+            // 几何/range 变化取消 bar-gesture（自身 ScrollY 写回不属 geometry 变化——offset 不入签名）。
+            var layout = GetLayout(node, context.TextService);
+            var contentR = InnerRect(bounds);
+            var track = TrackRect(bounds);
+            state.Bar.SyncGeometry(ScrollAxis.Vertical, track, layout.Size.Height, contentR.Height);
+
             if (node.IsEffectivelyDisabled && state.Composing is not null)
             {
                 CancelCompositionForHostAction(node, state);
                 state.RequestDeferredEndInputSession();
             }
-
             if (node.IsFocused)
             {
                 // caret 可见性只在 caret 行位置/可见带可能变化时重判：内容区宽高（reflow/视口高）、
@@ -281,48 +295,56 @@ public sealed class TextEditor : View
         }
 
         var restore = context.CurrentClip;
-        if (!context.PushClip(inner))
+        if (!context.PushClip(node.Frame))
         {
             return;
         }
 
-        // 文本原点 = 文本块左上角（含 ScrollY 与物理像素吸附）；文本、选区、caret、预编辑装饰共用。
-        // 编辑器首行必须顶对齐（区别于 TextField 的垂直居中）：bounds 高取 max(inner,layout)
-        // 时垂直居中公式会把偏短的文本下推，因此统一取 textBounds 左上角吸附。
-        var origin = TextOrigin(display, inner, state);
-        if (state.HasSelection && node.IsFocused && !display.Composing)
+        var frameClip = context.CurrentClip;
+        if (context.PushClip(inner))
         {
-            // 逐行选区矩形：内容区真实 X + 行末零宽 marker（涂成 SelectionLineEndMarkerWidth 可见窄块）。
-            var rects = display.Layout.GetRangeRects(state.SelectionStart, state.SelectionEnd);
-            foreach (var rect in rects)
+            // 文本原点 = 文本块左上角（含 ScrollY 与物理像素吸附）；文本、选区、caret、预编辑装饰共用。
+            // 编辑器首行必须顶对齐（区别于 TextField 的垂直居中）：bounds 高取 max(inner,layout)
+            // 时垂直居中公式会把偏短的文本下推，因此统一取 textBounds 左上角吸附。
+            var origin = TextOrigin(display, inner, state);
+            if (state.HasSelection && node.IsFocused && !display.Composing)
             {
-                var painted = rect.Width <= 0
-                    ? new Rect(origin.X + rect.X, origin.Y + rect.Y, SelectionLineEndMarkerWidth, rect.Height)
-                    : new Rect(origin.X + rect.X, origin.Y + rect.Y, Math.Max(rect.Width, 1), rect.Height);
-                context.Commands.Add(new RectangleCommand(
-                    painted,
-                    theme.SelectionBackground,
-                    2,
-                    null,
-                    0,
-                    opacity));
+                // 逐行选区矩形：内容区真实 X + 行末零宽 marker（涂成 SelectionLineEndMarkerWidth 可见窄块）。
+                var rects = display.Layout.GetRangeRects(state.SelectionStart, state.SelectionEnd);
+                foreach (var rect in rects)
+                {
+                    var painted = rect.Width <= 0
+                        ? new Rect(origin.X + rect.X, origin.Y + rect.Y, SelectionLineEndMarkerWidth, rect.Height)
+                        : new Rect(origin.X + rect.X, origin.Y + rect.Y, Math.Max(rect.Width, 1), rect.Height);
+                    context.Commands.Add(new RectangleCommand(
+                        painted,
+                        theme.SelectionBackground,
+                        2,
+                        null,
+                        0,
+                        opacity));
+                }
             }
+
+            var textColor = disabled ? theme.DisabledForeground : theme.Foreground;
+            // Paint 内部会对 bounds 垂直居中——传与排版同高的 bounds 使居中偏移恒为 0，保持顶部对齐。
+            TextPainter.Paint(context, node, display.Layout, textColor,
+                new Rect(origin, display.Layout.Size), TextAlignment.Left);
+
+            if (display.Composing)
+            {
+                DrawCompositionDecorations(context, node, state, display, theme, origin, inner, opacity);
+            }
+            else if (node.IsFocused && IsCaretVisible(node, state))
+            {
+                var caretRect = ClampCaretToInner(CaretRectAt(display, state, origin), inner);
+                context.Commands.Add(new RectangleCommand(caretRect, textColor, 0, null, 0, opacity));
+            }
+
+            context.PopClip(frameClip);
         }
 
-        var textColor = disabled ? theme.DisabledForeground : theme.Foreground;
-        // Paint 内部会对 bounds 垂直居中——传与排版同高的 bounds 使居中偏移恒为 0，保持顶部对齐。
-        TextPainter.Paint(context, node, display.Layout, textColor,
-            new Rect(origin, display.Layout.Size), TextAlignment.Left);
-
-        if (display.Composing)
-        {
-            DrawCompositionDecorations(context, node, state, display, theme, origin, inner, opacity);
-        }
-        else if (node.IsFocused && IsCaretVisible(node, state))
-        {
-            var caretRect = ClampCaretToInner(CaretRectAt(display, state, origin), inner);
-            context.Commands.Add(new RectangleCommand(caretRect, textColor, 0, null, 0, opacity));
-        }
+        EmitScrollbar(node, context);
 
         context.PopClip(restore);
     }
@@ -434,6 +456,17 @@ public sealed class TextEditor : View
         return segments.Count - 1;
     }
 
+    /// <summary>滚动条 owner 绘制（Emit 尾部 frame clip 内画 track+thumb）。</summary>
+    private void EmitScrollbar(ViewNode node, DrawContext context)
+    {
+        var track = TrackRect(node.Frame);
+        var inner = InnerRect(node.Frame);
+        var state = GetState(node);
+        var layout = GetLayout(node, context.TextService);
+        ScrollbarPainter.Draw(node, context, state.Bar, track, horizontal: false,
+            viewportExtent: inner.Height, contentExtent: layout.Size.Height, offset: state.ScrollY);
+    }
+
     // ------------------------------------------------------------------ 指针
 
     internal override bool OnPointerDown(InputContext context, ViewNode node, PointerEvent e)
@@ -444,6 +477,49 @@ public sealed class TextEditor : View
         }
 
         var state = GetState(node);
+        state.Bar.LastPointerPoint = e.Position;
+
+        // ---- bar 最先（不占 focus/caret/composition 副作用） ----
+        var track = TrackRect(node.Frame);
+        var inner = InnerRect(node.Frame);
+        var layout = GetLayout(node, node.Runtime.Services.TextService);
+        var contentExtent = layout.Size.Height;
+        var viewportExtent = inner.Height;
+        var trackLength = ScrollbarMetrics.TrackLength(track, horizontal: false);
+
+        if (ScrollbarMetrics.ShowScrollbar(viewportExtent, contentExtent, trackLength)
+            && track.Contains(e.Position))
+        {
+            var hit = ScrollbarMetrics.HitTest(track, horizontal: false, viewportExtent, contentExtent,
+                state.ScrollY, e.Position);
+            switch (hit)
+            {
+                case ScrollbarTrackHit.Thumb:
+                    state.Bar.BeginThumbDrag(
+                        ScrollAxis.Vertical, track, contentExtent, viewportExtent,
+                        ScrollbarMetrics.DragGrabAnchor(
+                            track, horizontal: false, viewportExtent, contentExtent,
+                            state.ScrollY, e.Position));
+                    context.MarkHandled();
+                    return true;
+
+                case ScrollbarTrackHit.Before:
+                case ScrollbarTrackHit.After:
+                    state.Bar.BeginTrackPress(ScrollAxis.Vertical, track, contentExtent, viewportExtent);
+                    var maxOffset = Math.Max(0, contentExtent - viewportExtent);
+                    state.ScrollY = ScrollbarMetrics.PageOffset(hit, viewportExtent, state.ScrollY, maxOffset);
+                    state.RequiresCaretReveal = false;
+                    node.Runtime.InvalidateRender();
+                    context.MarkHandled();
+                    return true;
+            }
+
+            // ShowScrollbar 但 hit==None：空槽仍属 owner，消费不冒泡、不夺焦。
+            context.MarkHandled();
+            return true;
+        }
+
+        // ---- 文本路径（原逻辑） ----
         context.Runtime.SetFocus(node);
         SyncEditor(node, state, invalidate: true);
 
@@ -466,6 +542,29 @@ public sealed class TextEditor : View
     internal override bool OnPointerMove(InputContext context, ViewNode node, PointerEvent e)
     {
         var state = GetState(node);
+        state.Bar.LastPointerPoint = e.Position;
+
+        // bar-drag：沿 thumb 映射写 ScrollY，不进文本拖选。
+        if (state.Bar.IsDraggingBar)
+        {
+            var track = TrackRect(node.Frame);
+            var inner = InnerRect(node.Frame);
+            var layout = GetLayout(node, node.Runtime.Services.TextService);
+            var contentExtent = layout.Size.Height;
+            var viewportExtent = inner.Height;
+            var next = ScrollbarMetrics.DragToOffset(
+                track, horizontal: false, viewportExtent, contentExtent,
+                state.Bar.BarDragAnchor, e.Position, state.ScrollY);
+            if (Math.Abs(next - state.ScrollY) > 0.0001)
+            {
+                state.ScrollY = next;
+                state.RequiresCaretReveal = false;
+                node.Runtime.InvalidateRender();
+            }
+            context.MarkHandled();
+            return true;
+        }
+
         if (!state.IsDragging)
         {
             return false;
@@ -484,6 +583,16 @@ public sealed class TextEditor : View
     internal override bool OnPointerUp(InputContext context, ViewNode node, PointerEvent e)
     {
         var state = GetState(node);
+        state.Bar.LastPointerPoint = e.Position;
+
+        // bar gesture 结束（占捕获的 Up 归 owner）。
+        if (state.Bar.PressKind != ScrollbarPressKind.None)
+        {
+            state.Bar.ReleaseGesture();
+            context.MarkHandled();
+            return true;
+        }
+
         if (!state.IsDragging)
         {
             return false;
@@ -501,6 +610,7 @@ public sealed class TextEditor : View
     internal override bool OnPointerCancel(InputContext context, ViewNode node)
     {
         var state = GetState(node);
+        state.Bar.ReleaseGesture();
         state.IsDragging = false;
         state.DragPointer = null;
         return false;
@@ -508,9 +618,11 @@ public sealed class TextEditor : View
 
     internal override bool OnPointerEnter(InputContext context, ViewNode node, PointerEvent e)
     {
+        GetState(node).Bar.LastPointerPoint = e.Position;
         context.Runtime.InvalidateRender();
         return false;
     }
+
 
     internal override bool OnPointerLeave(InputContext context, ViewNode node, PointerEvent e)
     {
@@ -1533,8 +1645,9 @@ public sealed class TextEditor : View
             return false;
         }
 
-        // 用户滚只改滚动，不改 caret、不 ensure（caret 可离视口）。
+        // 用户滚只改滚动，不改 caret、不 ensure（caret 可离视口）；清浏览意图。
         state.ScrollY = next;
+        state.RequiresCaretReveal = false;
         node.Runtime.InvalidateRender();
         context.MarkHandled();
         return true;
@@ -1580,7 +1693,8 @@ public sealed class TextEditor : View
     internal override void OnClockTick(ViewNode node, TimeSpan now)
     {
         var state = node.InteractionState as TextEditorState;
-        if (state is null || !node.IsFocused || !state.IsDragging || state.DragPointer is not { } pointer)
+        // bar-drag 占用 owner capture 时不进文本拖选自动滚动（IsDraggingBar 与 IsDragging 互斥）。
+        if (state is null || state.Bar.IsDraggingBar || !node.IsFocused || !state.IsDragging || state.DragPointer is not { } pointer)
         {
             return;
         }
@@ -1704,8 +1818,21 @@ public sealed class TextEditor : View
             anchor.Segments);
     }
 
+    /// <summary>内容区：frame − padding − 右侧 gutter（persistent；wrap 宽即 inner.Width）。</summary>
     private Rect InnerRect(Rect frame)
-        => frame.Deflate(new Thickness(HorizontalPadding, VerticalPadding));
+    {
+        var padded = frame.Deflate(new Thickness(HorizontalPadding, VerticalPadding));
+        var gutter = Math.Min(ScrollbarMetrics.Thickness, Math.Max(0, padded.Width));
+        return new Rect(padded.X, padded.Y, Math.Max(0, padded.Width - gutter), padded.Height);
+    }
+
+    /// <summary>轨道槽：frame − padding 的右侧 gutter 区（含 inset）。</summary>
+    private Rect TrackRect(Rect frame)
+    {
+        var padded = frame.Deflate(new Thickness(HorizontalPadding, VerticalPadding));
+        var gutter = Math.Min(ScrollbarMetrics.Thickness, Math.Max(0, padded.Width));
+        return new Rect(padded.Right - gutter, padded.Y, gutter, padded.Height);
+    }
 
     private bool IsCaretVisible(ViewNode node, TextEditorState state)
     {
@@ -1802,15 +1929,39 @@ public sealed class TextEditor : View
         try
         {
             // 外部文本变短时上一帧的 ScrollY 可能仍很大：先收敛越界滚动。
-            // 用户滚允许 caret 离视口，不能无条件 ensure（会把刚滚走的内容拉回，与 OnWheel 打架）；
-            // 组合期间除外——组合 caret 必须保持可见以锚定候选窗。
+            // 用户浏览期（wheel/bar/track）不清 ScrollY、不 ensure——组合 caret 可暂时离视口，
+            // 仅当真实推进（preedit 串/caret/Replacement 起始/CompositionId 变化）时再次锚定。
             var inner = InnerRect(node.Frame);
             var layout = GetLayout(node, node.Runtime.Services.TextService);
             state.ScrollY = Math.Clamp(state.ScrollY, 0, MaxScrollY(layout, inner));
-            if (client.IsComposing)
+
+            // 比较真实推进：preedit 串内容（同长度换字也算）、caret 偏移、Replacement 起始、
+            // 组合 ID（新组合视为状态开始）。同值 PPW 不重 set——读已存锚，不再 concat display 串。
+            var active = client.Composition.Active;
+            var preeditNow = client.IsComposing ? active?.Preedit : null;
+            var caretNow = client.IsComposing ? active?.Caret ?? -1 : -1;
+            var replStartNow = client.IsComposing ? active?.Replacement.Start ?? -1 : -1;
+            var compIdNow = client.IsComposing ? client.Composition.CompositionId : -1;
+
+            if (client.IsComposing
+                && (!string.Equals(preeditNow, state.LastPublishedPreedit, StringComparison.Ordinal)
+                    || caretNow != state.LastPublishedCaretDisplay
+                    || replStartNow != state.LastPublishedReplacementStart
+                    || compIdNow != state.LastPublishedCompositionId))
+            {
+                state.RequiresCaretReveal = true;
+            }
+
+            if (client.IsComposing && state.RequiresCaretReveal)
             {
                 EnsureCaretVisible(node, state);
+                state.RequiresCaretReveal = false;
             }
+
+            state.LastPublishedPreedit = preeditNow;
+            state.LastPublishedCaretDisplay = caretNow;
+            state.LastPublishedReplacementStart = replStartNow;
+            state.LastPublishedCompositionId = compIdNow;
 
             geometry = ComputeInputGeometry(node, state, client, out charGeometry);
         }
@@ -2047,6 +2198,28 @@ internal sealed class TextEditorState : ITextEditSessionOwner
 
     /// <summary>光标闪烁计时起点。</summary>
     public TimeSpan BlinkEpoch { get; set; }
+
+    /// <summary>滚动条 gesture 状态（owner 持有；与文本拖选互斥）。</summary>
+    public ScrollbarState Bar { get; } = new();
+
+    /// <summary>
+    /// 持久浏览意图：<b>true</b>=下次 <see cref="PublishTextInputGeometry"/> 应 ensure caret 可见；
+    /// 键盘/编辑/caret 推进/preedit 变化时 set，wheel/bar/track 用户滚 clear；
+    /// publish 消费一次后 clear——同值 PPW 不重复 ensure（§决策七）。
+    /// </summary>
+    public bool RequiresCaretReveal { get; set; }
+
+    /// <summary>PublishTextInputGeometry 上次发布的 preedit 串（Ordinal 比较；非组合期 null）。</summary>
+    internal string? LastPublishedPreedit { get; set; }
+
+    /// <summary>PublishTextInputGeometry 上次发布的 preedit caret 偏移；非组合期 -1。</summary>
+    internal int LastPublishedCaretDisplay { get; set; } = -1;
+
+    /// <summary>PublishTextInputGeometry 上次发布的 Replacement.Start；非组合期 -1。</summary>
+    internal int LastPublishedReplacementStart { get; set; } = -1;
+
+    /// <summary>PublishTextInputGeometry 上次发布的 CompositionId；非组合期 -1。</summary>
+    internal int LastPublishedCompositionId { get; set; } = -1;
 
     /// <summary>选择起点。</summary>
     public int SelectionStart => Math.Min(Caret, Anchor);

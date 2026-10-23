@@ -374,7 +374,8 @@ public sealed class TextEditorPreeditRenderingGpuTests
     private static double InnerWidth(ViewNode node)
     {
         var editor = Assert.IsType<TextEditor>(node.View);
-        return node.Frame.Deflate(new Thickness(editor.HorizontalPadding, editor.VerticalPadding)).Width;
+        // 与产品 InnerRect 同步：frame - padding - 右侧滚动条槽宽（persistent gutter 12）。
+        return node.Frame.Deflate(new Thickness(editor.HorizontalPadding, editor.VerticalPadding)).Width - ScrollbarMetrics.Thickness;
     }
 
     private static TextLayoutResult LayoutEditing(SkiaTextService textService, string text, double innerWidth, double pixelScale)

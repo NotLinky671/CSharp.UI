@@ -94,7 +94,20 @@ public sealed class GalleryIdleAndBoundsTests
             Assert.True(double.IsFinite(node.Frame.Y), $"{node.DebugPath} 的 Y 非有限值：{node.Frame}。");
             Assert.True(node.Frame.Width >= 0, $"{node.DebugPath} 出现负宽度：{node.Frame}。");
             Assert.True(node.Frame.Height >= 0, $"{node.DebugPath} 出现负高度：{node.Frame}。");
-            Assert.True(node.Frame.Right <= 80 + 0.01, $"{node.DebugPath} 越过极窄视口：{node.Frame}。");
+            // 横向滚动容器内容可宽于视口（由 ScrollView 裁剪）；其他节点不得越过右边界。
+            var inHorizontalScroll = false;
+            for (var p = node.Parent; p is not null; p = p.Parent)
+            {
+                if (p.View is ScrollView s && s.Axis == ScrollAxis.Horizontal)
+                {
+                    inHorizontalScroll = true;
+                    break;
+                }
+            }
+            if (!inHorizontalScroll)
+            {
+                Assert.True(node.Frame.Right <= 80 + 0.01, $"{node.DebugPath} 越过极窄视口：{node.Frame}。");
+            }
         }
 
         // 硬固定内容（96×96 图片、140 宽的 ZStack 文本、maxWidth 演示）超出父级可用宽度时必须有明确诊断。

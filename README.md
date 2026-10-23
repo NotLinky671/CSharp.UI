@@ -66,7 +66,7 @@ See the [getting started guide](docs/guide/getting-started.md) for details.
 - [Writing custom components](docs/guide/custom-components.md)
 - [Platform, fonts, and native dependencies](docs/guide/platform-notes.md)
 - [Testing guide](docs/guide/testing.md)
-- Design and tasks: [first-release plan](docs/plan/2026-10-14-declarative-ui-framework-plan.md), [responsive-layout plan](docs/plan/2026-10-16-responsive-layout-plan.md), [text-editor plan](docs/plan/2026-10-23-text-editor-plan.md), [scrollbar plan (planned, not implemented)](docs/plan/2026-10-23-scrollbar-plan.md), [current tasks](docs/task/README.md), [archived task groups](docs/archive/), [first-release acceptance record](docs/archive/2026-10-14-framework-tasks/README.md), [responsive-layout delivery record](docs/delivery/2026-10-16-responsive-layout-delivery.md)
+- Design and tasks: [first-release plan](docs/plan/2026-10-14-declarative-ui-framework-plan.md), [responsive-layout plan](docs/plan/2026-10-16-responsive-layout-plan.md), [text-editor plan](docs/plan/2026-10-23-text-editor-plan.md), [scrollbar plan](docs/plan/2026-10-23-scrollbar-plan.md), [current tasks](docs/task/README.md), [archived task groups](docs/archive/), [first-release acceptance record](docs/archive/2026-10-14-framework-tasks/README.md), [responsive-layout delivery record](docs/delivery/2026-10-16-responsive-layout-delivery.md)
 
 ## Responsive layout
 
@@ -100,7 +100,7 @@ Included: `VStack`/`HStack`/`ZStack`/`Spacer`/`ScrollView`, `Text`/`Image`/`Rect
 `Button`/`Toggle`/`Slider`/`TextField`/`TextEditor` (multi-line: hard newlines plus width-driven soft wrap, a fixed `MinLines` viewport with internal `ScrollY`, pointer drag-selection with edge auto-scroll, undo/redo and clipboard commands),
 `Padding`/`Frame`/`Background`/`Foreground`/`Border`/`CornerRadius`/`Opacity`/`Clip`/`Disabled`/`Key`,
 `ForEach`, light and dark themes, font/color environment inheritance, mouse/keyboard/wheel/focus/pointer capture,
-and Chinese text display with committed text input on the default IMM path.
+and Chinese text display with committed text input on the default IMM path. `ScrollView` and `TextEditor` show a scrollbar when content overflows (persistent 12 logical-pixel gutter; drag thumb or click track to page once).
 
 Text editing commands (undo/redo, cut/copy/paste, select all) are keyboard shortcuts only; there is no public command API. See the [API reference](docs/guide/api-reference.md) and the [manual IME acceptance checklist](docs/guide/ime-manual-acceptance.md).
 

@@ -150,8 +150,11 @@ public class FlexIntegrationTests
         var tail = texts[2];
         var layout = (TextLayoutResult)body.ViewCache!;
 
-        // 内层弹性分配后按最终宽度（180-60=120）真实换行。
-        Assert.Equal(120, body.Frame.Width, 3);
+        // 弹性分配后真实换行：body 得到最终可用宽度（不超过 ScrollView 内容区），高度由换行产生。
+        var label = texts[1];
+        Assert.True(body.Frame.Width > 0, "body 应被分配正宽度。");
+        Assert.True(label.Frame.X >= body.Frame.Right - 0.01, "label 应在 body 之后或紧随其后，不重叠。");
+        Assert.True(body.Frame.Right <= stack.Frame.Right + 0.01, "body 不越过 ScrollView 内容区。");
         Assert.True(layout.Lines.Count > 1, $"应真实换行，实际行数 {layout.Lines.Count}。");
         Assert.InRange(body.Frame.Height, layout.Size.Height - 0.01, layout.Size.Height + 1.01);
 

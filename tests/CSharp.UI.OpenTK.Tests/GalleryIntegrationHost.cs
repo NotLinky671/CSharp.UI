@@ -98,6 +98,36 @@ internal sealed class GalleryIntegrationHost : IDisposable
 }
 
 /// <summary>
+/// 控件示例（<see cref="GalleryApp"/>）的关键滚动视图定位助手：按示例里注入的 <see cref="ViewExtensions.Key"/> 身份键查找，
+/// 示例新增 demo 区块（更多 ScrollView）不影响命中。
+/// </summary>
+internal static class GalleryScrollLookup
+{
+    /// <summary>整页外层滚动视图（"gallery-root-scroll"）。</summary>
+    public static ViewNode RootScroll(UiRuntime runtime)
+        => FindScrollByKey(runtime, "gallery-root-scroll", "整页外层 ScrollView");
+
+    /// <summary>"滚动容器" 节中 120px FrameView 内的内层滚动视图（"gallery-nested-scroll"）。</summary>
+    public static ViewNode NestedScroll(UiRuntime runtime)
+        => FindScrollByKey(runtime, "gallery-nested-scroll", "滚动容器内层 ScrollView");
+
+    /// <summary>按示例注入的 Key 定位节点；若键落在外层修饰符上，向下取首个 ScrollView。</summary>
+    private static ViewNode FindScrollByKey(UiRuntime runtime, string key, string description)
+    {
+        var keyed = runtime.Root.Descendants()
+            .FirstOrDefault(n => n.HasIdentityKey && key.Equals(n.IdentityKey as string, StringComparison.Ordinal));
+        if (keyed is null)
+        {
+            throw new InvalidOperationException($"示例页面找不到身份键 {key} 的 {description}。");
+        }
+        return keyed.View is ScrollView
+            ? keyed
+            : keyed.FindDescendants<ScrollView>().FirstOrDefault()
+              ?? throw new InvalidOperationException($"身份键 {key} 的 {description} 下没有 ScrollView 节点。");
+    }
+}
+
+/// <summary>
 /// 真实示例的逐节点逻辑布局快照：把节点路径、帧矩形、期望尺寸与自适应模式序列化为可比较文本。
 /// 用于把真实宿主窗口的布局与同逻辑尺寸下的无窗口布局做逐节点对照。
 /// </summary>

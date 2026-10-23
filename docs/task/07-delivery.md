@@ -2,7 +2,7 @@
 
 创建日期：2026-10-23
 
-状态：待开始
+状态：实施与验收完成（Debug/Release 双 config fresh build 0 警告 0 错误；四套件 1434/1434 每配置全绿；六示例 fresh 构建+6 次 smoke exit 0；fast 独立真实窗口 IMM/scrollbar GPU 验收通过——GPU 78/78 + Gallery 32/32 + IMM exact 24/24 + after-measure 108 + Unavailable 保活重锚；交付记录见 [2026-10-23-scrollbar-delivery.md](../delivery/2026-10-23-scrollbar-delivery.md) 与 [审查记录](../return/2026-10-23-scrollbar-review.md)）。提交推送关联本次实现提交（见 Git 历史）。
 
 阶段：D
 

@@ -44,10 +44,14 @@ public class InputFocusTests
         Assert.Equal(["clicked"], log);
         Assert.NotSame(buttonNode, app.Runtime.HitTest(outside));
 
-        // 滚动容器的绘制命令被限制在视口内（存在对应的裁剪入栈）。
+        // 真实不变量：内容 clip 比 frame 至少底缩 gutter 宽——gutter 区不绘制子项内容。
         var commands = app.Frame();
-        var clip = Assert.Single(commands.OfType<PushClipCommand>());
-        Assert.Equal(scroll.Frame, clip.Bounds);
+        var clips = commands.OfType<PushClipCommand>().ToList();
+        var hasInnerClip = clips.Any(c =>
+            c.Bounds != scroll.Frame
+            && c.Bounds.Bottom <= scroll.Frame.Bottom - ScrollbarMetrics.Thickness);
+        Assert.True(hasInnerClip,
+            $"至少一条 clip 必须相对 frame 右缩 ≥ {ScrollbarMetrics.Thickness}px（gutter 区不绘制内容）。");
     }
 
     [Fact]

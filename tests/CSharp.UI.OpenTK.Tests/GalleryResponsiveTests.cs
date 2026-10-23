@@ -47,16 +47,27 @@ public sealed class GalleryResponsiveTests
             Assert.True(double.IsFinite(leaf.Frame.Width), $"{leaf.View.DebugName} 的宽度不是有限值：{leaf.Frame}。");
             Assert.True(leaf.Frame.Width >= 0, $"{leaf.View.DebugName} 出现负宽度：{leaf.Frame}。");
             Assert.True(leaf.Frame.Left >= -Epsilon, $"{leaf.View.DebugName} 越过左边界：{leaf.Frame}。");
-            Assert.True(
-                leaf.Frame.Right <= width + Epsilon,
-                $"{leaf.View.DebugName} 越过 {width} 逻辑宽度右边界：{leaf.Frame}。");
+            // 横向 ScrollView 内容可宽于视口（由 ScrollView 裁剪）；其他叶子不得越过右边界。
+            var inHorizontalScroll = false;
+            for (var p = leaf.Parent; p is not null; p = p.Parent)
+            {
+                if (p.View is ScrollView s && s.Axis == ScrollAxis.Horizontal)
+                {
+                    inHorizontalScroll = true;
+                    break;
+                }
+            }
+            if (!inHorizontalScroll)
+            {
+                Assert.True(
+                    leaf.Frame.Right <= width + Epsilon,
+                    $"{leaf.View.DebugName} 越过 {width} 逻辑宽度右边界：{leaf.Frame}。");
+            }
         }
 
-        // 真实内层滚动视图必须保留：整页外层 + “滚动容器”一节的内层共两个。
-        var scrollViews = runtime.Root.FindDescendants<ScrollView>().ToArray();
-        Assert.Equal(2, scrollViews.Length);
-        var outer = scrollViews[0];
-        var inner = scrollViews[1];
+        // 通过示例注入的 Key 定位外层整页与"滚动容器"内层。
+        var outer = GalleryScrollLookup.RootScroll(runtime);
+        var inner = GalleryScrollLookup.NestedScroll(runtime);
         Assert.Contains(inner, outer.Descendants());
         Assert.True(
             inner.Children[0].DesiredSize.Height > inner.Frame.Height,

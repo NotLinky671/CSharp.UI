@@ -39,7 +39,8 @@ public sealed class GalleryNestedScrollTests
     {
         using var host = new GalleryHost(GalleryViewport, 1.0);
 
-        Assert.Equal(2, host.ScrollViews.Count);
+        Assert.NotNull(host.Outer);
+        Assert.NotNull(host.Inner);
         var outer = host.Outer;
         var inner = host.Inner;
 
@@ -49,7 +50,9 @@ public sealed class GalleryNestedScrollTests
         // 视口 Frame 在滚动视图外：内层的父节点是固定 120 高度的 FrameView，其子项正是该滚动视图。
         var frame = Assert.IsType<FrameView>(inner.Parent!.View);
         Assert.Equal(120, frame.Height!.Value, 3);
-        Assert.Same(inner.View, frame.Content);
+        // FrameView.Content 由 .Key 包裹的 ScrollView 提供；Key 是定位用身份不是被测契约，断言结构不在此。
+        var keyed = Assert.IsType<KeyedView>(frame.Content);
+        Assert.Same(inner.View, keyed.Child);
         Assert.Equal(120, inner.Frame.Height, 3);
 
         // 内部内容保持自然高度（替身行高 17.5、间距 4）：1 行说明 + 40 行内容，远高于 120 的视口。
@@ -73,7 +76,8 @@ public sealed class GalleryNestedScrollTests
     public void 控件展示内层一格滚动48逻辑像素且外层不动(double pixelScale)
     {
         using var host = new GalleryHost(GalleryViewport, pixelScale);
-        Assert.Equal(2, host.ScrollViews.Count);
+        Assert.NotNull(host.Outer);
+        Assert.NotNull(host.Inner);
         BringInnerIntoView(host);
 
         var outerOffset = host.Outer.ScrollOffsetY;
@@ -200,25 +204,41 @@ public sealed class GalleryNestedScrollTests
         GalleryHost host,
         IReadOnlyList<DrawCommand> commands)
     {
-        var start = -1;
+        // 内层 ScrollView 现在用 persistent gutter：压入两次裁剪——外层 frame（含滚动条槽）与内层 content-rect（frame - right 12）。
+        // 视口裁剪 = 内层 content-rect；先找外层 frame 的 push，再取其内部的 content-rect push。
+        var outerStart = -1;
         for (var i = 0; i < commands.Count; i++)
         {
             if (commands[i] is PushClipCommand push && IsSameRect(push.Bounds, host.Inner.Frame))
+            {
+                outerStart = i;
+                break;
+            }
+        }
+        Assert.True(outerStart >= 0, "内层滚动视图没有按整 frame 压入外层裁剪区。");
+
+        var expectedContent = host.Inner.Frame with { Width = host.Inner.Frame.Width - ScrollbarMetrics.Thickness };
+        var start = -1;
+        for (var i = outerStart + 1; i < commands.Count; i++)
+        {
+            if (commands[i] is PopClipCommand)
+            {
+                break;
+            }
+            if (commands[i] is PushClipCommand push && IsSameRect(push.Bounds, expectedContent))
             {
                 start = i;
                 break;
             }
         }
+        Assert.True(start >= 0, "内层滚动视图没有按内容区（frame - 滚动条槽）压入视口裁剪区。");
 
-        Assert.True(start >= 0, "内层滚动视图没有按 120 像素视口压入裁剪区。");
-
-        // 内层区域只包含文本，没有嵌套裁剪：紧随其后的弹出命令就是配对项。
+        // 内层区域只包含文本：紧随其后的弹出命令就是配对项。
         var end = start + 1;
         while (end < commands.Count && commands[end] is not PopClipCommand)
         {
             end++;
         }
-
         Assert.True(end < commands.Count, "内层滚动视图的视口裁剪区没有配对的弹出命令。");
 
         var clip = ((PushClipCommand)commands[start]).Bounds;
@@ -231,13 +251,15 @@ public sealed class GalleryNestedScrollTests
         var texts = content.OfType<TextureCommand>().ToList();
         Assert.Equal(content.Count, texts.Count);
 
-        // 视口内绘制的内容都落在内层视口裁剪区里，不会画到 120 像素之外。
-        Assert.All(texts, text => Assert.True(text.Bounds.IntersectsWith(host.Inner.Frame)));
+        // 视口 = inner.Frame - 右 gutter（与 InnerViewportCommands 找到的 clip 一致）。
+        var viewport = host.Inner.Frame with { Width = host.Inner.Frame.Width - ScrollbarMetrics.Thickness };
+        // 视口内绘制的内容都落在内层视口裁剪区里。
+        Assert.All(texts, text => Assert.True(text.Bounds.IntersectsWith(viewport)));
 
         for (var i = 0; i < rows.Count; i++)
         {
             var row = rows[i].Frame;
-            var intersectsViewport = row.IntersectsWith(host.Inner.Frame);
+            var intersectsViewport = row.IntersectsWith(viewport);
             var hasCommand = texts.Any(text => text.Bounds.Y < row.Bottom - Epsilon && row.Y < text.Bounds.Bottom - Epsilon);
             Assert.True(
                 intersectsViewport == hasCommand,
@@ -282,14 +304,11 @@ public sealed class GalleryNestedScrollTests
             Adapter = new OpenTkInputAdapter(Runtime, () => { });
             Adapter.UpdatePointerTransform(1 / pixelScale, 1 / pixelScale);
 
-            ScrollViews = [.. Runtime.Root.FindDescendants<ScrollView>()];
-            if (ScrollViews.Count < 2)
-            {
-                throw new InvalidOperationException(
-                    $"控件展示页面应包含内外两个 ScrollView，实际找到 {ScrollViews.Count} 个。");
-            }
-
-            var content = ScrollViews[1].Children[0];
+            // 通过示例注入的 Key 定位；新增 demo ScrollView 不影响命中。
+            var outerNode = GalleryScrollLookup.RootScroll(Runtime);
+            var innerNode = GalleryScrollLookup.NestedScroll(Runtime);
+            ScrollViews = [outerNode, innerNode];
+            var content = innerNode.Children[0];
             ContentRows = [.. content.Children.Skip(1)];
         }
 

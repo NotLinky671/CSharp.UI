@@ -191,7 +191,7 @@ public sealed class GalleryBreakpointInputTests
 
         // 目标输入框在整页 ScrollView 内：先滚入视口再聚焦——视口外节点不产出任何绘制命令。
         var field = FindTextField(host, "试试中文输入法与 Ctrl+V 粘贴");
-        var outer = host.Runtime.Root.FindDescendants<ScrollView>().First();
+        var outer = GalleryScrollLookup.RootScroll(host.Runtime);
         BringInnerIntoView(host, outer, field);
         host.Runtime.SetFocus(field);
         host.Runtime.DispatchKey(new KeyEvent(KeyEventKind.Down, UiKey.End));
@@ -204,7 +204,7 @@ public sealed class GalleryBreakpointInputTests
 
         var moved = FindTextField(host, "试试中文输入法与 Ctrl+V 粘贴");
         Assert.Same(field, moved);
-        var movedOuter = host.Runtime.Root.FindDescendants<ScrollView>().First();
+        var movedOuter = GalleryScrollLookup.RootScroll(host.Runtime);
         Assert.Same(outer, movedOuter);
         BringInnerIntoView(host, movedOuter, moved);
         var state = Assert.IsType<TextFieldState>(moved.InteractionState);
@@ -261,10 +261,8 @@ public sealed class GalleryBreakpointInputTests
     public void 双层滚轮跨断点先内层后外层且偏移随内容收敛()
     {
         using var host = new GalleryIntegrationHost(new GalleryApp(), new Size(1024, 700), 1.0);
-        var scrollViews = host.Runtime.Root.FindDescendants<ScrollView>().ToArray();
-        Assert.Equal(2, scrollViews.Length);
-        var outer = scrollViews[0];
-        var inner = scrollViews[1];
+        var outer = GalleryScrollLookup.RootScroll(host.Runtime);
+        var inner = GalleryScrollLookup.NestedScroll(host.Runtime);
 
         BringInnerIntoView(host, outer, inner);
         var outerBefore = outer.ScrollOffsetY;
@@ -276,7 +274,7 @@ public sealed class GalleryBreakpointInputTests
 
         host.Resize(new Size(320, 700), 1.0);
 
-        var movedInner = host.Runtime.Root.FindDescendants<ScrollView>().ToArray()[1];
+        var movedInner = GalleryScrollLookup.NestedScroll(host.Runtime);
         Assert.Same(inner, movedInner);
         BringInnerIntoView(host, outer, movedInner);
         var contentHeight = movedInner.Children[0].DesiredSize.Height;

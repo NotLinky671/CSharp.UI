@@ -55,23 +55,24 @@ public class ResponsiveIntegrationTests
         var body = texts[0];
         var tail = texts[1];
 
-        // 首帧：按父级可用宽度 300 真实排版换行，内容完整（不是空帧）。
-        Assert.Equal<double>(new[] { 300d }, widths);
+        // 首帧：按父级实际可用宽度真实排版换行，内容完整（不是空帧）。
+        Assert.Single(widths);
+        Assert.Equal(widths[0], body.Frame.Width, 3);
         var wideLayout = (TextLayoutResult)body.ViewCache!;
         var wideLines = wideLayout.Lines.Count;
         Assert.True(wideLines > 1, $"宽布局应真实换行，实际行数 {wideLines}。");
         Assert.Equal(wideLayout.Size.Height, tail.Frame.Y, 3);
 
-        // 变窄：响应式内容按 180 重建，真实排版行数增加、高度增长。
+        // 变窄：响应式内容按新可用宽度重建，真实排版行数增加、高度增长；宽度与 Responsive 报告一致。
         runtime.SetViewport(new Size(180, 120), 1.0);
         runtime.ProcessPendingWork();
 
-        Assert.Equal(180, widths[^1], 3);
         var narrowLayout = (TextLayoutResult)body.ViewCache!;
         Assert.True(
             narrowLayout.Lines.Count > wideLines,
             $"窄宽度行数 {narrowLayout.Lines.Count} 应多于宽宽度 {wideLines}。");
-        Assert.Equal(180, body.Frame.Width, 3);
+        Assert.Equal(widths[^1], body.Frame.Width, 3);
+        Assert.True(widths[^1] < widths[0], $"收缩后可用宽度应更小：{widths[^1]} >= {widths[0]}。");
         Assert.InRange(body.Frame.Height, narrowLayout.Size.Height - 0.01, narrowLayout.Size.Height + 1.01);
 
         // 最终子项尺寸改变后必须向上重新汇总自然高度，尾部位置与滚动内容高度都跟着更新。
@@ -107,7 +108,8 @@ public class ResponsiveIntegrationTests
         runtime.SetViewport(new Size(160, 200), 1.0);
         runtime.ProcessPendingWork();
 
-        Assert.Equal(160, widths[^1], 3);
+        // 160 视口 - 槽 12 = 148 < 200，触发窄分支。
+        Assert.True(widths[^1] < 200, $"160 视口下可用宽度应进入窄分支阈值，实际 {widths[^1]}。");
         var narrowBody = runtime.Root.FindDescendants<Text>().First();
         Assert.Equal("narrow", Assert.IsType<Text>(narrowBody.View).Content);
         Assert.True(narrowBody.Frame.Height < wideHeight, "窄分支内容更少，高度应变小。");

@@ -92,7 +92,8 @@ public sealed class GalleryHostResizeTests
                                 var renderer = host.Renderer.FramebufferSize;
                                 var pending = context.Runtime.PendingResponsiveRequestCount;
                                 var needsDraw = context.Runtime.NeedsDraw;
-                                var corner = ReadFrontPixel(host, real.X - 3, 3);
+                                // 右上角现在被 persistent 滚动条轨道占据（非清屏色）：读轨道左侧 1 像素仍属页面背景。
+                                var corner = ReadFrontPixel(host, real.X - 3 - (int)Math.Round(ScrollbarMetrics.Thickness * scale), 3);
                                 var background = context.Runtime.ClearColor;
 
                                 steps.Add(
@@ -139,7 +140,17 @@ public sealed class GalleryHostResizeTests
                                         break;
                                     }
 
-                                    if (node.Frame.Right > logical.Width + 0.01)
+                                    // 横向滚动容器内容可宽于视口（由 ScrollView 裁剪）；其他节点不得越过。
+                                    var inHorizontalScroll = false;
+                                    for (var p = node.Parent; p is not null; p = p.Parent)
+                                    {
+                                        if (p.View is ScrollView s && s.Axis == ScrollAxis.Horizontal)
+                                        {
+                                            inHorizontalScroll = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!inHorizontalScroll && node.Frame.Right > logical.Width + 0.01)
                                     {
                                         failures.Add($"{steps[^1]}：{node.DebugPath} 越过视口宽度：{node.Frame}。");
                                         break;

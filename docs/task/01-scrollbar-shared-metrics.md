@@ -2,7 +2,7 @@
 
 创建日期：2026-10-23
 
-状态：待开始
+状态：已完成（fast 独立 50 executable checks + core 604 全绿；主审批准）。
 
 阶段：A
 
@@ -38,6 +38,8 @@
 ## 常量（内部，非公开 API）
 
 `ScrollbarThickness = 12`、`MinThumbLength = 24`、`inset = 2`。DPI 经 `pixelScale` 既有路径换算；gutter 宽由 caller `min(ScrollbarThickness, max(0, crossExtent))` 自适应（极窄 frame 不产负 rect）。
+
+- **几何有效性 guard（实施后补注）**：`ShowScrollbar` 除 `C>V`/`V>0`/`T>0` 外还含 `IsFinite(V)`/`IsFinite(C)`/`IsFinite(T)`；`ThumbLeading`/`DragToOffset`/`HitTest` 统一先判 `!ShowScrollbar` → 返回 `s`/`currentOffset`/`None`，无效几何（非有限或 drag 中内容/视口/轨道突变）不产生 NaN/Inf。
 
 ## 边界
 

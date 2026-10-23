@@ -84,9 +84,7 @@ public sealed class GalleryDpiLayoutTests
         foreach (var scale in DpiScales)
         {
             using var host = new GalleryIntegrationHost(new GalleryApp(), new Size(width, 1600), scale);
-            var scrollViews = host.Runtime.Root.FindDescendants<ScrollView>().ToArray();
-            Assert.Equal(2, scrollViews.Length);
-            var inner = scrollViews[1];
+            var inner = GalleryScrollLookup.NestedScroll(host.Runtime);
             Assert.True(
                 inner.Children[0].DesiredSize.Height > inner.Frame.Height,
                 $"{width}@{scale}：内层滚动内容应高于其视口。");

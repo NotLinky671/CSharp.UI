@@ -223,10 +223,8 @@ public sealed class GalleryGpuIntegrationTests
         using var textService = new SkiaTextService();
         using var runtime = CreateRuntime(scope, textService, new Size(900, 700), scale);
 
-        var scrollViews = runtime.Root.FindDescendants<ScrollView>().ToArray();
-        Assert.Equal(2, scrollViews.Length);
-        var outer = scrollViews[0];
-        var inner = scrollViews[1];
+        var outer = GalleryScrollLookup.RootScroll(runtime);
+        var inner = GalleryScrollLookup.NestedScroll(runtime);
         BringInnerIntoView(runtime, outer, inner);
 
         // 让内层内容滚动到某一行恰好横跨视口下边缘：该命令仍被生成（与视口相交），但超出下边缘的部分必须由 GPU 裁剪。

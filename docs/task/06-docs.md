@@ -2,7 +2,7 @@
 
 创建日期：2026-10-23
 
-状态：待开始
+状态：已完成（source 与相对链接一致性审核 104 相对链接、0 broken；fragment/锚点未逐条核）。scrollbar 用户文档与实现同步；与本任务组同步的 `docs/return/2026-10-23-scrollbar-review.md` 持续记录验收证据；SB-07 交付已生成最终记录。
 
 阶段：C
 
