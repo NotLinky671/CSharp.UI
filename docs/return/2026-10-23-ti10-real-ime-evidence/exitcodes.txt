@@ -1,0 +1,18 @@
+minimize-restore exit=0
+hide-restore exit=0
+window-deactivate exit=0
+focus-switch-cancel exit=0
+external-update-cancel exit=0
+undo-redo exit=0
+close-window exit=0
+breakpoint-reflow exit=0
+nihao-commit exit=0 verdict=pass "failures":""
+escape-cancel exit=0 verdict=pass "failures":""
+enter-select exit=0 verdict=pass "failures":""
+segmented exit=0 verdict=pass "failures":""
+digit-select exit=0 verdict=pass "failures":""
+container-scroll exit=0 verdict=pass "failures":""
+anchor-follow exit=0 verdict=pass "failures":""
+horizontal-scroll exit=0 verdict=pass "failures":""
+disabled-unmount exit=0 verdict=pass "failures":""
+resize-samebranch exit=0 verdict=pass "failures":""
