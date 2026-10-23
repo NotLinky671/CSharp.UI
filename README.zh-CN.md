@@ -56,7 +56,7 @@ dotnet run --project tests/CSharp.UI.Tests
 - [入门](docs/guide/getting-started.md)
 - [公开 API 参考](docs/guide/api-reference.md)
 - [响应式布局：使用与迁移](docs/guide/responsive-layout.md)
-- [文本输入与编辑计划](docs/plan/2026-10-17-text-input-and-editing-plan.md)（TI-01～TI-08 已交付；TI-07 Windows TSF 生产验收 2026-10-22 完成——见 [P4 交付记录](docs/delivery/2026-10-22-ti07-p4-delivery.md)；TI-08 非 Windows 平台如实报告仅已提交文本能力，仅源码级与 CPU 模拟验证、无真机 IME 证据；TI-09～TI-10 未开始）
+- [文本输入与编辑计划](docs/plan/2026-10-17-text-input-and-editing-plan.md)（TI-01～TI-10 已收口；TI-07 Windows TSF 生产验收 2026-10-22 完成——见 [P4 交付记录](docs/delivery/2026-10-22-ti07-p4-delivery.md)；TI-08 非 Windows 平台如实报告仅已提交文本能力，仅源码级与 CPU 模拟验证、无真机 IME 证据；TI-09～TI-10 于 2026-10-23 由用户验收收口，没有独立复审记录，已知边界见[交付记录](docs/delivery/2026-10-23-ti09-ti10-delivery.md)）
 - [状态与生命周期](docs/guide/state-lifecycle.md)
 - [修饰符顺序](docs/guide/modifier-order.md)
 - [Key 与动态列表](docs/guide/keys-and-lists.md)
