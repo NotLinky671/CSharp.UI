@@ -41,6 +41,8 @@ UiApplication.Run(new Counter());
 | `docs/guide` | Getting started, API, state, modifiers, keys, components, platform, and testing guides |
 | `docs/task` | Current IME and text-editing tasks; completed task sets live in `docs/archive/` |
 
+Historical IME tools and their three test projects are preserved at tag `archive/tools-before-removal`. Restore them in a separate checkout using `git worktree add --detach ../CSharp.UI-ime-archive archive/tools-before-removal`; existing acceptance evidence remains under `docs/`.
+
 ## Quick start
 
 ```bash

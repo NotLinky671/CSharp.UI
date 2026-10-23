@@ -12,7 +12,7 @@
 ## 前置条件
 
 - 控件展示示例（`samples/CSharp.UI.Samples.ControlGallery`）走默认 IMM 路径，“文本编辑与输入法”区域的输入框用于下面的基本输入与撤销重做检查。
-- Windows TSF 路径是内部开关 `UseTsfInputBridge`，不是公开选项，入口必须声明 `[STAThread]`。控件展示示例的入口不满足这一点，TSF 的真实验收使用 `tools/CSharp.UI.ImeHostCheck`，而不是示例。
+- Windows TSF 路径是内部开关 `UseTsfInputBridge`，不是公开选项，入口必须声明 `[STAThread]`。历史 TSF 验收工具 `tools/CSharp.UI.ImeHostCheck` 与其依赖、测试已归档到标签 `archive/tools-before-removal`。如需复跑，在独立目录执行 `git worktree add --detach ../CSharp.UI-ime-archive archive/tools-before-removal`，从该目录运行历史工具；不要将旧实现复制回当前分支。控件展示示例只验证默认 IMM 路径。
 - 已记录的 TSF 验收环境：微软拼音、150% 缩放、单显示器，见 [P4 交付记录](../delivery/2026-10-22-ti07-p4-delivery.md)。其它输入法与 DPI 没有证据。
 - macOS 与 Linux 只有已提交文本通道，没有真机输入法证据，见[平台、字体与原生依赖](platform-notes.md)。
 

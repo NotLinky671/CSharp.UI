@@ -484,6 +484,11 @@ internal sealed class NativeCompositionOwnerSink :
     /// </remarks>
     private static string? ReadRangeText(IntPtr range, int anchor, int length)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            return null;
+        }
+
         if (range == IntPtr.Zero || length <= 0)
         {
             return null;

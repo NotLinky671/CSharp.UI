@@ -1,0 +1,19 @@
+  正在确定要还原的项目…
+  所有项目均是最新的，无法还原。
+  CSharp.UI -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\bin\Release\net10.0\CSharp.UI.dll
+  CSharp.UI.Text -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.Text\bin\Release\net10.0\CSharp.UI.Text.dll
+  CSharp.UI.OpenTK -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.OpenTK\bin\Release\net10.0\CSharp.UI.OpenTK.dll
+  CSharp.UI.Samples.ControlGallery -> C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.ControlGallery\bin\Release\net10.0\ControlGallery.dll
+  CSharp.UI.Samples.Counter -> C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.Counter\bin\Release\net10.0\Counter.dll
+  CSharp.UI.Samples.TodoList -> C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.TodoList\bin\Release\net10.0\TodoList.dll
+  CSharp.UI.Integration.Tests -> C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\bin\Release\net10.0\CSharp.UI.Integration.Tests.dll
+  CSharp.UI.OpenTK.Tests -> C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.OpenTK.Tests\bin\Release\net10.0\CSharp.UI.OpenTK.Tests.dll
+  CSharp.UI.Tests -> C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Tests\bin\Release\net10.0\CSharp.UI.Tests.dll
+  CSharp.UI.Text.Tests -> C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Text.Tests\bin\Release\net10.0\CSharp.UI.Text.Tests.dll
+  CSharp.UI.AssetGenerator -> C:\Users\nothh\code\C#\CSharp.UI\tools\CSharp.UI.AssetGenerator\bin\Release\net10.0\assetgen.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:06.92

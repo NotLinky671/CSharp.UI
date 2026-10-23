@@ -52,7 +52,7 @@ public sealed class TsfHookRetirementTests
             try
             {
                 Invoke(hook, liveKey, TsfMessageHookPolicy.PmRemove);
-                Assert.Equal(1, conversations.Count);
+                Assert.Single(conversations);
                 Assert.Equal(TsfMessageHookPolicy.WmNull, ReadMessage(liveKey).Message);
                 Assert.Equal(TsfHookRetirementStatus.Active, hook.RetirementStatus);
 
@@ -68,14 +68,14 @@ public sealed class TsfHookRetirementTests
                 // 迟到回调（原生仍持有委托）：只链式传递，不得访问会话/改写 MSG/计入观察。
                 // 有意使用 WM_KEYUP 等“本可被消费”的按键消息，避免把“消息已被改写”误当作退役守卫生效。
                 var lateKey = NewMessagePointer(OwnHwnd, TsfMessageHookPolicy.WmKeyUp,
-                    (IntPtr)0x43, (IntPtr)0xC02E0001);
+                    (IntPtr)0x43, unchecked((IntPtr)0xC02E0001));
                 try
                 {
                     var result = Invoke(hook, lateKey, TsfMessageHookPolicy.PmRemove);
 
                     Assert.Equal(NextResult, result);
                     Assert.Equal(1, hook.RetiredCallbackCount);
-                    Assert.Equal(1, conversations.Count); // 没有再次触碰会话（live 那次之后再无调用）
+                    Assert.Single(conversations); // 没有再次触碰会话（live 那次之后再无调用）
                     Assert.Equal(1, hook.ConsumedCount); // 保持 live 那次累计，不因退役清零
                     Assert.Equal(1, hook.ObservedKeyCount); // 同上：迟到回调节点未再计数
                     Assert.Equal(1, hook.RewriteCount); // 只有第一枚 live 键被改写
@@ -175,7 +175,7 @@ public sealed class TsfHookRetirementTests
             Assert.True(hook.RetireRequested);
 
             var latePointer = NewMessagePointer(OwnHwnd, TsfMessageHookPolicy.WmKeyUp,
-                (IntPtr)0x41, (IntPtr)0xC01E0001);
+                (IntPtr)0x41, unchecked((IntPtr)0xC01E0001));
             try
             {
                 // 负向对照：若退役期间仍走消费路径，这里会被改写成 WM_NULL。
@@ -560,7 +560,7 @@ public sealed class TsfHookRetirementTests
         // 迟到原生回调：仍能安全执行（只链式传递）。有意用“本可被消费”的按键消息，
         // 避免把“消息已被改写”误当成退役守卫生效。
         var lateKey = NewMessagePointer(OwnHwnd, TsfMessageHookPolicy.WmKeyUp,
-            (IntPtr)0x43, (IntPtr)0xC02E0001);
+            (IntPtr)0x43, unchecked((IntPtr)0xC02E0001));
         try
         {
             Assert.Equal(NextResult, Invoke(hook, lateKey, TsfMessageHookPolicy.PmRemove));

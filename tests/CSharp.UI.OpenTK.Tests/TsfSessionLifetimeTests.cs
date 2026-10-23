@@ -43,6 +43,7 @@ public sealed class TsfSessionLifetimeTests
 {
     private const int WS_OVERLAPPED = 0x00000000;
 
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     [Fact]
     public void 真实隐藏窗口上会话焦点生命周期与第二会话成对释放()
     {

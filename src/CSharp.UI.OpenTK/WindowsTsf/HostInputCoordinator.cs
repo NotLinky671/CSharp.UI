@@ -74,7 +74,6 @@ internal sealed class HostInputCoordinator
     private readonly object _gate = new();
     private readonly Queue<DeferredInputAction> _deferred = [];
 
-    private bool _insideSafePhase;
     private bool _insideApply;
     private int _overflowCount;
     private int _deferredTotal;
@@ -177,7 +176,6 @@ internal sealed class HostInputCoordinator
                 return SafePhaseAttempt.Deferred(HostInputDeferralReason.InsideLock);
             }
 
-            _insideSafePhase = true;
             _insideApply = true;
             _appliedTotal++;
             return SafePhaseAttempt.Success;
@@ -190,7 +188,6 @@ internal sealed class HostInputCoordinator
         lock (_gate)
         {
             _insideApply = false;
-            _insideSafePhase = false;
         }
 
         // 真实安全边界离开：这是“可能可以交付”的唯一自然时机。
@@ -273,7 +270,6 @@ internal sealed class HostInputCoordinator
         {
             _deferred.Clear();
             _insideApply = false;
-            _insideSafePhase = false;
         }
     }
 

@@ -103,10 +103,10 @@ public readonly record struct CompositionEvent
         return new CompositionEvent(sessionId, compositionId, sequence, documentVersion, CompositionEventKind.Start)
         {
             Replacement = replacement,
-            Preedit = preedit,
+            Preedit = preedit ?? string.Empty,
             SelectionBeforeComposition = selectionBeforeComposition,
             CompositionCaret = compositionCaret,
-            Segments = segments,
+            Segments = segments ?? [],
         };
     }
 
@@ -126,9 +126,9 @@ public readonly record struct CompositionEvent
         return new CompositionEvent(sessionId, compositionId, sequence, documentVersion, CompositionEventKind.Update)
         {
             Replacement = replacement,
-            Preedit = preedit,
+            Preedit = preedit ?? string.Empty,
             CompositionCaret = compositionCaret,
-            Segments = segments,
+            Segments = segments ?? [],
         };
     }
 
@@ -152,7 +152,7 @@ public readonly record struct CompositionEvent
         return new CompositionEvent(sessionId, compositionId, sequence, documentVersion, CompositionEventKind.Result)
         {
             Replacement = replacement,
-            Preedit = result,
+            Preedit = result ?? string.Empty,
             NextPreedit = nextPreedit,
         };
     }

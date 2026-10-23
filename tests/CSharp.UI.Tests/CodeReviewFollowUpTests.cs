@@ -77,7 +77,7 @@ public class CodeReviewFollowUpTests
 
         Assert.Same(nodes[1], Item<KeyedItemComponent>(app, 1));
         Assert.Same(nodes[3], Item<KeyedItemComponent>(app, 3));
-        Assert.Empty(app.Runtime.Root.FindDescendants<KeyedItemComponent>().Where(n => Equals(n.IdentityKey, 2)));
+        Assert.DoesNotContain(app.Runtime.Root.FindDescendants<KeyedItemComponent>(), n => Equals(n.IdentityKey, 2));
         Assert.False(nodes[2].IsMounted);
         Assert.Equal(10, nodes[1].GetStateValue<int>("value"));
         Assert.Equal(30, nodes[3].GetStateValue<int>("value"));

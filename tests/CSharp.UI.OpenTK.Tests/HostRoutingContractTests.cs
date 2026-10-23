@@ -8,7 +8,7 @@ namespace CSharp.UI.OpenTK.Tests;
 /// </summary>
 /// <remarks>
 /// 这些用例不触碰 COM/窗口，因此在任何平台都能确定性运行；
-/// 真实原生顺序与线程证据由 <c>CSharp.UI.TsfHostBridgeCheck</c> 以 <c>[STAThread]</c> 进程入口给出。
+/// 历史原生顺序与线程证据由标签 <c>archive/tools-before-removal</c> 中的 <c>CSharp.UI.TsfHostBridgeCheck</c> 以 <c>[STAThread]</c> 入口给出。
 /// </remarks>
 public sealed class HostRoutingContractTests
 {

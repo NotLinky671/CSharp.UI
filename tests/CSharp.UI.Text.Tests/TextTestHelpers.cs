@@ -123,6 +123,18 @@ internal static class TextTestHelpers
         }
     }
 
-    /// <summary>生成一个位于系统临时目录中的唯一路径。</summary>
-    public static string UniqueTempPath(string extension) => Path.Combine(Path.GetTempPath(), $"csharp-ui-text-{Guid.NewGuid():N}{extension}");
+    /// <summary>
+    /// 测试专用暂存目录：固定在测试输出目录下、按进程隔离，避免依赖系统 Temp
+    /// （受限策略下测试宿主对系统 Temp 无写权限时会产生 UnauthorizedAccess）。
+    /// </summary>
+    private static readonly string ScratchRoot = CreateScratchRoot();
+
+    private static string CreateScratchRoot()
+    {
+        var root = Path.Combine(AppContext.BaseDirectory, "scratch", $"{Environment.ProcessId:x}-{Guid.NewGuid():N}");
+        return Directory.CreateDirectory(root).FullName;
+    }
+
+    /// <summary>生成一个位于测试暂存目录中的唯一路径（文件本身不创建）。</summary>
+    public static string UniqueTempPath(string extension) => Path.Combine(ScratchRoot, $"csharp-ui-text-{Guid.NewGuid():N}{extension}");
 }

@@ -63,7 +63,7 @@ public sealed class OrderedInputDeliveryTests
                 }
 
                 TextA = v;
-                _reenterOnWrite?.Invoke(Adapter, v);
+                _reenterOnWrite?.Invoke(Adapter!, v);
             }
             finally
             {

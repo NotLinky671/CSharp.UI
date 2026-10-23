@@ -46,12 +46,10 @@ public class TextFieldCaretAlignmentRegressionTests
         => Assert.Single(commands.OfType<TextureCommand>());
 
     private static RectangleCommand Caret(IReadOnlyList<DrawCommand> commands)
-        => Assert.Single(commands.OfType<RectangleCommand>()
-            .Where(c => c.Fill == Theme.Light.Foreground));
+        => Assert.Single(commands.OfType<RectangleCommand>(), c => c.Fill == Theme.Light.Foreground);
 
     private static RectangleCommand Selection(IReadOnlyList<DrawCommand> commands)
-        => Assert.Single(commands.OfType<RectangleCommand>()
-            .Where(c => c.Fill == Theme.Light.SelectionBackground));
+        => Assert.Single(commands.OfType<RectangleCommand>(), c => c.Fill == Theme.Light.SelectionBackground);
 
     private static void AssertPhysicalPixelOrigin(Rect bounds, double pixelScale, string label)
     {

@@ -479,6 +479,11 @@ internal sealed class TsfUiElementSink : ITfUIElementSink, IDisposable
 
     private static void ReleaseCom(object element)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         try
         {
             if (Marshal.IsComObject(element))

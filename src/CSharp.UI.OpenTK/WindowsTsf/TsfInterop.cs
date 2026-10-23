@@ -8,7 +8,7 @@ namespace CSharp.UI.OpenTK.WindowsTsf;
 /// <remarks>
 /// <para>
 /// <b>签名权威：</b>本机 Windows SDK <c>10.0.26100.0</c> 的 <c>um/TextStor.idl</c> 与 <c>um/msctf.idl</c>。
-/// 全部声明从已验证原型 <c>tools/CSharp.UI.TsfHostCheck/TsfInterop.cs</c> 迁移，仅剥离诊断；
+/// 全部声明从标签 <c>archive/tools-before-removal</c> 中的 <c>tools/CSharp.UI.TsfHostCheck/TsfInterop.cs</c> 迁移，仅剥离诊断；
 /// <b>没有</b>按记忆或推测改写任何 ABI、IID、vtable 顺序或封送属性。
 /// </para>
 /// <para>

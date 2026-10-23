@@ -1291,6 +1291,11 @@ internal sealed class TsfHostSession : IDisposable
     /// </remarks>
     private static ITfKeystrokeMgr? TryQueryKeystrokeMgr(ITfThreadMgr threadMgr)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            return null;
+        }
+
         var unknown = IntPtr.Zero;
         var ksPtr = IntPtr.Zero;
         try
@@ -1366,6 +1371,11 @@ internal sealed class TsfHostSession : IDisposable
     {
         internal static bool? Same(object left, object right)
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                return null;
+            }
+
             var leftPtr = IntPtr.Zero;
             var rightPtr = IntPtr.Zero;
             try

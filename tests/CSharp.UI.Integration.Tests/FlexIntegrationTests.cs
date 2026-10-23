@@ -124,7 +124,7 @@ public class FlexIntegrationTests
 
         var commands = runtime.BuildFrame().Commands;
         var caret = Assert.Single(
-            commands.OfType<RectangleCommand>().Where(command => command.Bounds.Width <= 2.0 && command.Bounds.Height > 4));
+            commands.OfType<RectangleCommand>(), command => command.Bounds.Width <= 2.0 && command.Bounds.Height > 4);
         Assert.InRange(caret.Bounds.X, inner.Left - 0.5, inner.Right + 0.5);
 
         // 文字纹理不得越过内容区右边界；末端贴边属于旧滚动预算，不再作为验收目标。

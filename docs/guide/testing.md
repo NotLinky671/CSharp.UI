@@ -34,6 +34,8 @@ dotnet run --project tests/CSharp.UI.OpenTK.Tests -- -trait "Category=Graphics"
 
 也可以使用 `dotnet test CSharp.UI.slnx`；若需要按名称筛选，可用运行器的 `--help` 查看当前支持的过滤器（当前为单破折号的 `-class`、`-method`、`-namespace`、`-trait` 及对应的 `-class-`/`-method-` 排除形式）。
 
+测试需要写文件时（字体/图片解码用例）使用 `TextTestHelpers.UniqueTempPath`，产物位于测试输出目录下的 `scratch/` 子目录，按进程隔离、用例自行删除文件；不要依赖系统 Temp——受限策略下测试宿主可能无权写入，会出现 UnauthorizedAccess。
+
 ## 无图形环境
 
 - 核心与文本测试不依赖图形环境，可直接在 CI 容器中运行。

@@ -49,7 +49,6 @@ internal sealed class TsfInputBridge : IWindowsInputBridge
     private bool _disposed;
     private int _safeDrainCount;
     private int _deferredDrainCount;
-    private int _orderedDeliveryCount;
 
     /// <summary>原生事实排空进行中：期间不得改写权威基线（排空是唯一应用点）。</summary>
     private bool _draining;
@@ -114,10 +113,6 @@ internal sealed class TsfInputBridge : IWindowsInputBridge
 
     /// <summary>因不安全而延后的排空次数。</summary>
     internal int DeferredDrainCount => _deferredDrainCount;
-
-    /// <summary>按序交付的后续输入数。</summary>
-    internal int OrderedDeliveryCount => _orderedDeliveryCount;
-
     /// <summary>Real safe-boundary notifications delivered to the host (diagnostics; bounded, not polling).</summary>
     internal int HostSignalNotificationCount => Volatile.Read(ref _hostSignalNotificationCount);
 
@@ -922,7 +917,7 @@ internal sealed class TsfInputBridge : IWindowsInputBridge
     /// <summary>只输出计数，不含用户内容。</summary>
     public override string ToString()
         => $"tsf-input-bridge hook={_hook.Installed} drains={_safeDrainCount} "
-            + $"deferred={_deferredDrainCount} ordered={_orderedDeliveryCount}";
+            + $"deferred={_deferredDrainCount}";
 
     [DllImport("kernel32.dll", ExactSpelling = true)]
     private static extern uint GetCurrentThreadId();

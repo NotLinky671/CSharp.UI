@@ -15,19 +15,9 @@
 
 本次成功运行使用 stdin EOF 退出，没有调用 `session/close`；持久会话记录可能保留。脚本后续增加了关闭自己创建会话的逻辑，这部分尚待再次执行验证。
 
-## 检查器
+## 检查器（已移除）
 
-从仓库根目录运行：
-
-```powershell
-node docs/agents-notebook/acp/check-devin.mjs
-node docs/agents-notebook/acp/check-devin.mjs --smoke
-node docs/agents-notebook/acp/check-devin.mjs --inspect
-```
-
-默认只握手；`--smoke` 创建会话并调用模型一次；`--inspect` 创建会话、请求 `ask` 模式，并让 Devin 只读查看四份文件：`AGENTS.md`、`README.md`、`docs/task/README.md`、`docs/task/07-windows-ime-and-host-routing.md`，返回任务交接分析。
-
-检查器不提供客户端文件或终端能力，所有显式权限请求均返回取消。Devin 的内置工具能力由服务自身实现；`--inspect` 另有只读提示词和 Ask 模式约束，不是操作系统沙箱。脚本不是通用编码任务执行器，不启用 bypass，也不授权提交或推送。
+2026-10-23 按用户要求删除 `check-devin.mjs`。本页保留历史验证结果；原检查器命令不再适用于当前分支，不作为当前工作流入口。
 
 ## 当前限制与后续交接
 

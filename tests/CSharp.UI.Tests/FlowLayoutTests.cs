@@ -318,7 +318,7 @@ public class FlowLayoutTests
         var node = app.Runtime.Root.Require<Flow>();
         var originalCache = node.FlowCache;
         var originalSize = node.DesiredSize;
-        Assert.Equal(1, originalCache!.Lines.Length);
+        Assert.Single(originalCache!.Lines);
 
         var context = new LayoutContext(app.Runtime, app.Text, app.Images, 1.0);
         using (context.BeginProbe())
@@ -331,7 +331,7 @@ public class FlowLayoutTests
         // 探测退出后行缓存与期望尺寸完整恢复，不遗留探测宽度下的分行结果。
         Assert.Same(originalCache, node.FlowCache);
         Assert.Equal(originalSize, node.DesiredSize);
-        Assert.Equal(1, node.FlowCache!.Lines.Length);
+        Assert.Single(node.FlowCache!.Lines);
     }
 
     [Fact]

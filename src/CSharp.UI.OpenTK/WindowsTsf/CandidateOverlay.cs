@@ -42,7 +42,7 @@ internal sealed class CandidateOverlay
         internal double PixelScale;
         internal double TextMaxWidth;
         internal TextLayoutResult[] Entries = [];
-        internal TextLayoutResult Footer = default;
+        internal TextLayoutResult? Footer;
         internal double RowHeight;
         internal double ContentWidth;
         internal int EntryCount;
@@ -128,7 +128,8 @@ internal sealed class CandidateOverlay
         var measure = GetMeasure(context, snapshot, font, textMaxWidth, entryCount);
         var rowHeight = measure.RowHeight;
         var footerLayout = measure.Footer;
-        if (!double.IsFinite(rowHeight) || rowHeight <= 0
+        if (footerLayout is null
+            || !double.IsFinite(rowHeight) || rowHeight <= 0
             || !double.IsFinite(footerLayout.Size.Height) || footerLayout.Size.Height <= 0)
         {
             return;

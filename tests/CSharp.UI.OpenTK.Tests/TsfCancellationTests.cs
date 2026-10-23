@@ -61,6 +61,11 @@ public sealed class TsfCancellationTests
                 failure = ex;
             }
         });
+        if (!OperatingSystem.IsWindows())
+        {
+            throw new PlatformNotSupportedException("真实 TSF STA 测试需要 Windows。");
+        }
+
         thread.SetApartmentState(ApartmentState.STA);
         thread.IsBackground = true;
         thread.Start();
@@ -389,6 +394,7 @@ public sealed class TsfCancellationTests
     /// 生产等价位：窗口失活/失焦的 <c>CancelTextInput → ReleaseTextInputOwnershipFor</c> 同栈
     /// 先本地取消再结束会话；flush 取消在 owner 为 null 的分支不会发出，EndCore 是唯一投递点。
     /// </remarks>
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     [Fact]
     public void 失焦结束会话时登记的取消意图真正交给真实桥()
         => RunOnSta(() =>
@@ -493,6 +499,7 @@ public sealed class TsfCancellationTests
     /// 宿主取消必须经 <c>ITfContextOwnerCompositionServices::TerminateComposition</c> 终止原生组合、
     /// 同步触发产品 <c>OnEndComposition</c>，零绑定写入，并且之后仍能建立新的合法组合。
     /// </summary>
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
     [Fact]
     public void 原生真实组合经owner终止并同步触发OnEndComposition且零写入()
     {

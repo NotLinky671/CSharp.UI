@@ -321,7 +321,7 @@ public class ResponsiveStateTests
         host.Show!.Value = false;
         runtime.ProcessPendingWork();
 
-        Assert.Equal(1, host.Source.Dependents.Count);
+        Assert.Single(host.Source.Dependents);
 
         var before = host.Builds;
         host.Source.Value = "new direct value";
@@ -347,7 +347,7 @@ public class ResponsiveStateTests
         runtime.ProcessPendingWork();
         runtime.BuildFrame();
 
-        Assert.Equal(1, host.Source.Dependents.Count);
+        Assert.Single(host.Source.Dependents);
 
         var before = host.Builds;
         host.Source.Value = "bound value still active";
@@ -394,7 +394,9 @@ public class ResponsiveStateTests
         using var app = new TestApp(host, new Size(300, 200));
         var node = app.Runtime.Root.Require<Responsive>();
 
-        Task.Run(() => app.Dispatcher.Post(() => host.A!.Value = "from background")).GetAwaiter().GetResult();
+        var worker = new Thread(() => app.Dispatcher.Post(() => host.A!.Value = "from background"));
+        worker.Start();
+        worker.Join();
 
         // 尚未在 UI 线程执行：内容保持原值。
         Assert.Equal("A", Assert.IsType<Text>(node.Children[0].View).Content);

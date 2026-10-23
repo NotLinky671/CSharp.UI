@@ -5,7 +5,7 @@ namespace CSharp.UI.OpenTK.WindowsTsf;
 // TI-07 P3b：UI-less 候选（UIElement）COM ABI。
 //
 // 签名权威：本机 Windows SDK 10.0.26100.0 的 um/msctf.idl；逐项对照已验证隔离原型
-// tools/CSharp.UI.TsfHostCheck/TsfInterop.cs，仅剥离诊断。所有方法保留原始 HRESULT，
+// 标签 archive/tools-before-removal 中的 tools/CSharp.UI.TsfHostCheck/TsfInterop.cs，仅剥离诊断。所有方法保留原始 HRESULT，
 // 绝不把托管异常穿过原生边界。
 //
 // 这些声明只是 ABI：本批不激活 TSF、不注册 sink、不读取元素。ActivateEx/GetActiveFlags

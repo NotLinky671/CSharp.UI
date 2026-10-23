@@ -41,6 +41,8 @@ UiApplication.Run(new Counter());
 | `docs/guide` | 入门、API、状态、修饰符、Key、组件、平台与测试说明 |
 | `docs/task` | 当前 IME 与文本编辑任务；已完成任务归档于 `docs/archive/` |
 
+历史输入法工具及其三个测试工程保存在标签 `archive/tools-before-removal`。需要复跑时，用 `git worktree add --detach ../CSharp.UI-ime-archive archive/tools-before-removal` 创建独立检出目录；验收日志和截图仍保留在 `docs/`。
+
 ## 快速开始
 
 ```bash

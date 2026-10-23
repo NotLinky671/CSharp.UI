@@ -567,7 +567,9 @@ public sealed class TsfCompositionOwnerSmokeTests
             // 真实范围调整：经 ITfComposition::ShiftEnd 扩展组合范围，
             // 由 TSF 触发产品的 OnUpdateComposition（含 pRangeNew）。
             var updatesBefore = sink.UpdateCallbacks;
-            var shiftHr = ShiftCompositionEnd(context, clientId, tfComposition, 0);
+            var shiftHr = tfComposition is null
+                ? TsfHResult.E_FAIL
+                : ShiftCompositionEnd(context, clientId, tfComposition, 0);
             log.Add($"[smoke] ShiftEnd hr=0x{shiftHr:X8} product Update callbacks={sink.UpdateCallbacks} "
                 + $"(before={updatesBefore}) range={sink.LastRange}");
 
