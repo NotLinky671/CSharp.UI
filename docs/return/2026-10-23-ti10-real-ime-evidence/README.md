@@ -24,17 +24,16 @@
 
 ## 已人工查看的截图
 
-15 张 PNG（13 张原始 + 重跑目录 `anchor-follow-rerun` 的 2 张）中，以下 6 张已确认亲眼看过图像内容：
+15 张 PNG（13 张原始 + 重跑目录 `anchor-follow-rerun` 的 2 张）中，只有以下 5 张在读取时确实附带了图像、我看到了内容：
 
-- `nihao-commit/s1-preedit.png`：预编辑"ni'hao"带下划线，下方系统微软拼音候选窗可见（1 你好 … 9 尼，第 1 页）。
-- `breakpoint-reflow/s8-breakpoint.png`：窄窗口纵向排列，两个输入框均为空，没有预编辑和候选窗；与日志一致（`wide-hstack` 切到 `narrow-vstack`，旧会话已取消，重排后重新建立）。
-- `container-scroll/s7c-scrolled-out.png`：输入框滚出可视区后窗口为空白，没有残留的候选窗。
-- `container-scroll/s7d-restored.png`：滚回后预编辑与候选窗恢复显示。
-- `anchor-follow-rerun/s6-composing-before.png`、`anchor-follow-rerun/s6-composing-moved.png`：移动前后都显示预编辑"ni'hao"和完整的候选窗（1 你好 … 9 尼，第 1 页），候选窗相对输入框的位置一致。两张图都是以窗口为单位截取，所以相对位置一致是预期；窗口真的移动过由日志的 `rect_before`/`rect_after` 证明，不是由截图证明。
+- `resize-samebranch/s8r-resized.png`（822 像素宽，比其它截图宽 80，与场景的"物理 +80px"一致）：预编辑"ni'hao"带下划线，候选窗完整（1 你好 … 9 尼，第 1 页），紧贴输入框下方。
+- `container-scroll/s7a-composing.png`：滚动前，预编辑与候选窗完整，输入框顶端约在 y=58。
+- `container-scroll/s7b-small-scroll.png`：小幅滚动后，输入框与候选窗整体上移约 10 像素（输入框顶端约 y=47），候选窗仍完整、仍紧贴输入框下方。
+- `anchor-follow/s6-composing-before.png`、`anchor-follow/s6-composing-moved.png`（原始运行）：移动前后都显示预编辑和完整候选窗，相对输入框的位置一致；移动前的图里能看到光标，移动后的图里没有，我判断是光标闪烁，没有进一步核实。两张图都以窗口为单位截取，所以相对位置一致是预期；窗口是否真的移动，由重跑日志的 `rect_before`/`rect_after` 证明，不由截图证明。
 
-另有一张 822 像素宽的预编辑加候选窗截图，我无法确定它对应 `window-deactivate`、`horizontal-scroll`、`resize-samebranch` 中的哪一个，因此不作为这三个场景的视觉证据。
+其余 10 张本记录**没有**确认看过图像内容，只有日志字段作依据：`nihao-commit/s1-preedit`、`breakpoint-reflow/s8-breakpoint`、`container-scroll/s7c-scrolled-out`、`container-scroll/s7d-restored`、`minimize-restore/s8a2`、`hide-restore/s8c`、`window-deactivate/s8d`、`horizontal-scroll/s-hscroll-composing`、`anchor-follow-rerun/` 的 2 张。
 
-其余 9 张（`minimize-restore`、`hide-restore`、`window-deactivate`、`horizontal-scroll`、`resize-samebranch` 各 1 张，原始 `anchor-follow` 2 张，`container-scroll/s7a`、`s7b`）：本记录**没有**确认查看过图像，只有日志字段作为依据。
+更正说明：本文件和交付记录的早先版本曾写成已看过其中若干张并描述了内容（例如滚出后窗口空白、滚回后恢复、窄窗口两个空输入框、重跑前后两张）。那些读取当时没有返回图像，描述没有依据，已撤回。
 
 ## anchor-follow 重跑（补位移量证据）
 
