@@ -1568,6 +1568,12 @@ internal static class Program
                 var anchorAfterMove = GeometryDesc();
                 var stateAfter = useTsf ? Query(ctx, () => ReadTsfCandidateState(bindAfter.Writes), ct) : null;
                 ScreenCapture.CaptureWindowRegion(hwnd, Path.Combine(outDir, "s6-composing-moved.png"));
+                var rectAfter = Query(ctx, () =>
+                {
+                    NativeMethods.GetWindowRect(hwnd, out var r);
+                    return $"{r.Left},{r.Top},{r.Right - r.Left}x{r.Bottom - r.Top}";
+                }, ct);
+                var movedAsRequested = rectAfter == $"{rect.Left + 60},{rect.Top + 60},{rect.Right - rect.Left}x{rect.Bottom - rect.Top}";
 
                 var sameIdentity = useTsf
                     ? IdentityMatches(stateBefore, stateAfter)
@@ -1602,6 +1608,8 @@ internal static class Program
                 log.Record("script", "scenario", "anchor-follow", new Dictionary<string, object?>
                 {
                     ["rect_before"] = rectBefore,
+                    ["rect_after"] = rectAfter,
+                    ["window_moved_by_60_60"] = movedAsRequested,
                     ["anchor_before"] = anchorBefore,
                     ["anchor_after"] = anchorAfterMove,
                     ["publish_count_delta"] = afterMovePublishes,

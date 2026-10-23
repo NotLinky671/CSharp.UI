@@ -24,20 +24,29 @@
 
 ## 已人工查看的截图
 
-13 张 PNG 中，以下 4 张已确认亲眼看过图像内容：
+15 张 PNG（13 张原始 + 重跑目录 `anchor-follow-rerun` 的 2 张）中，以下 6 张已确认亲眼看过图像内容：
 
 - `nihao-commit/s1-preedit.png`：预编辑"ni'hao"带下划线，下方系统微软拼音候选窗可见（1 你好 … 9 尼，第 1 页）。
 - `breakpoint-reflow/s8-breakpoint.png`：窄窗口纵向排列，两个输入框均为空，没有预编辑和候选窗；与日志一致（`wide-hstack` 切到 `narrow-vstack`，旧会话已取消，重排后重新建立）。
 - `container-scroll/s7c-scrolled-out.png`：输入框滚出可视区后窗口为空白，没有残留的候选窗。
 - `container-scroll/s7d-restored.png`：滚回后预编辑与候选窗恢复显示。
+- `anchor-follow-rerun/s6-composing-before.png`、`anchor-follow-rerun/s6-composing-moved.png`：移动前后都显示预编辑"ni'hao"和完整的候选窗（1 你好 … 9 尼，第 1 页），候选窗相对输入框的位置一致。两张图都是以窗口为单位截取，所以相对位置一致是预期；窗口真的移动过由日志的 `rect_before`/`rect_after` 证明，不是由截图证明。
 
 另有一张 822 像素宽的预编辑加候选窗截图，我无法确定它对应 `window-deactivate`、`horizontal-scroll`、`resize-samebranch` 中的哪一个，因此不作为这三个场景的视觉证据。
 
-其余 8 张（`minimize-restore`、`hide-restore`、`window-deactivate`、`horizontal-scroll`、`resize-samebranch` 各 1 张，`anchor-follow` 2 张，`container-scroll/s7a`、`s7b`）：本记录**没有**确认查看过图像，只有日志字段作为依据。
+其余 9 张（`minimize-restore`、`hide-restore`、`window-deactivate`、`horizontal-scroll`、`resize-samebranch` 各 1 张，原始 `anchor-follow` 2 张，`container-scroll/s7a`、`s7b`）：本记录**没有**确认查看过图像，只有日志字段作为依据。
+
+## anchor-follow 重跑（补位移量证据）
+
+原始 18 个场景运行时，`anchor-follow` 只记录了移动前的窗口矩形。之后给 `ImeHostCheck` 增加了移动后矩形与 `window_moved_by_60_60` 两个只读记录字段（不改通过判据），重跑一次，输出在 `anchor-follow-rerun/`：
+
+- `rect_before` = `342,414,742x1016`，`rect_after` = `402,474,742x1016`，`window_moved_by_60_60` = true：窗口位置确实移动了 (+60, +60)，大小不变。
+- `republished`、`identity_same_composition`、`writes_unchanged_during_move`、`commit_exactly_once` 均为 true，工具判定 pass，退出码 0。
+- 重跑使用的是修改后的工具；原始 18 个场景（含原始 `anchor-follow`）由修改前的工具生成，不重写。
 
 ## 不能由本证据得出的结论
 
-- `anchor-follow` 日志没有记录移动后的窗口矩形（只有 `rect_before`），窗口位移量未由日志证明；两张 `anchor-follow` 截图未确认查看，候选窗在移动前后是否可见也没有视觉证据。
+- 原始 `anchor-follow` 日志没有 `rect_after`；位移量只由重跑的日志证明。
 - 输入法身份依赖工具自己的 `--profile mspinyin` 校验；本记录没有单独核对 CLSID。
 - 环境：本机单显示器，DPI 缩放 150%（截图与冒烟日志为 1.5）；其它 DPI、其它输入法、macOS、Linux 没有证据。
 - 日志中含本机路径 `C:\Users\nothh\...`（与仓库内既有证据文件一致，未改写，以保持哈希可复核）。
