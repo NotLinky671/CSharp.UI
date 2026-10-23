@@ -93,6 +93,8 @@ static View Search(State<string> query) =>
 
 包含：`VStack`/`HStack`/`ZStack`/`Spacer`/`ScrollView`、`Text`/`Image`/`Rectangle`、`Button`/`Toggle`/`Slider`/`TextField`、`Padding`/`Frame`/`Background`/`Foreground`/`Border`/`CornerRadius`/`Opacity`/`Clip`/`Disabled`/`Key`、`ForEach`、明暗主题、字体/颜色环境继承、鼠标/键盘/滚轮/焦点/指针捕获、中文显示与**默认 IMM 路径**的已提交文本输入。
 
+文本编辑命令（撤销/重做、剪切/复制/粘贴、全选）只通过键盘快捷键触发，没有公开的命令 API。见 [API 参考](docs/guide/api-reference.md)与[输入法手动验收清单](docs/guide/ime-manual-acceptance.md)。
+
 Windows TSF 预发布路径（内部开关 `UseTsfInputBridge`，不是公开选项/默认路径）：组合/预编辑、随最终文字几何移动的 UI-less 框架自绘候选，以及失败时准确回退 IMM。入口必须声明 `[STAThread]`。生产验收（P4）已于 2026-10-22 在单 DPI（150%）微软拼音环境完成——见 [P4 交付记录](docs/delivery/2026-10-22-ti07-p4-delivery.md)；多 DPI 证据属环境边界。不支持鼠标点选候选；键盘选词由输入法自身处理。
 
 默认发布不包含：多行编辑、动画系统、列表虚拟化、完整双向文本、彩色 Emoji 字形图集、移动端/浏览器/宿主嵌入、系统无障碍桥接。

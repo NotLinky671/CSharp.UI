@@ -36,6 +36,7 @@ public sealed class GalleryApp : Component
         var enabled = UseState("enabled", true);
         var clicks = UseState("clicks", 0);
         var notes = UseState("notes", string.Empty);
+        var editDemo = UseState("editDemo", "选中这段文字后输入、粘贴或按 Ctrl+Z 撤销");
 
         var current = theme.Value;
         var logoPath = Path.Combine(AppContext.BaseDirectory, "shared", "Assets", "logo.png");
@@ -137,6 +138,14 @@ public sealed class GalleryApp : Component
                         new Text($"开关状态：{(enabled.Value ? "开" : "关")}，滑块值：{volume.Value:0.00}，按钮点击：{clicks.Value} 次").Wrap(),
                         new TextField(notes.ToBinding(), "试试中文输入法与 Ctrl+V 粘贴").FillWidth(),
                         new Text("后台线程更新状态请使用 UiDispatcher.Post(action)。").WithFont(FontDescription.Default.WithSize(12)).Wrap())
+                        .Spacing(6)),
+                    // TI-09：只演示既有快捷键与输入法通道，不新增公开命令入口。
+                    Section("文本编辑与输入法", new VStack(
+                        new TextField(editDemo.ToBinding(), "输入、粘贴、选区替换、撤销重做").FillWidth(),
+                        new Text("Windows/Linux：Ctrl+Z 撤销，Ctrl+Y 或 Ctrl+Shift+Z 重做；macOS：Command+Z 撤销，Command+Shift+Z 重做。").Wrap(),
+                        new Text("中文输入法的预编辑与候选显示取决于平台，详见 docs/guide/platform-notes.md。").Wrap(),
+                        new Text($"当前文本长度：{editDemo.Value.Length}")
+                            .WithFont(FontDescription.Default.WithSize(12)))
                         .Spacing(6)))
                 .Spacing(18)
                 .Padding(20))

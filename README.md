@@ -98,6 +98,8 @@ Included: `VStack`/`HStack`/`ZStack`/`Spacer`/`ScrollView`, `Text`/`Image`/`Rect
 `ForEach`, light and dark themes, font/color environment inheritance, mouse/keyboard/wheel/focus/pointer capture,
 and Chinese text display with committed text input on the default IMM path.
 
+Text editing commands (undo/redo, cut/copy/paste, select all) are keyboard shortcuts only; there is no public command API. See the [API reference](docs/guide/api-reference.md) and the [manual IME acceptance checklist](docs/guide/ime-manual-acceptance.md).
+
 Pre-release Windows TSF path (internal opt-in `UseTsfInputBridge`, not a public option): composition/preedit, a UI-less framework-drawn candidate panel that follows the final text geometry, and accurate return to IMM on failure. It requires an `[STAThread]` entry point. Production acceptance (P4) completed 2026-10-22 on a single-DPI (150%) mspinyin environment — see [P4 delivery record](docs/delivery/2026-10-22-ti07-p4-delivery.md); multi-DPI evidence is an environment boundary. Candidate mouse selection is not supported; keyboard candidate selection is handled by the IME itself.
 
 Not included in the default release: multi-line editing, an animation system, list virtualization, full

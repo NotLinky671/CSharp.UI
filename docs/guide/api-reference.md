@@ -129,6 +129,23 @@
 | `KeyEvent` / `UiKey` / `KeyModifiers` / `KeyEventKind` | 控制键与修饰键；字符输入不通过键盘事件传递 |
 | `TextInputEvent` | 宿主提交的 Unicode 文本；`TextInputEvent.SanitizeSingleLine(...)` 按单行规则过滤 |
 
+## 文本编辑快捷键
+
+`TextField` 的内置编辑命令只通过平台快捷键触发，没有公开的方法入口：
+
+| 命令 | Windows / Linux | macOS |
+|---|---|---|
+| 撤销 | Ctrl+Z | Command+Z |
+| 重做 | Ctrl+Y 或 Ctrl+Shift+Z | Command+Shift+Z（没有 Command+Y） |
+| 剪切 / 复制 / 粘贴 | Ctrl+X / Ctrl+C / Ctrl+V | Command+X / Command+C / Command+V |
+| 全选 | Ctrl+A | Command+A |
+
+- 剪切、复制、粘贴、全选带 Shift 时不触发命令。
+- Alt 或 AltGr（常表现为 Control+Alt）参与的组合、错误平台的主修饰键（例如 macOS 的 Control、Windows 的 Win 键）以及其它额外修饰键都不触发命令；CapsLock 不改变含义。
+- 未带命令修饰键的字符通过 `TextInputEvent` 传入，不走键盘快捷键。
+- 当前平台的输入能力用 `TextInputForwarder.EffectiveService(context.Runtime.Services.TextInputService).Capabilities` 查询；各平台能力与验证级别见[平台、字体与原生依赖](platform-notes.md)。
+- 真实输入法的手动验收步骤见[输入法手动验收清单](ime-manual-acceptance.md)。
+
 ## 基础类型
 
 `Point`、`Size`、`Rect`、`Thickness`、`Color`、`Alignment`、`LayoutConstraints`、`FontFamily`、`FontDescription`、`FontWeight`、`TextAlignment`、`TextWrapping`、`TextTrimming`、`FontMetrics`、`Theme`、`EnvironmentValues`、`FlexAxis`。
