@@ -303,6 +303,85 @@ public class TextEditorTests
     }
 
     [Fact]
+    public void OuterScroll_BubbledWheel_DoesNotBounceScrollYBackToCaret()
+    {
+        // 回归（用户报告）：嵌套在外层 ScrollView 的编辑器，caret 在文档末尾时滚到顶，
+        // 继续向上滚轮冒泡让外层滚动 → 父级纯位置重排不得把内部 ScrollY 拉回末行。
+        var binding = new ScriptedTextBinding(string.Join("\n", Enumerable.Range(0, 40).Select(i => $"line-{i:00}")));
+        var editor = new TextEditor(binding.Binding) { Width = 200, MinLines = 3 };
+        // 编辑器上下都有高内容：外层 ScrollView 双向有余量，滚轮冒泡会真实移动节点位置。
+        var outer = new ScrollView(new VStack(new Spacer(400), editor, new Spacer(400)));
+        var app = new TestApp(outer, new Size(400, 200));
+        using var _app = app;
+        app.Frame();
+        var node = app.Runtime.Root.FindDescendants<TextEditor>().First();
+        var outerNode = app.Runtime.Root.FindDescendants<ScrollView>().First();
+
+        // 外层滚到编辑器可见（直接偏移与真实滚轮同路径：ScrollOffsetY + InvalidateLayout）。
+        outerNode.ScrollOffsetY = 350;
+        outerNode.InvalidateLayout();
+        app.Runtime.ProcessPendingWork();
+        app.Frame();
+
+        app.Runtime.SetFocus(node);
+        app.Runtime.ProcessPendingWork();
+        app.Frame();
+        var state = State(node);
+
+        // caret 移文档末行：内部 ScrollY 推到可见位置（>0）。
+        app.Key(UiKey.End, KeyModifiers.Control);
+        app.Runtime.ProcessPendingWork();
+        app.Frame();
+        var caret = state.Caret;
+        var scrollAtCaret = state.ScrollY;
+        Assert.True(scrollAtCaret > 0, "caret 在末行时内部应已滚动");
+
+        // 向上滚回顶：编辑器自己消费到 ScrollY=0。
+        var inside = new Point(node.Frame.X + 20, node.Frame.Y + 20);
+        app.Runtime.DispatchPointer(new PointerEvent(PointerEventKind.Move, inside));
+        for (var i = 0; i < 30 && state.ScrollY > 0; i++)
+        {
+            app.Runtime.DispatchWheel(new WheelEvent(inside, 0, 5, KeyModifiers.None, WheelDeltaMode.Steps));
+            app.Runtime.ProcessPendingWork();
+            app.Frame();
+        }
+
+        Assert.Equal(0, state.ScrollY);
+
+        // 继续向上滚轮：编辑器在顶不消费 → 外层 ScrollView 滚动 → 节点位置平移重排。
+        var outerBefore = outerNode.ScrollOffsetY;
+        app.Runtime.DispatchWheel(new WheelEvent(inside, 0, 5, KeyModifiers.None, WheelDeltaMode.Steps));
+        app.Runtime.ProcessPendingWork();
+        app.Frame();
+        Assert.True(outerNode.ScrollOffsetY < outerBefore, "外层应真实滚动以覆盖冒泡重排路径");
+
+        // 父级纯位移重排不得拉回内部滚动（用户滚允许 caret 离视口）。
+        Assert.Equal(0, state.ScrollY);
+        Assert.Equal(caret, state.Caret); // caret/选区不受父级滚动影响
+
+        // 重复滚轮/时钟/重绘：内部滚动保持不动。
+        app.Runtime.DispatchWheel(new WheelEvent(inside, 0, 5, KeyModifiers.None, WheelDeltaMode.Steps));
+        app.Runtime.ProcessPendingWork();
+        app.Frame();
+        app.Clock.Advance(TimeSpan.FromMilliseconds(600));
+        app.Runtime.OnClockTick();
+        app.Frame();
+        Assert.Equal(0, state.ScrollY);
+
+        // 同几何重复排列（同 bounds 布局失效重建）：仍不得拉回。
+        node.InvalidateLayout();
+        app.Runtime.ProcessPendingWork();
+        app.Frame();
+        Assert.Equal(0, state.ScrollY);
+
+        // 显式键盘导航仍 ensure：ScrollY 重排回 caret 可见位置。
+        app.Key(UiKey.End, KeyModifiers.Control);
+        app.Runtime.ProcessPendingWork();
+        app.Frame();
+        Assert.Equal(scrollAtCaret, state.ScrollY, 3);
+    }
+
+    [Fact]
     public void Drag_OutOfBounds_ReturnsWakeupTick_AndAdvancesScroll()
     {
         var binding = new ScriptedTextBinding(string.Join("\n", Enumerable.Range(0, 40).Select(i => $"line-{i:00}")));

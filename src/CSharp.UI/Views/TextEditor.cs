@@ -204,8 +204,6 @@ public sealed class TextEditor : View
         {
             SyncEditor(node, state, invalidate: false);
 
-            // 宽度变化触发 reflow：排版缓存按内容区宽键控，宽度改变时下次排版自然取新宽度。
-            // 此处只保证 caret 在新宽度下仍可见；具体的排版由排版缓存惰性重建。
             if (node.IsEffectivelyDisabled && state.Composing is not null)
             {
                 CancelCompositionForHostAction(node, state);
@@ -214,7 +212,24 @@ public sealed class TextEditor : View
 
             if (node.IsFocused)
             {
-                EnsureCaretVisible(node, state);
+                // caret 可见性只在 caret 行位置/可见带可能变化时重判：内容区宽高（reflow/视口高）、
+                // 字体、DPI 与 padding 决定行高、折行与内容区；这些组成一次 ensure 判据。纯位置平移
+                // （外层 ScrollView 滚动把节点移过视口、同几何重建重排）不改其中任何一项——用户滚
+                // 允许 caret 离视口，平移/同几何重排不得把内部 ScrollY 拉回 caret 行（§3.8：用户滚不 ensure）。
+                var ensureKey = new EnsureGeometryKey(
+                    InnerRect(bounds).Size,
+                    node.Environment.Font ?? FontDescription.Default,
+                    node.Runtime.PixelScale,
+                    HorizontalPadding,
+                    VerticalPadding);
+                // 首次记录（prev==null）不 ensure：焦点获得已由 OnFocusChanged 收敛；
+                // 外层滚动引起的位置平移重排也不该拉回内部 ScrollY。
+                if (state.ArrangedEnsureKey is { } previous && previous != ensureKey)
+                {
+                    EnsureCaretVisible(node, state);
+                }
+
+                state.ArrangedEnsureKey = ensureKey;
             }
         }
     }
@@ -1930,6 +1945,9 @@ public sealed class TextEditor : View
 
     // ------------------------------------------------------------------ 缓存 / 显示布局
 
+    /// <summary>Arrange 阶段重判 caret 可见性的几何键（值类型，比较零分配）。</summary>
+    internal readonly record struct EnsureGeometryKey(Size InnerSize, FontDescription Font, double PixelScale, double HorizontalPadding, double VerticalPadding);
+
     /// <summary>文档排版缓存键（值类型，比较零分配）。</summary>
     internal readonly record struct TextEditorLayoutKey(string Text, FontDescription Font, double PixelScale, double InnerWidth);
 
@@ -2020,6 +2038,12 @@ internal sealed class TextEditorState : ITextEditSessionOwner
 
     /// <summary>最近一次边缘滚动 tick 的时钟值（≤1 行/80ms 的 due-gate；null = 尚未 tick，立即滚）。</summary>
     public TimeSpan? LastDragScrollTick { get; set; }
+
+    /// <summary>
+    /// 最近一次排列时用于重判 caret 可见性的几何键（内容区尺寸 + 字体 + DPI + padding）。
+    /// 纯位置平移与同几何重建排列不触发 ensure；仅在 caret 行位置/可见带可能变化时重判。
+    /// </summary>
+    public TextEditor.EnsureGeometryKey? ArrangedEnsureKey { get; set; }
 
     /// <summary>光标闪烁计时起点。</summary>
     public TimeSpan BlinkEpoch { get; set; }

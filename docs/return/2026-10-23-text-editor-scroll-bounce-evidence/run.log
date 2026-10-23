@@ -1,0 +1,26 @@
+[INFO] hwnd=12190354
+[INFO] frame=(0,280,640x160) scale=1.5 winRect=(76,148,1058,924) cursor=(567,733)
+[INFO] focused=True scrollY=0 outer=0
+[CHECK] PASS focus :: real click focused the editor
+[INFO] hwnd=12190354 fgTitle='te07scroll' hovered=TextEditor
+[INFO] after Ctrl+End scrollY=969.266 caret=470 docLen=470
+[CHECK] PASS caret-end :: caret=470
+[CHECK] PASS caret-end-scrolled :: scrollY=969.265625
+[INFO] after wheel-down outer=360 inner=969.266 caret=470
+[CHECK] PASS outer-precondition :: outerOffset=360
+[INFO] inner-top scrollY=0 outer=360 caret=470
+[CHECK] PASS inner-top :: scrollY=0
+[INFO] post-boundary inner=0 outer=0 caret=470
+[CHECK] PASS outer-moved :: outer 360 -> 0
+[CHECK] PASS no-bounce :: inner stayed 0 (pre-fix snapped to ~969)
+[SHOT] cap-inner-top-outer-scrolled.png 873x527
+[INFO] after re-CtrlEnd inner=969.266 caret=470
+[CHECK] PASS keyboard-ensure :: Ctrl+End ensure -> scrollY=969.266
+[SHOT] cap-after-ctrlend-ensure.png 873x527
+[INFO] pre-resize inner=0
+[INFO] after width-resize inner=969.266 caret=470
+[CHECK] PASS resize-ensure :: width change re-ensured caret scrollY=969.266
+[SHOT] cap-after-resize-ensure.png 1020x527
+RESULT exit=0 fail=0
+
+EXIT=0
