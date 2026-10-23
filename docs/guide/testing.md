@@ -111,6 +111,14 @@ CSHARPUI_SMOKE_FRAMES=5 ./artifacts/publish/win-x64/ControlGallery.exe
 - 独立探针 `artifacts/responsive-work/*-invariants` 覆盖真实 Skia 布局、连续缩放、输入命中与最终 RGB；Windows 原生 `SC_SIZE` 模态循环与 150% 原尺寸截图证据见[响应式布局交付记录](../delivery/2026-10-16-responsive-layout-delivery.md)。
 - 物理鼠标人工拖拽、macOS/Linux 真机与系统 DPI 修改不在自动化结论内。
 
+## 多行编辑（TextEditor）验收要点
+
+- 尾随换行停在空行末；软换行共享 offset 的归属按 `TextAffinity`（`LineEnd`/`LineStart`）；选区逐行矩形（`GetRangeRects`，行末零宽 marker 涂成可见窄块）。
+- `MinLines` 固定视口：超高内容内部 `ScrollY` 滚动不增高控件；嵌在 `ScrollView` 里滚轮先由编辑器消费、到边界冒泡外层。
+- `Enter` 前后 `BreakMerge`：撤销按"换行"事务粒度恢复；粘贴 `\r\n`→`\n`、`\r\n` 单字素删除。
+- 拖选越界：`GetNextWakeup` 返回 ~80ms tick，静止越界指针连续滚动；释放/取消/失焦即停。**注意**：指针拖出 OS 窗口边缘时宿主按"捕获丢失即停"取消拖动（`PointerCancel`），跨窗口的自滚不在验收范围。
+- 真实 IME（组合/预编辑/候选锚点）的多行验收已完成（Windows 微软拼音/IMM,2026-10-23——见[交付记录](../delivery/2026-10-23-text-editor-delivery.md)）；不以单测或合成消息替代,后续平台 IME 变更仍需真机复验。
+
 ## 资源计数的读取方式
 
 | 计数 | 位置 |

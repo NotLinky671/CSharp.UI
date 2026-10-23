@@ -1712,7 +1712,7 @@ public class TextFieldCompositionTests
         runtime.BuildFrame();
         runtime.SetFocus(runtime.Root);
 
-        var client = (TextFieldCompositionClient)service.ActiveClient!;
+        var client = (TextCompositionClient)service.ActiveClient!;
         guarded.InCallback = true;
         var result = client.ApplyComposition(
             [CompositionEvent.Result(client.Session.SessionId, 0, 0, 0, "LONG", new TextRange(0, 2))]);
@@ -1751,7 +1751,7 @@ public class TextFieldCompositionTests
         runtime.BuildFrame();
         runtime.SetFocus(runtime.Root);
 
-        var client = (TextFieldCompositionClient)service.ActiveClient!;
+        var client = (TextCompositionClient)service.ActiveClient!;
         guarded.InCallback = true;
         var result = client.ApplyComposition(
             [CompositionEvent.Result(client.Session.SessionId, 0, 0, 0, "LONG", new TextRange(0, 2))]);
@@ -1850,7 +1850,7 @@ public class TextFieldCompositionTests
         return (app, host, node);
     }
 
-    private static TextFieldCompositionClient Client(ViewNode node)
+    private static TextCompositionClient Client(ViewNode node)
         => State(node).Composing ?? throw new InvalidOperationException("该节点没有组合客户端（会话未建立）。");
 
     private static TextFieldState State(ViewNode node) => Assert.IsType<TextFieldState>(node.InteractionState);

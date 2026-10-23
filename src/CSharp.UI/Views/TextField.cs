@@ -584,7 +584,7 @@ public sealed class TextField : View
 
         if (state.Editor.LastTransaction == TextEditTransactionOutcome.Applied)
         {
-            state.History.Record(BuildHistoryEntry(result, operation, beforeSelection), node.Runtime.Clock.Now);
+            state.History.Record(TextEditHistory.FromTransaction(result, operation, beforeSelection), node.Runtime.Clock.Now);
         }
         else
         {
@@ -596,99 +596,6 @@ public sealed class TextField : View
         EnsureCaretVisible(node, state);
     }
 
-    /// <summary>
-    /// 把一次精确确认的事务转换为增量历史项：只保存替换起点、真实删除/插入片段与前后方向选区，
-    /// 不保存整份文档快照。
-    /// </summary>
-    /// <remarks>
-    /// <b>跨事务字素安全（TI-05 复审 R1）：</b>一次键入可能改变相邻文本的字素分组（例如先输入 e、再输入组合附加符
-    /// U+0301；分段输入 ZWJ 序列；或插入/删除一个区域指示符从而重排后续 RI 配对）。请求范围在编辑后的文档里可能
-    /// 落在字素内部，甚至“编辑后合法、映射回编辑前非法”。这里在<b>前后两份文档</b>中寻找共同的合法边界：
-    /// 前缀偏移在编辑前后直接对应，后缀偏移按文档长度差对应；起点向左、终点向右取最近的共同安全边界
-    /// （文档两端永远合法，保证终止）。只保留真正受影响的局部片段并计入预算，不关闭字素校验、不拆字写入、
-    /// 也不保存整份文档快照。
-    /// </remarks>
-    private static TextHistoryEntry BuildHistoryEntry(
-        EditResult result,
-        EditOperation operation,
-        TextSelection beforeSelection)
-    {
-        var beforeText = result.Before.Text;
-        var afterText = result.After.Text;
-        var range = operation.Range;
-
-        // 请求的插入区在编辑后文档中的范围是 [range.Start, range.Start + insertedLength)。
-        var insertedLength = afterText.Length - beforeText.Length + range.Length;
-
-        // 每份文档只枚举一次边界：后续用二分查找 + 集合查询，避免循环内反复整段扫描。
-        var beforeBoundaries = TextGraphemeBoundaries.EnumerateBoundaries(beforeText);
-        var afterBoundaries = TextGraphemeBoundaries.EnumerateBoundaries(afterText);
-        var afterSet = new HashSet<int>(afterBoundaries);
-
-        // 起点：不大于请求起点的最近共同边界（0 永远是共同边界，保证终止）。
-        var start = 0;
-        var startIndex = beforeBoundaries.BinarySearch(range.Start);
-        startIndex = startIndex >= 0 ? startIndex : ~startIndex - 1;
-        for (var i = startIndex; i >= 0; i--)
-        {
-            var candidate = beforeBoundaries[i];
-            if (afterSet.Contains(candidate))
-            {
-                start = candidate;
-                break;
-            }
-        }
-
-        // 终点：从请求终点向右找最近的“before 边界 + 按长度差映射后的 after 边界”都为合法的位置。
-        // 文档末尾（before.Length / after.Length）永远满足，因此循环一定终止。
-        var endInBefore = beforeText.Length;
-        var endInAfter = afterText.Length;
-        var endIndex = beforeBoundaries.BinarySearch(range.Start + range.Length);
-        endIndex = endIndex >= 0 ? endIndex : ~endIndex;
-        for (var i = endIndex; i < beforeBoundaries.Count; i++)
-        {
-            var candidate = beforeBoundaries[i];
-            var mapped = candidate - range.Length + insertedLength;
-            if (mapped >= start && mapped <= afterText.Length && afterSet.Contains(mapped))
-            {
-                endInBefore = candidate;
-                endInAfter = mapped;
-                break;
-            }
-        }
-
-        var deleted = beforeText.Substring(start, endInBefore - start);
-        var inserted = afterText.Substring(start, endInAfter - start);
-
-        var expanded = start != range.Start || endInBefore != range.Start + range.Length;
-
-        return new TextHistoryEntry(
-            start,
-            deleted,
-            inserted,
-            result.Before.Selection,
-            result.After.Selection,
-            operation.Kind,
-            expanded ? TextEditMergeKind.None : MergeKindFor(operation, beforeSelection));
-    }
-
-    /// <summary>判断一次事务是否属于可合并类别（折叠光标相邻键入 / 同方向逐字素删除）。</summary>
-    private static TextEditMergeKind MergeKindFor(EditOperation operation, TextSelection beforeSelection)
-    {
-        if (!beforeSelection.IsCollapsed)
-        {
-            // 选区替换独立成项，绝不与相邻键入/删除合并。
-            return TextEditMergeKind.None;
-        }
-
-        return operation.Kind switch
-        {
-            TextEditKind.Typing when operation.Range.IsEmpty => TextEditMergeKind.TypingAppend,
-            TextEditKind.Backspace => TextEditMergeKind.BackspaceDelete,
-            TextEditKind.Delete => TextEditMergeKind.ForwardDelete,
-            _ => TextEditMergeKind.None,
-        };
-    }
 
     /// <summary>
     /// 事务抛错后的恢复：按真实回读文本同步会话并限制选区，使布局/渲染失效。
@@ -1207,7 +1114,7 @@ public sealed class TextField : View
     private TextInputGeometry ComputeInputGeometry(
         ViewNode node,
         TextFieldState state,
-        TextFieldCompositionClient client,
+        TextCompositionClient client,
         out CompositionCharGeometrySnapshot? charGeometry)
     {
         charGeometry = null;
@@ -1275,6 +1182,7 @@ public sealed class TextField : View
             DocumentVersion = state.Editor.Version,
             LayoutSerial = node.Runtime.LayoutSerial,
             ScrollX = state.ScrollX,
+            ScrollY = state.ScrollY,
         };
 
         var visibleComposition = compositionRect.IsEmpty ? Rect.Empty : compositionRect.Intersect(clip);
@@ -1464,7 +1372,7 @@ public sealed class TextField : View
             if (state.Editor.LastTransaction == TextEditTransactionOutcome.Applied)
             {
                 // 一次真实组合 Result 只记录一项；分段结果各自独立。记录只是核心内存操作，不做排版/平台调用。
-                state.History.Record(BuildHistoryEntry(edit, operation, beforeSelection), node.Runtime.Clock.Now);
+                state.History.Record(TextEditHistory.FromTransaction(edit, operation, beforeSelection), node.Runtime.Clock.Now);
             }
             else
             {
@@ -1878,7 +1786,7 @@ internal sealed class TextFieldDisplayCache(string text, FontDescription font, d
 }
 
 /// <summary>TextField 的运行时编辑状态（保存在节点上，组件重建后保持）。</summary>
-internal sealed class TextFieldState
+internal sealed class TextFieldState : ITextEditSessionOwner
 {
     /// <summary>原子编辑会话：确认文本、文档版本、来源身份与失效接缝（TI-03）。</summary>
     public TextEditSession Editor { get; } = new();
@@ -1901,7 +1809,7 @@ internal sealed class TextFieldState
     /// <summary>
     /// 组合客户端（惰性创建）：只有真实焦点会话建立后才存在，卸载时清空，旧实例由接线标记为已撤销。
     /// </summary>
-    public TextFieldCompositionClient? Composing { get; private set; }
+    public TextCompositionClient? Composing { get; private set; }
 
     public TextFieldState(UiRuntime runtime)
     {
@@ -1911,7 +1819,7 @@ internal sealed class TextFieldState
     }
 
     /// <summary>取得组合客户端；会话使用新 epoch 时创建新客户端，绝不复用已被释放的旧实例。</summary>
-    public TextFieldCompositionClient RequireComposing(ViewNode node, int epoch)
+    public TextCompositionClient RequireComposing(ViewNode node, int epoch)
     {
         ArgumentNullException.ThrowIfNull(node);
         if (Composing is { IsReleased: false } existing)
@@ -1919,7 +1827,7 @@ internal sealed class TextFieldState
             return existing;
         }
 
-        Composing = new TextFieldCompositionClient(node, this, epoch);
+        Composing = new TextCompositionClient(node, this, epoch);
         return Composing;
     }
 
@@ -1995,6 +1903,46 @@ internal sealed class TextFieldState
     /// <summary>水平滚动偏移（逻辑像素）。</summary>
     public double ScrollX { get; set; }
 
+    /// <summary>垂直滚动偏移（逻辑像素）；TextField 单行恒为 0。</summary>
+    public double ScrollY => 0;
+
+    /// <inheritdoc cref="ITextEditSessionOwner.CaretAffinity"/>
+    /// <remarks>单行 TextField 无共享 offset 歧义，恒为 <see cref="TextAffinity.Unspecified"/>。</remarks>
+    public TextAffinity CaretAffinity => TextAffinity.Unspecified;
+
+    /// <inheritdoc cref="ITextEditSessionOwner.SyncCompositionDocument"/>
+    public bool SyncCompositionDocument(ViewNode node)
+    {
+        if (node.View is not TextField field)
+        {
+            return false;
+        }
+
+        field.SyncCompositionDocument(node, this, out var invalidated);
+        return invalidated;
+    }
+
+    /// <inheritdoc cref="ITextEditSessionOwner.ApplyCompositionCommit"/>
+    public EditResult ApplyCompositionCommit(ViewNode node, TextRange range, string result)
+        => node.View is TextField field
+            ? field.ApplyCompositionCommit(node, this, range, result)
+            : default;
+
+    /// <inheritdoc cref="ITextEditSessionOwner.MaxLength"/>
+    public int MaxLength(ViewNode node)
+        => node.View is TextField field ? field.MaxLength : int.MaxValue;
+
+    /// <inheritdoc cref="ITextEditSessionOwner.TextIdentity"/>
+    public object TextIdentity(ViewNode node)
+        => node.View is TextField field ? field.Text.Identity : this;
+
+    /// <inheritdoc cref="ITextEditSessionOwner.IsTextEditNode"/>
+    public bool IsTextEditNode(ViewNode node)
+        => node.IsMounted && node.View is TextField;
+
+    /// <inheritdoc cref="ITextEditSessionOwner.IsEditableNode"/>
+    public bool IsEditableNode(ViewNode node)
+        => node.IsMounted && !node.IsEffectivelyDisabled && node.View is TextField;
     /// <summary>光标闪烁计时起点。</summary>
     public TimeSpan BlinkEpoch { get; set; }
 

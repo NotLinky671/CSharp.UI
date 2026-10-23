@@ -100,7 +100,7 @@ public sealed class TextInputCompositionSessionTests
             Runtime.BuildFrame();
         }
 
-        public TextFieldCompositionClient Client
+        public TextCompositionClient Client
             => State.Composing ?? throw new InvalidOperationException("会话未建立。");
 
         public TextFieldState State => Assert.IsType<TextFieldState>(Node.InteractionState);

@@ -217,4 +217,46 @@ public readonly record struct TextInputEvent(string Text)
 
         return builder.ToString();
     }
+
+    /// <summary>
+    /// 按多行规则归一化文本：<c>\r\n</c> 与单独 <c>\r</c> 统一为 <c>\n</c>，移除制表符。
+    /// </summary>
+    /// <remarks>
+    /// 供多行编辑控件（TextEditor）的已提交文本与粘贴路径使用；单行控件继续用
+    /// <see cref="SanitizeSingleLine"/>。归一化只作用于插入串本身，不改写文档中已有的
+    /// <c>\r\n</c>（外部写入按原样存储，删除/排版/复制按字素正确处理）。
+    /// </remarks>
+    public static string SanitizeMultiLine(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        if (text.AsSpan().IndexOfAny('\r', '\t') < 0)
+        {
+            return text;
+        }
+
+        var builder = new System.Text.StringBuilder(text.Length);
+        for (var i = 0; i < text.Length; i++)
+        {
+            var ch = text[i];
+            if (ch == '\t')
+            {
+                continue;
+            }
+
+            if (ch == '\r')
+            {
+                builder.Append('\n');
+                if (i + 1 < text.Length && text[i + 1] == '\n')
+                {
+                    i++;
+                }
+
+                continue;
+            }
+
+            builder.Append(ch);
+        }
+
+        return builder.ToString();
+    }
 }

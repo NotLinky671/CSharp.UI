@@ -29,6 +29,32 @@ public sealed record TextLayoutRequest(string Text)
 
     /// <summary>字距调整（逻辑像素），首版供测试与特殊场景使用。</summary>
     public double LetterSpacing { get; init; }
+
+    /// <summary>
+    /// 编辑排版模式（多行编辑控件）：true 时生成行内 caret 表（软换行共享 offset 在上下两行各产真实坐标）、
+    /// 末尾换行生成尾随空段、caret X 按未裁剪内容宽度（行尾空白推进）、不做省略/截行。
+    /// 默认 false（显示路径）；<c>Text</c> 标签与 <c>TextField</c> 永不设置，行为与此前完全一致。
+    /// </summary>
+    public bool Editing { get; init; }
+}
+
+/// <summary>一个 caret 位置的文档 offset、X 与所属视觉行；用于编辑排版模式的行内 caret 表。</summary>
+/// <param name="Stop">caret stop 的 UTF-16 offset（字素边界）。</param>
+/// <param name="X">该行内的真实 X 坐标（逻辑像素，相对文本块左上角，含对齐偏移）。</param>
+/// <param name="LineIndex">所属视觉行索引（<see cref="TextLayoutResult.Lines"/> 下标）。</param>
+public readonly record struct CaretPosition(int Stop, double X, int LineIndex);
+
+/// <summary>caret 在共享 offset 上的视觉行归属；用于消除“上行末 vs 下行首”歧义。</summary>
+public enum TextAffinity
+{
+    /// <summary>无归属歧义（或按默认行内规则解析）。</summary>
+    Unspecified = 0,
+
+    /// <summary>归属上一行末尾。</summary>
+    LineEnd = 1,
+
+    /// <summary>归属下一行行首。</summary>
+    LineStart = 2,
 }
 
 /// <summary>排版后的单行信息。<see cref="Bounds"/> 与 <see cref="Baseline"/> 相对文本块左上角。</summary>
@@ -48,7 +74,15 @@ public sealed record TextLineInfo(int Start, int End, Rect Bounds, double Baseli
 /// </remarks>
 public sealed class TextLayoutResult
 {
-    /// <summary>构造排版结果。索引必须落在 [0, Text.Length] 且严格递增；首个为 0、末个为 Text.Length。</summary>
+    /// <summary>
+    /// 构造排版结果。索引必须落在 [0, Text.Length] 且严格递增；首个为 0、末个为 Text.Length。
+    /// </summary>
+    /// <param name="caretsByLine">
+    /// 编辑排版模式的行内 caret 表（每行一条 <see cref="CaretPosition"/> 子表）；软换行共享 offset
+    /// 在上下两行各产一项真实坐标，硬换行符后 offset 只在下行产生 <see cref="TextAffinity.LineStart"/>。
+    /// 省略时首个 <see cref="CaretsByLine"/> 访问按 <paramref name="caretXs"/> 与行归属惰性生成默认表；
+    /// 显示路径不为编辑表重复遍历/分配。
+    /// </param>
     public TextLayoutResult(
         string text,
         FontDescription font,
@@ -58,7 +92,8 @@ public sealed class TextLayoutResult
         IReadOnlyList<int> caretStops,
         IReadOnlyList<double> caretXs,
         bool isTrimmed = false,
-        double letterSpacing = 0)
+        double letterSpacing = 0,
+        IReadOnlyList<IReadOnlyList<CaretPosition>>? caretsByLine = null)
     {
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(lines);
@@ -93,7 +128,11 @@ public sealed class TextLayoutResult
         CaretXs = caretXs;
         IsTrimmed = isTrimmed;
         LetterSpacing = letterSpacing;
+        _explicitCaretsByLine = caretsByLine;
     }
+
+    private readonly IReadOnlyList<IReadOnlyList<CaretPosition>>? _explicitCaretsByLine;
+    private volatile IReadOnlyList<IReadOnlyList<CaretPosition>>? _lazyCaretsByLine;
 
     /// <summary>
     /// 可见文本：即排版与绘制实际使用的文本。
@@ -127,6 +166,340 @@ public sealed class TextLayoutResult
     /// 栅格化必须使用同一数值，否则测量宽度与实际字形间距会不一致。
     /// </summary>
     public double LetterSpacing { get; }
+
+    /// <summary>
+    /// 编辑排版模式的行内 caret 表：每行一条 <see cref="CaretPosition"/> 子表；
+    /// 软换行共享 offset 在上下两行各产一项真实坐标（上行末 X=行内容宽、下行首 X=OffsetX），
+    /// 硬换行符后 offset 只在下行产生 <see cref="TextAffinity.LineStart"/>。
+    /// 非编辑请求由构造器按 <see cref="CaretXs"/> 与行归属生成默认表（显示路径）。
+    /// </summary>
+    public IReadOnlyList<IReadOnlyList<CaretPosition>> CaretsByLine
+        => _explicitCaretsByLine ?? (_lazyCaretsByLine ??= BuildDefaultCaretsByLine());
+
+    /// <summary>
+    /// 按 <paramref name="affinity"/> 归属返回指定索引处的光标 X 坐标；
+    /// 软换行共享 offset 消歧（<see cref="TextAffinity.LineEnd"/> 取上行末、<see cref="TextAffinity.LineStart"/> 取下行首），
+    /// 非歧义位置忽略 affinity。
+    /// </summary>
+    public double GetCaretX(int index, TextAffinity affinity)
+    {
+        var snapped = SnapToCaretStop(index);
+        var lineIndex = ResolveLineIndex(snapped, affinity, out var x);
+        return x ?? GetCaretX(snapped);
+    }
+
+    /// <summary>返回指定索引在 <paramref name="affinity"/> 归属下的视觉行索引。</summary>
+    public int LineIndexForIndex(int index, TextAffinity affinity)
+    {
+        var snapped = SnapToCaretStop(index);
+        return ResolveLineIndex(snapped, affinity, out _);
+    }
+
+    /// <summary>
+    /// 按 Lines 二分与行内 caret 表定位 <paramref name="snapped"/> 在 <paramref name="affinity"/> 下的行；
+    /// 命中行内共享 offset 时经 <paramref name="x"/> 输出该行真实 X，未命中输出 null。
+    /// 非歧义 offset 忽略 affinity，直接归 <c>LineIndexForStop</c>。
+    /// </summary>
+    private int ResolveLineIndex(int snapped, TextAffinity affinity, out double? x)
+    {
+        x = null;
+        var primary = LineIndexForStop(snapped);
+
+        // 硬换行后的行首 offset（text[stop-1] 是换行符）：唯一归属下行，任何 affinity 都解析到它。
+        // primary 此时是下行（LineIndexForStop 取 latest Start<=stop → 共享/后继 offset 归下行）；
+        // 下行 CBL 含该 stop 的 LineStart 归属 caret。
+        var isPostBreak = snapped > 0 && Text[snapped - 1] is '\n' or '\r';
+        if (isPostBreak)
+        {
+            var hit = FindCaretX(primary, snapped);
+            if (hit.HasValue)
+            {
+                x = hit;
+            }
+            return primary;
+        }
+
+        // 软换行共享 offset（Lines[primary-1].End == snapped == Lines[primary].Start，且 text[stop-1] 非换行）：
+        // 上行产 LineEnd（X=内容宽右缘）、下行产 LineStart（X=OffsetX）；Unspecified 取上行（旧单 X 语义）。
+        var isShared = primary > 0
+            && snapped == Lines[primary].Start
+            && snapped == Lines[primary - 1].End;
+        if (isShared)
+        {
+            var target = affinity switch
+            {
+                TextAffinity.LineStart => primary,          // 下行首
+                _ => primary - 1,                            // 上行末（LineEnd 与 Unspecified 默认）
+            };
+            var hit = FindCaretX(target, snapped);
+            if (hit.HasValue)
+            {
+                x = hit;
+            }
+            return target;
+        }
+
+        // 非共享/非歧义 offset：忽略 affinity，直接归 primary。
+        return primary;
+    }
+
+    /// <summary>在指定行的 caret 子表内按 stop 查真实 X；未命中返回 null。</summary>
+    private double? FindCaretX(int lineIndex, int stop)
+    {
+        var carets = CaretsByLine[Math.Clamp(lineIndex, 0, CaretsByLine.Count - 1)];
+        var found = FindStopInCarets(carets, stop);
+        return found >= 0 ? carets[found].X : null;
+    }
+
+    private static int FindStopInCarets(IReadOnlyList<CaretPosition> carets, int stop)
+    {
+        var low = 0;
+        var high = carets.Count - 1;
+        while (low <= high)
+        {
+            var mid = low + ((high - low) / 2);
+            var s = carets[mid].Stop;
+            if (s == stop)
+            {
+                return mid;
+            }
+
+            if (s < stop)
+            {
+                low = mid + 1;
+            }
+            else
+            {
+                high = mid - 1;
+            }
+        }
+
+        return ~low;
+    }
+
+    /// <summary>返回指定视觉行的行首 caret stop（该行首个 <see cref="CaretPosition"/> 的 offset）。</summary>
+    public int LineStartIndex(int lineIndex)
+    {
+        var carets = CaretsByLine[Math.Clamp(lineIndex, 0, CaretsByLine.Count - 1)];
+        return carets.Count > 0 ? carets[0].Stop : Lines[Math.Clamp(lineIndex, 0, Lines.Count - 1)].Start;
+    }
+
+    /// <summary>
+    /// 返回指定视觉行的行尾 caret stop：该行换行符前的最后一个 caret offset。
+    /// 硬换行行的 terminator 不在行内可停留位置；terminator 后 offset 属下行 <see cref="TextAffinity.LineStart"/>。
+    /// </summary>
+    public int LineEndIndex(int lineIndex)
+    {
+        var carets = CaretsByLine[Math.Clamp(lineIndex, 0, CaretsByLine.Count - 1)];
+        return carets.Count > 0 ? carets[^1].Stop : Lines[Math.Clamp(lineIndex, 0, Lines.Count - 1)].End;
+    }
+
+    /// <summary>
+    /// 指定视觉行内按 X 命中最近 caret；返回 caret stop 的 UTF-16 offset，
+    /// 共享 offset 的归属经 <paramref name="affinity"/> 返回（X 更靠行尾→<see cref="TextAffinity.LineEnd"/>，行首→<see cref="TextAffinity.LineStart"/>）。
+    /// </summary>
+    public int HitTestLine(int lineIndex, double x, out TextAffinity affinity)
+    {
+        var carets = CaretsByLine[Math.Clamp(lineIndex, 0, CaretsByLine.Count - 1)];
+        if (carets.Count == 0)
+        {
+            affinity = TextAffinity.Unspecified;
+            return LineStartIndex(lineIndex);
+        }
+
+        var best = carets[0];
+        var bestDistance = double.PositiveInfinity;
+        foreach (var caret in carets)
+        {
+            var distance = Math.Abs(caret.X - x);
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                best = caret;
+            }
+        }
+
+        var stop = best.Stop;
+        var lineIdx = Math.Clamp(lineIndex, 0, Lines.Count - 1);
+
+        // 软换行共享 offset：命中行内该 stop 的真实坐标归属命中行自身——上行→LineEnd，下行→LineStart。
+        if (lineIdx + 1 < Lines.Count
+            && stop == Lines[lineIdx].End
+            && stop == Lines[lineIdx + 1].Start
+            && (stop == 0 || Text[stop - 1] is not ('\n' or '\r')))
+        {
+            affinity = TextAffinity.LineEnd;
+        }
+        else if (lineIdx > 0
+            && stop == Lines[lineIdx].Start
+            && stop == Lines[lineIdx - 1].End
+            && (stop == 0 || Text[stop - 1] is not ('\n' or '\r')))
+        {
+            affinity = TextAffinity.LineStart;
+        }
+        else if (stop > 0 && stop == Lines[lineIdx].Start
+            && stop < Text.Length && Text[stop - 1] is '\n' or '\r')
+        {
+            // 硬换行后的行首 offset：归属下一行。
+            affinity = TextAffinity.LineStart;
+        }
+        else
+        {
+            affinity = TextAffinity.Unspecified;
+        }
+
+        return best.Stop;
+    }
+
+    /// <summary>
+    /// 按 <paramref name="affinity"/> 归属返回指定索引处的行内 caret 矩形。
+    /// </summary>
+    public Rect GetCaretBounds(int index, TextAffinity affinity, double width = 1)
+    {
+        var snapped = SnapToCaretStop(index);
+        var lineIndex = ResolveLineIndex(snapped, affinity, out var x);
+        var line = Lines[Math.Clamp(lineIndex, 0, Lines.Count - 1)];
+        var caretX = x ?? GetCaretX(snapped);
+        return new Rect(caretX, line.Bounds.Y, width, line.Bounds.Height);
+    }
+
+    /// <summary>
+    /// 命中测试：先按 Y 定行，再在该行 caret 子表比 X；返回 caret stop 与共享 offset 的归属。
+    /// </summary>
+    public int HitTestIndex(Point position, out TextAffinity affinity)
+    {
+        var lineIndex = LineIndexForPosition(position);
+        return HitTestLine(lineIndex, position.X, out affinity);
+    }
+
+    /// <summary>
+    /// 返回 [start, end) 范围内文本的逐行矩形列表（编辑排版模式选择高亮）。
+    /// 行间无中间空白填充：每行矩形按该行 caret 子表 clip [line.Start, LineEndIndex(line)] 的局部真实 X；
+    /// 选区覆盖硬换行符时在该行行尾追加零宽 newline marker；空行被覆盖时给全行高零宽 marker；
+    /// <paramref name="end"/> 恰为下一行 Start 不误选该下行；空范围不产 marker。
+    /// </summary>
+    public IReadOnlyList<Rect> GetRangeRects(int start, int end)
+    {
+        if (end < start)
+        {
+            (start, end) = (end, start);
+        }
+
+        var snappedStart = SnapToCaretStop(start);
+        var snappedEnd = SnapToCaretStop(end, roundUp: true);
+        var rects = new List<Rect>();
+
+        if (snappedStart == snappedEnd)
+        {
+            return rects; // 空选区不产任何 rect/marker
+        }
+
+        for (var lineIndex = 0; lineIndex < Lines.Count; lineIndex++)
+        {
+            var line = Lines[lineIndex];
+            var lineEndBound = LineEndIndex(lineIndex);   // terminator 前的行尾 stop（硬换行时 < line.End）
+            var contentStart = line.Start;                // 内容区起点
+            var contentEnd = lineEndBound;                // 内容区终点（不含 terminator）
+            var terminatorStart = lineEndBound;           // terminator 区起点（硬换行时到 line.End）
+            var terminatorEnd = line.End;                 // terminator 区终点（软换行时 == lineEndBound，零宽）
+
+            // —— 内容区 ∩ selection：独立产内容 rect。空内容区（contentStart==contentEnd）无 rect。
+            var selStart = Math.Max(snappedStart, contentStart);
+            var selEnd = Math.Min(snappedEnd, contentEnd);
+            if (selStart < selEnd)
+            {
+                var left = LocalCaretXInLine(lineIndex, selStart) ?? line.Bounds.X;
+                var right = LocalCaretXInLine(lineIndex, selEnd) ?? line.Bounds.Right;
+                if (right < left)
+                {
+                    (left, right) = (right, left);
+                }
+
+                rects.Add(new Rect(left, line.Bounds.Y, Math.Max(0, right - left), line.Bounds.Height));
+            }
+
+            // —— terminator 区 ∩ selection：硬换行（terminatorEnd > terminatorStart 且 text[end-1] 是换行）
+            //   独立产零宽 marker（绘制层决定可见宽）。软换行/无 terminator 不产。
+            if (terminatorEnd > terminatorStart
+                && Text[terminatorEnd - 1] is '\n' or '\r'
+                && snappedStart < terminatorEnd
+                && snappedEnd > terminatorStart)
+            {
+                var edge = LocalCaretXInLine(lineIndex, terminatorStart) ?? line.Bounds.Right;
+                rects.Add(new Rect(edge, line.Bounds.Y, 0, line.Bounds.Height));
+            }
+
+            // —— 全空行（无内容区、无 terminator 区覆盖外的可停留位置）：Skia 中间空行
+            //   [s,e) 含 \n 时走上面 terminator 分支已产 marker；纯空段（start==end 且无 terminator）
+            //   被覆盖时给零宽全高 marker。
+            if (contentStart == contentEnd && terminatorStart == terminatorEnd
+                && line.Start >= snappedStart && line.Start < snappedEnd)
+            {
+                rects.Add(new Rect(line.Bounds.X, line.Bounds.Y, 0, line.Bounds.Height));
+            }
+        }
+
+        return rects;
+    }
+
+    /// <summary>在指定行的 caret 子表内查 stop 的真实 X（该行 clip 范围内局部坐标）；未命中返回 null。</summary>
+    private double? LocalCaretXInLine(int lineIndex, int stop)
+        => FindCaretX(lineIndex, stop);
+
+    /// <summary>按 Lines.Start 二分定位含 stop 的行；stop 在相邻行边界（End==下一行 Start）归上行。</summary>
+    private int LineIndexForStop(int stop)
+    {
+        var low = 0;
+        var high = Lines.Count - 1;
+        var candidate = 0;
+        while (low <= high)
+        {
+            var mid = low + ((high - low) / 2);
+            if (Lines[mid].Start <= stop)
+            {
+                candidate = mid;
+                low = mid + 1;
+            }
+            else
+            {
+                high = mid - 1;
+            }
+        }
+
+        return candidate;
+    }
+
+    private IReadOnlyList<IReadOnlyList<CaretPosition>> BuildDefaultCaretsByLine()
+    {
+        var result = new List<IReadOnlyList<CaretPosition>>(Lines.Count);
+        for (var lineIndex = 0; lineIndex < Lines.Count; lineIndex++)
+        {
+            var line = Lines[lineIndex];
+            var carets = new List<CaretPosition>();
+            for (var i = 0; i < CaretStops.Count; i++)
+            {
+                var stop = CaretStops[i];
+                if (stop < line.Start || stop > line.End)
+                {
+                    continue;
+                }
+
+                // 硬换行后的行首 offset（text[stop-1] 是换行且 stop==下一行 Start）：不归上行。
+                if (stop == line.End && stop > 0 && Text[stop - 1] is '\n' or '\r'
+                    && lineIndex + 1 < Lines.Count && stop == Lines[lineIndex + 1].Start)
+                {
+                    continue;
+                }
+
+                carets.Add(new CaretPosition(stop, CaretXs[i], lineIndex));
+            }
+
+            result.Add(carets);
+        }
+
+        return result;
+    }
+
 
     /// <summary>把任意 UTF-16 索引吸附到最近的合法字素边界；<paramref name="roundUp"/> 为 true 时向上取。</summary>
     public int SnapToCaretStop(int index, bool roundUp = false)
@@ -190,7 +563,9 @@ public sealed class TextLayoutResult
     }
 
     /// <summary>
-    /// 命中测试：返回位置最近的字素边界索引。用于点击定位光标与拖选。
+    /// 命中测试（显示路径）：先按 Y 定行，再在该行 caret 表比 X 取最近字素边界。
+    /// 软换行共享 offset 归属按行内规则解析（单 X 列表）；编辑控件应改用
+    /// <see cref="HitTestIndex(Point, out TextAffinity)"/> 以解析行首/行尾歧义。
     /// </summary>
     public int HitTestIndex(Point position)
     {

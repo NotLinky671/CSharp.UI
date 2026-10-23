@@ -36,6 +36,7 @@
 | `Toggle(Binding<bool> value, string? label)` | 开关（也可用 `Toggle(bool, Action<bool>?, string?)`） |
 | `Slider(Binding<double> value, double min, double max, double step, double? width)` | 数值滑块 |
 | `TextField(Binding<string> text, string? placeholder)` | 单行输入框 |
+| `TextEditor(Binding<string> text, string? placeholder)` | 多行输入框：硬换行 + 按内容区宽软折行，固定 `MinLines`（默认 3）行视口内纵向滚动（内部 `ScrollY`，不随内容增高）；init `Width`/`Height`/`HorizontalPadding`/`VerticalPadding`/`CornerRadius`/`MaxLength`/`BlinkInterval`/`MinLines` |
 | `ForEach<T>(items, item => view, item => key)` | 带稳定键的动态集合 |
 | `KeyedView`（`.Key(string)`） | 为同级节点提供稳定身份 |
 
@@ -127,11 +128,11 @@
 | `WheelDeltaMode` | `Steps`：归一化步数，一格为 1（触摸板可为小数）；`Pixels`：增量已是逻辑像素。单位必须显式标记，不能按数值大小猜测 |
 | `WheelScrollSettings` / `IWheelScrollSettingsService` | 系统每格行数/字符数与步数→逻辑距离换算（每行 16、每字符 8 个逻辑像素；`0` 禁用、`uint.MaxValue` 整页） |
 | `KeyEvent` / `UiKey` / `KeyModifiers` / `KeyEventKind` | 控制键与修饰键；字符输入不通过键盘事件传递 |
-| `TextInputEvent` | 宿主提交的 Unicode 文本；`TextInputEvent.SanitizeSingleLine(...)` 按单行规则过滤 |
+| `TextInputEvent` | 宿主提交的 Unicode 文本；`TextInputEvent.SanitizeSingleLine(...)` 按单行规则过滤、`SanitizeMultiLine(...)` 归一化多行换行（`\r\n`/孤 `\r`→`\n`、去 `\t`） |
 
 ## 文本编辑快捷键
 
-`TextField` 的内置编辑命令只通过平台快捷键触发，没有公开的方法入口：
+`TextField`/`TextEditor` 的内置编辑命令只通过平台快捷键触发，没有公开的方法入口：
 
 | 命令 | Windows / Linux | macOS |
 |---|---|---|
@@ -146,9 +147,18 @@
 - 当前平台的输入能力用 `TextInputForwarder.EffectiveService(context.Runtime.Services.TextInputService).Capabilities` 查询；各平台能力与验证级别见[平台、字体与原生依赖](platform-notes.md)。
 - 真实输入法的手动验收步骤见[输入法手动验收清单](ime-manual-acceptance.md)。
 
+## 多行编辑行为（TextEditor）
+
+- **换行归一化**：`OnTextInput` 与粘贴的**插入串**经 `TextInputEvent.SanitizeMultiLine`（`\r\n`/孤 `\r`→`\n`、去 `\t`）；外部写入绑定的原文与 setter 回读值不会被自动重写。
+- **原子事务与历史**：每次编辑走 `TextEditSession` 原子事务；`Enter` 前后显式 `BreakMerge`（换行不并入前序连续键入），Ctrl+Z/Y 按事务粒度恢复文本与选区；连续同类键入、Backspace/Delete 按既有合并规则归并。
+- **视口与滚动**：`MinLines` 决定可视行数；`Height`/`Frame(height:)`/`Flex` 可强制视口；超高内容在内部 `ScrollY` 滚动，滚轮可滚消费、到边界冒泡给外层 `ScrollView`；用户滚轮不改 caret、不自动回滚；键盘/编辑/指针操作后 caret 二维收敛到视口。
+- **导航**：Left/Right 按字素跨行（非 Shift 与 `TextField` 同语义：移一停点并折叠选区）；Up/Down 用 `PreferredX` 跨不等宽行、按 `TextAffinity` 消软换行共享 offset 歧义；Home/End 行首/行尾；Ctrl(Cmd)+Home/End 文档首/尾；PageUp/Down 按视口行数位移；Shift 扩选；Tab 不消费（焦点遍历）。
+- **指针**：点击按 `HitTestIndex` 落 caret（软换行边界按 `LineEnd`/`LineStart` 归属）；拖动跨行选区；指针在内容区上/下边界外悬停时按固定步进自动滚动，释放/取消/失焦/禁用即停。
+- **外部绑定变化**：保持文本原文，夹取 caret/选区到字素边界并清空撤销历史（与 `TextField` 同接缝协议）；禁用/卸载/失焦行为同 `TextField`。
+- **排版扩展点**：编辑相关排版经 `TextLayoutRequest.Editing=true`（尾随空段、行尾空白 caret、逐行 caret 表）；软换行共享 offset 的归属用 `CaretPosition`/`TextAffinity`；逐行选区矩形用 `TextLayoutResult.GetRangeRects`。自定义 `ITextService` 需实现同一请求开关语义（见[绘制与服务契约](#绘制与服务契约)）。
+
 ## 基础类型
 
-`Point`、`Size`、`Rect`、`Thickness`、`Color`、`Alignment`、`LayoutConstraints`、`FontFamily`、`FontDescription`、`FontWeight`、`TextAlignment`、`TextWrapping`、`TextTrimming`、`FontMetrics`、`Theme`、`EnvironmentValues`、`FlexAxis`。
 
 ## 绘制与服务契约
 
@@ -157,6 +167,8 @@
 | `DrawCommand`（`RectangleCommand`、`TextureCommand`、`PushClipCommand`、`PopClipCommand`） | 有序绘制命令；由布局/绘制阶段生成，渲染器按顺序消费 |
 | `RenderFrame` | 一帧的命令、视口逻辑尺寸、DPI 与清屏色 |
 | `ITextService` | 排版、测量、字体度量与 CPU 栅格化（实现：`CSharp.UI.Skia.SkiaTextService`）。`Rasterize(layout)` 返回白色遮罩；`Rasterize(layout, color)` 按实际文字颜色 RGB 栅格化（alpha 由绘制端 tint 统一乘一次），外部实现可只实现旧方法，颜色重载有默认实现 |
+| `TextLayoutRequest` / `TextLayoutResult` | 排版请求（文本、字体、宽度、换行、省略、对齐、行高、DPI、字距、`Editing` 编辑排版模式）与结果（尺寸、行、字素 caret 表）。编辑控件用 `Editing=true`：尾随换行产空段、行尾空白 caret 未裁剪、`CaretsByLine` 行内 caret 表（软换行共享 offset 在上下行各产真实坐标） |
+| `CaretPosition` / `TextAffinity` | 编辑排版：行内 caret 的文档 offset/X/视觉行；`TextAffinity` 消共享 offset 歧义（`LineEnd`=上行末、`LineStart`=下行首）。`TextLayoutResult` 提供 `GetCaretX`/`GetCaretBounds`/`LineIndexForIndex`/`HitTestLine`/`HitTestIndex`/`LineStartIndex`/`LineEndIndex`/`GetRangeRects`（逐行选区矩形，含硬换行 marker/空行 marker；caret 定位查询不分配临时集合，范围矩形结果按需生成） |
 | `ITextureService` | 按稳定键缓存 GPU 纹理、有界淘汰（实现：`CSharp.UI.OpenTK` 的 OpenGL 纹理服务）。`BeginFrame()` 由运行时在每帧生成命令前调用，用于保护当前帧与上一帧引用的纹理、在帧边界回收容量 |
 | `IImageService` | 图片解码与缓存（实现：`CSharp.UI.Skia.SkiaImageService`） |
 | `IClipboardService` | 剪贴板读写（宿主默认使用 GLFW 剪贴板） |

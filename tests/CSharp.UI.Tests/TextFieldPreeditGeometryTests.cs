@@ -375,7 +375,7 @@ public class TextFieldPreeditGeometryTests
         Assert.False(oldClient.IsComposing);
         Assert.True(oldClient.IsReleased);
 
-        var active = Assert.IsAssignableFrom<TextFieldCompositionClient>(service.ActiveClient);
+        var active = Assert.IsAssignableFrom<TextCompositionClient>(service.ActiveClient);
         Assert.NotSame(oldClient, active);
         Assert.Equal(service.LastGeometry, active.GetState().Geometry);
         Assert.Equal("X", active.GetState().Document.Text);
@@ -507,7 +507,7 @@ public class TextFieldPreeditGeometryTests
         app.Runtime.InvalidateRender();
         app.Runtime.ProcessPendingWork();
 
-        var active = Assert.IsAssignableFrom<TextFieldCompositionClient>(service.ActiveClient);
+        var active = Assert.IsAssignableFrom<TextCompositionClient>(service.ActiveClient);
         Assert.False(active.IsComposing);
         Assert.Equal("X", active.GetState().Document.Text);
         Assert.Equal(0, State(node).ScrollX);
@@ -541,7 +541,7 @@ public class TextFieldPreeditGeometryTests
         app.Runtime.InvalidateRender();
         app.Runtime.ProcessPendingWork();
 
-        var active = Assert.IsAssignableFrom<TextFieldCompositionClient>(service.ActiveClient);
+        var active = Assert.IsAssignableFrom<TextCompositionClient>(service.ActiveClient);
         Assert.Equal(0, State(node).ScrollX);
         Assert.True(service.LastGeometry.HasCaret);
         Assert.Equal(service.LastGeometry, active.GetState().Geometry);
@@ -647,7 +647,7 @@ public class TextFieldPreeditGeometryTests
         Assert.Equal(expected.Height, actual.Height, 6);
     }
 
-    private static TextFieldCompositionClient Client(ViewNode node)
+    private static TextCompositionClient Client(ViewNode node)
         => State(node).Composing ?? throw new InvalidOperationException("该节点没有组合客户端（会话未建立）。");
 
     private static TextFieldState State(ViewNode node) => Assert.IsType<TextFieldState>(node.InteractionState);

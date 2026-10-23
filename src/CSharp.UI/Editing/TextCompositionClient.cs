@@ -1,11 +1,11 @@
 namespace CSharp.UI;
 
 /// <summary>
-/// 真实 <see cref="TextField"/> 的文本输入客户端（TI-04）：把组合事件应用到节点自己的编辑会话与绑定上。
+/// 文本编辑控件的文本输入客户端（TI-04，TE-02 泛化）：把组合事件应用到节点的编辑会话与绑定上。
 /// </summary>
 /// <remarks>
 /// <para>
-/// 客户端只在 UI 线程被调用，由焦点/生命周期接线（<see cref="TextField"/> 与运行时）创建、绑定到
+/// 客户端只在 UI 线程被调用，由焦点/生命周期接线（编辑控件与运行时）创建、绑定到
 /// <see cref="ITextInputService"/> 并在失焦、禁用、卸载或窗口失活时撤销。epoch 在创建时固化：撤销后的客户端
 /// 永远报告自己的旧 epoch，不会动态指向新会话；所有写入路径在撤销后只返回显式拒绝。
 /// </para>
@@ -22,11 +22,15 @@ namespace CSharp.UI;
 /// <b>不重入布局：</b>所有路径只调用节点私有的真实事务入口与内部状态同步；不执行布局、不生成帧、
 /// 不产生平台副作用，也不在组合回调里递归处理待办工作。
 /// </para>
+/// <para>
+/// <b>控件解耦（TE-02）：</b>控件相关状态与事务入口经内部窄接口 <see cref="ITextEditSessionOwner"/>
+/// 访问；客户端不依赖具体控件类型（TextField/TextEditor 同一客户端）。
+/// </para>
 /// </remarks>
-internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositionCharGeometrySource, ICompositionIdentitySource, IGeometryPublishInvalidationSink, ITextInputSelectionTarget
+internal sealed class TextCompositionClient : ITextInputClient, ICompositionCharGeometrySource, ICompositionIdentitySource, IGeometryPublishInvalidationSink, ITextInputSelectionTarget
 {
     private readonly ViewNode _node;
-    private readonly TextFieldState _state;
+    private readonly ITextEditSessionOwner _state;
     private readonly TextFieldComposition _composition = new();
     private readonly TextFieldKeyOwnership _keyOwnership = new();
     private readonly int _epoch;
@@ -55,7 +59,7 @@ internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositio
     /// </summary>
     private CompositionCharGeometrySnapshot? _charGeometry;
 
-    internal TextFieldCompositionClient(ViewNode node, TextFieldState state, int epoch)
+    internal TextCompositionClient(ViewNode node, ITextEditSessionOwner state, int epoch)
     {
         _node = node;
         _state = state;
@@ -122,6 +126,8 @@ internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositio
             && snapshot.DocumentVersion == _state.Editor.Version
             && snapshot.LayoutSerial == _node.Runtime.LayoutSerial
             && snapshot.ScrollX == _state.ScrollX
+            && snapshot.ScrollY == _state.ScrollY
+            && snapshot.Affinity == _state.CaretAffinity
             && string.Equals(snapshot.Preedit, _composition.Preedit, StringComparison.Ordinal)
             && (snapshot.Preedit.Length > 0
                 || snapshot.CaretIndex == snapshot.Layout.SnapToCaretStop(
@@ -457,7 +463,7 @@ internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositio
         }
 
         // 节点必须仍挂载且仍可输入；卸载/禁用后的旧引用不得移动选区。
-        if (!_node.IsMounted || _node.IsEffectivelyDisabled || _node.View is not TextField)
+        if (!_state.IsEditableNode(_node))
         {
             return false;
         }
@@ -470,14 +476,14 @@ internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositio
     /// </summary>
     private EditResult CommitResult(TextRange range, string result)
     {
-        if (ResolveField() is not { } textField)
+        if (!_state.IsTextEditNode(_node))
         {
             return default;
         }
 
         // 事务前的真实同步：外部写入 / 来源替换 / MaxLength 变化都会在这里被发现并标记组合失效。
-        textField.SyncCompositionDocument(_node, _state, out _);
-        return textField.ApplyCompositionCommit(_node, _state, range, result);
+        _state.SyncCompositionDocument(_node);
+        return _state.ApplyCompositionCommit(_node, range, result);
     }
 
     /// <summary>
@@ -491,7 +497,7 @@ internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositio
     {
         try
         {
-            if (ResolveField() is not { } textField)
+            if (!_state.IsTextEditNode(_node))
             {
                 var detached = new CompositionDocument(
                     _state.Editor.Text,
@@ -503,8 +509,7 @@ internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositio
                 return detached;
             }
 
-            textField.SyncCompositionDocument(_node, _state, out var invalidated);
-            if (invalidated)
+            if (_state.SyncCompositionDocument(_node))
             {
                 RequestEpochInvalidation();
             }
@@ -513,8 +518,8 @@ internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositio
                 _state.Editor.Text,
                 _state.Editor.Version,
                 new TextSelection(_state.Anchor, _state.Caret),
-                textField.Text.Identity,
-                textField.MaxLength);
+                _state.TextIdentity(_node),
+                _state.MaxLength(_node));
             _lastReliableDocument = document;
             return document;
         }
@@ -525,12 +530,7 @@ internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositio
             // 事务之外的客户端读取失败（Document/GetState/组合前同步）同样让历史不可信；
             // 清理历史是核心内存操作，不触碰组合消费者自己的失效标志。
             _state.History.Clear();
-            return _lastReliableDocument ?? new CompositionDocument(
-                _state.Editor.Text,
-                _state.Editor.Version,
-                new TextSelection(_state.Anchor, _state.Caret),
-                ResolveField() is { } field ? field.Text.Identity : this,
-                ResolveField()?.MaxLength ?? int.MaxValue);
+            return _lastReliableDocument ?? CurrentCompositionDocument();
         }
     }
 
@@ -548,8 +548,8 @@ internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositio
             _state.Editor.Text,
             _state.Editor.Version,
             new TextSelection(_state.Anchor, _state.Caret),
-            ResolveField() is { } textField ? textField.Text.Identity : this,
-            ResolveField()?.MaxLength ?? int.MaxValue);
+            _state.IsTextEditNode(_node) ? _state.TextIdentity(_node) : this,
+            _state.IsTextEditNode(_node) ? _state.MaxLength(_node) : int.MaxValue);
 
     private void ApplyRestoredSelection(TextSelection? restored)
     {
@@ -564,5 +564,4 @@ internal sealed class TextFieldCompositionClient : ITextInputClient, ICompositio
         _node.Runtime.InvalidateLayout(_node);
     }
 
-    private TextField? ResolveField() => _node.IsMounted && _node.View is TextField textField ? textField : null;
 }

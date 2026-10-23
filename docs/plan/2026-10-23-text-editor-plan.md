@@ -2,7 +2,7 @@
 
 计划日期：2026-10-23
 
-状态：规划审核通过，待用户授权实施。文档完成不表示功能已实现。任务索引：[docs/task/README.md](../task/README.md)（TE-01～TE-07）。
+状态：已实施——TE-01~TE-06 完成（Windows IMM 微软拼音真机验收 2026-10-23 通过）,TE-07 交付记录见 [2026-10-23-text-editor-delivery](../delivery/2026-10-23-text-editor-delivery.md)。任务索引:[docs/task/README.md](../task/README.md)(TE-01~TE-07)。
 
 前置：TI-01～TI-10 全部收口并归档 [docs/archive/2026-10-23-text-input-editing-tasks/](../archive/2026-10-23-text-input-editing-tasks/README.md)；交付边界见 [P4 交付记录](../delivery/2026-10-22-ti07-p4-delivery.md)、[TI-09/TI-10 交付记录](../delivery/2026-10-23-ti09-ti10-delivery.md)。
 

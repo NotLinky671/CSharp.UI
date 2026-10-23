@@ -189,7 +189,10 @@ public sealed class GalleryBreakpointInputTests
     {
         using var host = new GalleryIntegrationHost(new GalleryApp(), new Size(1024, 1600), scale);
 
+        // 目标输入框在整页 ScrollView 内：先滚入视口再聚焦——视口外节点不产出任何绘制命令。
         var field = FindTextField(host, "试试中文输入法与 Ctrl+V 粘贴");
+        var outer = host.Runtime.Root.FindDescendants<ScrollView>().First();
+        BringInnerIntoView(host, outer, field);
         host.Runtime.SetFocus(field);
         host.Runtime.DispatchKey(new KeyEvent(KeyEventKind.Down, UiKey.End));
 
@@ -201,6 +204,9 @@ public sealed class GalleryBreakpointInputTests
 
         var moved = FindTextField(host, "试试中文输入法与 Ctrl+V 粘贴");
         Assert.Same(field, moved);
+        var movedOuter = host.Runtime.Root.FindDescendants<ScrollView>().First();
+        Assert.Same(outer, movedOuter);
+        BringInnerIntoView(host, movedOuter, moved);
         var state = Assert.IsType<TextFieldState>(moved.InteractionState);
         Assert.True(state.ScrollX > 0, $"{scale}：窄宽度下长文本应产生横向滚动，实际 ScrollX={state.ScrollX}。");
 

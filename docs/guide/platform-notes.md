@@ -123,8 +123,15 @@ var capabilities = TextInputForwarder.EffectiveService(
 默认发布**不包含**：
 
 - 把自绘候选或 TSF 路径作为公开/默认选项；
-- 鼠标候选选择、多行编辑、富文本、彩色 Emoji 字形图集、完整双向文本排版；
+- 鼠标候选选择、富文本、彩色 Emoji 字形图集、完整双向文本排版；
 - 系统无障碍桥接、动画系统、列表虚拟化、移动端与浏览器目标。
+
+### 多行编辑（TextEditor）边界
+
+- `TextEditor` 已实现多行编辑核心并完成 Windows 微软拼音/IMM 真机验收（2026-10-23,组合/取消/跨行替换/锚点随 `TextOrigin−ScrollY` 重发——见[交付记录](../delivery/2026-10-23-text-editor-delivery.md)）。IMM 默认系统候选路径,`ImmSetCandidateWindow` 锚点已验。
+- 非 Windows 平台维持 committed-only：组合/预编辑/候选锚点声明 false，`TextEditor` 同样只收已提交 Unicode 文本。
+- `UseTsfInputBridge` 仍是内部开关（见上节 TSF 段落）；`TextEditor` 组合接入不改变其公开状态。
+- 指针拖选越过 **OS 窗口边缘**时宿主按"捕获丢失即停"发 `PointerCancel`（`HandleMouseLeave`），拖选立即结束而非继续自滚；在窗口内悬停于编辑器内容区外的边缘自滚仍工作。
 
 因此“支持中文显示与粘贴”不等于“完整 IME 支持”。
 

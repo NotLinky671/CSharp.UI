@@ -204,15 +204,55 @@ public sealed class StubTextService : ITextService
         var clusters = GraphemeStarts(text);
 
         var lines = new List<(int Start, int End)>();
+        // 编辑模式需要每行的“内容终点”（不含硬换行 terminator），供宽度/ caret X 使用；
+        // 非编辑路径 ContentEnd 恒等于 End，行为与之前完全一致。
+        var lineContentEnds = new List<int>();
         var isTrimmed = false;
 
-        if (request.Wrapping == TextWrapping.Wrap && !double.IsPositiveInfinity(request.MaxWidth))
+        if (request.Editing)
         {
-            lines.AddRange(WrapClusters(text, clusters, glyphWidth, request.MaxWidth));
+            // 编辑排版（镜像 TextLayoutBuilder）：硬换行段落的行 End 含 terminator
+            // （\r\n 计 2 字符、单独 \r/\n/\u2028/\u2029/\u0085 计 1），contentEnd 不含；
+            // 软换行行 End == 下行 Start（共享 offset）；末尾换行补零宽尾随空段。
+            var segments = SplitParagraphs(text);
+            foreach (var (segStart, segContentEnd, segEnd) in segments)
+            {
+                var seg = text[segStart..segContentEnd];
+                var segLines = request.Wrapping == TextWrapping.Wrap && !double.IsPositiveInfinity(request.MaxWidth)
+                    ? WrapClusters(seg, GraphemeStarts(seg), glyphWidth, request.MaxWidth)
+                    : [(0, seg.Length)];
+
+                for (var i = 0; i < segLines.Count; i++)
+                {
+                    var (s, e) = segLines[i];
+                    var isLastOfSegment = i == segLines.Count - 1;
+                    // 段内最后一行吸收 terminator：End = segEnd（含换行符），ContentEnd = 内容末。
+                    var lineEnd = isLastOfSegment ? segEnd : segStart + e;
+                    var contentEnd = isLastOfSegment ? segContentEnd : lineEnd;
+                    lines.Add((segStart + s, lineEnd));
+                    lineContentEnds.Add(contentEnd);
+                }
+            }
+
+            // 末尾换行 → 尾随空段（零宽）。无文本时 paragraphs 已产一行 [0,0)。
+            if (text.Length > 0 && IsLineBreak(text[^1]))
+            {
+                lines.Add((text.Length, text.Length));
+                lineContentEnds.Add(text.Length);
+            }
+        }
+        else if (request.Wrapping == TextWrapping.Wrap && !double.IsPositiveInfinity(request.MaxWidth))
+        {
+            foreach (var (s, e) in WrapClusters(text, clusters, glyphWidth, request.MaxWidth))
+            {
+                lines.Add((s, e));
+                lineContentEnds.Add(e);
+            }
         }
         else
         {
             lines.Add((0, text.Length));
+            lineContentEnds.Add(text.Length);
         }
 
         // 省略：截断可见文本。
@@ -225,13 +265,16 @@ public sealed class StubTextService : ITextService
                 visibleText = string.Concat(text.AsSpan(0, clusters[Math.Max(0, maxClusters)]), "…");
                 isTrimmed = true;
                 lines.Clear();
+                lineContentEnds.Clear();
                 lines.Add((0, visibleText.Length));
+                lineContentEnds.Add(visibleText.Length);
             }
         }
 
         if (lines.Count > request.MaxLines && request.MaxLines > 0)
         {
             lines.RemoveRange(request.MaxLines, lines.Count - request.MaxLines);
+            lineContentEnds.RemoveRange(request.MaxLines, lineContentEnds.Count - request.MaxLines);
             if (request.Trimming == TextTrimming.Ellipsis)
             {
                 isTrimmed = true;
@@ -246,26 +289,120 @@ public sealed class StubTextService : ITextService
         }
 
         double maxWidth = 0;
-        foreach (var (start, end) in lines)
+        for (var lineIndex = 0; lineIndex < lines.Count; lineIndex++)
         {
-            maxWidth = Math.Max(maxWidth, (end - start) * glyphWidth);
+            var (start, _) = lines[lineIndex];
+            maxWidth = Math.Max(maxWidth, (lineContentEnds[lineIndex] - start) * glyphWidth);
         }
 
         var lineInfos = new List<TextLineInfo>(lines.Count);
-        var caretXs = new List<double>(stops.Count);
+        var lineOffsets = new List<double>(lines.Count);
         for (var lineIndex = 0; lineIndex < lines.Count; lineIndex++)
         {
             var (start, end) = lines[lineIndex];
-            var contentWidth = (end - start) * glyphWidth;
+            var contentWidth = (lineContentEnds[lineIndex] - start) * glyphWidth;
             var offsetX = request.Alignment switch
             {
                 TextAlignment.Center => (maxWidth - contentWidth) / 2,
                 TextAlignment.Right => maxWidth - contentWidth,
                 _ => 0,
             };
+            lineOffsets.Add(offsetX);
             var bounds = new Rect(offsetX, lineIndex * lineHeight, contentWidth, lineHeight);
             lineInfos.Add(new TextLineInfo(start, end, bounds, lineIndex * lineHeight + (lineHeight * 0.8)));
+        }
 
+        var caretXs = new List<double>(stops.Count);
+        List<IReadOnlyList<CaretPosition>>? caretsByLine = request.Editing ? new(lines.Count) : null;
+
+        foreach (var stop in stops)
+        {
+            // caret X：行内坐标（首个 Start≤stop≤End 的行；共享 offset 归上行，与真实 legacy caretXs 一致）。
+            // terminator 内的 stop 夹到内容终点（换行符不算宽度；stub 无 TrimEnd 裁剪）。
+            var lineIndex = LineIndexForStop(lines, stop);
+            var (start, _) = lines[lineIndex];
+            var xStop = Math.Min(stop, lineContentEnds[lineIndex]);
+            caretXs.Add(lineOffsets[lineIndex] + ((xStop - start) * glyphWidth));
+        }
+
+        if (request.Editing)
+        {
+            caretsByLine = BuildEditingCaretsByLine(lines, lineContentEnds, lineOffsets, stops, text, glyphWidth);
+        }
+
+        var size = new Size(maxWidth, Math.Max(lineHeight, lines.Count * lineHeight));
+        return new TextLayoutResult(
+            visibleText,
+            request.Font,
+            request.PixelScale,
+            size,
+            lineInfos,
+            stops,
+            caretXs,
+            isTrimmed,
+            request.LetterSpacing,
+            caretsByLine);
+    }
+
+    /// <summary>
+    /// 把文本按硬换行切成段落 (contentStart, contentEnd, end)：<c>\r\n</c> 作一个 terminator（end 前移 2），
+    /// 单独 <c>\r</c>/<c>\n</c>/<c>\u2028</c>/<c>\u2029</c>/<c>\u0085</c> 各作一个 terminator（end 前移 1）；
+    /// contentEnd 是 terminator 前的内容终点。与 TextLayoutBuilder 的段落切分同域（同一组换行码点），
+    /// 只作 stub 简化模型，不复制第二套字素规则。
+    /// </summary>
+    private static List<(int ContentStart, int ContentEnd, int End)> SplitParagraphs(string text)
+    {
+        var result = new List<(int ContentStart, int ContentEnd, int End)>();
+        var index = 0;
+        while (true)
+        {
+            var start = index;
+            var contentEnd = start;
+            while (contentEnd < text.Length && !IsLineBreak(text[contentEnd]))
+            {
+                contentEnd++;
+            }
+
+            var end = contentEnd;
+            if (end < text.Length)
+            {
+                end++;
+                if (text[end - 1] == '\r' && end < text.Length && text[end] == '\n')
+                {
+                    end++;
+                }
+            }
+
+            result.Add((start, contentEnd, end));
+            if (end >= text.Length)
+            {
+                break;
+            }
+
+            index = end;
+        }
+
+        return result;
+    }
+
+    /// <summary>判断码点是否为硬换行符（与真实排版 <c>Graphemes.IsLineBreak</c> 同组码点）。</summary>
+    private static bool IsLineBreak(char value) => value is '\n' or '\r' or '\u2028' or '\u2029' or '\u0085';
+
+    /// <summary>编辑排版：为每行生成 caret 子表；软换行共享 offset 在上下行各产真实坐标。</summary>
+    private static List<IReadOnlyList<CaretPosition>> BuildEditingCaretsByLine(
+        List<(int Start, int End)> lines,
+        List<int> lineContentEnds,
+        List<double> lineOffsets,
+        List<int> stops,
+        string text,
+        double glyphWidth)
+    {
+        var result = new List<IReadOnlyList<CaretPosition>>(lines.Count);
+        for (var lineIndex = 0; lineIndex < lines.Count; lineIndex++)
+        {
+            var (start, end) = lines[lineIndex];
+            var contentEnd = lineContentEnds[lineIndex];
+            var carets = new List<CaretPosition>();
             foreach (var stop in stops)
             {
                 if (stop < start || stop > end)
@@ -273,22 +410,59 @@ public sealed class StubTextService : ITextService
                     continue;
                 }
 
-                caretXs.Add(offsetX + ((stop - start) * glyphWidth));
+                var isHardBreakBeforeStop = stop > 0 && IsLineBreak(text[stop - 1]);
+                var isSoftWrapShared = stop == end
+                    && lineIndex + 1 < lines.Count
+                    && stop == lines[lineIndex + 1].Start
+                    && !isHardBreakBeforeStop;
+                var isSoftWrapStart = stop == start
+                    && lineIndex > 0
+                    && stop == lines[lineIndex - 1].End
+                    && !isHardBreakBeforeStop;
+
+                if (isSoftWrapShared)
+                {
+                    // 软换行上行末：X = 行内容宽（不含行尾空白——stub 全宽模型无 TrimEnd）。
+                    carets.Add(new CaretPosition(stop, lineOffsets[lineIndex] + ((contentEnd - start) * glyphWidth), lineIndex));
+                }
+                else if (isSoftWrapStart)
+                {
+                    // 软换行下行首：X = OffsetX。
+                    carets.Add(new CaretPosition(stop, lineOffsets[lineIndex], lineIndex));
+                }
+                else if (stop == end && lineIndex + 1 < lines.Count && stop == lines[lineIndex + 1].Start && isHardBreakBeforeStop)
+                {
+                    // 硬换行后的行首 offset：归属下行（LineStart），上行不产 caret。
+                    continue;
+                }
+                else
+                {
+                    // 行内/硬换行后行首/terminator 内 stop：X = OffsetX + (min(stop,contentEnd)-start)*glyphWidth，
+                    // terminator 不算内容宽度（换行符不是 glyph）。
+                    var xStop = Math.Min(stop, contentEnd);
+                    carets.Add(new CaretPosition(stop, lineOffsets[lineIndex] + ((xStop - start) * glyphWidth), lineIndex));
+                }
             }
+
+            result.Add(carets);
         }
 
-        if (caretXs.Count != stops.Count)
+        return result;
+    }
+
+    /// <summary>定位含 stop 的行（首个 Start≤stop≤End 的行）；与真实 <c>TextLayoutBuilder</c> 的同名实现一致——
+    /// 共享 offset 归上行，legacy caretXs 语义不变；新归属表（caretsByLine）负责下行真实坐标。</summary>
+    private static int LineIndexForStop(List<(int Start, int End)> lines, int stop)
+    {
+        for (var i = 0; i < lines.Count; i++)
         {
-            // 兜底：保证数量一致（通常不会发生）。
-            caretXs.Clear();
-            foreach (var stop in stops)
+            if (stop >= lines[i].Start && stop <= lines[i].End)
             {
-                caretXs.Add(stop * glyphWidth);
+                return i;
             }
         }
 
-        var size = new Size(maxWidth, Math.Max(lineHeight, lines.Count * lineHeight));
-        return new TextLayoutResult(visibleText, request.Font, request.PixelScale, size, lineInfos, stops, caretXs, isTrimmed, request.LetterSpacing);
+        return lines.Count - 1;
     }
 
     private static List<(int Start, int End)> WrapClusters(string text, List<int> clusters, double glyphWidth, double maxWidth)

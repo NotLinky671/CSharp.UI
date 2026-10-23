@@ -1562,7 +1562,7 @@ public class TextFieldUndoRedoTests
 
     private static TextEditSession Editor(ViewNode node) => State(node).Editor;
 
-    private static TextFieldCompositionClient Client(ViewNode node)
+    private static TextCompositionClient Client(ViewNode node)
         => State(node).Composing ?? throw new InvalidOperationException("该节点没有组合客户端（会话未建立）。");
 
     private static int Session(ViewNode node) => Client(node).Session.SessionId;

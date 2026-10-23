@@ -606,6 +606,14 @@ public sealed class UiRuntime : IDisposable
     /// </summary>
     public void OnClockTick()
     {
+        var focused = _focus.Focused;
+        if (focused is { IsMounted: true })
+        {
+            // 焦点视图的安全阶段时钟回调：拖选边缘滚动等有界内部推进在此执行
+            // （不写绑定、不递归布局、不调平台服务）；默认无操作。
+            focused.View.OnClockTick(focused, Clock.Now);
+        }
+
         if (GetNextWakeup() is not null)
         {
             InvalidateRender();
@@ -699,7 +707,7 @@ public sealed class UiRuntime : IDisposable
             _focus.CancelTextInput();
 
             // 窗口失活是分组边界：打断合并，但不清空历史（重新激活后仍可撤销）。
-            if (_focus.Focused?.InteractionState is TextFieldState state)
+            if (_focus.Focused?.InteractionState is ITextEditSessionOwner state)
             {
                 state.History.BreakMerge();
             }
@@ -723,7 +731,7 @@ public sealed class UiRuntime : IDisposable
     public bool NotifyCompositionKeyOrigin(object nativeKeyToken, bool consumedByInputMethod)
     {
         ArgumentNullException.ThrowIfNull(nativeKeyToken);
-        if (_focus.Focused is not { } focused || focused.InteractionState is not TextFieldState state)
+        if (_focus.Focused is not { } focused || focused.InteractionState is not ITextEditSessionOwner state)
         {
             return false;
         }
@@ -757,7 +765,7 @@ public sealed class UiRuntime : IDisposable
     internal void ReleaseTextInputOwnershipFor(ViewNode node)
     {
         ArgumentNullException.ThrowIfNull(node);
-        if (node.InteractionState is not TextFieldState state)
+        if (node.InteractionState is not ITextEditSessionOwner state)
         {
             return;
         }

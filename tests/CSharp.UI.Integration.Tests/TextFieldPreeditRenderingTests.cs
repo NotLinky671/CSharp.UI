@@ -290,7 +290,7 @@ public class TextFieldPreeditRenderingTests : IDisposable
         runtime.ProcessPendingWork();
 
         Assert.Equal(0, State(node).ScrollX);
-        var active = Assert.IsAssignableFrom<TextFieldCompositionClient>(service.ActiveClient);
+        var active = Assert.IsAssignableFrom<TextCompositionClient>(service.ActiveClient);
         Assert.False(active.IsComposing);
         Assert.True(service.LastGeometry.HasCaret);
         Assert.Equal(service.LastGeometry, active.GetState().Geometry);
@@ -439,7 +439,7 @@ public class TextFieldPreeditRenderingTests : IDisposable
         Assert.Equal(expected.Height, actual.Height, 6);
     }
 
-    private static TextFieldCompositionClient Client(ViewNode node)
+    private static TextCompositionClient Client(ViewNode node)
         => State(node).Composing ?? throw new InvalidOperationException("该节点没有组合客户端（会话未建立）。");
 
     private static TextFieldState State(ViewNode node) => Assert.IsType<TextFieldState>(node.InteractionState);

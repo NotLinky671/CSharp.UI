@@ -2,7 +2,7 @@
 
 创建日期：2026-10-23
 
-状态：未开始。设计依据 [TextEditor 计划](../plan/2026-10-23-text-editor-plan.md) §1、§3、§5。
+状态：已完成并经主审批准（2026-10-23；Gallery 多行区真实渲染与 `CSHARPUI_SMOKE_FRAMES=5` smoke 通过；同进程 driver 真实 UNICODE 输入绑定校验通过——证据见 [te05 证据](../return/te05-gallery-evidence/)，driver 在 ~/.omp/tmp/te05-realui）。设计依据 [TextEditor 计划](../plan/2026-10-23-text-editor-plan.md) §1、§3、§5。
 
 [返回任务索引](README.md)
 

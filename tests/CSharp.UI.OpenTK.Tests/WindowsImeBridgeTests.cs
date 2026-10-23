@@ -716,7 +716,7 @@ public sealed class WindowsImeBridgeTests
 
         Assert.True(host.Client.IsComposing);
         Assert.Equal("xyz", host.Client.Preedit);
-        var client = Assert.IsType<TextFieldCompositionClient>(host.Client);
+        var client = Assert.IsType<TextCompositionClient>(host.Client);
         Assert.Equal(1, client.PreeditCaret);
         Assert.Equal([new TextRange(0, 1), new TextRange(1, 3)], client.Segments);
         Assert.Equal("A", host.Value);

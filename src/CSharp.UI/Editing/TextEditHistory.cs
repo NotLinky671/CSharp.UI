@@ -389,6 +389,93 @@ internal sealed class TextEditHistory
         return true;
     }
 
+    /// <summary>
+    /// 由一次已确认事务构建增量历史记录（TI-05 唯一实现，TextField/TextEditor 共用）：
+    /// 把 <paramref name="operation"/> 的替换区按 before/after 文档的真实字素边界扩边，
+    /// 使可逆片段在两端都落在合法 caret 停点上；扩边发生在任何一侧时该项不可合并。
+    /// </summary>
+    internal static TextHistoryEntry FromTransaction(
+        EditResult result,
+        EditOperation operation,
+        TextSelection beforeSelection)
+    {
+        var beforeText = result.Before.Text;
+        var afterText = result.After.Text;
+        var range = operation.Range;
+
+        // 请求的插入区在编辑后文档中的范围是 [range.Start, range.Start + insertedLength)。
+        var insertedLength = afterText.Length - beforeText.Length + range.Length;
+
+        // 每份文档只枚举一次边界：后续用二分查找 + 集合查询，避免循环内反复整段扫描。
+        var beforeBoundaries = TextGraphemeBoundaries.EnumerateBoundaries(beforeText);
+        var afterBoundaries = TextGraphemeBoundaries.EnumerateBoundaries(afterText);
+        var afterSet = new HashSet<int>(afterBoundaries);
+
+        // 起点：不大于请求起点的最近共同边界（0 永远是共同边界，保证终止）。
+        var start = 0;
+        var startIndex = beforeBoundaries.BinarySearch(range.Start);
+        startIndex = startIndex >= 0 ? startIndex : ~startIndex - 1;
+        for (var i = startIndex; i >= 0; i--)
+        {
+            var candidate = beforeBoundaries[i];
+            if (afterSet.Contains(candidate))
+            {
+                start = candidate;
+                break;
+            }
+        }
+
+        // 终点：从请求终点向右找最近的“before 边界 + 按长度差映射后的 after 边界”都为合法的位置。
+        // 文档末尾（before.Length / after.Length）永远满足，因此循环一定终止。
+        var endInBefore = beforeText.Length;
+        var endInAfter = afterText.Length;
+        var endIndex = beforeBoundaries.BinarySearch(range.Start + range.Length);
+        endIndex = endIndex >= 0 ? endIndex : ~endIndex;
+        for (var i = endIndex; i < beforeBoundaries.Count; i++)
+        {
+            var candidate = beforeBoundaries[i];
+            var mapped = candidate - range.Length + insertedLength;
+            if (mapped >= start && mapped <= afterText.Length && afterSet.Contains(mapped))
+            {
+                endInBefore = candidate;
+                endInAfter = mapped;
+                break;
+            }
+        }
+
+        var deleted = beforeText.Substring(start, endInBefore - start);
+        var inserted = afterText.Substring(start, endInAfter - start);
+
+        var expanded = start != range.Start || endInBefore != range.Start + range.Length;
+
+        return new TextHistoryEntry(
+            start,
+            deleted,
+            inserted,
+            result.Before.Selection,
+            result.After.Selection,
+            operation.Kind,
+            expanded ? TextEditMergeKind.None : MergeKindFor(operation, beforeSelection));
+    }
+
+    /// <summary>判断一次事务是否属于可合并类别（折叠光标相邻键入 / 同方向逐字素删除）。</summary>
+    private static TextEditMergeKind MergeKindFor(EditOperation operation, TextSelection beforeSelection)
+    {
+        if (!beforeSelection.IsCollapsed)
+        {
+            // 选区替换独立成项，绝不与相邻键入/删除合并。
+            return TextEditMergeKind.None;
+        }
+
+        return operation.Kind switch
+        {
+            TextEditKind.Typing when operation.Range.IsEmpty => TextEditMergeKind.TypingAppend,
+            TextEditKind.Backspace => TextEditMergeKind.BackspaceDelete,
+            TextEditKind.Delete => TextEditMergeKind.ForwardDelete,
+            _ => TextEditMergeKind.None,
+        };
+    }
+
     /// <summary>检查两条事务是否在文档坐标上真正连续（同类别、折叠光标语义由 MergeKind 保证）。</summary>
     private static bool IsAdjacent(TextHistoryEntry older, TextHistoryEntry newer) => newer.MergeKind switch
     {

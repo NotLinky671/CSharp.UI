@@ -10,4 +10,4 @@
 
 ## 当前状态
 
-**暂无待返修事项。** 全部历史审核（框架 R01–R09、R12–R18、响应式 RL-01～09、文本输入 TI-01～TI-10）均已收口并归档；最终交付见 [TI-08～TI-10 交付记录](../delivery/2026-10-23-ti09-ti10-delivery.md) 与[收尾清理交付](../delivery/2026-10-23-cleanup-delivery.md)。
+**暂无待返修事项。** TE-01~TE-05 已经复审/主审批准关闭(链路见任务索引),TE-06 真实 IMM 验收三轮返修后于 2026-10-23 全部通过(证据 [2026-10-23-te06-real-ime-evidence](2026-10-23-te06-real-ime-evidence/),交付 [text-editor-delivery](../delivery/2026-10-23-text-editor-delivery.md))。全部历史审核(框架 R01–R09、R12–R18、响应式 RL-01～09、文本输入 TI-01～TI-10)均已收口并归档。

@@ -567,7 +567,8 @@ public readonly record struct EditOperation
         TextEditReason reason,
         bool scrubSingleLine,
         out EditOperation operation,
-        out string? error)
+        out string? error,
+        bool normalizeLineEndings = false)
     {
         if (!TryValidateEnums(kind, reason, out error))
         {
@@ -588,6 +589,20 @@ public readonly record struct EditOperation
             }
 
             inserted = scrubbed;
+        }
+
+        if (normalizeLineEndings)
+        {
+            var normalized = TextInputEvent.SanitizeMultiLine(inserted);
+            if (inserted.Length > 0 && normalized.Length == 0)
+            {
+                operation = default;
+                error = "插入串经过多行归一化后为空（原串仅含换行/制表符）：不能当成删除执行。"
+                    + "请改用 EditOperation.Delete 表达删除，或检查来源文本。";
+                return false;
+            }
+
+            inserted = normalized;
         }
 
         operation = Create(range, inserted, kind, reason, scrubSingleLine);

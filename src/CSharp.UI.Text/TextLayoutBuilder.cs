@@ -50,6 +50,24 @@ internal sealed class TextLayoutBuilder
 
         var lines = BuildLines(request, text, graphemeStarts, trimBoundaries, xAt, paragraphs);
 
+        if (request.Editing)
+        {
+            // 编辑排版：末尾换行必须补一个零宽尾随空段，让最后空行有 caret 位置。
+            // 硬换行符后 offset 只在下行产生 LineStart；软换行折行点在上下两行各产真实坐标。
+            if (text.Length > 0 && Graphemes.IsLineBreak(text[^1]))
+            {
+                var last = lines[^1];
+                lines.Add(new LineRecord
+                {
+                    Start = text.Length,
+                    End = text.Length,
+                    TrimEnd = text.Length,
+                    ContentWidth = 0,
+                    OffsetX = 0,
+                });
+            }
+        }
+
         // MaxLines：超出部分不可见。
         var maxLines = request.MaxLines > 0 ? request.MaxLines : int.MaxValue;
         var truncatedByLines = lines.Count > maxLines;
@@ -115,6 +133,8 @@ internal sealed class TextLayoutBuilder
 
         var caretStops = Graphemes.Starts(visibleText);
         var caretXs = new double[caretStops.Length];
+        List<IReadOnlyList<CaretPosition>>? caretsByLine = request.Editing ? new(lines.Count) : null;
+
         for (var i = 0; i < caretStops.Length; i++)
         {
             var stop = caretStops[i];
@@ -123,11 +143,22 @@ internal sealed class TextLayoutBuilder
                 var line = lines[^1];
                 caretXs[i] = line.OffsetX + (xAt[keepEnd] - xAt[line.Start]) + ((stop - keepEnd) * ellipsisWidth);
             }
+            else if (request.Editing)
+            {
+                // 编辑模式：caret X 按未裁剪内容宽度（行尾空白推进），不做 TrimEnd 夹紧。
+                var line = lines[LineIndexForStop(lines, stop)];
+                caretXs[i] = line.OffsetX + (xAt[stop] - xAt[line.Start]);
+            }
             else
             {
                 var line = lines[LineIndexForStop(lines, stop)];
                 caretXs[i] = line.OffsetX + (xAt[Math.Min(stop, line.TrimEnd)] - xAt[line.Start]);
             }
+        }
+
+        if (request.Editing)
+        {
+            caretsByLine = BuildEditingCaretsByLine(lines, caretStops, caretXs, text);
         }
 
         var size = new Size(maxLineWidth, Math.Max(lineHeight, lines.Count * lineHeight));
@@ -140,8 +171,68 @@ internal sealed class TextLayoutBuilder
             caretStops,
             caretXs,
             isTrimmed: visibleText.Length < text.Length,
-            letterSpacing: request.LetterSpacing);
+            letterSpacing: request.LetterSpacing,
+            caretsByLine: caretsByLine);
     }
+
+    /// <summary>
+    /// 编辑排版模式：为每行生成 caret 子表。软换行折行点 offset 在上下两行各产一项真实坐标
+    /// （上行 <c>X=行内容宽</c>、下行 <c>X=OffsetX</c>）；硬换行符后 offset 只在下行产生
+    /// <see cref="TextAffinity.LineStart"/>；行尾空白 caret 用未裁剪 X。
+    /// </summary>
+    private static List<IReadOnlyList<CaretPosition>> BuildEditingCaretsByLine(
+        List<LineRecord> lines,
+        int[] caretStops,
+        double[] caretXs,
+        string text)
+    {
+        var result = new List<IReadOnlyList<CaretPosition>>(lines.Count);
+        for (var lineIndex = 0; lineIndex < lines.Count; lineIndex++)
+        {
+            var line = lines[lineIndex];
+            var carets = new List<CaretPosition>();
+            for (var i = 0; i < caretStops.Length; i++)
+            {
+                var stop = caretStops[i];
+                if (stop < line.Start || stop > line.End)
+                {
+                    continue;
+                }
+
+                var isHardBreakBeforeStop = stop > 0 && Graphemes.IsLineBreak(text[stop - 1]);
+                var isSharedSoftWrap = stop == line.End
+                    && lineIndex + 1 < lines.Count
+                    && stop == lines[lineIndex + 1].Start
+                    && !isHardBreakBeforeStop;
+
+                if (isSharedSoftWrap)
+                {
+                    // 软换行折行点：上行归属 LineEnd（X=行内容宽右缘）。
+                    carets.Add(new CaretPosition(stop, line.OffsetX + line.ContentWidth, lineIndex));
+                }
+                else if (stop == line.End
+                    && lineIndex + 1 < lines.Count
+                    && stop == lines[lineIndex + 1].Start
+                    && isHardBreakBeforeStop)
+                {
+                    // 硬换行后的行首 offset：归属下行（LineStart），上行不产 caret。
+                    // 下行分支会在自己行内以 LineStart 归属产 caret。
+                    continue;
+                }
+                else
+                {
+                    // 行首 caret（硬换行或软换行的下行归属）用行内 OffsetX；行内其它位置按 caretXs。
+                    var isLineStart = stop == line.Start && lineIndex > 0 && stop == lines[lineIndex - 1].End;
+                    carets.Add(new CaretPosition(stop, isLineStart ? line.OffsetX : caretXs[i], lineIndex));
+                }
+            }
+
+            result.Add(carets);
+        }
+
+        return result;
+    }
+
 
     /// <summary>把文本切分为段落：[内容起点, 内容终点) 与含换行符的 [起点, 终点)。</summary>
     private static List<Paragraph> SplitParagraphs(string text)

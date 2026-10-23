@@ -4,19 +4,19 @@
 
 设计依据：[多行文本编辑器计划](../plan/2026-10-23-text-editor-plan.md)。本文档与任务文件均为设计实施规格；文档建立不表示功能已实现。
 
-状态：TE-01～TE-07 均未开始。旧 TI-01～TI-10 文本输入任务组已归档至 [docs/archive/2026-10-23-text-input-editing-tasks/](../archive/2026-10-23-text-input-editing-tasks/README.md)，仅作历史追溯。
+状态：TE-01~TE-07 全部完成。真实 Windows IMM + 微软拼音验收通过（28/28 check,outcome=PASS;证据 [2026-10-23-te06-real-ime-evidence](../return/2026-10-23-te06-real-ime-evidence/)）;最终构建 0 警 0 错、四套测试 1409×2 全绿、6 次示例 smoke exit 0;交付记录见 [2026-10-23-text-editor-delivery](../delivery/2026-10-23-text-editor-delivery.md),最终提交待主审 gate。旧 TI-01～TI-10 文本输入任务组已归档至 [docs/archive/2026-10-23-text-input-editing-tasks/](../archive/2026-10-23-text-input-editing-tasks/README.md),仅作历史追溯。
 
 ## 任务与依赖
 
 | 完成 | ID | 任务 | 前置依赖 | 阶段 |
 |---|---|---|---|---|
-| ☐ | TE-01 | [编辑排版模式与多行净化契约](01-editing-layout-and-sanitize.md) | 无 | A |
-| ☐ | TE-02 | [IME 客户端泛化与桥单行假设审计](02-ime-client-cutover.md) | TE-01 | A |
-| ☐ | TE-03 | [TextEditor 控件核心](03-text-editor-core.md) | TE-02 | B |
-| ☐ | TE-04 | [TextEditor IME 接入](04-text-editor-ime.md) | TE-03 | B |
-| ☐ | TE-05 | [示例与文档](05-samples-and-guides.md) | TE-03 | C |
-| ☐ | TE-06 | [图形集成与 Windows 真实验收](06-graphics-and-real-ime.md) | TE-04、TE-05 | D |
-| ☐ | TE-07 | [交付](07-delivery.md) | TE-06 | D |
+| ☑ | TE-01 | [编辑排版模式与多行净化契约](01-editing-layout-and-sanitize.md) | 无 | A |
+| ☑ | TE-02 | [IME 客户端泛化与桥单行假设审计](02-ime-client-cutover.md) | TE-01 | A |
+| ☑ | TE-03 | [TextEditor 控件核心](03-text-editor-core.md) | TE-02 | B |
+| ☑ | TE-04 | [TextEditor IME 接入](04-text-editor-ime.md) | TE-03 | B |
+| ☑ | TE-05 | [示例与文档](05-samples-and-guides.md) | TE-03 | C |
+| ☑ | TE-06 | [图形集成与 Windows 真实验收](06-graphics-and-real-ime.md) | TE-04、TE-05 | D |
+| ☑ | TE-07 | [交付](07-delivery.md) | TE-06 | D |
 
 ## 阶段门槛
 

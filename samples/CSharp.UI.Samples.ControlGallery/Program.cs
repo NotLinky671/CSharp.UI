@@ -37,6 +37,7 @@ public sealed class GalleryApp : Component
         var clicks = UseState("clicks", 0);
         var notes = UseState("notes", string.Empty);
         var editDemo = UseState("editDemo", "选中这段文字后输入、粘贴或按 Ctrl+Z 撤销");
+        var notesMulti = UseState("notesMulti", "第一行：输入或粘贴多行文本\n第二行：Enter 换行、Shift+方向键选区、Ctrl+Z 撤销");
 
         var current = theme.Value;
         var logoPath = Path.Combine(AppContext.BaseDirectory, "shared", "Assets", "logo.png");
@@ -134,6 +135,18 @@ public sealed class GalleryApp : Component
                             new ForEach<int>(Enumerable.Range(1, 40), i => new Text($"第 {i} 行：滚动内容"), i => i))
                         .Spacing(4))
                         .Frame(height: 120)),
+                    // TextEditor 多行编辑区：固定 MinLines 视口 + 内部 ScrollY（不随内容增高），
+                    // 行数超过视口时滚轮先由编辑器消费、到边界后冒泡给外层整页 ScrollView。
+                    Section("多行编辑", new VStack(
+                        new TextEditor(notesMulti.ToBinding(), "多行输入：Enter 换行、Ctrl+Z 撤销、拖选、滚轮滚动")
+                        {
+                            MinLines = 4,
+                            Height = 160,
+                        }
+                            .FillWidth(),
+                        new Text($"多行内容长度：{notesMulti.Value.Length}（外部读取同一 Binding）")
+                            .WithFont(FontDescription.Default.WithSize(12)))
+                        .Spacing(6)),
                     Section("状态与绑定", new VStack(
                         new Text($"开关状态：{(enabled.Value ? "开" : "关")}，滑块值：{volume.Value:0.00}，按钮点击：{clicks.Value} 次").Wrap(),
                         new TextField(notes.ToBinding(), "试试中文输入法与 Ctrl+V 粘贴").FillWidth(),

@@ -119,6 +119,15 @@ public abstract class View
     /// </summary>
     internal virtual TimeSpan? GetNextWakeup(ViewNode node, TimeSpan now) => null;
 
+    /// <summary>
+    /// 宿主时钟推进后的安全阶段回调（TE-03 拖选边缘滚动）：每轮 UI 循环调用一次，
+    /// 视图在此推进有界内部状态（如 <see cref="TextEditorState.ScrollY"/>），不得执行布局、
+    /// 写绑定、调用平台服务或递归生成帧。默认无操作。
+    /// </summary>
+    internal virtual void OnClockTick(ViewNode node, TimeSpan now)
+    {
+    }
+
     /// <summary>该节点当前是否参与命中测试（不可见或被裁剪的内容不参与）。</summary>
     internal virtual bool IsHitTestVisible(ViewNode node) => true;
 

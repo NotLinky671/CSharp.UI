@@ -11,7 +11,7 @@ namespace CSharp.UI.OpenTK.Tests;
 /// <remarks>
 /// <para>
 /// 每条用例都走真实链路：<see cref="NativeCompositionOwner"/> → <see cref="TextInputCompositionSession"/>
-/// → 真实 <see cref="TextFieldCompositionClient"/> → 真实 TI-03 编辑事务与 Binding setter。
+/// → 真实 <see cref="TextCompositionClient"/> → 真实 TI-03 编辑事务与 Binding setter。
 /// 不使用 BindingRecorder，也不只断言 mock dispatcher。
 /// </para>
 /// <para>
@@ -102,7 +102,7 @@ public sealed class NativeCompositionOwnerTests
 
         public AcpTextStore Acp => Store_();
 
-        public TextFieldCompositionClient Client
+        public TextCompositionClient Client
             => State.Composing ?? throw new InvalidOperationException("会话未建立。");
 
         public TextFieldState State => Assert.IsType<TextFieldState>(Node.InteractionState);

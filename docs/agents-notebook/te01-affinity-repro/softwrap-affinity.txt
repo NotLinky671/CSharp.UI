@@ -1,0 +1,28 @@
+TE-01 R7 soft-wrap/hard-break caret affinity 修复前后对照，2026-10-23
+工程：throwaway C:/tmp/te01repro（程序集名默认，Reference=src CSharp.UI + CSharp.UI.Text Debug DLLs，
+  依赖经 CSharp.UI.Text.Tests/bin/Debug/net10.0 的 deps.json+runtimeconfig 在测试输出目录内运行，
+  真实 SkiaTextService+FontDescription.Default，非 stub）。
+命令：dotnet repro.dll（cwd=tests/CSharp.UI.Text.Tests/bin/Debug/net10.0）
+
+场景：'abcdef' Editing=true MaxWidth=30 Wrap → 软 wrap 折两行（line0 [0,3) Y=0，line1 [3,6) Y=18.6）；
+共享 offset=3（line0.End==line1.Start，text[2] 非换行符）。
+"ab\ncd" Editing=true → 硬换行两行，offset=3（text[2]='\n' 后）。
+
+=== 修复后（ResolveLineIndex 按 affinity/isPostBreak/isShared 重排）===
+softwrap shared-offset=3:
+  aff=Unspecified  line=0 X=21.85 bounds=(21.8,0.0,1x18.6)   ← 上行末（默认归属上行）
+  aff=LineEnd      line=0 X=21.85 bounds=(21.8,0.0,1x18.6)   ← 上行末真实 X
+  aff=LineStart    line=1 X=0.00  bounds=(0.0,18.6,1x18.6)   ← 下行首 OffsetX
+hardbreak offset-3:
+  aff=Unspecified  line=1 X=0.00 bounds=(0.0,18.6,1x18.6)   ← 唯一下行
+  aff=LineEnd      line=1 X=0.00 bounds=(0.0,18.6,1x18.6)
+  aff=LineStart    line=1 X=0.00 bounds=(0.0,18.6,1x18.6)
+
+=== 修复前（fast 独立运行实测，程序集为当前新构）===
+shared-offset=3 aff=LineEnd → (21.85,18.6) line=1（错：X 取自上行但 Y/LineIndex 归下行）；
+Unspecified 同混行；仅 LineStart 正确。
+根因：LineIndexForStop 二分取 latest Start<=stop 归下行，ResolveLineIndex 的
+  LineEnd 分支只判 snapped==Lines[primary].End（primary=下行 End=6≠3 不命中）→
+  落回 primary=1 且 x=null→GetCaretX 旧单 X fallback（上行值）→ X/Y/line 三量不一致。
+修复：ResolveLineIndex 分三段——isPostBreak(text[stop-1] 换行)任何 affinity 唯一下行；
+  isShared(软 wrap 共享)按 affinity LineStart→下行/其余→上行；非共享忽略 affinity 归 primary。

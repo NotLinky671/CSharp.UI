@@ -372,7 +372,7 @@ public sealed class PreeditRenderingGpuTests
 
     private static TextFieldState State(ViewNode node) => Assert.IsType<TextFieldState>(node.InteractionState);
 
-    private static TextFieldCompositionClient Client(ViewNode node)
+    private static TextCompositionClient Client(ViewNode node)
         => State(node).Composing ?? throw new InvalidOperationException("该节点没有组合客户端。");
 
     /// <summary>记录服务端几何并把组合事件投递给活动客户端。</summary>

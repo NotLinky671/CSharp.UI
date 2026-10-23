@@ -1,0 +1,48 @@
+te03-realui 2026-10-23T15:56:40.5748844+08:00
+asm=C:\Users\nothh\.omp\tmp\te03-realui\bin\Release\net10.0-windows\CSharp.UI.OpenTK.dll
+PASS boot :: host Started callback fired
+PASS hwnd :: own window hwnd=0xF182E
+PASS fg2 :: foreground==ours (F182E)
+PASS S00 :: click focused TextEditor (FocusedNode=TextEditor)
+  set#1 -> 'a'
+  set#2 -> 'ba'
+PASS S00b :: Left+type diag: doc='ba' caret=0 expect 'ba' caret~1
+  set#3 -> ''
+PASS S00c :: reset cleared doc, got ''
+  set#4 -> 'h'
+  set#5 -> 'he'
+  set#6 -> 'hel'
+  set#7 -> 'hell'
+  set#8 -> 'hello'
+  set#9 -> 'hello\n'
+  set#10 -> 'hello\nw'
+  set#11 -> 'hello\nwo'
+  set#12 -> 'hello\nwor'
+  set#13 -> 'hello\nworl'
+  set#14 -> 'hello\nworld'
+PASS S01 :: Enter inserted newline: doc='hello\nworld'
+PASS S02a :: Home->line2 start caret=6 expect 6
+PASS S02b :: End->line2 end caret=11 expect 11
+PASS S03 :: mouse drag produced selection anchor=3 active=7
+PASS S03a :: selection collapsed after Left, anchor=6 active=6
+PASS S03b :: caret moved left legally: 6 (was active=7)
+  captured cap-s03-selection.bmp 1200x900
+  captured cap-s08-selection.bmp 1200x900
+  S08 diag: selection=7->11
+PASS S04a :: Up kept preferredX near end-of-line1: caret=5 expect ~5
+PASS S04b :: Down restored preferredX on line2: caret=11 expect ~11
+  S04c diag: lines=60 editorFrameW=776 innerW=756
+PASS S04c :: 6 long-line doc laid out: lines=60
+  S05 diag: client 1200->518px, editorFrameW 776->321.3, innerW 756->301.3, lines 60->120
+PASS S05a :: editor frame tracked window shrink: 776->321.3
+PASS S05b :: soft-wrap reflow after shrink: 60->120 lines
+  S05c diag: ScrollY after wheel-up = 0
+PASS S06a :: editor consumed wheel: ScrollY 0->96
+  S07 geo: editorFrame top=12 bot=212 scale=1.5 → pressY=93 targetY=393 clientBottom=889
+  S07 diag: dragging=True before=166.46744791666666 wakeup=80
+  S07 scroll trace: 166.47 -> 166.47 -> 240.95 -> 296.82 -> release+120ms 334.06 -> +500ms 334.06 draggingAfter=False
+PASS S07d :: drag was active during hold (dragging=True)
+PASS S07a :: edge drag auto-scrolled while held: 166.47->296.82
+PASS S07c :: drag cleared after release (dragging=False)
+PASS S07b :: auto-scroll stopped after release: +120ms 334.06 -> +500ms 334.06
+host exit=0 failures=0

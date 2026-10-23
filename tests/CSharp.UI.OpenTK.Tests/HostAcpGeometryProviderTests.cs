@@ -125,6 +125,7 @@ public sealed class HostAcpGeometryProviderTests
             DocumentVersion = 2,
             LayoutSerial = 5,
             ScrollX = 0,
+            ScrollY = 0,
         };
 
         provider.Publish(new HostGeometryCache(

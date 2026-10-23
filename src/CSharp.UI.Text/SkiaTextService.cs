@@ -10,7 +10,7 @@ namespace CSharp.UI.Skia;
 /// <para>
 /// 缓存约定：
 /// <list type="bullet">
-/// <item>排版缓存：键为 <see cref="TextLayoutRequest"/>（record 值相等；文本、字体、宽度、换行、省略、对齐、行高、DPI、字距都在键里），
+/// <item>排版缓存：键为 <see cref="TextLayoutRequest"/>（record 值相等；文本、字体、宽度、换行、省略、对齐、行高、DPI、字距、<see cref="TextLayoutRequest.Editing"/> 都在键里），
 /// 容量由 <see cref="LayoutCacheCapacity"/> 控制。</item>
 /// <item>栅格缓存：键为 <see cref="TextLayoutResult"/> 实例引用 + 文字颜色 RGB，
 /// 容量由 <see cref="RasterCacheCapacity"/> 控制。颜色参与键是正确性要求：同一排版在不同前景色下

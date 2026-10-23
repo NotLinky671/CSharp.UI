@@ -53,6 +53,15 @@ internal sealed class CompositionCharGeometrySnapshot
     /// <summary>快照建立时 TextField 的横向滚动偏移；ScrollX 变化后旧快照立即失效。</summary>
     internal required double ScrollX { get; init; }
 
+    /// <summary>快照建立时控件的纵向滚动偏移；单行 TextField 恒为 0，ScrollY 变化后旧快照立即失效。</summary>
+    internal required double ScrollY { get; init; }
+
+    /// <summary>
+    /// 快照建立时控件的 caret 行归属（TE-04）；只用于<b>无预编辑时 charPos=0</b> 应答当前文档 caret。
+    /// 单行 TextField 恒为 <see cref="TextAffinity.Unspecified"/>（无共享 offset 歧义），行为与旧版完全一致。
+    /// </summary>
+    internal TextAffinity Affinity { get; init; } = TextAffinity.Unspecified;
+
     /// <summary>
     /// 把组合串的 UTF-16 字符偏移（<c>IMECHARPOSITION.dwCharPos</c>）解析为该字符插入点的
     /// 逻辑像素位置与行高；所有索引都映射到真实排版 caret，绝不回落到当前 caret 或平均宽度。
@@ -97,15 +106,21 @@ internal sealed class CompositionCharGeometrySnapshot
         }
 
         var snapped = Layout.SnapToCaretStop(displayIndex);
-        var line = Layout.GetLineForIndex(snapped);
-        if (line.Bounds.Height <= 0)
+
+        // TE-04：跨行归属必须按真实行规则解析——硬换行后的行首 offset 永远归下行，
+        // 软换行共享 offset 由 affinity 消歧。预编辑串内字符的插入点取 LineStart：
+        // 该字符（及其后插入点）实际绘制在折行后的下行；无预编辑的 caret 应答用快照
+        // 捕获的控件 caret 归属（TextField 恒 Unspecified，单行下与旧行为逐位一致）。
+        var affinity = Preedit.Length > 0 ? TextAffinity.LineStart : Affinity;
+        var caret = Layout.GetCaretBounds(snapped, affinity);
+        if (caret.Height <= 0)
         {
             return false;
         }
 
-        x = Origin.X + Layout.GetCaretX(snapped);
-        y = Origin.Y + line.Bounds.Y;
-        lineHeight = line.Bounds.Height;
+        x = Origin.X + caret.X;
+        y = Origin.Y + caret.Y;
+        lineHeight = caret.Height;
         return true;
     }
 }

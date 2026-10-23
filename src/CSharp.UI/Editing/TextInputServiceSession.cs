@@ -54,17 +54,17 @@ internal sealed class TextInputFocusLease
 internal sealed class TextInputServiceSession
 {
     private readonly UiRuntime _runtime;
-    private TextFieldCompositionClient? _owner;
+    private TextCompositionClient? _owner;
     private TextInputFocusLease? _lease;
-    private Func<int, TextFieldCompositionClient>? _factory;
+    private Func<int, TextCompositionClient>? _factory;
     private ViewNode? _ownerNode;
     private int _generation;
     private bool _serviceSessionStarted;
     private bool _cancelPending;
-    private TextFieldCompositionClient? _cancelPendingOwner;
+    private TextCompositionClient? _cancelPendingOwner;
     private int _cancelPendingGeneration;
     private bool _flushing;
-    private TextFieldCompositionClient? _pendingEndOwner;
+    private TextCompositionClient? _pendingEndOwner;
     internal TextInputServiceSession(UiRuntime runtime) => _runtime = runtime;
 
     /// <summary>实际生效的文本输入服务（null 归一化为 <see cref="NoTextInputService"/>）。</summary>
@@ -80,12 +80,12 @@ internal sealed class TextInputServiceSession
     internal TextInputSession Session => _lease is { } lease ? new TextInputSession(lease.Epoch) : default;
 
     /// <summary>当前绑定到服务的组合客户端；没有会话时为 null。</summary>
-    internal TextFieldCompositionClient? ActiveClient => _lease is { IsValid: true } ? _owner : null;
+    internal TextCompositionClient? ActiveClient => _lease is { IsValid: true } ? _owner : null;
 
     /// <summary>该客户端是否是当前有效归属。</summary>
-    /// <remarks>外部绑定/来源变化会立即置位 <see cref="TextFieldCompositionClient.EpochInvalidationRequested"/>，
+    /// <remarks>外部绑定/来源变化会立即置位 <see cref="TextCompositionClient.EpochInvalidationRequested"/>，
     /// 因此旧 epoch 的客户端在安全阶段换会话之前就已经不再是有效归属。</remarks>
-    internal bool IsCurrentOwner(TextFieldCompositionClient client)
+    internal bool IsCurrentOwner(TextCompositionClient client)
         => _lease is { IsValid: true }
             && ReferenceEquals(_owner, client)
             && !client.IsReleased
@@ -97,7 +97,7 @@ internal sealed class TextInputServiceSession
     /// <param name="node">归属节点（用于在安全阶段判断是否仍可恢复）。</param>
     /// <param name="clientFactory">按分配的 epoch 创建组合客户端；只有服务确实接受会话时才会保留其结果。</param>
     /// <returns>确实建立了会话时返回 true。</returns>
-    internal bool Start(ViewNode node, Func<int, TextFieldCompositionClient> clientFactory)
+    internal bool Start(ViewNode node, Func<int, TextCompositionClient> clientFactory)
     {
         ArgumentNullException.ThrowIfNull(node);
         ArgumentNullException.ThrowIfNull(clientFactory);
@@ -141,7 +141,7 @@ internal sealed class TextInputServiceSession
 
         var lease = _runtime.AcquireTextInputLease();
         var generation = ++_generation;
-        TextFieldCompositionClient client;
+        TextCompositionClient client;
         try
         {
             client = clientFactory(lease.Epoch);
@@ -212,7 +212,7 @@ internal sealed class TextInputServiceSession
     /// <summary>
     /// 仅当该客户端仍是当前所有者时才结束会话；旧节点卸载/失焦不会结束别的新会话。
     /// </summary>
-    internal bool EndForOwner(TextFieldCompositionClient client)
+    internal bool EndForOwner(TextCompositionClient client)
     {
         ArgumentNullException.ThrowIfNull(client);
         if (!ReferenceEquals(_owner, client))
@@ -317,7 +317,7 @@ internal sealed class TextInputServiceSession
     }
 
     /// <summary>请求在安全阶段按所有者结束会话（布局/绘制阶段不能直接调用平台服务）。</summary>
-    internal void RequestEndForOwner(TextFieldCompositionClient client)
+    internal void RequestEndForOwner(TextCompositionClient client)
     {
         ArgumentNullException.ThrowIfNull(client);
         if (!client.IsReleased)
@@ -412,7 +412,7 @@ internal sealed class TextInputServiceSession
     /// 结束旧会话会同步通知服务，服务可能在回调里切换焦点/卸载/再开会话。因此<b>回调之后</b>必须重新校验
     /// 当前归属与真实焦点，不能只依赖回调前算出的 resumable 布尔值。
     /// </remarks>
-    private void RearmFor(TextFieldCompositionClient owner, ViewNode? node, Func<int, TextFieldCompositionClient>? factory)
+    private void RearmFor(TextCompositionClient owner, ViewNode? node, Func<int, TextCompositionClient>? factory)
     {
         if (!ReferenceEquals(_owner, owner) || node is null || factory is null)
         {
@@ -431,7 +431,8 @@ internal sealed class TextInputServiceSession
         if (!node.IsMounted
             || !node.IsFocused
             || node.IsEffectivelyDisabled
-            || node.View is not TextField
+            || node.InteractionState is not ITextEditSessionOwner sessionOwner
+            || !sessionOwner.IsTextEditNode(node)
             || !ReferenceEquals(_runtime.FocusedNode, node))
         {
             return;
@@ -459,7 +460,7 @@ internal sealed class TextInputServiceSession
     }
 
     /// <summary>修正服务把事件投递给旧客户端实例的情况：只投递给当前有效归属。</summary>
-    internal TextInputApplyResult ApplyFromClient(TextFieldCompositionClient caller, IReadOnlyList<CompositionEvent> events)
+    internal TextInputApplyResult ApplyFromClient(TextCompositionClient caller, IReadOnlyList<CompositionEvent> events)
     {
         ArgumentNullException.ThrowIfNull(caller);
         if (!IsCurrentOwner(caller))
@@ -477,9 +478,9 @@ internal sealed class TextInputServiceSession
     /// </summary>
     /// <remarks>
     /// 平台调用封装在这里，服务抛错在本地收敛为失败并记录脱敏诊断，不会越过布局后的安全阶段。
-    /// 同值去重由 <see cref="TextFieldCompositionClient"/> 负责。
+    /// 同值去重由 <see cref="TextCompositionClient"/> 负责。
     /// </remarks>
-    internal bool PublishGeometry(TextFieldCompositionClient caller, TextInputGeometry geometry)
+    internal bool PublishGeometry(TextCompositionClient caller, TextInputGeometry geometry)
     {
         ArgumentNullException.ThrowIfNull(caller);
         if (!IsCurrentOwner(caller) || !_serviceSessionStarted)

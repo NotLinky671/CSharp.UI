@@ -108,7 +108,11 @@ internal sealed class FocusManager
     /// <summary>窗口重新激活：焦点仍在可编辑控件上时用新的 epoch 恢复文本输入会话。</summary>
     public void ResumeTextInput()
     {
-        if (Focused is { } focused && focused.IsMounted && !focused.IsEffectivelyDisabled && focused.View is TextField)
+        if (Focused is { } focused
+            && focused.IsMounted
+            && !focused.IsEffectivelyDisabled
+            && focused.InteractionState is ITextEditSessionOwner owner
+            && owner.IsEditableNode(focused))
         {
             focused.View.OnFocusChanged(new InputContext(_runtime), focused, true);
         }

@@ -59,7 +59,7 @@ See the [getting started guide](docs/guide/getting-started.md) for details.
 - [Public API reference](docs/guide/api-reference.md)
 - [Responsive layout: usage and migration](docs/guide/responsive-layout.md)
 - [Text input and editing plan](docs/plan/2026-10-17-text-input-and-editing-plan.md) (TI-01–TI-10 closed; TI-07 Windows TSF production acceptance completed 2026-10-22 — see [P4 delivery](docs/delivery/2026-10-22-ti07-p4-delivery.md); TI-08 non-Windows platforms report committed-text-only capability, verified at source level and by CPU simulation without real-device IME evidence; TI-09–TI-10 closed on 2026-10-23 by user acceptance without an independent review record, with known boundaries in the [delivery record](docs/delivery/2026-10-23-ti09-ti10-delivery.md); task records archived at [docs/archive/2026-10-23-text-input-editing-tasks/](docs/archive/2026-10-23-text-input-editing-tasks/README.md))
-- [Text editor plan](docs/plan/2026-10-23-text-editor-plan.md) (multi-line plain-text notes / task descriptions; **planned, not implemented** — system IME and system candidate UI are sufficient; no public TSF toggle)
+- [Text editor plan](docs/plan/2026-10-23-text-editor-plan.md) (multi-line plain-text `TextEditor` implemented: editing core, IME hookup, samples/docs; Windows real-IME acceptance on mspinyin/IMM completed 2026-10-23 — see [delivery record](docs/delivery/2026-10-23-text-editor-delivery.md); non-Windows remains committed-text-only; no public TSF toggle)
 - [State and lifecycle](docs/guide/state-lifecycle.md)
 - [Modifier order](docs/guide/modifier-order.md)
 - [Keys and dynamic lists](docs/guide/keys-and-lists.md)
@@ -97,7 +97,8 @@ See [responsive layout: usage and migration](docs/guide/responsive-layout.md) fo
 ## First-release scope
 
 Included: `VStack`/`HStack`/`ZStack`/`Spacer`/`ScrollView`, `Text`/`Image`/`Rectangle`,
-`Button`/`Toggle`/`Slider`/`TextField`, `Padding`/`Frame`/`Background`/`Foreground`/`Border`/`CornerRadius`/`Opacity`/`Clip`/`Disabled`/`Key`,
+`Button`/`Toggle`/`Slider`/`TextField`/`TextEditor` (multi-line: hard newlines plus width-driven soft wrap, a fixed `MinLines` viewport with internal `ScrollY`, pointer drag-selection with edge auto-scroll, undo/redo and clipboard commands),
+`Padding`/`Frame`/`Background`/`Foreground`/`Border`/`CornerRadius`/`Opacity`/`Clip`/`Disabled`/`Key`,
 `ForEach`, light and dark themes, font/color environment inheritance, mouse/keyboard/wheel/focus/pointer capture,
 and Chinese text display with committed text input on the default IMM path.
 
@@ -105,7 +106,7 @@ Text editing commands (undo/redo, cut/copy/paste, select all) are keyboard short
 
 Pre-release Windows TSF path (internal opt-in `UseTsfInputBridge`, not a public option): composition/preedit, a UI-less framework-drawn candidate panel that follows the final text geometry, and accurate return to IMM on failure. It requires an `[STAThread]` entry point. Production acceptance (P4) completed 2026-10-22 on a single-DPI (150%) mspinyin environment — see [P4 delivery record](docs/delivery/2026-10-22-ti07-p4-delivery.md); multi-DPI evidence is an environment boundary. Candidate mouse selection is not supported; keyboard candidate selection is handled by the IME itself.
 
-Not included in the default release: multi-line editing, an animation system, list virtualization, full
+Not included in the default release: real-IME composition for `TextEditor` on non-Windows platforms (Windows mspinyin/IMM real acceptance completed 2026-10-23 — see [delivery record](docs/delivery/2026-10-23-text-editor-delivery.md); macOS/Linux remain committed-text-only), an animation system, list virtualization, full
 bidirectional text, color emoji glyph atlases, mobile/browser/host embedding, and system accessibility bridges.
 
 ## Package status

@@ -2,7 +2,7 @@
 
 创建日期：2026-10-23
 
-状态：未开始。设计依据 [TextEditor 计划](../plan/2026-10-23-text-editor-plan.md) §5、§7。
+状态：完成——交付记录与证据目录已生成并验证（[text-editor-delivery](../delivery/2026-10-23-text-editor-delivery.md) + `2026-10-23-text-editor-delivery-evidence/`）：构建 0 警 0 错 ×2、四套测试 1409×2 全绿、6 次 smoke exit 0、真 IME 28/28 check PASS、SHA-256 manifest 复核 OK。最终提交待主审 gate。设计依据 [TextEditor 计划](../plan/2026-10-23-text-editor-plan.md) §5、§7。
 
 [返回任务索引](README.md)
 
