@@ -1,0 +1,27 @@
+[w320] root page ScrollView style should be Standard (gutter): childW=308 frameW=320
+[w320] toggle found frame=(32, 702.34, 116×24)
+[w320] demo sv by key found=True frame=(94.625, 831.446, 118.75×120)
+[w320] click (90, 714.34) hits Toggle(浮动滚动条) toggleFrame=(32, 702.34, 116×24)
+[w320] toggle value after click = True isPressed=False focused=True
+[w320] demo sv frameW 118.8→106.8 childW 106.8→106.8 gap 12.0→0.0 sameNode=True
+[w320] floating thumb painted at (199.375, 610.412, 4×24)
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\gallery-w320-floating-shown.png (320×800)
+[w320] bar auto-hid after 1 tick(s); inner childW=106.75
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\gallery-w320-floating-hidden.png (320×800)
+[w320] back-click at (90, 474.34) hits Toggle(浮动滚动条)
+[w320] back to Standard: gap=12.0 (expect ≈12) sameNode=True
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\gallery-w320-standard.png (320×800)
+[w1024] root page ScrollView style should be Standard (gutter): childW=1012 frameW=1024
+[w1024] toggle found frame=(472, 703.801, 116×24)
+[w1024] demo sv by key found=True frame=(446.625, 787.664, 118.75×120)
+[w1024] click (530, 715.801) hits Toggle(浮动滚动条) toggleFrame=(472, 703.801, 116×24)
+[w1024] toggle value after click = True isPressed=False focused=True
+[w1024] demo sv frameW 118.8→106.8 childW 106.8→106.8 gap 12.0→0.0 sameNode=True
+[w1024] floating thumb painted at (551.375, 806.63, 4×24)
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\gallery-w1024-floating-shown.png (1024×800)
+[w1024] bar auto-hid after 1 tick(s); inner childW=106.75
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\gallery-w1024-floating-hidden.png (1024×800)
+[w1024] back-click at (530, 715.801) hits Toggle(浮动滚动条)
+[w1024] back to Standard: gap=12.0 (expect ≈12) sameNode=True
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\gallery-w1024-standard.png (1024×800)
+---- Gallery mode PASS (0 failures)

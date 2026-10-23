@@ -2,11 +2,11 @@
 
 创建日期：2026-10-23
 
-状态：已完成（fast 独立真实窗口 IME/拖拽验收通过；core 618 + Integration 53 + OpenTK 678 Debug 全绿，Debug/Release 双 config 构建 0 警告 0 错误；审核期返修 Measure/GetLayout 排版宽已并入——`InnerRect` 同源取 key、非 tight `DesiredSize.Width` 含 `min(12, padded)`）。证据见 [交付记录](../delivery/2026-10-23-scrollbar-delivery.md) 与 [审查记录](../return/2026-10-23-scrollbar-review.md)。
+状态：已完成（fast 独立真实窗口 IME/拖拽验收通过；core 618 + Integration 53 + OpenTK 678 Debug 全绿，Debug/Release 双 config 构建 0 警告 0 错误；审核期返修 Measure/GetLayout 排版宽已并入——`InnerRect` 同源取 key、非 tight `DesiredSize.Width` 含 `min(12, padded)`）。证据见 [交付记录](../../delivery/2026-10-23-scrollbar-delivery.md) 与 [审查记录](../../return/2026-10-23-scrollbar-review.md)。
 
 阶段：B
 
-设计依据：[Scrollbar 计划](../plan/2026-10-23-scrollbar-plan.md) §决策一~七。
+设计依据：[Scrollbar 计划](../../plan/2026-10-23-scrollbar-plan.md) §决策一~七。
 
 [返回任务索引](README.md)
 

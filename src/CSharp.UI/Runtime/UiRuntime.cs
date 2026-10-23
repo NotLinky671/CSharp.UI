@@ -82,12 +82,15 @@ public sealed class UiRuntime : IDisposable
     private readonly FocusManager _focus;
     private readonly InputRouter _router;
     private readonly TextInputServiceSession _textInput;
+    private readonly List<TimedWake> _timedWakes = [];
+    private bool _timedWakeDispatching;
     private bool _layoutDirty = true;
     private bool _renderDirty = true;
     private bool _needsDraw = true;
     private bool _disposed;
     private bool _registered;
     private bool _processingWork;
+    private bool _pendingHoverRefresh;
     private bool _buildingFrame;
     private bool _windowActive = true;
     private int _nextTextInputEpoch;
@@ -488,6 +491,14 @@ public sealed class UiRuntime : IDisposable
         _focus.Validate();
         _router.ValidateInteractionState();
 
+        // 布局期几何边界排队的 hover 刷新在此安全阶段统一 flush：此刻 node.Frame、祖先裁剪
+        // 与排版缓存已最终确定，HitTest 不再读半成品布局。
+        if (_pendingHoverRefresh)
+        {
+            _pendingHoverRefresh = false;
+            _router.RefreshHover();
+        }
+
         // 文本输入的平台通知只在安全阶段发出（不在 Measure/Arrange/Emit 内调用外部服务）：
         // 外部绑定/来源变化换新 epoch，或把本地已取消的组合通知给平台。
         _textInput.FlushPendingNotifications();
@@ -591,13 +602,17 @@ public sealed class UiRuntime : IDisposable
     /// </summary>
     public TimeSpan? GetNextWakeup()
     {
+        var now = Clock.Now;
         var focused = _focus.Focused;
-        if (focused is null || !focused.IsMounted)
+        var focusedDelay = focused is { IsMounted: true }
+            ? focused.View.GetNextWakeup(focused, now)
+            : null;
+        var timed = NextTimedWakeDelay(now);
+        if (focusedDelay is null)
         {
-            return null;
+            return timed;
         }
-
-        return focused.View.GetNextWakeup(focused, Clock.Now);
+        return timed is null || focusedDelay.Value < timed.Value ? focusedDelay : timed;
     }
 
     /// <summary>
@@ -606,19 +621,183 @@ public sealed class UiRuntime : IDisposable
     /// </summary>
     public void OnClockTick()
     {
+        var now = Clock.Now;
+
+        // 1. 到期 TimedWake 槽位回调（Floating scrollbar 隐藏等）；回调内结构修改经标记/压缩保证安全。
+        DispatchDueTimedWakes(now);
+
+        // 2. 焦点视图的安全阶段时钟回调：拖选边缘滚动等有界内部推进在此执行
+        //    （不写绑定、不递归布局、不调平台服务）；默认无操作。
         var focused = _focus.Focused;
         if (focused is { IsMounted: true })
         {
-            // 焦点视图的安全阶段时钟回调：拖选边缘滚动等有界内部推进在此执行
-            // （不写绑定、不递归布局、不调平台服务）；默认无操作。
-            focused.View.OnClockTick(focused, Clock.Now);
+            focused.View.OnClockTick(focused, now);
         }
 
-        if (GetNextWakeup() is not null)
+        // 3. 重绘判据只看 focused 原语义：future TimedWake deadline 不产生每 tick 重绘，
+        //    到期隐藏由 OnTimedWake 回调自行 InvalidateRender。
+        if (focused is { IsMounted: true } && focused.View.GetNextWakeup(focused, now) is not null)
         {
             InvalidateRender();
         }
     }
+
+    // ------------------------------------------------------------------ TimedWakes（节点级定时槽位）
+
+    /// <summary>
+    /// 节点级定时唤醒槽位（Floating scrollbar 隐藏 deadline 等）：值类型 entry，
+    /// 重挂即原地改字段（零分配）；<see cref="Armed"/> 在回调期作迭代安全标记。
+    /// </summary>
+    private struct TimedWake
+    {
+        internal ViewNode Node;
+        internal TimeSpan Deadline;
+        internal bool Armed;
+    }
+
+    /// <summary>
+    /// 为节点挂/重挂一个到期回调：同节点覆盖既有 deadline（节点级单槽位）。
+    /// 到期时由 <see cref="OnClockTick"/> 调 <see cref="View.OnTimedWake"/> 一次；不承诺毫秒精度。
+    /// </summary>
+    internal void RequestTimedWake(ViewNode node, TimeSpan deadline)
+    {
+        for (var i = 0; i < _timedWakes.Count; i++)
+        {
+            if (ReferenceEquals(_timedWakes[i].Node, node))
+            {
+                var entry = _timedWakes[i];
+                entry.Deadline = deadline;
+                entry.Armed = true;
+                _timedWakes[i] = entry;
+                return;
+            }
+        }
+
+        _timedWakes.Add(new TimedWake { Node = node, Deadline = deadline, Armed = true });
+    }
+
+    /// <summary>
+    /// 取消节点的定时槽位：非回调期直接移除；due 批次中只标记 <see cref="TimedWake.Armed"/>=false
+    /// （批次结束后统一压缩——回调期删低 index 会让逆序遍历跳项）。
+    /// </summary>
+    internal void CancelTimedWake(ViewNode node)
+    {
+        for (var i = _timedWakes.Count - 1; i >= 0; i--)
+        {
+            if (!ReferenceEquals(_timedWakes[i].Node, node))
+            {
+                continue;
+            }
+
+            if (_timedWakeDispatching)
+            {
+                var entry = _timedWakes[i];
+                entry.Armed = false;
+                _timedWakes[i] = entry;
+            }
+            else
+            {
+                _timedWakes.RemoveAt(i);
+            }
+
+            return;
+        }
+    }
+
+    /// <summary>距最近 armed 到期槽的剩余延迟；遍历中惰性剔除失效节点（本方法不触发回调，无重入）。</summary>
+    private TimeSpan? NextTimedWakeDelay(TimeSpan now)
+    {
+        TimeSpan? best = null;
+        for (var i = 0; i < _timedWakes.Count; i++)
+        {
+            var entry = _timedWakes[i];
+            if (!entry.Armed || !entry.Node.IsMounted || entry.Node.IsEffectivelyDisabled)
+            {
+                // 回调期（due 批次的 OnTimedWake 重入查询）只标记不删——删除会让外层逆序遍历跳项。
+                if (_timedWakeDispatching)
+                {
+                    entry.Armed = false;
+                    _timedWakes[i] = entry;
+                }
+                else
+                {
+                    _timedWakes.RemoveAt(i);
+                    i--;
+                }
+                continue;
+            }
+
+            var delay = entry.Deadline - now;
+            if (delay < TimeSpan.Zero)
+            {
+                delay = TimeSpan.Zero;
+            }
+
+            if (best is null || delay < best.Value)
+            {
+                best = delay;
+            }
+        }
+
+        return best;
+    }
+
+    /// <summary>到期槽位回调并压缩：回调期取消只标记不删除（逆序遍历安全）；新注册不回看本批次。</summary>
+    private void DispatchDueTimedWakes(TimeSpan now)
+    {
+        _timedWakeDispatching = true;
+        try
+        {
+            var bound = _timedWakes.Count;    // 本批次上限：回调内新注册落尾部不回看
+            for (var i = bound - 1; i >= 0; i--)
+            {
+                var entry = _timedWakes[i];
+                if (!entry.Armed || !entry.Node.IsMounted || entry.Node.IsEffectivelyDisabled)
+                {
+                    // 失效槽：标记待压缩（回调期不删）。
+                    if (entry.Armed)
+                    {
+                        entry.Armed = false;
+                        _timedWakes[i] = entry;
+                    }
+                    continue;
+                }
+
+                if (now < entry.Deadline)
+                {
+                    continue;
+                }
+
+                entry.Armed = false;
+                _timedWakes[i] = entry;
+                entry.Node.View.OnTimedWake(entry.Node, now);
+            }
+        }
+        finally
+        {
+            _timedWakeDispatching = false;
+
+            // 批次后单次压缩：移除全部未 armed 槽。
+            for (var i = _timedWakes.Count - 1; i >= 0; i--)
+            {
+                if (!_timedWakes[i].Armed)
+                {
+                    _timedWakes.RemoveAt(i);
+                }
+            }
+        }
+    }
+
+    /// <summary>owner 命中结构自发变化（Floating bar 显隐）后按最近指针位置立即重算 hover（owner 自身 overlay 已可用）。</summary>
+    internal void RefreshHover() => _router.RefreshHover();
+
+    /// <summary>
+    /// 布局期几何边界（track 移位/overflow·disabled 翻转）后排队一次 hover 刷新：
+    /// Arrange 期间 node.Frame 未最终确定，直接 HitTest 会读到半成品布局——
+    /// 本方法只标记，由 <see cref="ProcessPendingWork"/> 在全部布局+交互校验后的安全阶段统一 flush 一次。
+    /// </summary>
+    internal void QueueHoverRefresh() => _pendingHoverRefresh = true;
+
 
     /// <summary>分发指针事件。</summary>
     public void DispatchPointer(PointerEvent e) => _router.DispatchPointer(e);
@@ -807,6 +986,7 @@ public sealed class UiRuntime : IDisposable
     {
         _focus.OnNodeUnmounting(node);
         _router.OnNodeUnmounting(node);
+        CancelTimedWake(node);
         _responsiveTransactions.Remove(node);
         ReleaseBindingDependencies(node);
         node.ResponsiveContent?.ReleaseDependencies();

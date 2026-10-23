@@ -1,0 +1,15 @@
+S1                                             PASS hide after ~1 wakeup(s); idle null wakeup
+S2                                             PASS visible→owner / hidden→child (hit ButtonCounter)
+S3                                             PASS hover suppress + leave rearm works
+S4                                             PASS drag keep-alive; release-on-bar suppress; leave→hide (1 wakeups); off-track release hides
+S5                                             PASS boundary no-show; track-page shows
+S6                                             PASS disabled Floating: no thumb, no wakeup
+S7                                             PASS unmount cleared deadline (drained 0 wakeups, then stable)
+S8                                             PASS style switch same node: standard 188→floating 200 of frame 200
+S9                                             PASS nested overlay hit follows paint order
+S10                                            PASS hide causes no IME republish; content clip stable
+C2                                             PASS stationary pointer suppresses hide (hovered=ScrollView(Vertical))
+C3                                             PASS rearm after bar→consuming-child; hidden after 1 wakeups
+H                                              PASS horizontal show→hide
+TE-ensure                                      PASS keyboard ensure shows; passive clamp does not
+---- 14/14 PASS

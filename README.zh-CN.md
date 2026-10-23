@@ -39,7 +39,7 @@ UiApplication.Run(new Counter());
 | `tests/` | 核心单元测试、文本测试、图形集成测试（xUnit v3） |
 | `tools/CSharp.UI.AssetGenerator` | 生成示例图片资源，保证资源可复现 |
 | `docs/guide` | 入门、API、状态、修饰符、Key、组件、平台与测试说明 |
-| `docs/task` | 当前 Scrollbar 规划与实施任务；已完成任务归档于 `docs/archive/` |
+| `docs/task` | 当前 Floating 滚动条规划与实施任务；已完成任务归档于 `docs/archive/` |
 
 历史输入法工具及其三个测试工程保存在标签 `archive/tools-before-removal`。需要复跑时，用 `git worktree add --detach ../CSharp.UI-ime-archive archive/tools-before-removal` 创建独立检出目录；验收日志和截图仍保留在 `docs/`。
 
@@ -66,7 +66,7 @@ dotnet run --project tests/CSharp.UI.Tests
 - [编写自定义组件](docs/guide/custom-components.md)
 - [平台、字体与原生依赖](docs/guide/platform-notes.md)
 - [测试指南](docs/guide/testing.md)
-- 设计与任务：[首版计划](docs/plan/2026-10-14-declarative-ui-framework-plan.md)、[响应式布局计划](docs/plan/2026-10-16-responsive-layout-plan.md)、[文本编辑器计划](docs/plan/2026-10-23-text-editor-plan.md)、[滚动条计划](docs/plan/2026-10-23-scrollbar-plan.md)、[当前任务](docs/task/README.md)、[任务历史归档](docs/archive/)、[首版验收记录](docs/archive/2026-10-14-framework-tasks/README.md)、[响应式布局交付记录](docs/delivery/2026-10-16-responsive-layout-delivery.md)
+- 设计与任务：[首版计划](docs/plan/2026-10-14-declarative-ui-framework-plan.md)、[响应式布局计划](docs/plan/2026-10-16-responsive-layout-plan.md)、[文本编辑器计划](docs/plan/2026-10-23-text-editor-plan.md)、[滚动条计划](docs/plan/2026-10-23-scrollbar-plan.md)、[Floating 滚动条计划](docs/plan/2026-10-23-floating-scrollbar-plan.md)、[当前任务](docs/task/README.md)、[任务历史归档](docs/archive/)、[首版验收记录](docs/archive/2026-10-14-framework-tasks/README.md)、[响应式布局交付记录](docs/delivery/2026-10-16-responsive-layout-delivery.md)
 
 ## 响应式布局
 
@@ -94,7 +94,7 @@ static View Search(State<string> query) =>
 
 ## 首版范围
 
-包含：`VStack`/`HStack`/`ZStack`/`Spacer`/`ScrollView`、`Text`/`Image`/`Rectangle`、`Button`/`Toggle`/`Slider`/`TextField`/`TextEditor`（多行：硬换行加按内容区宽软折行、固定 `MinLines` 视口内部 `ScrollY` 滚动、指针拖选边缘自滚、撤销重做与剪贴板命令）、`Padding`/`Frame`/`Background`/`Foreground`/`Border`/`CornerRadius`/`Opacity`/`Clip`/`Disabled`/`Key`、`ForEach`、明暗主题、字体/颜色环境继承、鼠标/键盘/滚轮/焦点/指针捕获、中文显示与**默认 IMM 路径**的已提交文本输入。`ScrollView`/`TextEditor` 内容溢出时沿滚动轴显示滚动条（persistent 12 逻辑像素槽，无溢出留空槽；滑块可拖拽、轨道点击按视口翻页一次）。
+包含：`VStack`/`HStack`/`ZStack`/`Spacer`/`ScrollView`、`Text`/`Image`/`Rectangle`、`Button`/`Toggle`/`Slider`/`TextField`/`TextEditor`（多行：硬换行加按内容区宽软折行、固定 `MinLines` 视口内部 `ScrollY` 滚动、指针拖选边缘自滚、撤销重做与剪贴板命令）、`Padding`/`Frame`/`Background`/`Foreground`/`Border`/`CornerRadius`/`Opacity`/`Clip`/`Disabled`/`Key`、`ForEach`、明暗主题、字体/颜色环境继承、鼠标/键盘/滚轮/焦点/指针捕获、中文显示与**默认 IMM 路径**的已提交文本输入。`ScrollView`/`TextEditor` 内容溢出时沿滚动轴显示滚动条（init `ScrollbarStyle`：`Standard` 默认 persistent 12 逻辑像素槽、无溢出留空槽；`Floating` 覆盖内容边缘不占槽、实际滚动显示、静止约 1 秒隐藏、悬停或拖拽不隐藏、隐藏后指针落回内容；滑块可拖拽、轨道点击按视口翻页一次）。
 
 文本编辑命令（撤销/重做、剪切/复制/粘贴、全选）只通过键盘快捷键触发，没有公开的命令 API。见 [API 参考](docs/guide/api-reference.md)与[输入法手动验收清单](docs/guide/ime-manual-acceptance.md)。
 

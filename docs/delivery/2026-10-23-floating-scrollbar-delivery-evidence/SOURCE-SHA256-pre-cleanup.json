@@ -1,0 +1,923 @@
+{
+ "scope": "src/ samples/ tests/ — all files, recursive, excluding any path containing bin/ or obj/ segment. Raw bytes hashed; identifies the verified working tree (docs excluded intentionally — docs continue to change).",
+ "generated": "2026-10-24T00:14:16.356585",
+ "file_count": 229,
+ "files": {
+  "samples/CSharp.UI.Samples.ControlGallery/CSharp.UI.Samples.ControlGallery.csproj": {
+   "sha256": "70d386d890cb03becda4fe8a42363121c11c8d4bd0d55b76d66fc909fb49bb39",
+   "bytes": 771
+  },
+  "samples/CSharp.UI.Samples.ControlGallery/NestedResponsiveExample.cs": {
+   "sha256": "fc1cb919c1694a497820bd76a5637479d74b39183ddfa454cae20ef503dc48b9",
+   "bytes": 4999
+  },
+  "samples/CSharp.UI.Samples.ControlGallery/Program.cs": {
+   "sha256": "781eca80e8905ee4f43db04591ee8a0d778dff1269374cdfea4ca4b914891ac1",
+   "bytes": 17301
+  },
+  "samples/CSharp.UI.Samples.Counter/CSharp.UI.Samples.Counter.csproj": {
+   "sha256": "6e7b082c280f13c1879a87f8b3bed8c746a9300a7f0f76af904a8f7adf744ba8",
+   "bytes": 618
+  },
+  "samples/CSharp.UI.Samples.Counter/Program.cs": {
+   "sha256": "8f1e763e77d74612ea5885e3bf6c2259916a0cf56e88ebc4caa7b68bbe092c0f",
+   "bytes": 1681
+  },
+  "samples/CSharp.UI.Samples.TodoList/CSharp.UI.Samples.TodoList.csproj": {
+   "sha256": "ad87bfc20fcab80153b4f4fe53cc5c109662f1f45276bc4aab92a1a0d16810f2",
+   "bytes": 620
+  },
+  "samples/CSharp.UI.Samples.TodoList/Program.cs": {
+   "sha256": "db92296a194763faeb3d8e589067fb1adafa16c242b47b045261b05e3f3bbc61",
+   "bytes": 5992
+  },
+  "samples/Shared/Assets/logo.png": {
+   "sha256": "741c41f91f4af9a381b0d9ff1fdc9b712314e3690d535ccd799b0e07d7250db9",
+   "bytes": 3872
+  },
+  "samples/Shared/SmokeTestHook.cs": {
+   "sha256": "3e8f278288087c95bd1d7da0519328e1733e56be7a6aa1833e454922df961d84",
+   "bytes": 1981
+  },
+  "src/CSharp.UI.OpenTK/AssemblyInfo.cs": {
+   "sha256": "1fcc7195e419d06705bf17700314951baa35877c14f64ed210ce24af6557d615",
+   "bytes": 296
+  },
+  "src/CSharp.UI.OpenTK/CSharp.UI.OpenTK.csproj": {
+   "sha256": "999a048f18d9889db1c93ed2a56ae673267a7b0312a565c0951afc9bea75216a",
+   "bytes": 1155
+  },
+  "src/CSharp.UI.OpenTK/Hosting/GlWindowFactory.cs": {
+   "sha256": "bb9009f4ff78ee578c7a4d9a599c7e031dbf9b12344d78fc681fa302aba0e0be",
+   "bytes": 11697
+  },
+  "src/CSharp.UI.OpenTK/Hosting/GlfwClipboardService.cs": {
+   "sha256": "e6b0ea3e21bf10621ea2d0d42e34e123b863312eebf47334e02bda2d7c9a8825",
+   "bytes": 1333
+  },
+  "src/CSharp.UI.OpenTK/Hosting/ImeEventTranslator.cs": {
+   "sha256": "d18dd19bf0e45c2af65c422be7156a3f208b8369ad5c8ae423556fda9ca5a1ce",
+   "bytes": 10283
+  },
+  "src/CSharp.UI.OpenTK/Hosting/ImeInterop.cs": {
+   "sha256": "7ce4922bd2351788e4966ac092f45dd7cb779f3680df9111863182a389c1022c",
+   "bytes": 10329
+  },
+  "src/CSharp.UI.OpenTK/Hosting/OpenTkHost.cs": {
+   "sha256": "f7c964be662a4cccf977c1bcf37e4ce9845ba77963443a5345f19020cf53f937",
+   "bytes": 47378
+  },
+  "src/CSharp.UI.OpenTK/Hosting/OpenTkInputAdapter.cs": {
+   "sha256": "e66ead6ade2d1115f545fe2ae91bd6a833ac1b2c4e6cb3736f8231b47df76f5b",
+   "bytes": 29595
+  },
+  "src/CSharp.UI.OpenTK/Hosting/OpenTkInputMapping.cs": {
+   "sha256": "887743e655a3e78f3d726fee5221aac792bbcaca2aeae55282e4b04023db96c7",
+   "bytes": 3363
+  },
+  "src/CSharp.UI.OpenTK/Hosting/OpenTkUiDispatcher.cs": {
+   "sha256": "2ad51933db22ac30f037d9351595e569e6d40dc141c709f1894e20d2333f6aae",
+   "bytes": 5227
+  },
+  "src/CSharp.UI.OpenTK/Hosting/StaComApartmentLease.cs": {
+   "sha256": "4081b58adc673b5fb2499b9a153b71aa28b633b3a4dc45e204edda9280282c66",
+   "bytes": 13359
+  },
+  "src/CSharp.UI.OpenTK/Hosting/TextInputCompositionAdapter.cs": {
+   "sha256": "3667078d5ad09db3a8728eaa4a83479d24f287f928193f0a3c86e4a168ac2f97",
+   "bytes": 19306
+  },
+  "src/CSharp.UI.OpenTK/Hosting/TextInputCompositionSession.cs": {
+   "sha256": "355d421f818e8b627c0f72e0577ba5ef4be4b441005e58c9e1b954ed659a3514",
+   "bytes": 52147
+  },
+  "src/CSharp.UI.OpenTK/Hosting/UiHostException.cs": {
+   "sha256": "4f3b33ac89414da164ec42188b394ab39c34c1e1c8ede29a4ad6df8add1c8bdc",
+   "bytes": 920
+  },
+  "src/CSharp.UI.OpenTK/Hosting/ViewportMetrics.cs": {
+   "sha256": "09256a97061e9ef5639960089914bd1f4fd3b5f8b0ba224aa6a8421a1ec4c7ca",
+   "bytes": 8084
+  },
+  "src/CSharp.UI.OpenTK/Hosting/Win32Ime.cs": {
+   "sha256": "2eeb457c9375e3a3c7ec3d171dc1648e74190a32f5ded45bfb3b5191c7dcf9e6",
+   "bytes": 11967
+  },
+  "src/CSharp.UI.OpenTK/Hosting/WindowsImeBridge.cs": {
+   "sha256": "b6492485fda8e30d336cf3582e68764ba4568e6b8384cd5f51603b050ea40b69",
+   "bytes": 49155
+  },
+  "src/CSharp.UI.OpenTK/Hosting/WindowsInputBridge.cs": {
+   "sha256": "2b96e65a9682345d19778b3445d2b05f86f3461eaba7111ee86d123160931d67",
+   "bytes": 3310
+  },
+  "src/CSharp.UI.OpenTK/Hosting/WindowsWheelScrollSettingsService.cs": {
+   "sha256": "9abda2ae7035336f7a10505c74a0b4d3359e888a3ad50ef02b7145a4c7fe3905",
+   "bytes": 2687
+  },
+  "src/CSharp.UI.OpenTK/Rendering/GlCoordinateMath.cs": {
+   "sha256": "6e5ed88760ba5b7479d48af418eb1963dca4879ac450ff77aa6bc5515be682b2",
+   "bytes": 4641
+  },
+  "src/CSharp.UI.OpenTK/Rendering/GlRenderer.cs": {
+   "sha256": "f217e11f0d95b06ef240398f151d4ede4c7473fcb3352abaf3b3344c87a4d407",
+   "bytes": 24720
+  },
+  "src/CSharp.UI.OpenTK/Rendering/GlResourceCounters.cs": {
+   "sha256": "46c4f9750c900001d9a513237f5cf959d91691704ec39c1b672804698a825509",
+   "bytes": 2736
+  },
+  "src/CSharp.UI.OpenTK/Rendering/GlShaderProgram.cs": {
+   "sha256": "8b2fb40fea7fcebec1342b88fd4b6c964be63a77b178eb6974ec00643670d6d6",
+   "bytes": 6350
+  },
+  "src/CSharp.UI.OpenTK/Rendering/GlShaderSources.cs": {
+   "sha256": "2c8d4345f30b9708fc689c8487f32bf4c45a94ab32ce43c3348555f69097c199",
+   "bytes": 5984
+  },
+  "src/CSharp.UI.OpenTK/Rendering/GlTextureService.cs": {
+   "sha256": "ab57cb5f42de646203aebb7b74da34db70e97e82febe73ff2350ad02645cadf6",
+   "bytes": 11162
+  },
+  "src/CSharp.UI.OpenTK/Testing/GlOffscreenSurface.cs": {
+   "sha256": "14ec76bb38d9395ede51847839c94a3d1daac83f1b6f2ecca8f75ab61bc163ab",
+   "bytes": 10064
+  },
+  "src/CSharp.UI.OpenTK/UiApplication.cs": {
+   "sha256": "7a801acccb7f43e5a190206f0e917d0325c9ca9a68b9e6fd0e9fadf62fc6a495",
+   "bytes": 10441
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/AcpGeometryProvider.cs": {
+   "sha256": "2cd6c1eeb4a8afd8683958faa7f84dfd4b77393c1d58db1c8d3ffea2e3383a91",
+   "bytes": 12001
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/AcpStagingBuffer.cs": {
+   "sha256": "75aa387b446501bacd9bb9b779f32cd45552e9d10a1e9a7fa99c9babc16d9ded",
+   "bytes": 6738
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/AcpTextDocument.cs": {
+   "sha256": "646ced344cae4ba0abdef1e4b245eed51b1889461599a2e876176453d4cfd08f",
+   "bytes": 6372
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/AcpTextStore.cs": {
+   "sha256": "a2a959b0a8b334a095f4868fd9dace2d33b8e9810f48f216799c4263b566018f",
+   "bytes": 68778
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/CandidateOverlay.cs": {
+   "sha256": "97821b71d60849891c9ecdc51cb1486d80d6c362775cba2cbfac0d4b346a61aa",
+   "bytes": 9889
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/CandidateSnapshot.cs": {
+   "sha256": "50a865929c666b8875d80bcd4a9980ab1fd9b0a8795c75f7ed01b9efa9965fed",
+   "bytes": 21407
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/DeferredInputAction.cs": {
+   "sha256": "6eaeb69b54011fd74a5f65d73ea21517a28d8b5cbd867d71428597273333fbd6",
+   "bytes": 5973
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/HostInputCoordinator.cs": {
+   "sha256": "5b113cb6b800b85030374be85cb8571c65ba65e57232e1e05221e6afb8bce323",
+   "bytes": 10700
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/HostWriterRegistry.cs": {
+   "sha256": "5c8a9e569491d9937c9464ecc3ab89d4a3675224ba9e81f11912722e3fa5f2cc",
+   "bytes": 5995
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/NativeCompositionFact.cs": {
+   "sha256": "bee697ac8d0df789148558f86f4debc9783462769657836edfc338cff5c75167",
+   "bytes": 9030
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/NativeCompositionOwner.cs": {
+   "sha256": "58626b17fd50974a7f0b70c3bcafc9d753ba8d0958cb9634d1d19e44ab95631b",
+   "bytes": 41427
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/NativeCompositionOwnerSink.cs": {
+   "sha256": "ea70d8d67b6e85987ba8b0546e734c5008447b8fcb4b402951af2f7e41accf5d",
+   "bytes": 23163
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/TextStoreLockManager.cs": {
+   "sha256": "225eec18ee014194ec5302149f2a4af5769128fad024a288fac2400fb03b3ccc",
+   "bytes": 7673
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/TsfHostBridgeResult.cs": {
+   "sha256": "04507c9ad85180da8e37b48c1eaf7bf23c8ce366a8c7c8475a058c8baca6f83d",
+   "bytes": 2584
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/TsfHostSession.cs": {
+   "sha256": "3b83a592b41fdc7b2a08e6b3394003c12c7876ad0581de292151a96d7bfe3576",
+   "bytes": 60378
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/TsfInputBridge.cs": {
+   "sha256": "bb907111af8fdb01a39ecd3bd2290cef745c7377af154cdd7399e22ea372ad16",
+   "bytes": 36284
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/TsfInterop.cs": {
+   "sha256": "08e4a98e3d9d5de44ae1551b995995b6ff54e6ee536f8c7bd4da576ab5499936",
+   "bytes": 23341
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/TsfKeyRouting.cs": {
+   "sha256": "d400ad4b85eabc266c254ad746b308207ed742acb470153293960bedffdf3a9b",
+   "bytes": 4262
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/TsfMessageHook.cs": {
+   "sha256": "5721f18732971c02e93296bedbe5399132548fd8f4adf9337e336ffddb93227a",
+   "bytes": 28317
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/TsfMessageHookPolicy.cs": {
+   "sha256": "dd4633cfed32900f8407640fccf15bd76d7580b9eb893dd7ad944b7d34a7eb01",
+   "bytes": 7004
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/TsfOwnerInterop.cs": {
+   "sha256": "ae9db09f8e0d55c4a07bc5515f4f858857b0ea3852ce6a29384f9c28f8fafd6e",
+   "bytes": 22624
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/TsfUiElementInterop.cs": {
+   "sha256": "31d6eb2d0fe7a45225ea695489aeefc30f71adc3bef434856680191be16ea222",
+   "bytes": 7241
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/TsfUiElementSink.cs": {
+   "sha256": "8facdcbc178757b0cbfe11db3ba45a74d5c2a8ab0c955860f9dd4aaf9159eda9",
+   "bytes": 16767
+  },
+  "src/CSharp.UI.OpenTK/WindowsTsf/WindowsTextInputRouter.cs": {
+   "sha256": "b469a2c9037fa35207f395eca57accf776abb775f8bed8cb406988cbc99869fc",
+   "bytes": 33782
+  },
+  "src/CSharp.UI.Text/CSharp.UI.Text.csproj": {
+   "sha256": "2d2260fe40ac136d4bb913bfd637b711f341111748bd8828da8248bec429276f",
+   "bytes": 1379
+  },
+  "src/CSharp.UI.Text/README.md": {
+   "sha256": "66c3874f2d5cde05c4e54051b246c81133b4e7e9a4776e2c768569419b637e45",
+   "bytes": 11004
+  },
+  "src/CSharp.UI.Text/SkiaFontResolver.cs": {
+   "sha256": "5d327aac02f9ebc716ddb5821998e9bdbec3b66fa1ba8a9c0333b4cf52886f40",
+   "bytes": 12753
+  },
+  "src/CSharp.UI.Text/SkiaImageService.cs": {
+   "sha256": "0a33610b47d0bb1f7a40738d71e583bfbd2486bb7e9edf5e318e918280751bd2",
+   "bytes": 5144
+  },
+  "src/CSharp.UI.Text/SkiaTextService.cs": {
+   "sha256": "4792f40a397091ba2f8ebab95a8632a7cd80f59813454ff81a6599dd38509f85",
+   "bytes": 13950
+  },
+  "src/CSharp.UI.Text/TextDiagnostics.cs": {
+   "sha256": "f612e0f396e89f371d1ed87596a7746141a3873634fb48832462c01e125df2cd",
+   "bytes": 1308
+  },
+  "src/CSharp.UI.Text/TextLayoutBuilder.cs": {
+   "sha256": "1c0f46a6eb916680791c82838fcdd9b391835b716920272fb33602925b7a57d7",
+   "bytes": 19182
+  },
+  "src/CSharp.UI.Text/TextShaping.cs": {
+   "sha256": "ebd00d464de4082b831d8c3125c96d025a0f76715354c9fa146a5588fb35d626",
+   "bytes": 9325
+  },
+  "src/CSharp.UI/CSharp.UI.csproj": {
+   "sha256": "e193cac778777bef299bc91fc3d64933d3f9915702bdd010c2328b5bfca1db59",
+   "bytes": 960
+  },
+  "src/CSharp.UI/Collections/LruCache.cs": {
+   "sha256": "6e5e89614cf9787563dc5894df5493963786a5e59f320fdbe1fa77b08914b4a6",
+   "bytes": 3105
+  },
+  "src/CSharp.UI/Editing/CompositionCharGeometry.cs": {
+   "sha256": "74fda9a9b728f68857d8b6cc40778a906f72351977a6c0f553bc4b90186bf4bb",
+   "bytes": 9472
+  },
+  "src/CSharp.UI/Editing/CompositionContracts.cs": {
+   "sha256": "562c12983ee31c935f0665f30b22cfbcb98e6410db75dbc3d15b62dc9b3c6611",
+   "bytes": 22935
+  },
+  "src/CSharp.UI/Editing/ITextEditSessionOwner.cs": {
+   "sha256": "8c66c3d5eb5205f69f5d4343a7afb9df40c005a29a4ee5f5452e2273b5dacbb7",
+   "bytes": 4149
+  },
+  "src/CSharp.UI/Editing/TextCompositionClient.cs": {
+   "sha256": "6c902eca0f3d24b429007de64fc6e2d087ed7ce1aca9a9490b2ed94ef6e2808b",
+   "bytes": 26557
+  },
+  "src/CSharp.UI/Editing/TextEditHistory.cs": {
+   "sha256": "954430a85d01d9d6a14aacafb5174b90a5b7558eb659bab0a583f9d5a08c229d",
+   "bytes": 20614
+  },
+  "src/CSharp.UI/Editing/TextEditSession.cs": {
+   "sha256": "44b107d1393c9dfdbb236c5057e0da21e2ef288f426b89aad379ada8b724f5db",
+   "bytes": 19990
+  },
+  "src/CSharp.UI/Editing/TextFieldComposition.cs": {
+   "sha256": "cae33efaff09c144f187fd6bd619374b6a7d929a0ae1b40497990e444ac61b97",
+   "bytes": 37288
+  },
+  "src/CSharp.UI/Editing/TextFieldKeyOwnership.cs": {
+   "sha256": "0e53fab26acbcdcf3927dcde8d05f2fdfead00bc35aeb559c2b8ce10216abb06",
+   "bytes": 4614
+  },
+  "src/CSharp.UI/Editing/TextInputContracts.cs": {
+   "sha256": "92fe2ee855de3d0ffc346d98fe4166bbc9641caee5b327b79d7937aa2c368a0a",
+   "bytes": 35609
+  },
+  "src/CSharp.UI/Editing/TextInputFallback.cs": {
+   "sha256": "e0850048784035f97352f12beb0385b6088b8ef402605eb181f0298d66a269bc",
+   "bytes": 7875
+  },
+  "src/CSharp.UI/Editing/TextInputSelectionTarget.cs": {
+   "sha256": "2dc11d12bc5dc900e4d05016eb1dde75e8f0bbf4bf45cd4f8c7286737cc602de",
+   "bytes": 2172
+  },
+  "src/CSharp.UI/Editing/TextInputServiceContracts.cs": {
+   "sha256": "4810a190dc98ec5fc911289395547d91ebe9c892a5879d7ac727c552ba78401d",
+   "bytes": 20972
+  },
+  "src/CSharp.UI/Editing/TextInputServiceSession.cs": {
+   "sha256": "1569e3c1a136ff482af5f4efb18eedff327fb45d1d7966dd7f9d0998b8a970a9",
+   "bytes": 19606
+  },
+  "src/CSharp.UI/Environment/EnvironmentValues.cs": {
+   "sha256": "09d1979bfd98edf54a3ddf4df2a5fb5e988f13d7bb53f1003e8da8adb04ae7d0",
+   "bytes": 5697
+  },
+  "src/CSharp.UI/Input/InputEvents.cs": {
+   "sha256": "c80f7007ce2937208febf9f53f79cb0d6f604ec2b77954f86642833dc78239a1",
+   "bytes": 7192
+  },
+  "src/CSharp.UI/Input/InputRouter.cs": {
+   "sha256": "8b9354cbab29931d8653881074bd2c064eb6e3796aeffe6a716ab02b3072f8a2",
+   "bytes": 20521
+  },
+  "src/CSharp.UI/Input/WheelScrolling.cs": {
+   "sha256": "0aa78df287baec88b58c2dea681b81b769b9a08bd059b2e813ab2f2807d80cd1",
+   "bytes": 4393
+  },
+  "src/CSharp.UI/Layout/LayoutDiagnostics.cs": {
+   "sha256": "9362c93746a2d882d87864d15f41a756d5d5b7c13df789019edf7397b339f73f",
+   "bytes": 3508
+  },
+  "src/CSharp.UI/Layout/LayoutFeatures.cs": {
+   "sha256": "56f007a1c4b9bd82a707d393c05c55d2e31a57cd0ff2023ecb1ed39f97801898",
+   "bytes": 9074
+  },
+  "src/CSharp.UI/Primitives/Color.cs": {
+   "sha256": "93d74c8b8e042609f5f5f38612b2fb7ce49decc7026a38d2c588ab6d8597036e",
+   "bytes": 4589
+  },
+  "src/CSharp.UI/Primitives/FontDescription.cs": {
+   "sha256": "db91dc1e490f129b703a1801eab1541fad3042021f786abb87b84f1e28a85891",
+   "bytes": 6717
+  },
+  "src/CSharp.UI/Primitives/Geometry.cs": {
+   "sha256": "354d7fd8f0d3bd508bd3f4199138d8f31f088ce493a838ed97d7a634e1269f9c",
+   "bytes": 10096
+  },
+  "src/CSharp.UI/Primitives/LayoutConstraints.cs": {
+   "sha256": "82e456f9f4205d88cb0998f4bfaf0303cc1d64702bfb81bc2af974a22c7b0e90",
+   "bytes": 4238
+  },
+  "src/CSharp.UI/Rendering/DrawCommands.cs": {
+   "sha256": "d533c66678068fc00507e352a543c09cf0b709f4ec406e23a301044f738b08e8",
+   "bytes": 11792
+  },
+  "src/CSharp.UI/Runtime/Contexts.cs": {
+   "sha256": "f46f711d9f48c7a74e40290e378893e7f0ec7944a164c9998744385a1ff4fb6c",
+   "bytes": 22181
+  },
+  "src/CSharp.UI/Runtime/Reconciler.cs": {
+   "sha256": "5309aa99a74ce1f1045cbaaa40d1ff3cb7bbed7afedc173c10f12b21bf5d7d22",
+   "bytes": 16872
+  },
+  "src/CSharp.UI/Runtime/ResponsiveTransactions.cs": {
+   "sha256": "24eecebe9d1738756dda2fee2cfd27f1a52b02263784e6e579da9b5cbe1f10cc",
+   "bytes": 11402
+  },
+  "src/CSharp.UI/Runtime/UiRuntime.cs": {
+   "sha256": "c9f52a73b3014a25e485d64de6d6ec8e050bf8192c8f0a98156b65e8262ed709",
+   "bytes": 42708
+  },
+  "src/CSharp.UI/Runtime/ViewNode.cs": {
+   "sha256": "db5d2241207472449184839a397fcac45231a59a0ddc111d8bb7f4b7f033a7d9",
+   "bytes": 11750
+  },
+  "src/CSharp.UI/Services/PlatformServices.cs": {
+   "sha256": "2ce452091e7656983a1491195aca22c4611fb8fb5b287feccbfb8765aed2e637",
+   "bytes": 7267
+  },
+  "src/CSharp.UI/State/State.cs": {
+   "sha256": "508525a3e6fe96d9f12abe63765909fcbb31664fe8778b4887e1f43755971ca6",
+   "bytes": 9711
+  },
+  "src/CSharp.UI/Testing/TestDoubles.cs": {
+   "sha256": "3e2deb441ea3178032c0590b3edb10983cd25898c60bde96cc4f33ffa6b33c91",
+   "bytes": 26930
+  },
+  "src/CSharp.UI/Text/TextContracts.cs": {
+   "sha256": "cf1e6df467c651deb5c9024e40b0340b7f6afec8f0d05f52fa6be308f048e21d",
+   "bytes": 29965
+  },
+  "src/CSharp.UI/Views/AdaptiveStack.cs": {
+   "sha256": "25947aa3ea4b152059e4270dbd519313045c956c9fefff439c8471545b5559c6",
+   "bytes": 7456
+  },
+  "src/CSharp.UI/Views/Component.cs": {
+   "sha256": "0187b682f67213fc104696c46a89763db61ab23b68adc3533b5c735ab46c6663",
+   "bytes": 12341
+  },
+  "src/CSharp.UI/Views/Controls.cs": {
+   "sha256": "822470cb3a2e6f41ff0ed343b38a9976a92cd036a2234c2ce512de7fa7f22d10",
+   "bytes": 26852
+  },
+  "src/CSharp.UI/Views/Flex.cs": {
+   "sha256": "c99b323a6dc496828c5f9f2b0f0c28f656837447565736fd395866439f2c3197",
+   "bytes": 8317
+  },
+  "src/CSharp.UI/Views/Flow.cs": {
+   "sha256": "fe410302dc851f82570c1582b793776fabfbaadee792f1d3fe4046fb6123c0a5",
+   "bytes": 14687
+  },
+  "src/CSharp.UI/Views/Modifiers.cs": {
+   "sha256": "2625df960ed73c0745a77191457034e74a523245df06fa3ca820b177cbfc2509",
+   "bytes": 22992
+  },
+  "src/CSharp.UI/Views/Primitives.cs": {
+   "sha256": "4691c0fd91c7033b0c494d558dab85a90959f2e0c693d489237798e81d344f65",
+   "bytes": 12288
+  },
+  "src/CSharp.UI/Views/Responsive.cs": {
+   "sha256": "f520558fc5a6947a2246592674c2553b899bd0f778bc71604ba22a876963f899",
+   "bytes": 7359
+  },
+  "src/CSharp.UI/Views/ResponsiveValidation.cs": {
+   "sha256": "d67056d6d5321cdca54b0fe3701567240b5cccd4630b3fc887080420c296c0c5",
+   "bytes": 1670
+  },
+  "src/CSharp.UI/Views/ScrollView.cs": {
+   "sha256": "74f1293b236fb910a7bb479e509195c5ae49daa235d2e3f83051637343289b50",
+   "bytes": 33096
+  },
+  "src/CSharp.UI/Views/Scrollbar.cs": {
+   "sha256": "6bff91b78547fd0266454a6d4430828b2d7f95a24995e5d13b8d5ff0b08b6fc9",
+   "bytes": 21452
+  },
+  "src/CSharp.UI/Views/Stacks.cs": {
+   "sha256": "a3bff0e03012f81b2ff473c7589adee4eeb6c08e569d66c12d2e427316a08ad3",
+   "bytes": 27516
+  },
+  "src/CSharp.UI/Views/TextEditor.cs": {
+   "sha256": "76c0d83d11da578571020f0abc74a0701b7efb0d696ccac4b2b65674ef895f58",
+   "bytes": 100660
+  },
+  "src/CSharp.UI/Views/TextField.cs": {
+   "sha256": "aae52def81bc5bcb26c026e99aaefc666c77da8d58779cc1b4f2639fd8b074fc",
+   "bytes": 82275
+  },
+  "src/CSharp.UI/Views/View.cs": {
+   "sha256": "b37eec8e799b5dedc43115214862d53947d8a4a8f831d2ba5537005645bf05f8",
+   "bytes": 17779
+  },
+  "tests/CSharp.UI.Integration.Tests/AdaptiveStackIntegrationTests.cs": {
+   "sha256": "4ae684f43c0ab02112ea0a841283f842fe1bed845a0d562ef959565493a9c4cf",
+   "bytes": 7982
+  },
+  "tests/CSharp.UI.Integration.Tests/CSharp.UI.Integration.Tests.csproj": {
+   "sha256": "915b2aa651f99854e466122918c30b506867705f941b4ef95c780096f9cff438",
+   "bytes": 1027
+  },
+  "tests/CSharp.UI.Integration.Tests/FlexIntegrationTests.cs": {
+   "sha256": "b53ea11275baecaeec48f5df5ba9a71a5bf89a85cb536378fcc5293e6063103a",
+   "bytes": 8746
+  },
+  "tests/CSharp.UI.Integration.Tests/FlowIntegrationTests.cs": {
+   "sha256": "e5a8c2324b2967a7d54f237491ab6e726e43b4f49117f7189c824593d0a55279",
+   "bytes": 7891
+  },
+  "tests/CSharp.UI.Integration.Tests/LayoutProbeIntegrationTests.cs": {
+   "sha256": "f2b3a2db3d303c21306ca5c0d7c90a5f4d39d73d04da6ee5e492f2a3289360b7",
+   "bytes": 3645
+  },
+  "tests/CSharp.UI.Integration.Tests/ResponsiveIntegrationTests.cs": {
+   "sha256": "00840913deccc51ddf2bb9cbbd21237bb9b2b361d4f455fcc66907961f06feb1",
+   "bytes": 7536
+  },
+  "tests/CSharp.UI.Integration.Tests/TextFieldCaretAlignmentTests.cs": {
+   "sha256": "867bca872a7c3c2b6113eef4dee576dcfebc7c3e642d6cdcea8fbf88e540a20c",
+   "bytes": 8527
+  },
+  "tests/CSharp.UI.Integration.Tests/TextFieldPreeditRenderingTests.cs": {
+   "sha256": "17e17ccee7fa6c935b67ed755a567e40e3bef079b7dbae0cf41ddf7c56eb5d56",
+   "bytes": 23934
+  },
+  "tests/CSharp.UI.Integration.Tests/TextUiIntegrationTests.cs": {
+   "sha256": "c06f7535ef706aae85f4af54119f14b53e68dce64551602baff5d8bd4f6db8ef",
+   "bytes": 6558
+  },
+  "tests/CSharp.UI.OpenTK.Tests/AcpTextStoreProtocolTests.cs": {
+   "sha256": "70718a2fa5d2399ff4a8b62c1b474597970d9b36902b8a4f20a437ebcb21dac7",
+   "bytes": 73392
+  },
+  "tests/CSharp.UI.OpenTK.Tests/AssertColor.cs": {
+   "sha256": "ea6bd7fd6a444be879fe4d126728044715118cda235aaa087f7bc8bb86550d02",
+   "bytes": 1402
+  },
+  "tests/CSharp.UI.OpenTK.Tests/CSharp.UI.OpenTK.Tests.csproj": {
+   "sha256": "309871ec4f6c213d6f5d71a3185f3e3cb6d63006c654ac5f27cfc266e3c86289",
+   "bytes": 1482
+  },
+  "tests/CSharp.UI.OpenTK.Tests/CandidateOverlayRenderingTests.cs": {
+   "sha256": "b30f80f55619f263de1d1ee27ff766761ae985f75f01a216edb73feea2f83817",
+   "bytes": 10101
+  },
+  "tests/CSharp.UI.OpenTK.Tests/CandidateSnapshotContractTests.cs": {
+   "sha256": "e8a0b84040f915fc43fd0418197110fa5c78c1098cfc13c65274781b08ae2280",
+   "bytes": 16615
+  },
+  "tests/CSharp.UI.OpenTK.Tests/ClockTickTests.cs": {
+   "sha256": "79def37585920cdcd50570a23f7cc96469ad68dc771dc985440a43746e442dce",
+   "bytes": 3436
+  },
+  "tests/CSharp.UI.OpenTK.Tests/DpiInputTests.cs": {
+   "sha256": "22d65097f890d8368dd415762df797b213fd33751f5404b497b9b7c018cafaa7",
+   "bytes": 11381
+  },
+  "tests/CSharp.UI.OpenTK.Tests/DpiScalingTests.cs": {
+   "sha256": "d81a901ca1fc7532df449b56349e9e8807103439ec73069cb303f25bc78114e7",
+   "bytes": 9714
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GalleryBreakpointInputTests.cs": {
+   "sha256": "532aff98970f7fd6f7588f8677b5334b565d6003cee7828abc66d77f5dc31b75",
+   "bytes": 22457
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GalleryDpiLayoutTests.cs": {
+   "sha256": "af9afc23b792774ef841d56e80f1651638a21bdd50456cf56548fa95bfd769cc",
+   "bytes": 7649
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GalleryGpuIntegrationTests.cs": {
+   "sha256": "403b1b38f612045dee14f5cf46143c332808f786774cfb7f28b77061fa12b4ae",
+   "bytes": 21873
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GalleryHostResizeTests.cs": {
+   "sha256": "36a92eded69cfa13f62c3ba41a6c1e4e6611381ad8b5bcf3b62bdc19264092a7",
+   "bytes": 12376
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GalleryIdleAndBoundsTests.cs": {
+   "sha256": "d2c19222248216c61887e8e7aa534016d7a1d2be7df54e429f869107cfcfcef7",
+   "bytes": 8351
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GalleryIntegrationHost.cs": {
+   "sha256": "181cd4329b7aee70d00ad1bfdfa348c49059cf27dedb7ae0638f9f2fdb6ad7c4",
+   "bytes": 6419
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GalleryNestedScrollTests.cs": {
+   "sha256": "92b10fa4e96f5ad58488db5c4f0e81036dd47c88f789d394905c536b26e15270",
+   "bytes": 17222
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GalleryResponsiveTests.cs": {
+   "sha256": "b29d9b8c8ebe74b8fc94b2655737d0270cee6b609b8e093b05feb436e98589bb",
+   "bytes": 13914
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GalleryTextSamplingTests.cs": {
+   "sha256": "dc4085dd91340ca661ef89e36e3164cb34ce0dd9c23536a8d92f3e083f5b8578",
+   "bytes": 8547
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GlCommandRenderingTests.cs": {
+   "sha256": "7e109cf31d46b2652700a2fb3c68dfca593642d6a5746bbfcbdf32b252a3ad02",
+   "bytes": 12667
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GlContextFixture.cs": {
+   "sha256": "f73b43371f5ea3ab987af125faecda6349c5c2428107609bf07f4d4760aa8823",
+   "bytes": 4345
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GlContextTests.cs": {
+   "sha256": "0abd85ca59465de4d13fc9a8ce5cd1ee52c53dbbc6b708d2e55bf27688768bbe",
+   "bytes": 1552
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GlCoordinateMathTests.cs": {
+   "sha256": "bff013c2530e81992f5f0fbcec113a6fa1030634dcb821269f4626719ecb08d2",
+   "bytes": 3604
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GlShaderDiagnosticsTests.cs": {
+   "sha256": "c0987ecd988abf514e72818026b38275394ae8432e81b096b167c608a82beafb",
+   "bytes": 4493
+  },
+  "tests/CSharp.UI.OpenTK.Tests/GlTextureTests.cs": {
+   "sha256": "bd27ac86f1431fb11c901176c017d39b95dc265af1d49e27073a5faad0fec0b5",
+   "bytes": 13573
+  },
+  "tests/CSharp.UI.OpenTK.Tests/HostAcpGeometryProviderTests.cs": {
+   "sha256": "46a11ea24f25df42fc0970c34100b1bf8a0dea509dd5091dd40904670b565e0b",
+   "bytes": 5621
+  },
+  "tests/CSharp.UI.OpenTK.Tests/HostRoutingContractTests.cs": {
+   "sha256": "b0c32b4cc496e555449f97befdcd23a22b307797ef495c06f40ec17ea6f682f2",
+   "bytes": 11785
+  },
+  "tests/CSharp.UI.OpenTK.Tests/HostingTests.cs": {
+   "sha256": "820be27794dae8b27a8e275726afabee4bd2f2838ec3bb4ce0788a151fc958d1",
+   "bytes": 14452
+  },
+  "tests/CSharp.UI.OpenTK.Tests/NativeCompositionOwnerTests.cs": {
+   "sha256": "e19c1724aba90a2e208c657d83d0624f92aa837c54a10b93825c1ecbaeb8ce15",
+   "bytes": 67712
+  },
+  "tests/CSharp.UI.OpenTK.Tests/OrderedInputDeliveryTests.cs": {
+   "sha256": "b191c28e06b335c6ac2df6a6bd528d8445c42b71711166f29d62a319c75475b8",
+   "bytes": 33764
+  },
+  "tests/CSharp.UI.OpenTK.Tests/PreeditRenderingGpuTests.cs": {
+   "sha256": "0dabc9d341988b06563df5025aff0c8f5d14215fcb2c7e8d79e40e548de548f3",
+   "bytes": 20434
+  },
+  "tests/CSharp.UI.OpenTK.Tests/RouterFallbackTests.cs": {
+   "sha256": "46950d576cced1096a72d6afb79969f2a18964baf7a5ff510969d03f0d1d65bf",
+   "bytes": 9850
+  },
+  "tests/CSharp.UI.OpenTK.Tests/SafeBoundarySignalTests.cs": {
+   "sha256": "e63ed20903add358dcddfe3058939c51b62d467739753e235e9e8fa2549cd224",
+   "bytes": 12191
+  },
+  "tests/CSharp.UI.OpenTK.Tests/StaComApartmentLeaseTests.cs": {
+   "sha256": "54ff424edc0150150809a8ada4c82bf44b6f03ea848f1080308b40a807b59c83",
+   "bytes": 19412
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TextColorMaskTests.cs": {
+   "sha256": "8070b57041035bc42f405d4112fb5a777798cf2f2ff7dcaddbe5a402c4f8bae6",
+   "bytes": 17385
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TextEditorPreeditRenderingGpuTests.cs": {
+   "sha256": "98f0c66b0f471fd50b10961989c0268a28a2e122b6aea7dee5a43a1a42f1e4ac",
+   "bytes": 22871
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TextInputCompositionSessionTests.cs": {
+   "sha256": "bc99cfab23d2304afa806827f9c10f1a639b139c61d4154c5cfef3ad7195d5b5",
+   "bytes": 57635
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TextRasterSamplingTests.cs": {
+   "sha256": "6144b040df6bc4b8feac5659390b5e6933454a1f4aeed6733e4d252a8ca1392e",
+   "bytes": 7012
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TextureEvictionRegressionTests.cs": {
+   "sha256": "db714175e8268da27363404834b3bc5c7942720122b31a7fd39b7c3e0648fe7d",
+   "bytes": 5799
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TsfCancellationTests.cs": {
+   "sha256": "96af7c549e38c0658a8def44268053b32aa666c4905fee574206d44ec095039b",
+   "bytes": 66171
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TsfCompositionOwnerSmokeTests.cs": {
+   "sha256": "7c79cdc8bd872a3986b335744627863e9cd51b1653b776128a4bdcd719befc60",
+   "bytes": 44890
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TsfHookRetirementTests.cs": {
+   "sha256": "19a2b33ebb718cd0124a3895be428e4263aab83524446d27679bcac29a55d944",
+   "bytes": 29695
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TsfHostIntegrationTests.cs": {
+   "sha256": "4d372837711ffbd03ad2bbb35cb7d601ea6d69b7098c1d5b1be21c6479f3c10e",
+   "bytes": 4840
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TsfLayoutNotificationRegressionTests.cs": {
+   "sha256": "e4f0a9f77bab61893228f2eec38dc89c957f65b412a5385d0a0411c9bde3baf4",
+   "bytes": 9056
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TsfNativeWiringTests.cs": {
+   "sha256": "548c55a4b5d0e3bf3a88c10671f481b1ff3fe35693357f719c4b5ed807c6ac74",
+   "bytes": 11584
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TsfSessionLifetimeTests.cs": {
+   "sha256": "40a07583623245359655abdcbf0ddeff87736e1b025aaafbcf10c69b8219bb32",
+   "bytes": 19716
+  },
+  "tests/CSharp.UI.OpenTK.Tests/TsfUiElementSinkTests.cs": {
+   "sha256": "951dbaa0c2adcb3f688782f4ae6bc3f3712acb2e35b1bb44650dc8037729ca8b",
+   "bytes": 17115
+  },
+  "tests/CSharp.UI.OpenTK.Tests/UiApplicationTests.cs": {
+   "sha256": "dd1a5f38ea339803096a2b9cafd5160e52c9f222b4ff3aeabca4a360fe105a95",
+   "bytes": 30586
+  },
+  "tests/CSharp.UI.OpenTK.Tests/WheelScrollIntegrationTests.cs": {
+   "sha256": "efef2917b70b4a77555b3d9eb416f8d2f0d88460a1748309ac5df8e8063c0211",
+   "bytes": 6111
+  },
+  "tests/CSharp.UI.OpenTK.Tests/WindowResizeRedrawTests.cs": {
+   "sha256": "59ecb9b2ee88e404b4c3aec7de93e8be345d22c0e7a2a9ab8ad0b2cf8df01d3d",
+   "bytes": 29743
+  },
+  "tests/CSharp.UI.OpenTK.Tests/WindowsImeBridgeTests.cs": {
+   "sha256": "abc92150b4c7b84351ef55d1e5ff5758f09b51b699fbf9191158bebcc7eef2a6",
+   "bytes": 64191
+  },
+  "tests/CSharp.UI.OpenTK.Tests/WindowsImeSubclassRetirementTests.cs": {
+   "sha256": "4bdadf628f33876fecc7a5bc194e7bd28f77853db5757b8aadb21166e22e22ba",
+   "bytes": 11815
+  },
+  "tests/CSharp.UI.OpenTK.Tests/WindowsInputBridgeContractTests.cs": {
+   "sha256": "d00c63ff00b27a64718e07fe75433abcc258ee2b6ca17d3864f6afc9c8789113",
+   "bytes": 16337
+  },
+  "tests/CSharp.UI.Tests/AdaptiveStackTests.cs": {
+   "sha256": "d44bc79c447b28c04b8dfb42c916dd735955a3026407b130bec1755012839c58",
+   "bytes": 17584
+  },
+  "tests/CSharp.UI.Tests/AssemblyInfo.cs": {
+   "sha256": "0b2a881e6d46fd3b7d69315ffc458d7c8ae35cf9877caaba9c92649ee9bea602",
+   "bytes": 269
+  },
+  "tests/CSharp.UI.Tests/BindingSourceIdentityContractTests.cs": {
+   "sha256": "5668e9218bea9eb3f674fd217eadb65882e18909c01795e2aab381d80ca2edae",
+   "bytes": 8429
+  },
+  "tests/CSharp.UI.Tests/CSharp.UI.Tests.csproj": {
+   "sha256": "3cb999579085297dba1c18459bc15f4689fa37a28f9429f42679f4d6d6a2149d",
+   "bytes": 694
+  },
+  "tests/CSharp.UI.Tests/CodeReviewFollowUpTests.cs": {
+   "sha256": "24da7cb12196b80a5e8a2c0a10ede0d8e07154bf8f2c42ac5a85338bcf73ce0e",
+   "bytes": 14543
+  },
+  "tests/CSharp.UI.Tests/CodeReviewRegressionTests.cs": {
+   "sha256": "0fb373b9a8c3268932811702436b04ff95d22668a815a8152e3007f6329a6426",
+   "bytes": 21656
+  },
+  "tests/CSharp.UI.Tests/CompositionSessionContractTests.cs": {
+   "sha256": "cb52406bbb30e3868b5435cf7e67f6618f0a02f8ecc8a7ab3bf240a57d069b1e",
+   "bytes": 20324
+  },
+  "tests/CSharp.UI.Tests/ControlTests.cs": {
+   "sha256": "408367ed2d566b5a37ccbd193ca139c8a5a010208280acf93e65f6755e3b739d",
+   "bytes": 9238
+  },
+  "tests/CSharp.UI.Tests/FlexLayoutTests.cs": {
+   "sha256": "7943bffad7afbdaa3c9154f3431852c0c6ef601d2bc4c7bd556d7e9bb606d9ac",
+   "bytes": 29730
+  },
+  "tests/CSharp.UI.Tests/FloatingScrollbarTests.cs": {
+   "sha256": "11912580aeb477a40277c46a0e3c33cff9cbd890301f281c4a1f37a2e450ff63",
+   "bytes": 30311
+  },
+  "tests/CSharp.UI.Tests/FlowLayoutTests.cs": {
+   "sha256": "929ace352a66282e2c3cfa15dc4cfbaf03b2219970115149858aca5d8356e95e",
+   "bytes": 20732
+  },
+  "tests/CSharp.UI.Tests/InputFocusTests.cs": {
+   "sha256": "4d81d457668c426d06d5d764628a7d8e2019121450c5cbef074d25316946abfd",
+   "bytes": 9940
+  },
+  "tests/CSharp.UI.Tests/LayoutProbeTests.cs": {
+   "sha256": "edacbd2582d0e7cb80c7c2c73d548d35ecbd43f69495e24b32cbf4b210ff86e3",
+   "bytes": 34003
+  },
+  "tests/CSharp.UI.Tests/LayoutTests.cs": {
+   "sha256": "d86d3accfb41ee7b7622bb15bea40857f0cc929230be43dc04562ab6e56b333d",
+   "bytes": 8804
+  },
+  "tests/CSharp.UI.Tests/PrimitiveTests.cs": {
+   "sha256": "58544d6cdd521db7e1e9e9ae934777916fb2a4b571cf2146795eafc76d4e9bae",
+   "bytes": 9089
+  },
+  "tests/CSharp.UI.Tests/ReconciliationTests.cs": {
+   "sha256": "e482228ac42f45bf22119301b8d25620defc4d5f2be1db095b0f8402dfde099f",
+   "bytes": 7902
+  },
+  "tests/CSharp.UI.Tests/ResponsiveStateTests.cs": {
+   "sha256": "ebc2d6dd8996c89b3d91486196cafd363755cd13e48a832eae9d79e260ce196a",
+   "bytes": 25900
+  },
+  "tests/CSharp.UI.Tests/ResponsiveTests.cs": {
+   "sha256": "c2d70192b5c325d133a7ba45184442dbfc5860bf08de5cc0ac5058fe7ad05124",
+   "bytes": 37402
+  },
+  "tests/CSharp.UI.Tests/ScrollImageTests.cs": {
+   "sha256": "8b9f71a0c9541d4c2689bd421ad5c6b44340f85edafe1e6025bee96445ba52fc",
+   "bytes": 11227
+  },
+  "tests/CSharp.UI.Tests/ScrollbarMetricsTests.cs": {
+   "sha256": "3b09ccb425768adb378755fe6d6b1b087e65edff65da20a3c341c89f46fd6faf",
+   "bytes": 12042
+  },
+  "tests/CSharp.UI.Tests/StateTests.cs": {
+   "sha256": "9219281c22f4fd0183f9ebba7d0fd34cc35b0729a0f546dacfee40aeae479625",
+   "bytes": 8263
+  },
+  "tests/CSharp.UI.Tests/TestApp.cs": {
+   "sha256": "9941043b0d828e7d7e1b550a8e8bee33da23edfc982abc8448f5b38bcb715e00",
+   "bytes": 5104
+  },
+  "tests/CSharp.UI.Tests/TestComponents.cs": {
+   "sha256": "9c3c67f85832e2bf24aa0db7420f65968acf0a2e4743ecb4103747e57eadf478",
+   "bytes": 4834
+  },
+  "tests/CSharp.UI.Tests/TextEditingContractTests.cs": {
+   "sha256": "fa03b17e834a806e3dc93057c7396625f0e2d89a65521f870f9e868bcd9e0bc9",
+   "bytes": 11319
+  },
+  "tests/CSharp.UI.Tests/TextEditorCompositionTests.cs": {
+   "sha256": "f1078cb176725c0a7fa7c1127487dcf2b1d85a069d9d8f9acac3ea1c73e0df2c",
+   "bytes": 16762
+  },
+  "tests/CSharp.UI.Tests/TextEditorEditingLayoutTests.cs": {
+   "sha256": "f776b77fe11e0fac864064623b53882e2a6ea17c73cabcc5b164245d8991f2d1",
+   "bytes": 9464
+  },
+  "tests/CSharp.UI.Tests/TextEditorScrollbarTests.cs": {
+   "sha256": "7f537622c08194dba3e576a4fe86f2d9c9d3f493ca3503392b60ddeb0c87a2c1",
+   "bytes": 12357
+  },
+  "tests/CSharp.UI.Tests/TextEditorTests.cs": {
+   "sha256": "e2d17d1c85644c67a71c47450515b3b7eafc4e2a1cc6ff90b60dbfe0e0834076",
+   "bytes": 20627
+  },
+  "tests/CSharp.UI.Tests/TextFieldAtomicEditTests.cs": {
+   "sha256": "57b91bd0aa9a9bee49e4c9ba0c0ded80c4667af7ff7c3312b2487a5b383ad5d5",
+   "bytes": 40479
+  },
+  "tests/CSharp.UI.Tests/TextFieldCaretAlignmentRegressionTests.cs": {
+   "sha256": "e1d715e11001fda6ed307cb6b70625417880e81e3715b02313d3c71392d180b0",
+   "bytes": 9565
+  },
+  "tests/CSharp.UI.Tests/TextFieldCompositionTests.cs": {
+   "sha256": "a4faacda66e79675bcfdfd75a6357d0d1c862e67e26eb24aaff8fe1ee3c26f3a",
+   "bytes": 94350
+  },
+  "tests/CSharp.UI.Tests/TextFieldPreeditGeometryTests.cs": {
+   "sha256": "d0203245ef7aebf8bb9eca40c09cf75b0236e843addc364288043977c3930fbc",
+   "bytes": 34153
+  },
+  "tests/CSharp.UI.Tests/TextFieldTests.cs": {
+   "sha256": "ad4a43f589f3346ac766de50ab2ddbb56cc187c0eda2d9a23006921cf285f253",
+   "bytes": 9365
+  },
+  "tests/CSharp.UI.Tests/TextFieldUndoRedoTests.cs": {
+   "sha256": "269e93a500a5435f33f6fe904d540917286fc00a48ef5d06fab2d6c32c819586",
+   "bytes": 71080
+  },
+  "tests/CSharp.UI.Tests/TextInputServiceContractTests.cs": {
+   "sha256": "b0803ba55a7c24b885fd2f8d73dd6e13013f2f7e3b7fcc744f0b7343c6fa6c15",
+   "bytes": 20591
+  },
+  "tests/CSharp.UI.Tests/TextPhysicalPixelContractTests.cs": {
+   "sha256": "aba4a0963f327c164121dd72eb27bdaed35a4632dc79437a9c3eb64b998fd663",
+   "bytes": 4907
+  },
+  "tests/CSharp.UI.Tests/ThemeTests.cs": {
+   "sha256": "89d62edbc5086461e7520cffc243744187ddde2469740307bd88ecd831dccfff",
+   "bytes": 5370
+  },
+  "tests/CSharp.UI.Tests/WheelScrollTests.cs": {
+   "sha256": "ab21bf27a4b47d9dbab3859668dc7aabe65f7b7cec7057e6db609110b6630e5e",
+   "bytes": 12458
+  },
+  "tests/CSharp.UI.Text.Tests/AssemblyInfo.cs": {
+   "sha256": "b5985e21e88d3e81e0e96e0420a291948967d430fd335c815a68c80995945ee0",
+   "bytes": 178
+  },
+  "tests/CSharp.UI.Text.Tests/CSharp.UI.Text.Tests.csproj": {
+   "sha256": "a6ff6509c41b7d5f5bf6776c6665d168d5623e678dceb89368f67611b2c9b045",
+   "bytes": 810
+  },
+  "tests/CSharp.UI.Text.Tests/CompositionCharGeometrySnapshotTests.cs": {
+   "sha256": "acbfbed4d03b37a6455c5790ca358f1f09bd3d132191b501b14069cc27e6448e",
+   "bytes": 5053
+  },
+  "tests/CSharp.UI.Text.Tests/FontResolutionTests.cs": {
+   "sha256": "58ab79e2a447ca5ae3e4f8643e71102330a99fa0ec5ec83edab3b37f457f1771",
+   "bytes": 6306
+  },
+  "tests/CSharp.UI.Text.Tests/GraphemeMappingTests.cs": {
+   "sha256": "e1f2af67b2153e6fb479ded8d1a8b9e318303bba38bfa9d6afe88440f1d58b95",
+   "bytes": 7253
+  },
+  "tests/CSharp.UI.Text.Tests/LetterSpacingRegressionTests.cs": {
+   "sha256": "1142c9892a755e1f18a3a5c6fd265d6854588f883b571e635d1637b87c33a98c",
+   "bytes": 2728
+  },
+  "tests/CSharp.UI.Text.Tests/SkiaImageServiceTests.cs": {
+   "sha256": "737884bda1c8dbdf1e739b39f81125fddcc8edc404197b2f7b9978357cd24e70",
+   "bytes": 6416
+  },
+  "tests/CSharp.UI.Text.Tests/SkiaTextServiceCacheTests.cs": {
+   "sha256": "f0cb83801ba47a44c0ba25b6f84999d8b67c6fbc71a4f4d2d4ce35eae0a10ee8",
+   "bytes": 6212
+  },
+  "tests/CSharp.UI.Text.Tests/TextEditorEditingLayoutTests.cs": {
+   "sha256": "1b51de4b5dd1d55cf01da82375f50a7c2e051d423afa7d639afed0b28119a8fc",
+   "bytes": 11401
+  },
+  "tests/CSharp.UI.Text.Tests/TextLayoutTests.cs": {
+   "sha256": "a6b51afdf2d71bf6fab356dd1a7a2b375fd3d2733f18bc8ec955e95f2ed88cac",
+   "bytes": 12789
+  },
+  "tests/CSharp.UI.Text.Tests/TextMaskColorTests.cs": {
+   "sha256": "438d2d856d518362d100b905f9df3c7f2f49625afe3b88c97925e815fdd9fafe",
+   "bytes": 7519
+  },
+  "tests/CSharp.UI.Text.Tests/TextTestHelpers.cs": {
+   "sha256": "ebf70c8f75770607d98bc36c6cf072df99a8652a1c435d8695d6d48d8ba68d61",
+   "bytes": 5737
+  },
+  "tests/Shared/TextDirectReference.cs": {
+   "sha256": "ed43d390b87a93e0e4bba74971da4d19da365e8fe05addba00dc663b88d3731b",
+   "bytes": 6440
+  }
+ }
+}

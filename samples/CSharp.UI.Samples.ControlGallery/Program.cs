@@ -43,6 +43,7 @@ public sealed class GalleryApp : Component
         var notesMulti = UseState("notesMulti", "第一行：输入或粘贴多行文本\n第二行：Enter 换行、Shift+方向键选区、Ctrl+Z 撤销");
         var scrollbarLong = UseState("scrollbarLong", true);
         var scrollbarTall = UseState("scrollbarTall", false);
+        var scrollbarFloating = UseState("scrollbarFloating", false);
         var scrollbarText = UseState("scrollbarText", ScrollbarDemoText);
 
         var current = theme.Value;
@@ -142,16 +143,19 @@ public sealed class GalleryApp : Component
                         .Spacing(4))
                         .Key("gallery-nested-scroll")
                         .Frame(height: 120)),
-                    // SB-05 滚动条演示：同一 ScrollView 节点（Key 固定）在 40 行与 4 行之间切换，
-                    // 长→短展示滚动条隐藏并 clamp 偏移、槽仍恒占 12 逻辑像素宽。
+                    // SB-05 滚动条演示：同一批节点在 40 行与 4 行、标准/浮动样式之间切换，
+                    // 长→短展示滚动条隐藏并 clamp 偏移；浮动样式不占槽、实际滚动显示约 1 秒后隐藏。
                     Section("滚动条", new VStack(
                         new Flow(
                             new Button(scrollbarLong.Value ? "切换为短内容（隐藏滚动条）" : "切换为长列表（显示滚动条）",
                                 () => scrollbarLong.Value = !scrollbarLong.Value),
-                            new Toggle(scrollbarTall.ToBinding(), "加高视口（尺寸变化回归）"))
+                            new Toggle(scrollbarTall.ToBinding(), "加高视口（尺寸变化回归）"),
+                            new Toggle(scrollbarFloating.ToBinding(), "浮动滚动条"))
                             .Spacing(8)
                             .LineSpacing(8),
-                        new Text("纵向 ScrollView：内容溢出显示滚动条；缩内容后隐藏但轨道槽恒占 12 逻辑像素（persistent gutter，无布局回流）。拖动滑块或点轨道翻页一次（无自动重复）。").Wrap(),
+                        new Text(scrollbarFloating.Value
+                                ? "纵向 ScrollView（浮动）：滚动条覆盖内容右缘不占 12 像素槽；实际滚动后显示，停止约 1 秒隐藏；悬停在条上或拖拽期间不隐藏；隐藏后同一位置点击落到内容。"
+                                : "纵向 ScrollView（标准）：内容溢出显示滚动条；缩内容后隐藏但轨道槽恒占 12 逻辑像素（persistent gutter，无布局回流）。拖动滑块或点轨道翻页一次（无自动重复）。").Wrap(),
                         new ScrollView(
                                 new VStack(
                                     new ForEach<int>(
@@ -159,6 +163,9 @@ public sealed class GalleryApp : Component
                                         i => new Text($"纵向滚动第 {i} 行"), i => i))
                                 .Spacing(4),
                                 ScrollAxis.Vertical)
+                            {
+                                ScrollbarStyle = scrollbarFloating.Value ? ScrollbarStyle.Floating : ScrollbarStyle.Standard,
+                            }
                             .Key("scrollbar-vertical-demo")
                             .Frame(height: scrollbarTall.Value ? 180 : 120),
                         new Text("横向 ScrollView：宽内容溢出在底部显示横向滚动条（同一套共享几何/交互）。").Wrap(),
@@ -167,12 +174,16 @@ public sealed class GalleryApp : Component
                                 new ForEach<int>(Enumerable.Range(1, 30), i => new Text($"列{i:D2}").Padding(8), i => i))
                             .Spacing(4),
                             ScrollAxis.Horizontal)
+                            {
+                                ScrollbarStyle = scrollbarFloating.Value ? ScrollbarStyle.Floating : ScrollbarStyle.Standard,
+                            }
                             .Frame(height: 56),
                         new Text("多行 TextEditor：内容超过视口显示纵向滚动条；组合期间用滑块浏览时候选锚点跟随 caret——caret 被裁出视口时锚点撤除但组合保活，真实新预编辑/caret 推进后重新锚定（同值通知不回弹）。Ctrl+End 到底后滚轮上滚到顶，继续滚则冒泡给外层整页滚动。").Wrap(),
                         new TextEditor(scrollbarText.ToBinding(), "行数超视口出滚动条")
                         {
                             MinLines = 4,
                             Height = 140,
+                            ScrollbarStyle = scrollbarFloating.Value ? ScrollbarStyle.Floating : ScrollbarStyle.Standard,
                         }
                             .FillWidth())
                         .Spacing(6)),

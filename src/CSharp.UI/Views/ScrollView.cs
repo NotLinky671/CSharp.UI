@@ -46,6 +46,12 @@ public sealed class ScrollView : View
     public ScrollAxis Axis { get; init; }
 
     /// <summary>
+    /// 滚动条样式：<see cref="ScrollbarStyle.Standard"/>（默认）为 persistent gutter；
+    /// <see cref="ScrollbarStyle.Floating"/> 为覆盖内容边缘的 overlay（不占槽、实际滚动显示、约 1 秒隐藏）。
+    /// </summary>
+    public ScrollbarStyle ScrollbarStyle { get; init; }
+
+    /// <summary>
     /// 滚轮灵敏度：乘在换算后的滚动距离上。
     /// </summary>
     /// <remarks>必须为有限非负值；<see cref="double.NaN"/>、无穷大或负数回退为默认值 1，不会产生反向滚动。</remarks>
@@ -63,7 +69,7 @@ public sealed class ScrollView : View
     internal override void Measure(ViewNode node, LayoutConstraints constraints, LayoutContext context)
     {
         var child = node.ChildList[0];
-        var gutter = ScrollbarMetrics.Thickness;
+        var gutter = GutterExtent();
         var childConstraints = Axis == ScrollAxis.Vertical
             ? new LayoutConstraints(
                 Math.Max(0, constraints.MinWidth - gutter),
@@ -83,13 +89,18 @@ public sealed class ScrollView : View
         node.DesiredSize = constraints.Constrain(desired);
     }
 
+    /// <summary>槽位宽：Floating 不占槽（0）；Standard 为 persistent min(12, cross)。</summary>
+    private double GutterExtent()
+        => ScrollbarStyle == ScrollbarStyle.Floating ? 0 : ScrollbarMetrics.Thickness;
+
     internal override void Arrange(ViewNode node, Rect bounds, LayoutContext context)
     {
         node.Frame = bounds;
         var child = node.ChildList[0];
         var contentSize = child.DesiredSize;
 
-        // 几何变化取消 bar-gesture（自身 offset 写回除外——Arrange 在 drag 写 offset 后也会跑）。
+        // 几何签名比对（axis/track/content/viewport；offset 不入）：变化取消 gesture——
+        // 无 gesture 仅 hover/idle 的 track·range 变化同样检出（SyncGeometry 每次 Arrange 比对）。
         var state = ScrollbarStateOf(node);
         if (state is not null)
         {
@@ -97,7 +108,29 @@ public sealed class ScrollView : View
             var track = TrackRect(bounds);
             var contentExtent = Axis == ScrollAxis.Horizontal ? contentSize.Width : contentSize.Height;
             var viewportExtent = Axis == ScrollAxis.Horizontal ? contentR.Width : contentR.Height;
-            state.SyncGeometry(Axis, track, contentExtent, viewportExtent);
+            var sync = state.SyncGeometry(Axis, track, contentExtent, viewportExtent);
+
+            // Floating overflow/disabled 翻转（非每次无 overflow 都跑——只在可见性真翻转时处理）。
+            var visibleBefore = state.IsFloatingVisible;
+            var stillShows = ScrollbarStyle == ScrollbarStyle.Floating
+                && !node.IsEffectivelyDisabled
+                && ScrollbarMetrics.ShowScrollbar(
+                    viewportExtent, contentExtent,
+                    ScrollbarMetrics.TrackLength(track, Axis == ScrollAxis.Horizontal));
+            if (visibleBefore && !stillShows)
+            {
+                state.ResetFloating(node);
+            }
+
+            // 真实边界才排队一次安全阶段 hover 刷新（不在 Arrange 里直接 HitTest——子 frame 未定）：
+            // gesture 被取消、可见时几何/track·range 变化、visible→hidden 翻转。
+            if (ScrollbarStyle == ScrollbarStyle.Floating
+                && (sync == ScrollbarSyncResult.GestureCancelled
+                    || (sync == ScrollbarSyncResult.GeometryChanged && state.IsFloatingVisible)
+                    || (visibleBefore && !stillShows)))
+            {
+                node.Runtime.QueueHoverRefresh();
+            }
         }
 
         double maxOffsetX = Axis == ScrollAxis.Horizontal ? Math.Max(0, contentSize.Width - bounds.Width) : 0;
@@ -205,6 +238,11 @@ public sealed class ScrollView : View
             node.ScrollOffsetY = next;
         }
 
+        if (ScrollbarStyle == ScrollbarStyle.Floating)
+        {
+            NotifyFloatingShown(node, ScrollbarStateOrCreate(node));
+        }
+
         // 滚动只改变偏移，需要重新排列子项与重绘。
         node.Runtime.InvalidateLayout(node);
         context.MarkHandled();
@@ -238,20 +276,20 @@ public sealed class ScrollView : View
         => double.IsFinite(value) && value >= 0 ? value : 1.0;
 
     internal override bool LayoutPropertiesEquivalent(View other)
-        => other is ScrollView scroll && scroll.Axis == Axis;
+        => other is ScrollView scroll && scroll.Axis == Axis && scroll.ScrollbarStyle == ScrollbarStyle;
 
     // ------------------------------------------------------------------ 滚动条（persistent gutter，owner 自绘）
 
-    /// <summary>内容区（frame 扣掉 gutter；纵滚右侧、横滚底部）。</summary>
+    /// <summary>内容区（frame 扣掉 gutter；Floating gutter=0 即全 frame）。</summary>
     private Rect ContentRect(Rect frame)
     {
-        var gutter = Math.Min(ScrollbarMetrics.Thickness, Math.Max(0, Axis == ScrollAxis.Vertical ? frame.Width : frame.Height));
+        var gutter = Math.Min(GutterExtent(), Math.Max(0, Axis == ScrollAxis.Vertical ? frame.Width : frame.Height));
         return Axis == ScrollAxis.Vertical
             ? new Rect(frame.X, frame.Y, Math.Max(0, frame.Width - gutter), frame.Height)
             : new Rect(frame.X, frame.Y, frame.Width, Math.Max(0, frame.Height - gutter));
     }
 
-    /// <summary>轨道区（gutter 槽）。</summary>
+    /// <summary>轨道区（Standard=gutter 槽；Floating=frame 边缘内 Thickness 宽 overlay 条）。</summary>
     private Rect TrackRect(Rect frame)
     {
         var gutter = Math.Min(ScrollbarMetrics.Thickness, Math.Max(0, Axis == ScrollAxis.Vertical ? frame.Width : frame.Height));
@@ -259,6 +297,117 @@ public sealed class ScrollView : View
             ? new Rect(frame.Right - gutter, frame.Y, gutter, frame.Height)
             : new Rect(frame.X, frame.Bottom - gutter, frame.Width, gutter);
     }
+
+    /// <summary>Floating bar 当前是否可绘/可命中（Standard 恒 true 等价 ShowScrollbar）。</summary>
+    private bool FloatingBarVisible(ViewNode node, double viewportExtent, double contentExtent, double trackLength)
+    {
+        if (!ScrollbarMetrics.ShowScrollbar(viewportExtent, contentExtent, trackLength))
+        {
+            return false;
+        }
+        return ScrollbarStyle != ScrollbarStyle.Floating
+            || ScrollbarStateOf(node)?.IsFloatingVisible == true;
+    }
+
+    /// <summary>
+    /// 覆盖子内容的命中区（Floating 可见 bar 的 track 条）：仅当 bar 真正可交互时返回；
+    /// hidden/Standard/无 overflow 返回 null 完全透传。
+    /// </summary>
+    internal override Rect? HitTestOverlay(ViewNode node)
+    {
+        if (ScrollbarStyle != ScrollbarStyle.Floating)
+        {
+            return null;
+        }
+        var horizontal = Axis == ScrollAxis.Horizontal;
+        var track = TrackRect(node.Frame);
+        var contentRect = ContentRect(node.Frame);
+        var child = node.ChildList.Count > 0 ? node.ChildList[0] : null;
+        var contentExtent = horizontal ? (child?.DesiredSize.Width ?? 0) : (child?.DesiredSize.Height ?? 0);
+        var viewportExtent = horizontal ? contentRect.Width : contentRect.Height;
+        return FloatingBarVisible(node, viewportExtent, contentExtent,
+            ScrollbarMetrics.TrackLength(track, horizontal))
+            ? track
+            : null;
+    }
+
+    /// <summary>定时槽到期（Floating 隐藏）；runtime 已剔除槽位，state 复核到期与抑制。</summary>
+    internal override void OnTimedWake(ViewNode node, TimeSpan now)
+        => ScrollbarStateOf(node)?.OnTimedWakeDue(node, now);
+
+    /// <summary>
+    /// deepest 身份变化统一重判（overlay 翻可见/静止悬 bar→suppress；track 移离/子消费/让位→重挂）：
+    /// <paramref name="position"/> 是 router 权威位置——子消费 Move 期间本 owner 缓存不更新也无影响；
+    /// <paramref name="isDeepest"/> 为权威身份（含同一 target 的 RefreshHover force 通知）。
+    /// </summary>
+    internal override void OnHoverDeepestChanged(ViewNode node, Point position, bool isDeepest)
+    {
+        var state = ScrollbarStateOrCreate(node);
+        state.LastPointerPoint = position;    // 绘制 hover kind 的唯一缓存写点。
+
+        // over：本节点是最深命中 且 pointer 落在可见 floating bar 的 track 上（clip 已由 router 判）。
+        var over = isDeepest
+            && state.IsFloatingVisible
+            && TrackRect(node.Frame).Contains(position);
+
+        if (over)
+        {
+            if (!state.FloatingSuppressed)
+            {
+                state.SuppressFloatingTimer(node);
+            }
+        }
+        else if (state is { FloatingSuppressed: true, PressKind: ScrollbarPressKind.None })
+        {
+            // drag 期 PressKind!=None 不重挂（避免空转 deadline）；让位/移离 bar → 重挂 1000。
+            state.RearmFloatingTimer(node, node.Runtime.Clock.Now);
+        }
+    }
+
+    /// <summary>Floating 可见性翻转后让 router 按最近指针位置重算 hover（静止指针续命/退出）。</summary>
+    private void NotifyFloatingShown(ViewNode node, ScrollbarState state)
+    {
+        var now = node.Runtime.Clock.Now;
+        state.NotifyScrolled(node, now);
+        node.Runtime.RefreshHover();
+    }
+
+    /// <summary>当前指针是否悬在可见 floating bar 上（按 HoveredNode+LastPointerPoint 现算）。</summary>
+    private bool PointerOverFloatingBar(ViewNode node, ScrollbarState state)
+    {
+        if (ScrollbarStyle != ScrollbarStyle.Floating || !state.IsFloatingVisible)
+        {
+            return false;
+        }
+        if (!ReferenceEquals(node.Runtime.HoveredNode, node) || state.LastPointerPoint is not { } p)
+        {
+            return false;
+        }
+        var horizontal = Axis == ScrollAxis.Horizontal;
+        var track = TrackRect(node.Frame);
+        var contentRect = ContentRect(node.Frame);
+        var child = node.ChildList.Count > 0 ? node.ChildList[0] : null;
+        var contentExtent = horizontal ? (child?.DesiredSize.Width ?? 0) : (child?.DesiredSize.Height ?? 0);
+        var viewportExtent = horizontal ? contentRect.Width : contentRect.Height;
+        return ScrollbarMetrics.ShowScrollbar(viewportExtent, contentExtent,
+                ScrollbarMetrics.TrackLength(track, horizontal))
+            && track.Contains(p);
+    }
+
+    /// <summary>按当前 pointer/bar 关系更新 hover 抑制边（进→suppress，出→rearm）。</summary>
+    private void UpdateFloatingHoverSuppression(ViewNode node, ScrollbarState state)
+    {
+        var over = PointerOverFloatingBar(node, state);
+        if (over && !state.FloatingSuppressed)
+        {
+            state.SuppressFloatingTimer(node);
+        }
+        else if (!over && state.FloatingSuppressed && state.PressKind == ScrollbarPressKind.None)
+        {
+            state.RearmFloatingTimer(node, node.Runtime.Clock.Now);
+        }
+    }
+
 
     private static ScrollbarState? ScrollbarStateOf(ViewNode node)
         => node.InteractionState as ScrollbarState;
@@ -278,12 +427,14 @@ public sealed class ScrollView : View
         var viewportExtent = horizontal ? contentRect.Width : contentRect.Height;
         var offset = horizontal ? node.ScrollOffsetX : node.ScrollOffsetY;
         ScrollbarPainter.Draw(node, context, ScrollbarStateOf(node), track, horizontal,
-            viewportExtent, contentExtent, offset);
+            viewportExtent, contentExtent, offset, ScrollbarStyle);
     }
 
     internal override bool OnPointerEnter(InputContext context, ViewNode node, PointerEvent e)
     {
-        ScrollbarStateOrCreate(node).LastPointerPoint = e.Position;
+        var state = ScrollbarStateOrCreate(node);
+        state.LastPointerPoint = e.Position;
+        UpdateFloatingHoverSuppression(node, state);
         return false;
     }
 
@@ -305,6 +456,7 @@ public sealed class ScrollView : View
                 state.BarDragAnchor, e.Position,
                 horizontal ? node.ScrollOffsetX : node.ScrollOffsetY);
 
+            var offset = horizontal ? node.ScrollOffsetX : node.ScrollOffsetY;
             if (horizontal)
             {
                 node.ScrollOffsetX = next;
@@ -314,11 +466,28 @@ public sealed class ScrollView : View
                 node.ScrollOffsetY = next;
             }
 
+            if (ScrollbarStyle == ScrollbarStyle.Floating
+                && Math.Abs(next - offset) > 0.0001)
+            {
+                NotifyFloatingShown(node, state);
+            }
+
             node.Runtime.InvalidateLayout(node);
             context.MarkHandled();
             return true;
         }
 
+        UpdateFloatingHoverSuppression(node, state);
+        return false;
+    }
+
+    internal override bool OnPointerLeave(InputContext context, ViewNode node, PointerEvent e)
+    {
+        var state = ScrollbarStateOf(node);
+        if (state is { FloatingSuppressed: true, PressKind: ScrollbarPressKind.None })
+        {
+            state.RearmFloatingTimer(node, node.Runtime.Clock.Now);
+        }
         return false;
     }
 
@@ -338,20 +507,23 @@ public sealed class ScrollView : View
         var child = node.ChildList[0];
         var contentExtent = horizontal ? child.DesiredSize.Width : child.DesiredSize.Height;
         var viewportExtent = horizontal ? contentRect.Width : contentRect.Height;
-        var hit = ScrollbarMetrics.HitTest(track, horizontal, viewportExtent, contentExtent,
-            horizontal ? node.ScrollOffsetX : node.ScrollOffsetY, e.Position);
+        var trackLength = ScrollbarMetrics.TrackLength(track, horizontal);
 
-        if (!ScrollbarMetrics.ShowScrollbar(viewportExtent, contentExtent,
-                ScrollbarMetrics.TrackLength(track, horizontal)))
+        // Floating hidden：bar 分支不进（HitTestOverlay 也不会命中 owner；此处防御同语义）。
+        if (!FloatingBarVisible(node, viewportExtent, contentExtent, trackLength))
         {
-            // 空槽仍属 owner 区域：消费不冒泡、不夺焦、不进子路径。
-            if (track.Contains(e.Position))
+            // Standard 空槽仍属 owner 区域：消费不冒泡、不夺焦、不进子路径；
+            // Floating 无槽——完全透传（router overlay 已保证 hidden 不落这里）。
+            if (ScrollbarStyle == ScrollbarStyle.Standard && track.Contains(e.Position))
             {
                 context.MarkHandled();
                 return true;
             }
             return false;
         }
+
+        var hit = ScrollbarMetrics.HitTest(track, horizontal, viewportExtent, contentExtent,
+            horizontal ? node.ScrollOffsetX : node.ScrollOffsetY, e.Position);
 
         switch (hit)
         {
@@ -361,15 +533,23 @@ public sealed class ScrollView : View
                     ScrollbarMetrics.DragGrabAnchor(
                         track, horizontal, viewportExtent, contentExtent,
                         horizontal ? node.ScrollOffsetX : node.ScrollOffsetY, e.Position));
+                if (ScrollbarStyle == ScrollbarStyle.Floating)
+                {
+                    state.SuppressFloatingTimer(node);
+                }
                 context.MarkHandled();
                 return true;
 
             case ScrollbarTrackHit.Before:
             case ScrollbarTrackHit.After:
                 state.BeginTrackPress(Axis, track, contentExtent, viewportExtent);
+                if (ScrollbarStyle == ScrollbarStyle.Floating)
+                {
+                    state.SuppressFloatingTimer(node);
+                }
                 var maxOffset = Math.Max(0, contentExtent - viewportExtent);
-                var next = ScrollbarMetrics.PageOffset(hit, viewportExtent,
-                    horizontal ? node.ScrollOffsetX : node.ScrollOffsetY, maxOffset);
+                var offset = horizontal ? node.ScrollOffsetX : node.ScrollOffsetY;
+                var next = ScrollbarMetrics.PageOffset(hit, viewportExtent, offset, maxOffset);
                 if (horizontal)
                 {
                     node.ScrollOffsetX = next;
@@ -377,6 +557,11 @@ public sealed class ScrollView : View
                 else
                 {
                     node.ScrollOffsetY = next;
+                }
+                if (ScrollbarStyle == ScrollbarStyle.Floating
+                    && Math.Abs(next - offset) > 0.0001)
+                {
+                    NotifyFloatingShown(node, state);
                 }
                 node.Runtime.InvalidateLayout(node);
                 context.MarkHandled();
@@ -394,6 +579,11 @@ public sealed class ScrollView : View
         if (state.PressKind != ScrollbarPressKind.None)
         {
             state.ReleaseGesture();
+            // Floating：gesture 结束仍可见 → 重挂隐藏计时（hover 仍悬 bar 时下一次 Move/Leave 重判）。
+            if (ScrollbarStyle == ScrollbarStyle.Floating && state.IsFloatingVisible)
+            {
+                UpdateFloatingHoverSuppression(node, state);
+            }
             context.MarkHandled();
             return true;
         }
@@ -407,6 +597,10 @@ public sealed class ScrollView : View
         if (state is not null && state.PressKind != ScrollbarPressKind.None)
         {
             state.ReleaseGesture();
+            if (ScrollbarStyle == ScrollbarStyle.Floating && state.IsFloatingVisible)
+            {
+                state.RearmFloatingTimer(node, node.Runtime.Clock.Now);
+            }
         }
 
         return false;
@@ -414,16 +608,28 @@ public sealed class ScrollView : View
 
     internal override void OnUpdate(ViewNode node, View previous)
     {
-        // Axis 变化（immutable View 重建可换值）→ 取消 bar-gesture。
-        if (previous is ScrollView prev && prev.Axis != Axis)
+        if (previous is not ScrollView prev)
         {
-            var state = ScrollbarStateOf(node);
-            if (state is not null)
-            {
-                CancelBarGesture(state);
-            }
+            return;
+        }
+
+        // Axis / ScrollbarStyle 变化（immutable View 重建可换值）→ 取消 bar-gesture、复位 Floating 计时。
+        var state = ScrollbarStateOf(node);
+        if (state is null)
+        {
+            return;
+        }
+
+        if (prev.Axis != Axis)
+        {
+            CancelBarGesture(state);
+        }
+        if (prev.ScrollbarStyle != ScrollbarStyle || prev.Axis != Axis)
+        {
+            state.ResetFloating(node);
         }
     }
+
 }
 
 /// <summary>图片缩放方式。</summary>

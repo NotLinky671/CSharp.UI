@@ -39,7 +39,7 @@ UiApplication.Run(new Counter());
 | `tests/` | Core unit tests, text tests, graphics integration tests (xUnit v3) |
 | `tools/CSharp.UI.AssetGenerator` | Generates the sample image assets so they stay reproducible |
 | `docs/guide` | Getting started, API, state, modifiers, keys, components, platform, and testing guides |
-| `docs/task` | Current Scrollbar planning and implementation tasks; completed task sets live in `docs/archive/` |
+| `docs/task` | Current Floating-scrollbar planning and implementation tasks; completed task sets live in `docs/archive/` |
 
 Historical IME tools and their three test projects are preserved at tag `archive/tools-before-removal`. Restore them in a separate checkout using `git worktree add --detach ../CSharp.UI-ime-archive archive/tools-before-removal`; existing acceptance evidence remains under `docs/`.
 
@@ -66,7 +66,7 @@ See the [getting started guide](docs/guide/getting-started.md) for details.
 - [Writing custom components](docs/guide/custom-components.md)
 - [Platform, fonts, and native dependencies](docs/guide/platform-notes.md)
 - [Testing guide](docs/guide/testing.md)
-- Design and tasks: [first-release plan](docs/plan/2026-10-14-declarative-ui-framework-plan.md), [responsive-layout plan](docs/plan/2026-10-16-responsive-layout-plan.md), [text-editor plan](docs/plan/2026-10-23-text-editor-plan.md), [scrollbar plan](docs/plan/2026-10-23-scrollbar-plan.md), [current tasks](docs/task/README.md), [archived task groups](docs/archive/), [first-release acceptance record](docs/archive/2026-10-14-framework-tasks/README.md), [responsive-layout delivery record](docs/delivery/2026-10-16-responsive-layout-delivery.md)
+- Design and tasks: [first-release plan](docs/plan/2026-10-14-declarative-ui-framework-plan.md), [responsive-layout plan](docs/plan/2026-10-16-responsive-layout-plan.md), [text-editor plan](docs/plan/2026-10-23-text-editor-plan.md), [scrollbar plan](docs/plan/2026-10-23-scrollbar-plan.md), [floating-scrollbar plan](docs/plan/2026-10-23-floating-scrollbar-plan.md), [current tasks](docs/task/README.md), [archived task groups](docs/archive/), [first-release acceptance record](docs/archive/2026-10-14-framework-tasks/README.md), [responsive-layout delivery record](docs/delivery/2026-10-16-responsive-layout-delivery.md)
 
 ## Responsive layout
 
@@ -100,7 +100,7 @@ Included: `VStack`/`HStack`/`ZStack`/`Spacer`/`ScrollView`, `Text`/`Image`/`Rect
 `Button`/`Toggle`/`Slider`/`TextField`/`TextEditor` (multi-line: hard newlines plus width-driven soft wrap, a fixed `MinLines` viewport with internal `ScrollY`, pointer drag-selection with edge auto-scroll, undo/redo and clipboard commands),
 `Padding`/`Frame`/`Background`/`Foreground`/`Border`/`CornerRadius`/`Opacity`/`Clip`/`Disabled`/`Key`,
 `ForEach`, light and dark themes, font/color environment inheritance, mouse/keyboard/wheel/focus/pointer capture,
-and Chinese text display with committed text input on the default IMM path. `ScrollView` and `TextEditor` show a scrollbar when content overflows (persistent 12 logical-pixel gutter; drag thumb or click track to page once).
+and Chinese text display with committed text input on the default IMM path. `ScrollView` and `TextEditor` show a scrollbar when content overflows (init `ScrollbarStyle`: `Standard` default persistent 12 logical-pixel gutter; `Floating` overlays the content edge without a gutter, appears on actual scrolling, hides after about 1 second, stays while hovered or dragged; drag thumb or click track to page once).
 
 Text editing commands (undo/redo, cut/copy/paste, select all) are keyboard shortcuts only; there is no public command API. See the [API reference](docs/guide/api-reference.md) and the [manual IME acceptance checklist](docs/guide/ime-manual-acceptance.md).
 

@@ -121,10 +121,10 @@ CSHARPUI_SMOKE_FRAMES=5 ./artifacts/publish/win-x64/ControlGallery.exe
 
 ## 滚动条（ScrollView/TextEditor）验收要点
 
-- **显隐**：内容溢出才显示轨道+滑块；persistent 12 逻辑像素槽恒占、无溢出留空槽（显隐不引起布局回流）。
-- **命中优先**：指针落槽命中 owner（bar），不进内容 caret/拖选；无溢出时空槽同样不透到内容。
-- **交互**：滑块可拖拽（最小滑块长 24）；轨道点击按视口翻页一次、无自动重复；几何/range 变化、禁用、卸载取消进行中的 bar 手势（不回弹）。
-- **嵌套冒泡**：槽区滚轮仍走 owner 滚轮路径（可滚消费、到边界/`maxOffset<=0` 冒泡外层），语义与无槽时一致。
+- **显隐（Standard 默认）**：内容溢出才显示轨道+滑块；persistent 12 逻辑像素槽恒占、无溢出留空槽（显隐不引起布局回流）。
+- **显隐（Floating）**：不占布局槽（内容贴边）；实际滚动时显示（ScrollView：滚轮/拖拽/轨道翻页；TextEditor 另含键盘 caret 收敛与编辑滚动），静止约 1 秒隐藏；指针悬停条上或拖拽期间不隐藏（离开/释放后重新计时）；无 overflow 永不显示；被动 clamp、视口尺寸/父级平移不产生显示。
+- **命中优先**：Standard 槽与 Floating 可见条命中 owner（bar），不进内容 caret/拖选；Floating 可见条优先于重叠子内容；隐藏后同一位置完全落到内容（底层按钮可点）。Standard 无溢出时空槽同样不透到内容。
+- **交互**：滑块可拖拽（最小滑块长 24）；轨道点击按视口翻页一次、无自动重复；几何/range 变化、禁用、卸载取消进行中的 bar 手势（不回弹）；Floating 禁用时立即隐藏。
 - **IME 锚点**（TextEditor）：组合期用户滚动为持久意图——caret 裁出视口 → `Unavailable`（候选锚点撤除、组合保活）；真实新预编辑/caret 推进后重新锚定；同值 PPW/时钟/平移不弹回。
 
 ## 资源计数的读取方式

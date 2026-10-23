@@ -213,6 +213,7 @@ internal sealed class InputRouter
     private ViewNode? _hovered;
     private ViewNode? _pressed;
     private ViewNode? _captured;
+    private PointerEvent? _lastPointerEvent;
 
     public InputRouter(UiRuntime runtime, FocusManager focus)
     {
@@ -230,6 +231,7 @@ internal sealed class InputRouter
     public void DispatchPointer(PointerEvent e)
     {
         var context = new InputContext(_runtime);
+        _lastPointerEvent = e;
         switch (e.Kind)
         {
             case PointerEventKind.Down:
@@ -299,11 +301,26 @@ internal sealed class InputRouter
     public void DispatchWheel(WheelEvent e)
     {
         var context = new InputContext(_runtime);
-        UpdateHover(new PointerEvent(PointerEventKind.Move, e.Position, PointerButton.None, e.Modifiers), context);
+        var pointerEvent = new PointerEvent(PointerEventKind.Move, e.Position, PointerButton.None, e.Modifiers);
+        _lastPointerEvent = pointerEvent;
+        UpdateHover(pointerEvent, context);
         var target = _captured ?? _hovered;
         if (target is not null)
         {
             Route<WheelEvent>(target, context, static (node, ctx, wheel) => node.View.OnWheel(ctx, node, wheel), e);
+        }
+    }
+
+    /// <summary>
+    /// 按最近一次观测到的指针位置重算 hover（Floating scrollbar 可见性翻转等 owner 自发的命中结构变化）：
+    /// 静止指针悬在新出现的 overlay 上时 deepest hover 应更新为 owner；无指针观测则 no-op。
+    /// </summary>
+    internal void RefreshHover()
+    {
+        if (_lastPointerEvent is { } e)
+        {
+            // 显隐/几何刷新：同一 deepest 也要按真实位置重估抑制（force=true）。
+            UpdateHover(e, new InputContext(_runtime), forceDeepestNotify: true);
         }
     }
 
@@ -404,6 +421,17 @@ internal sealed class InputRouter
 
         var insideAncestorClip = clip.ContainsInclusive(position);
 
+        // owner overlay（Floating scrollbar 等自绘覆盖区）：子节点之前优先归属 owner；
+        // guard 完整——祖先 clip / 非禁用 / frame 内是 router 侧契约，不依赖 owner 自觉隐藏。
+        if (insideAncestorClip
+            && !node.IsEffectivelyDisabled
+            && node.Frame.Contains(position)
+            && node.View.HitTestOverlay(node) is { } overlay
+            && overlay.Contains(position))
+        {
+            return node;
+        }
+
         var childClip = node.View.GetChildClip(node);
         var effectiveClip = childClip.HasValue ? clip.Intersect(childClip.Value) : clip;
         var insideEffectiveClip = effectiveClip.ContainsInclusive(position);
@@ -432,10 +460,24 @@ internal sealed class InputRouter
     }
 
     private void UpdateHover(PointerEvent e, InputContext context)
+        => UpdateHover(e, context, forceDeepestNotify: false);
+
+    /// <summary>
+    /// <paramref name="forceDeepestNotify"/>=true 时即使 target 与 _hovered 相同也按真实
+    /// <see cref="PointerEvent.Position"/> 通知 <see cref="View.OnHoverDeepestChanged"/>：
+    /// RefreshHover/几何刷新用于让"content 与 bar 同属一个 owner deepest"的视图（TextEditor、
+    /// owner 自命中区）在 track 移离/移入指针后重判抑制——普通 Move 早退不付此成本。
+    /// </summary>
+    private void UpdateHover(PointerEvent e, InputContext context, bool forceDeepestNotify)
     {
         var target = HitTest(e.Position);
         if (ReferenceEquals(target, _hovered))
         {
+            if (forceDeepestNotify && target is not null)
+            {
+                // 链未变但几何/显隐已变：同一 deepest 也要重估（over→suppress / !over→rearm）。
+                target.View.OnHoverDeepestChanged(target, e.Position, isDeepest: true);
+            }
             return;
         }
 
@@ -466,15 +508,29 @@ internal sealed class InputRouter
         _hoverChain.Clear();
         _hoverChain.AddRange(chain);
         _hovered = target;
+
+        // deepest 提交后按真实 e.Position 通知 deepest 身份变化（HoverNode 已指向 target）：
+        // 新 deepest 重估抑制入口（overlay 翻可见/静止悬 bar→suppress）；让位成员重估出口。
+        if (target is not null)
+        {
+            target.View.OnHoverDeepestChanged(target, e.Position, isDeepest: true);
+        }
+
+        for (var i = chain.Count - 2; i >= 0; i--)
+        {
+            chain[i].View.OnHoverDeepestChanged(chain[i], e.Position, isDeepest: false);
+        }
     }
 
     private void ClearHover(InputContext context)
     {
+        var position = _lastPointerEvent?.Position ?? default;
         foreach (var node in _hoverChain)
         {
             if (node.IsMounted)
             {
                 node.IsHovered = false;
+                node.View.OnHoverDeepestChanged(node, position, isDeepest: false);
             }
         }
 

@@ -1,0 +1,380 @@
+{
+  "started": "2026-10-24T00:19:50.361598",
+  "steps": [
+    {
+      "step": "tests-CSharp.UI.Tests-debug",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "tests/CSharp.UI.Tests",
+        "--no-build",
+        "-c",
+        "Debug"
+      ],
+      "exit": 0,
+      "seconds": 1.924,
+      "stdout_log": "logs/postcleanup-tests-CSharp.UI.Tests-debug.stdout.log",
+      "stderr_log": "logs/postcleanup-tests-CSharp.UI.Tests-debug.stderr.log",
+      "stdout_sha256": "fa4ebeba020e57848e49e34b5f59a8178ecffe0252084f687dbef09d7e59c76c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "tests-CSharp.UI.Text.Tests-debug",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "tests/CSharp.UI.Text.Tests",
+        "--no-build",
+        "-c",
+        "Debug"
+      ],
+      "exit": 0,
+      "seconds": 1.197,
+      "stdout_log": "logs/postcleanup-tests-CSharp.UI.Text.Tests-debug.stdout.log",
+      "stderr_log": "logs/postcleanup-tests-CSharp.UI.Text.Tests-debug.stderr.log",
+      "stdout_sha256": "0602f9b1ec0ffeef9906b4dc410e8791bee100cee487c58d4cc09a2341cd08a5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "tests-CSharp.UI.Integration.Tests-debug",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "tests/CSharp.UI.Integration.Tests",
+        "--no-build",
+        "-c",
+        "Debug"
+      ],
+      "exit": 0,
+      "seconds": 1.063,
+      "stdout_log": "logs/postcleanup-tests-CSharp.UI.Integration.Tests-debug.stdout.log",
+      "stderr_log": "logs/postcleanup-tests-CSharp.UI.Integration.Tests-debug.stderr.log",
+      "stdout_sha256": "c8849c0a386d5a2b547e7daedb3e3ed5fa1eb7c0201cc1ad693c23217144cf1c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "tests-CSharp.UI.OpenTK.Tests-debug",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "tests/CSharp.UI.OpenTK.Tests",
+        "--no-build",
+        "-c",
+        "Debug"
+      ],
+      "exit": 0,
+      "seconds": 10.683,
+      "stdout_log": "logs/postcleanup-tests-CSharp.UI.OpenTK.Tests-debug.stdout.log",
+      "stderr_log": "logs/postcleanup-tests-CSharp.UI.OpenTK.Tests-debug.stderr.log",
+      "stdout_sha256": "fbd69d5fd1da0423a99ceff30d8775d558c189cc9434503865cd776156995601",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "tests-CSharp.UI.Tests-release",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "tests/CSharp.UI.Tests",
+        "--no-build",
+        "-c",
+        "Release"
+      ],
+      "exit": 0,
+      "seconds": 1.772,
+      "stdout_log": "logs/postcleanup-tests-CSharp.UI.Tests-release.stdout.log",
+      "stderr_log": "logs/postcleanup-tests-CSharp.UI.Tests-release.stderr.log",
+      "stdout_sha256": "abdc3a87a63fb6877d696b8c23027e6429c6c74e67e8715616f5fa9bee6fcb13",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "tests-CSharp.UI.Text.Tests-release",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "tests/CSharp.UI.Text.Tests",
+        "--no-build",
+        "-c",
+        "Release"
+      ],
+      "exit": 0,
+      "seconds": 1.225,
+      "stdout_log": "logs/postcleanup-tests-CSharp.UI.Text.Tests-release.stdout.log",
+      "stderr_log": "logs/postcleanup-tests-CSharp.UI.Text.Tests-release.stderr.log",
+      "stdout_sha256": "3ad54752a976236059da7c999c20c94f0d5101247d54aeb8e29972643fe33ddc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "tests-CSharp.UI.Integration.Tests-release",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "tests/CSharp.UI.Integration.Tests",
+        "--no-build",
+        "-c",
+        "Release"
+      ],
+      "exit": 0,
+      "seconds": 1.06,
+      "stdout_log": "logs/postcleanup-tests-CSharp.UI.Integration.Tests-release.stdout.log",
+      "stderr_log": "logs/postcleanup-tests-CSharp.UI.Integration.Tests-release.stderr.log",
+      "stdout_sha256": "044dd8bba000a76ba9944203aed58acfb3afb4a584ed255b57861ce0b94bc720",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "tests-CSharp.UI.OpenTK.Tests-release",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "tests/CSharp.UI.OpenTK.Tests",
+        "--no-build",
+        "-c",
+        "Release"
+      ],
+      "exit": 0,
+      "seconds": 10.925,
+      "stdout_log": "logs/postcleanup-tests-CSharp.UI.OpenTK.Tests-release.stdout.log",
+      "stderr_log": "logs/postcleanup-tests-CSharp.UI.OpenTK.Tests-release.stderr.log",
+      "stdout_sha256": "dc20240254747dfcee7bb0c9e8188d5e419f6e37933d6afdbcb6021686bd8130",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "build-sample-CSharp.UI.Samples.Counter-debug",
+      "argv": [
+        "dotnet",
+        "build",
+        "samples/CSharp.UI.Samples.Counter",
+        "--no-incremental",
+        "-c",
+        "Debug",
+        "-v:m",
+        "-nodeReuse:false",
+        "--nologo"
+      ],
+      "exit": 0,
+      "seconds": 3.634,
+      "stdout_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.Counter-debug.stdout.log",
+      "stderr_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.Counter-debug.stderr.log",
+      "stdout_sha256": "17b9fb9dbb6b1909357dc355cd3c1c1e755bcc0b4589e7d71877e879e950b317",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "smoke-CSharp.UI.Samples.Counter-debug",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "samples/CSharp.UI.Samples.Counter",
+        "--no-build",
+        "-c",
+        "Debug"
+      ],
+      "exit": 0,
+      "seconds": 3.147,
+      "stdout_log": "logs/postcleanup-smoke-CSharp.UI.Samples.Counter-debug.stdout.log",
+      "stderr_log": "logs/postcleanup-smoke-CSharp.UI.Samples.Counter-debug.stderr.log",
+      "stdout_sha256": "47f68c167f095b41cbb44662e900f6cb1a5abf9a0ddf0b0a5803bc2e31bdde1c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "build-sample-CSharp.UI.Samples.TodoList-debug",
+      "argv": [
+        "dotnet",
+        "build",
+        "samples/CSharp.UI.Samples.TodoList",
+        "--no-incremental",
+        "-c",
+        "Debug",
+        "-v:m",
+        "-nodeReuse:false",
+        "--nologo"
+      ],
+      "exit": 0,
+      "seconds": 3.597,
+      "stdout_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.TodoList-debug.stdout.log",
+      "stderr_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.TodoList-debug.stderr.log",
+      "stdout_sha256": "b38c409ddda8fd1a2c268cb686c3463d86dcab95c2da6690825fa3e668f9bcb1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "smoke-CSharp.UI.Samples.TodoList-debug",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "samples/CSharp.UI.Samples.TodoList",
+        "--no-build",
+        "-c",
+        "Debug"
+      ],
+      "exit": 0,
+      "seconds": 3.26,
+      "stdout_log": "logs/postcleanup-smoke-CSharp.UI.Samples.TodoList-debug.stdout.log",
+      "stderr_log": "logs/postcleanup-smoke-CSharp.UI.Samples.TodoList-debug.stderr.log",
+      "stdout_sha256": "aba72a2161549acc0565be66d6ce22d1f4596539b5605baff911a41342d7bb15",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "build-sample-CSharp.UI.Samples.ControlGallery-debug",
+      "argv": [
+        "dotnet",
+        "build",
+        "samples/CSharp.UI.Samples.ControlGallery",
+        "--no-incremental",
+        "-c",
+        "Debug",
+        "-v:m",
+        "-nodeReuse:false",
+        "--nologo"
+      ],
+      "exit": 0,
+      "seconds": 3.675,
+      "stdout_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.ControlGallery-debug.stdout.log",
+      "stderr_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.ControlGallery-debug.stderr.log",
+      "stdout_sha256": "94ce5c045de5f87cb0126466b63ac8fcdccae150cc177b1bc98af52df9404d40",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "smoke-CSharp.UI.Samples.ControlGallery-debug",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "samples/CSharp.UI.Samples.ControlGallery",
+        "--no-build",
+        "-c",
+        "Debug"
+      ],
+      "exit": 0,
+      "seconds": 3.381,
+      "stdout_log": "logs/postcleanup-smoke-CSharp.UI.Samples.ControlGallery-debug.stdout.log",
+      "stderr_log": "logs/postcleanup-smoke-CSharp.UI.Samples.ControlGallery-debug.stderr.log",
+      "stdout_sha256": "0da28edd23c09ea6b0ec1702797359e703c34859eabd3b7e3ee1bd4804f9254f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "build-sample-CSharp.UI.Samples.Counter-release",
+      "argv": [
+        "dotnet",
+        "build",
+        "samples/CSharp.UI.Samples.Counter",
+        "--no-incremental",
+        "-c",
+        "Release",
+        "-v:m",
+        "-nodeReuse:false",
+        "--nologo"
+      ],
+      "exit": 0,
+      "seconds": 3.523,
+      "stdout_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.Counter-release.stdout.log",
+      "stderr_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.Counter-release.stderr.log",
+      "stdout_sha256": "adc9b346149df243b6fc31290a3249c64c7f5c66dac098315ef118c6663511e8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "smoke-CSharp.UI.Samples.Counter-release",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "samples/CSharp.UI.Samples.Counter",
+        "--no-build",
+        "-c",
+        "Release"
+      ],
+      "exit": 0,
+      "seconds": 3.185,
+      "stdout_log": "logs/postcleanup-smoke-CSharp.UI.Samples.Counter-release.stdout.log",
+      "stderr_log": "logs/postcleanup-smoke-CSharp.UI.Samples.Counter-release.stderr.log",
+      "stdout_sha256": "47f68c167f095b41cbb44662e900f6cb1a5abf9a0ddf0b0a5803bc2e31bdde1c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "build-sample-CSharp.UI.Samples.TodoList-release",
+      "argv": [
+        "dotnet",
+        "build",
+        "samples/CSharp.UI.Samples.TodoList",
+        "--no-incremental",
+        "-c",
+        "Release",
+        "-v:m",
+        "-nodeReuse:false",
+        "--nologo"
+      ],
+      "exit": 0,
+      "seconds": 3.553,
+      "stdout_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.TodoList-release.stdout.log",
+      "stderr_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.TodoList-release.stderr.log",
+      "stdout_sha256": "247348b5bbdedabbccdf02817feb999c616c502da25e17cbe51fedd650111d3f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "smoke-CSharp.UI.Samples.TodoList-release",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "samples/CSharp.UI.Samples.TodoList",
+        "--no-build",
+        "-c",
+        "Release"
+      ],
+      "exit": 0,
+      "seconds": 3.168,
+      "stdout_log": "logs/postcleanup-smoke-CSharp.UI.Samples.TodoList-release.stdout.log",
+      "stderr_log": "logs/postcleanup-smoke-CSharp.UI.Samples.TodoList-release.stderr.log",
+      "stdout_sha256": "aba72a2161549acc0565be66d6ce22d1f4596539b5605baff911a41342d7bb15",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "build-sample-CSharp.UI.Samples.ControlGallery-release",
+      "argv": [
+        "dotnet",
+        "build",
+        "samples/CSharp.UI.Samples.ControlGallery",
+        "--no-incremental",
+        "-c",
+        "Release",
+        "-v:m",
+        "-nodeReuse:false",
+        "--nologo"
+      ],
+      "exit": 0,
+      "seconds": 3.659,
+      "stdout_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.ControlGallery-release.stdout.log",
+      "stderr_log": "logs/postcleanup-build-sample-CSharp.UI.Samples.ControlGallery-release.stderr.log",
+      "stdout_sha256": "6b77b2d3c4fa2c72657553251cef7834c77d223163edf2e7959bd6e291711385",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "smoke-CSharp.UI.Samples.ControlGallery-release",
+      "argv": [
+        "dotnet",
+        "run",
+        "--project",
+        "samples/CSharp.UI.Samples.ControlGallery",
+        "--no-build",
+        "-c",
+        "Release"
+      ],
+      "exit": 0,
+      "seconds": 3.364,
+      "stdout_log": "logs/postcleanup-smoke-CSharp.UI.Samples.ControlGallery-release.stdout.log",
+      "stderr_log": "logs/postcleanup-smoke-CSharp.UI.Samples.ControlGallery-release.stderr.log",
+      "stdout_sha256": "0da28edd23c09ea6b0ec1702797359e703c34859eabd3b7e3ee1bd4804f9254f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "result": "PASSED",
+  "finished": "2026-10-24T00:21:01.636856",
+  "note": "POST-CLEANUP run manifest: 20 steps = 4 suites × Debug/Release (tests-*) + 3 samples fresh build + smoke × Debug/Release (build-sample-*/smoke-*). The earlier pre-cleanup 22-step run's manifest and stdout logs were overwritten by this rerun; raw pre-cleanup suite output is not preserved in this directory (results recorded in review notes; solution build logs retained at logs/build-solution-{debug,release}.stdout.log from the original run)."
+}

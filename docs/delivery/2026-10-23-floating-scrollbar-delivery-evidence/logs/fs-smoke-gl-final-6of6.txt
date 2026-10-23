@@ -1,0 +1,20 @@
+GL context: 3.3.0 - Build 32.0.101.6790 / Intel(R) RaptorLake-S Mobile Graphics Controller / Intel
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-light-x1-shown.png (400×400)
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-light-x1-hidden.png (400×400)
+GL-light-x1                    PASS theme.IsDark=False thumb #ffa4a5a6≈#ffa4a5a6 bg #fff5f6f8; after hide #fff5f6f8 ticks=1
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-light-x1.5-shown.png (600×600)
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-light-x1.5-hidden.png (600×600)
+GL-light-x1.5                  PASS theme.IsDark=False thumb #ffa4a5a6≈#ffa4a5a6 bg #fff5f6f8; after hide #fff5f6f8 ticks=1
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-light-x2-shown.png (800×800)
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-light-x2-hidden.png (800×800)
+GL-light-x2                    PASS theme.IsDark=False thumb #ffa4a5a6≈#ffa4a5a6 bg #fff5f6f8; after hide #fff5f6f8 ticks=1
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-dark-x1-shown.png (400×400)
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-dark-x1-hidden.png (400×400)
+GL-dark-x1                     PASS theme.IsDark=True thumb #ff72757b≈#ff72757b bg #ff15171c; after hide #ff15171c ticks=1
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-dark-x1.5-shown.png (600×600)
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-dark-x1.5-hidden.png (600×600)
+GL-dark-x1.5                   PASS theme.IsDark=True thumb #ff72757b≈#ff72757b bg #ff15171c; after hide #ff15171c ticks=1
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-dark-x2-shown.png (800×800)
+  saved C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-23-floating-scrollbar-delivery-evidence\visual\final-gl-dark-x2-hidden.png (800×800)
+GL-dark-x2                     PASS theme.IsDark=True thumb #ff72757b≈#ff72757b bg #ff15171c; after hide #ff15171c ticks=1
+---- 6/6 GL smoke

@@ -2,11 +2,11 @@
 
 创建日期：2026-10-23
 
-状态：已完成（消费方迁移全绿：GalleryBreakpointInput/DpiLayout/GpuIntegration/Responsive/IdleAndBounds/HostResize/TextSampling 全部经 `GalleryScrollLookup` 按 `Key` 定位；真实 GL 覆盖绘制/真实窗口 IME/极端 DPI 验收由 fast 独立通过，GPU 78/78 + Gallery 32/32 + IMM exact 24/24）。证据见 [交付记录](../delivery/2026-10-23-scrollbar-delivery.md) 与 [审查记录](../return/2026-10-23-scrollbar-review.md)。
+状态：已完成（消费方迁移全绿：GalleryBreakpointInput/DpiLayout/GpuIntegration/Responsive/IdleAndBounds/HostResize/TextSampling 全部经 `GalleryScrollLookup` 按 `Key` 定位；真实 GL 覆盖绘制/真实窗口 IME/极端 DPI 验收由 fast 独立通过，GPU 78/78 + Gallery 32/32 + IMM exact 24/24）。证据见 [交付记录](../../delivery/2026-10-23-scrollbar-delivery.md) 与 [审查记录](../../return/2026-10-23-scrollbar-review.md)。
 
 阶段：C
 
-设计依据：[Scrollbar 计划](../plan/2026-10-23-scrollbar-plan.md) §决策四~六。
+设计依据：[Scrollbar 计划](../../plan/2026-10-23-scrollbar-plan.md) §决策四~六。
 
 [返回任务索引](README.md)
 

@@ -8,7 +8,7 @@
 
 为单轴 `ScrollView`（纵/横）与 `TextEditor`（纵）实现共享滚动条：内容溢出才显示、persistent 12 逻辑像素轨道槽（无溢出留槽）、滑块拖拽、轨道点击按视口翻页一次（无自动重复）、几何/范围变化取消手势、滚动条交互不夺焦点/不改 caret·选区·撤销历史·绑定；IME 组合期用户滚动为持久浏览意图（caret 裁出视口时输入几何 `Unavailable` 撤锚、组合保活，真实推进后重锚）。公开 API 零新增。
 
-设计与任务：[滚动条计划](../plan/2026-10-23-scrollbar-plan.md)、[任务索引](../task/README.md)（SB-01~SB-07）、[审查记录](../return/2026-10-23-scrollbar-review.md)。
+设计与任务：[滚动条计划](../plan/2026-10-23-scrollbar-plan.md)、[任务索引](../archive/2026-10-23-scrollbar-tasks/README.md)（SB-01~SB-07，已归档）、[审查记录](../return/2026-10-23-scrollbar-review.md)。
 
 ## 最终验证（双配置 fresh build，原始输出见 [evidence](2026-10-23-scrollbar-delivery-evidence/)）
 

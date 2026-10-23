@@ -1,0 +1,4 @@
+frames=3
+bar-visible samples(ms): 647
+bar-hidden  samples(ms): 1652, 22448
+HOST-IDLE PASS: bar shown then auto-hid on real window clock

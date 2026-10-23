@@ -134,6 +134,12 @@ public sealed class TextEditor : View
     /// <summary>光标闪烁周期的一半（亮/灭各持续该时长）。</summary>
     public TimeSpan BlinkInterval { get; init; } = TimeSpan.FromMilliseconds(530);
 
+    /// <summary>
+    /// 滚动条样式：<see cref="ScrollbarStyle.Standard"/>（默认）为 persistent 右侧 gutter；
+    /// <see cref="ScrollbarStyle.Floating"/> 为覆盖内容右缘的 overlay（不占槽、实际滚动显示、约 1 秒隐藏）。
+    /// </summary>
+    public ScrollbarStyle ScrollbarStyle { get; init; }
+
     private double? _width;
     private double? _height;
     private double _horizontalPadding = 10;
@@ -158,6 +164,7 @@ public sealed class TextEditor : View
         MaxLength = MaxLength,
         BlinkInterval = BlinkInterval,
         MinLines = MinLines,
+        ScrollbarStyle = ScrollbarStyle,
     };
 
     private static void ValidateFiniteNonNegative(double value, string name)
@@ -195,7 +202,10 @@ public sealed class TextEditor : View
             ? constraints.MaxWidth
             : Math.Clamp(
                 layout.Size.Width + (HorizontalPadding * 2)
-                    + Math.Min(ScrollbarMetrics.Thickness, Math.Max(0, layout.Size.Width + (HorizontalPadding * 2))),
+                    + (ScrollbarStyle == ScrollbarStyle.Floating
+                        ? 0
+                        : Math.Min(ScrollbarMetrics.Thickness,
+                            Math.Max(0, layout.Size.Width + (HorizontalPadding * 2)))),
                 minimum, available));
 
         // 高度统一：先按 preferredHeight（MinLines 行 + 内边距）再由父级夹取；
@@ -205,6 +215,15 @@ public sealed class TextEditor : View
         node.DesiredSize = constraints.Constrain(new Size(width, preferredHeight));
     }
 
+    internal override bool LayoutPropertiesEquivalent(View other)
+        => other is TextEditor editor
+            && editor.ScrollbarStyle == ScrollbarStyle
+            && editor.HorizontalPadding == HorizontalPadding
+            && editor.VerticalPadding == VerticalPadding
+            && editor.Width == Width
+            && editor.Height == Height
+            && editor.MinLines == MinLines;
+
     internal override void Arrange(ViewNode node, Rect bounds, LayoutContext context)
     {
         node.Frame = bounds;
@@ -213,11 +232,34 @@ public sealed class TextEditor : View
         {
             SyncEditor(node, state, invalidate: false);
 
-            // 几何/range 变化取消 bar-gesture（自身 ScrollY 写回不属 geometry 变化——offset 不入签名）。
+            // 几何签名比对（axis/track/content/viewport；offset 不入）：变化取消 gesture——
+            // 无 gesture 仅 hover 的 track·range 变化同样检出（SyncGeometry 每次 Arrange 比对）。
             var layout = GetLayout(node, context.TextService);
             var contentR = InnerRect(bounds);
             var track = TrackRect(bounds);
-            state.Bar.SyncGeometry(ScrollAxis.Vertical, track, layout.Size.Height, contentR.Height);
+            var sync = state.Bar.SyncGeometry(ScrollAxis.Vertical, track, layout.Size.Height, contentR.Height);
+
+            // Floating overflow/disabled 翻转（非每次无 overflow 都跑——只在可见性真翻转时处理）。
+            var visibleBefore = state.Bar.IsFloatingVisible;
+            var stillShows = ScrollbarStyle == ScrollbarStyle.Floating
+                && !node.IsEffectivelyDisabled
+                && ScrollbarMetrics.ShowScrollbar(
+                    contentR.Height, layout.Size.Height,
+                    ScrollbarMetrics.TrackLength(track, horizontal: false));
+            if (visibleBefore && !stillShows)
+            {
+                state.Bar.ResetFloating(node);
+            }
+
+            // 真实边界才排队一次安全阶段 hover 刷新（不在 Arrange 里直接 HitTest——子 frame 未定）：
+            // gesture 被取消、可见时几何/track·range 变化、visible→hidden 翻转。
+            if (ScrollbarStyle == ScrollbarStyle.Floating
+                && (sync == ScrollbarSyncResult.GestureCancelled
+                    || (sync == ScrollbarSyncResult.GeometryChanged && state.Bar.IsFloatingVisible)
+                    || (visibleBefore && !stillShows)))
+            {
+                node.Runtime.QueueHoverRefresh();
+            }
 
             if (node.IsEffectivelyDisabled && state.Composing is not null)
             {
@@ -240,7 +282,7 @@ public sealed class TextEditor : View
                 // 外层滚动引起的位置平移重排也不该拉回内部 ScrollY。
                 if (state.ArrangedEnsureKey is { } previous && previous != ensureKey)
                 {
-                    EnsureCaretVisible(node, state);
+                    EnsureCaretVisible(node, state, showFloating: false);
                 }
 
                 state.ArrangedEnsureKey = ensureKey;
@@ -464,7 +506,109 @@ public sealed class TextEditor : View
         var state = GetState(node);
         var layout = GetLayout(node, context.TextService);
         ScrollbarPainter.Draw(node, context, state.Bar, track, horizontal: false,
-            viewportExtent: inner.Height, contentExtent: layout.Size.Height, offset: state.ScrollY);
+            viewportExtent: inner.Height, contentExtent: layout.Size.Height, offset: state.ScrollY,
+            ScrollbarStyle);
+    }
+
+    /// <summary>Floating bar 当前是否可绘/可命中（Standard 恒等价 ShowScrollbar）。</summary>
+    private bool FloatingBarVisible(ViewNode node, double viewportExtent, double contentExtent, double trackLength)
+    {
+        if (!ScrollbarMetrics.ShowScrollbar(viewportExtent, contentExtent, trackLength))
+        {
+            return false;
+        }
+        return ScrollbarStyle != ScrollbarStyle.Floating
+            || GetState(node).Bar.IsFloatingVisible;
+    }
+
+    /// <summary>覆盖子内容的命中区（Floating 可见 bar 的 track 条）；hidden/Standard/无 overflow 返回 null。</summary>
+    internal override Rect? HitTestOverlay(ViewNode node)
+    {
+        if (ScrollbarStyle != ScrollbarStyle.Floating)
+        {
+            return null;
+        }
+        var track = TrackRect(node.Frame);
+        var inner = InnerRect(node.Frame);
+        var layout = GetLayout(node, node.Runtime.Services.TextService);
+        return FloatingBarVisible(node, inner.Height, layout.Size.Height,
+            ScrollbarMetrics.TrackLength(track, horizontal: false))
+            ? track
+            : null;
+    }
+
+    /// <summary>定时槽到期（Floating 隐藏）；runtime 已剔除槽位，state 复核到期与抑制。</summary>
+    internal override void OnTimedWake(ViewNode node, TimeSpan now)
+        => GetState(node).Bar.OnTimedWakeDue(node, now);
+
+    /// <summary>
+    /// deepest 身份变化统一重判（overlay 翻可见/静止悬 bar→suppress；track 移离/让位→重挂）：
+    /// <paramref name="position"/> 是 router 权威位置；<paramref name="isDeepest"/> 为权威身份
+    /// （TextEditor content 与 bar 同属本 owner——同一 target 的 RefreshHover force 也走此路）。
+    /// </summary>
+    internal override void OnHoverDeepestChanged(ViewNode node, Point position, bool isDeepest)
+    {
+        var state = GetState(node);
+        state.Bar.LastPointerPoint = position;    // 绘制 hover kind 的唯一缓存写点。
+
+        // over：本节点是最深命中 且 pointer 落在可见 floating bar 的 track 上（clip 已由 router 判）。
+        var over = isDeepest
+            && state.Bar.IsFloatingVisible
+            && TrackRect(node.Frame).Contains(position);
+
+        if (over)
+        {
+            if (!state.Bar.FloatingSuppressed)
+            {
+                state.Bar.SuppressFloatingTimer(node);
+            }
+        }
+        else if (state.Bar.FloatingSuppressed && state.Bar.PressKind == ScrollbarPressKind.None)
+        {
+            // drag 期 PressKind!=None 不重挂（避免空转 deadline）；让位/移离 bar → 重挂 1000。
+            state.Bar.RearmFloatingTimer(node, node.Runtime.Clock.Now);
+        }
+    }
+
+    /// <summary>当前指针是否悬在可见 floating bar 上（按 HoveredNode+LastPointerPoint 现算）。</summary>
+    private bool PointerOverFloatingBar(ViewNode node, ScrollbarState bar)
+    {
+        if (ScrollbarStyle != ScrollbarStyle.Floating || !bar.IsFloatingVisible)
+        {
+            return false;
+        }
+        if (!ReferenceEquals(node.Runtime.HoveredNode, node) || bar.LastPointerPoint is not { } p)
+        {
+            return false;
+        }
+        var track = TrackRect(node.Frame);
+        var inner = InnerRect(node.Frame);
+        var layout = GetLayout(node, node.Runtime.Services.TextService);
+        return ScrollbarMetrics.ShowScrollbar(inner.Height, layout.Size.Height,
+                ScrollbarMetrics.TrackLength(track, horizontal: false))
+            && track.Contains(p);
+    }
+
+    /// <summary>按当前 pointer/bar 关系更新 hover 抑制边（进→suppress，出→rearm）。</summary>
+    private void UpdateFloatingHoverSuppression(ViewNode node, ScrollbarState bar)
+    {
+        var over = PointerOverFloatingBar(node, bar);
+        if (over && !bar.FloatingSuppressed)
+        {
+            bar.SuppressFloatingTimer(node);
+        }
+        else if (!over && bar.FloatingSuppressed && bar.PressKind == ScrollbarPressKind.None)
+        {
+            bar.RearmFloatingTimer(node, node.Runtime.Clock.Now);
+        }
+    }
+
+
+    /// <summary>Floating 可见性翻转后让 router 按最近指针位置重算 hover（静止指针续命/退出）。</summary>
+    private void NotifyFloatingShown(ViewNode node, ScrollbarState bar)
+    {
+        bar.NotifyScrolled(node, node.Runtime.Clock.Now);
+        node.Runtime.RefreshHover();
     }
 
     // ------------------------------------------------------------------ 指针
@@ -487,7 +631,7 @@ public sealed class TextEditor : View
         var viewportExtent = inner.Height;
         var trackLength = ScrollbarMetrics.TrackLength(track, horizontal: false);
 
-        if (ScrollbarMetrics.ShowScrollbar(viewportExtent, contentExtent, trackLength)
+        if (FloatingBarVisible(node, viewportExtent, contentExtent, trackLength)
             && track.Contains(e.Position))
         {
             var hit = ScrollbarMetrics.HitTest(track, horizontal: false, viewportExtent, contentExtent,
@@ -500,21 +644,35 @@ public sealed class TextEditor : View
                         ScrollbarMetrics.DragGrabAnchor(
                             track, horizontal: false, viewportExtent, contentExtent,
                             state.ScrollY, e.Position));
+                    if (ScrollbarStyle == ScrollbarStyle.Floating)
+                    {
+                        state.Bar.SuppressFloatingTimer(node);
+                    }
                     context.MarkHandled();
                     return true;
 
                 case ScrollbarTrackHit.Before:
                 case ScrollbarTrackHit.After:
                     state.Bar.BeginTrackPress(ScrollAxis.Vertical, track, contentExtent, viewportExtent);
+                    if (ScrollbarStyle == ScrollbarStyle.Floating)
+                    {
+                        state.Bar.SuppressFloatingTimer(node);
+                    }
                     var maxOffset = Math.Max(0, contentExtent - viewportExtent);
+                    var previous = state.ScrollY;
                     state.ScrollY = ScrollbarMetrics.PageOffset(hit, viewportExtent, state.ScrollY, maxOffset);
                     state.RequiresCaretReveal = false;
+                    if (ScrollbarStyle == ScrollbarStyle.Floating
+                        && Math.Abs(state.ScrollY - previous) > 0.0001)
+                    {
+                        NotifyFloatingShown(node, state.Bar);
+                    }
                     node.Runtime.InvalidateRender();
                     context.MarkHandled();
                     return true;
             }
 
-            // ShowScrollbar 但 hit==None：空槽仍属 owner，消费不冒泡、不夺焦。
+            // 可见 bar 但 hit==None（inset 边带）：仍属 owner，消费不冒泡、不夺焦。
             context.MarkHandled();
             return true;
         }
@@ -557,8 +715,14 @@ public sealed class TextEditor : View
                 state.Bar.BarDragAnchor, e.Position, state.ScrollY);
             if (Math.Abs(next - state.ScrollY) > 0.0001)
             {
+                var previous = state.ScrollY;
                 state.ScrollY = next;
                 state.RequiresCaretReveal = false;
+                if (ScrollbarStyle == ScrollbarStyle.Floating
+                    && Math.Abs(state.ScrollY - previous) > 0.0001)
+                {
+                    NotifyFloatingShown(node, state.Bar);
+                }
                 node.Runtime.InvalidateRender();
             }
             context.MarkHandled();
@@ -567,6 +731,7 @@ public sealed class TextEditor : View
 
         if (!state.IsDragging)
         {
+            UpdateFloatingHoverSuppression(node, state.Bar);
             return false;
         }
 
@@ -575,7 +740,7 @@ public sealed class TextEditor : View
         state.History.BreakMerge();
         state.PreferredX = null;
         SetCaretFromPointer(node, state, e.Position, extend: true);
-        EnsureCaretVisible(node, state);
+        EnsureCaretVisible(node, state, showFloating: true);
         context.MarkHandled();
         return true;
     }
@@ -589,6 +754,10 @@ public sealed class TextEditor : View
         if (state.Bar.PressKind != ScrollbarPressKind.None)
         {
             state.Bar.ReleaseGesture();
+            if (ScrollbarStyle == ScrollbarStyle.Floating && state.Bar.IsFloatingVisible)
+            {
+                UpdateFloatingHoverSuppression(node, state.Bar);
+            }
             context.MarkHandled();
             return true;
         }
@@ -603,7 +772,7 @@ public sealed class TextEditor : View
         SyncEditor(node, state, invalidate: true);
         state.History.BreakMerge();
         SetCaretFromPointer(node, state, e.Position, extend: true);
-        EnsureCaretVisible(node, state);
+        EnsureCaretVisible(node, state, showFloating: true);
         return true;
     }
 
@@ -611,6 +780,10 @@ public sealed class TextEditor : View
     {
         var state = GetState(node);
         state.Bar.ReleaseGesture();
+        if (ScrollbarStyle == ScrollbarStyle.Floating && state.Bar.IsFloatingVisible)
+        {
+            state.Bar.RearmFloatingTimer(node, node.Runtime.Clock.Now);
+        }
         state.IsDragging = false;
         state.DragPointer = null;
         return false;
@@ -618,14 +791,20 @@ public sealed class TextEditor : View
 
     internal override bool OnPointerEnter(InputContext context, ViewNode node, PointerEvent e)
     {
-        GetState(node).Bar.LastPointerPoint = e.Position;
+        var state = GetState(node);
+        state.Bar.LastPointerPoint = e.Position;
+        UpdateFloatingHoverSuppression(node, state.Bar);
         context.Runtime.InvalidateRender();
         return false;
     }
 
-
     internal override bool OnPointerLeave(InputContext context, ViewNode node, PointerEvent e)
     {
+        var state = GetState(node);
+        if (state.Bar.FloatingSuppressed && state.Bar.PressKind == ScrollbarPressKind.None)
+        {
+            state.Bar.RearmFloatingTimer(node, node.Runtime.Clock.Now);
+        }
         context.Runtime.InvalidateRender();
         return false;
     }
@@ -1558,8 +1737,12 @@ public sealed class TextEditor : View
 
     // ------------------------------------------------------------------ caret 可见性 / 滚动
 
-    /// <summary>二维 caret 可见性：只调 ScrollY，不写绑定、不改光标与选区。组合期间按显示串的组合 caret 定位（含预编辑行）。</summary>
-    private void EnsureCaretVisible(ViewNode node, TextEditorState state)
+    /// <summary>
+    /// 二维 caret 可见性：只调 ScrollY，不写绑定、不改光标与选区。组合期间按显示串的组合 caret 定位（含预编辑行）。
+    /// <paramref name="showFloating"/> 区分因果——主动入口（键盘/编辑/指针/焦点/组合 publish ensure）传 true，
+    /// Arrange 几何键被动 ensure 传 false（resize/reflow 不是用户滚动，不显示 Floating bar）。
+    /// </summary>
+    private void EnsureCaretVisible(ViewNode node, TextEditorState state, bool showFloating = true)
     {
         var inner = InnerRect(node.Frame);
         if (inner.Width <= 0 || inner.Height <= 0)
@@ -1584,6 +1767,7 @@ public sealed class TextEditor : View
         var caretTop = lineBounds.Top;
         var caretBottom = lineBounds.Bottom;
 
+        var previous = state.ScrollY;
         var maxScroll = MaxScrollY(layout, inner);
         if (caretBottom - state.ScrollY > inner.Height)
         {
@@ -1595,6 +1779,14 @@ public sealed class TextEditor : View
         }
 
         state.ScrollY = Math.Clamp(state.ScrollY, 0, maxScroll);
+
+        // 主动 ensure 引起真实滚动 → Floating 显示（被动 ensure 不触发——resize 不是用户滚动）。
+        if (showFloating
+            && ScrollbarStyle == ScrollbarStyle.Floating
+            && Math.Abs(state.ScrollY - previous) > 0.0001)
+        {
+            NotifyFloatingShown(node, state.Bar);
+        }
     }
 
     /// <summary>可滚上限：内容高 − 可视高（不额外加 caret 高）。</summary>
@@ -1648,6 +1840,10 @@ public sealed class TextEditor : View
         // 用户滚只改滚动，不改 caret、不 ensure（caret 可离视口）；清浏览意图。
         state.ScrollY = next;
         state.RequiresCaretReveal = false;
+        if (ScrollbarStyle == ScrollbarStyle.Floating)
+        {
+            NotifyFloatingShown(node, state.Bar);
+        }
         node.Runtime.InvalidateRender();
         context.MarkHandled();
         return true;
@@ -1738,6 +1934,10 @@ public sealed class TextEditor : View
 
         state.ScrollY = next;
         state.LastDragScrollTick = now;
+        if (ScrollbarStyle == ScrollbarStyle.Floating)
+        {
+            NotifyFloatingShown(node, state.Bar);
+        }
 
         // 拖选滚动时 caret 跟随指针所在行移动（推进到 pointer 所在行）。
         SyncEditor(node, state, invalidate: false);
@@ -1818,15 +2018,26 @@ public sealed class TextEditor : View
             anchor.Segments);
     }
 
-    /// <summary>内容区：frame − padding − 右侧 gutter（persistent；wrap 宽即 inner.Width）。</summary>
+    /// <summary>槽位宽：Floating 不占槽（0）；Standard 为 persistent min(12, padded)。</summary>
+    private double GutterExtent(Rect frame)
+    {
+        if (ScrollbarStyle == ScrollbarStyle.Floating)
+        {
+            return 0;
+        }
+        var padded = frame.Deflate(new Thickness(HorizontalPadding, VerticalPadding));
+        return Math.Min(ScrollbarMetrics.Thickness, Math.Max(0, padded.Width));
+    }
+
+    /// <summary>内容区：frame − padding − 右侧 gutter（Floating gutter=0 即全 padded；wrap 宽即 inner.Width）。</summary>
     private Rect InnerRect(Rect frame)
     {
         var padded = frame.Deflate(new Thickness(HorizontalPadding, VerticalPadding));
-        var gutter = Math.Min(ScrollbarMetrics.Thickness, Math.Max(0, padded.Width));
+        var gutter = Math.Min(GutterExtent(frame), Math.Max(0, padded.Width));
         return new Rect(padded.X, padded.Y, Math.Max(0, padded.Width - gutter), padded.Height);
     }
 
-    /// <summary>轨道槽：frame − padding 的右侧 gutter 区（含 inset）。</summary>
+    /// <summary>轨道槽（Standard=padded 右 gutter 区；Floating=padded 右缘内 Thickness 宽 overlay 条）。</summary>
     private Rect TrackRect(Rect frame)
     {
         var padded = frame.Deflate(new Thickness(HorizontalPadding, VerticalPadding));
@@ -1871,6 +2082,12 @@ public sealed class TextEditor : View
         if (node.InteractionState is not TextEditorState state)
         {
             return;
+        }
+
+        // ScrollbarStyle 变化（immutable 重建换值）→ 复位 Floating 可见性与计时。
+        if (previous is TextEditor prev && prev.ScrollbarStyle != ScrollbarStyle)
+        {
+            state.Bar.ResetFloating(node);
         }
 
         // 同节点同绑定/纯重布局不触发取消；真实来源/文本/MaxLength 变化由 SyncEditor 识别。

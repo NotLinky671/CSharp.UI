@@ -128,6 +128,34 @@ public abstract class View
     {
     }
 
+    /// <summary>
+    /// 覆盖在子内容之上绘制的 owner 命中区（如 Floating scrollbar）：返回非空矩形表示该绝对坐标区域
+    /// 在子节点命中之前优先归属本节点。仅在真正可交互（可见）时返回；hidden/无 overflow 返回 null 完全透传，
+    /// 不制造命中死区。命中测试仍受祖先 clip、自身 frame 与禁用状态约束（由 <c>InputRouter</c> 统一判定）。
+    /// </summary>
+    internal virtual Rect? HitTestOverlay(ViewNode node) => null;
+
+    /// <summary>
+    /// <see cref="UiRuntime"/> 定时唤醒槽到期时的回调（Floating scrollbar 隐藏等）：
+    /// 只在 armed deadline 真正到期时调用一次，与焦点路径的 <see cref="OnClockTick"/> 语义独立；
+    /// 回调内可再 <see cref="UiRuntime.RequestTimedWake"/> 重挂或 <see cref="UiRuntime.CancelTimedWake"/> 取消，
+    /// 同一 tick 不会重复触发。默认无操作。
+    /// </summary>
+    internal virtual void OnTimedWake(ViewNode node, TimeSpan now)
+    {
+    }
+
+    /// <summary>
+    /// hover 链重算后本节点 deepest 身份变化时调用（Floating scrollbar 的 hover 抑制入口/出口合并）：
+    /// <paramref name="position"/> 是本次重算依据的真实指针位置（router 最近观测——不依赖 owner 缓存，
+    /// 子节点消费 Move 期间 owner 不更新自己缓存也无影响）。
+    /// <paramref name="isDeepest"/> true=本节点成为最深命中（overlay 翻可见/指针回 bar），false= deepest 让位（子消费）。
+    /// 默认无操作。
+    /// </summary>
+    internal virtual void OnHoverDeepestChanged(ViewNode node, Point position, bool isDeepest)
+    {
+    }
+
     /// <summary>该节点当前是否参与命中测试（不可见或被裁剪的内容不参与）。</summary>
     internal virtual bool IsHitTestVisible(ViewNode node) => true;
 

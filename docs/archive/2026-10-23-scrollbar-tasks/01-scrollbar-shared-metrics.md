@@ -6,7 +6,7 @@
 
 阶段：A
 
-设计依据：[Scrollbar 计划](../plan/2026-10-23-scrollbar-plan.md) §决策三（公式冻结，坐标绝对）。
+设计依据：[Scrollbar 计划](../../plan/2026-10-23-scrollbar-plan.md) §决策三（公式冻结，坐标绝对）。
 
 [返回任务索引](README.md)
 

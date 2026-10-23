@@ -17,6 +17,20 @@ internal enum ScrollbarTrackHit
 }
 
 /// <summary>
+/// 滚动条样式：<see cref="Standard"/> 为 persistent 12 逻辑像素 gutter（overflow 恒显，默认）；
+/// <see cref="Floating"/> 为覆盖内容边缘的 overlay（不占布局槽、实际滚动显示、约 1 秒无活动隐藏、
+/// hover/drag 续命、hidden 完全不拦命中）。
+/// </summary>
+public enum ScrollbarStyle
+{
+    /// <summary>persistent gutter 样式：槽位固定占宽、overflow 时常显 track+thumb。</summary>
+    Standard,
+
+    /// <summary>overlay 样式：不占布局槽、不画 track、更细 thumb；实际滚动触发显示，无活动约 1 秒后隐藏。</summary>
+    Floating,
+}
+
+/// <summary>
 /// 滚动条几何与交互换算（内部共享）：轨道/滑块矩形、命中判定、拖拽→偏移、track 点击方向。
 /// </summary>
 /// <remarks>
@@ -34,6 +48,12 @@ internal static class ScrollbarMetrics
 
     /// <summary>轨道/滑块内缩（逻辑像素）。</summary>
     internal const double Inset = 2;
+
+    /// <summary>Floating thumb 的 cross 向宽度（逻辑像素）；比 Standard thumb 更细，命中区仍是整条 track。</summary>
+    internal const double FloatingThumbThickness = 4;
+
+    /// <summary>Floating bar 停止滚动活动后的隐藏延迟（内部固定值，不公开）。</summary>
+    internal static readonly TimeSpan FloatingHideDelay = TimeSpan.FromMilliseconds(1000);
 
     /// <summary>是否显示滚动条（内容溢出视口且几何有效）。</summary>
     internal static bool ShowScrollbar(double viewportExtent, double contentExtent, double trackLength)
@@ -252,8 +272,88 @@ internal sealed class ScrollbarState
     /// <summary>gesture 起始的视口 extent。</summary>
     public double DragViewportExtent { get; private set; }
 
+    /// <summary>最近一次 Arrange 同步的几何签名（axis/track/content/viewport）；offset 不入签名。</summary>
+    public (ScrollAxis Axis, Rect Track, double Content, double Viewport)? LastGeometry { get; private set; }
+
     /// <summary>最后观测到的指针位置（point；非 gesture 状态，Cancel/几何取消不清）。</summary>
     public Point? LastPointerPoint { get; set; }
+
+    // ------------------------------------------------------------------ Floating 可见性（最少字段；deadline 归 runtime TimedWakes）
+
+    /// <summary>Floating bar 当前是否可绘/可命中；Standard 下为死值。</summary>
+    public bool IsFloatingVisible { get; private set; }
+
+    /// <summary>Floating 隐藏截止时刻（<see cref="IUiClock.Now"/> 域）；null = 未挂 deadline（抑制/隐藏/idle）。</summary>
+    public TimeSpan? FloatingHideDeadline { get; private set; }
+
+    /// <summary>hover/drag 抑制中（deadline 不挂）；与 <see cref="FloatingHideDeadline"/> 正交不互镜像。</summary>
+    public bool FloatingSuppressed { get; private set; }
+
+    /// <summary>真实滚动到达（Floating）：置可见并（非抑制时）挂/重挂 1000ms deadline。</summary>
+    public void NotifyScrolled(ViewNode node, TimeSpan now)
+    {
+        ShowFloating(node, now);
+    }
+
+    /// <summary>置可见并按需挂 deadline；suppress 中只置可见不动计时。</summary>
+    public void ShowFloating(ViewNode node, TimeSpan now)
+    {
+        IsFloatingVisible = true;
+        if (!FloatingSuppressed)
+        {
+            FloatingHideDeadline = now + ScrollbarMetrics.FloatingHideDelay;
+            node.Runtime.RequestTimedWake(node, FloatingHideDeadline.Value);
+        }
+    }
+
+    /// <summary>
+    /// 到期回调（owner <c>OnTimedWake</c> 唯一入口；runtime 已剔除槽位）：
+    /// 复核 now 仍到期且未被 hover/drag 抑制才隐藏——不满足则不动 deadline/可见性。
+    /// </summary>
+    public void OnTimedWakeDue(ViewNode node, TimeSpan now)
+    {
+        if (FloatingHideDeadline is not { } deadline
+            || now < deadline
+            || FloatingSuppressed
+            || PressKind != ScrollbarPressKind.None)
+        {
+            return;
+        }
+        FloatingHideDeadline = null;
+        IsFloatingVisible = false;
+        node.Runtime.InvalidateRender();
+    }
+
+    /// <summary>hover 进 bar/drag 开始：抑制计时（deadline 不挂），可见性不动。</summary>
+    public void SuppressFloatingTimer(ViewNode node)
+    {
+        FloatingSuppressed = true;
+        if (FloatingHideDeadline is not null)
+        {
+            FloatingHideDeadline = null;
+            node.Runtime.CancelTimedWake(node);
+        }
+    }
+
+    /// <summary>hover 离开/drag 结束：仍可见则重挂 1000ms deadline。</summary>
+    public void RearmFloatingTimer(ViewNode node, TimeSpan now)
+    {
+        FloatingSuppressed = false;
+        if (IsFloatingVisible)
+        {
+            FloatingHideDeadline = now + ScrollbarMetrics.FloatingHideDelay;
+            node.Runtime.RequestTimedWake(node, FloatingHideDeadline.Value);
+        }
+    }
+
+    /// <summary>完整复位（style 切走/disabled/无 overflow 翻转）。</summary>
+    public void ResetFloating(ViewNode node)
+    {
+        IsFloatingVisible = false;
+        FloatingHideDeadline = null;
+        FloatingSuppressed = false;
+        node.Runtime.CancelTimedWake(node);
+    }
 
     /// <summary>是否处于 thumb 拖拽 gesture。</summary>
     public bool IsDraggingBar => PressKind == ScrollbarPressKind.Thumb;
@@ -292,25 +392,43 @@ internal sealed class ScrollbarState
     }
 
     /// <summary>
-    /// 几何同步：Arrange 发现 axis/track/content/viewport 任一变化 → 取消 gesture（本节点自身 offset 写回除外——由调用方在写 offset 前比较）。
+    /// 几何同步：每次 Arrange 比对 axis/track/content/viewport 签名（offset 不入）——
+    /// 真实几何变化才更新签名；有 gesture 时变化额外取消 gesture。无 gesture 仅 hover/idle 也会检出变化。
     /// </summary>
-    /// <returns>true=已取消；false=无 gesture 或几何一致。</returns>
-    public bool SyncGeometry(ScrollAxis axis, Rect trackRect, double contentExtent, double viewportExtent)
+    /// <returns><see cref="ScrollbarSyncResult"/>：无变化 / 仅几何变（未按下）/ 几何变且取消了 gesture。</returns>
+    public ScrollbarSyncResult SyncGeometry(ScrollAxis axis, Rect trackRect, double contentExtent, double viewportExtent)
     {
+        var signature = (axis, trackRect, contentExtent, viewportExtent);
+        if (LastGeometry is { } previous
+            && previous.Axis == signature.axis
+            && previous.Track == signature.trackRect
+            && previous.Content == signature.contentExtent
+            && previous.Viewport == signature.viewportExtent)
+        {
+            return ScrollbarSyncResult.Unchanged;
+        }
+
+        LastGeometry = signature;
         if (PressKind == ScrollbarPressKind.None)
         {
-            return false;
-        }
-        if (axis == DragAxis
-            && trackRect == DragTrackRect
-            && contentExtent == DragContentExtent
-            && viewportExtent == DragViewportExtent)
-        {
-            return false;
+            return ScrollbarSyncResult.GeometryChanged;
         }
         ReleaseGesture();
-        return true;
+        return ScrollbarSyncResult.GestureCancelled;
     }
+}
+
+/// <summary><see cref="ScrollbarState.SyncGeometry"/> 的结果。</summary>
+internal enum ScrollbarSyncResult
+{
+    /// <summary>几何签名一致。</summary>
+    Unchanged,
+
+    /// <summary>几何变化且无 gesture 被取消（仅 hover/idle 也检出）。</summary>
+    GeometryChanged,
+
+    /// <summary>几何变化且取消了进行中的 gesture。</summary>
+    GestureCancelled,
 }
 
 /// <summary>
@@ -324,7 +442,7 @@ internal sealed class ScrollbarState
 /// </remarks>
 internal static class ScrollbarPainter
 {
-    /// <summary>绘制 track+thumb 两条 <see cref="RectangleCommand"/>。</summary>
+    /// <summary>绘制滚动条；<paramref name="style"/>=Floating 时不画 track、thumb 更细且仅在 <see cref="ScrollbarState.IsFloatingVisible"/> 时画。</summary>
     public static void Draw(
         ViewNode node,
         DrawContext context,
@@ -333,7 +451,8 @@ internal static class ScrollbarPainter
         bool horizontal,
         double viewportExtent,
         double contentExtent,
-        double offset)
+        double offset,
+        ScrollbarStyle style = ScrollbarStyle.Standard)
     {
         var trackLength = ScrollbarMetrics.TrackLength(track, horizontal);
         if (!ScrollbarMetrics.ShowScrollbar(viewportExtent, contentExtent, trackLength))
@@ -343,7 +462,23 @@ internal static class ScrollbarPainter
 
         var theme = node.Environment.ResolvedTheme;
         var disabled = node.IsEffectivelyDisabled;
+
+        // Floating：hidden 完全不画（含 disabled——ResetFloating 已把可见性清掉）。
+        if (style == ScrollbarStyle.Floating && state?.IsFloatingVisible != true)
+        {
+            return;
+        }
+
         var thumb = ScrollbarMetrics.ThumbRect(track, horizontal, viewportExtent, contentExtent, offset);
+        if (style == ScrollbarStyle.Floating)
+        {
+            // 更细 thumb：cross 向改为 FloatingThumbThickness、沿 track cross 居中；命中区仍是整条 track。
+            var cross = Math.Min(ScrollbarMetrics.FloatingThumbThickness,
+                Math.Max(0, (horizontal ? track.Height : track.Width) - (ScrollbarMetrics.Inset * 2)));
+            thumb = horizontal
+                ? new Rect(thumb.X, track.Y + ((track.Height - cross) / 2), thumb.Width, cross)
+                : new Rect(track.X + ((track.Width - cross) / 2), thumb.Y, cross, thumb.Height);
+        }
 
         // hover：owner 是最深命中节点才按缓存 point 重算；子消费/出窗自然 None。
         var hoverKind = ScrollbarTrackHit.None;
@@ -375,8 +510,14 @@ internal static class ScrollbarPainter
                     ? theme.ControlBackground.Lerp(theme.Foreground, 0.48)
                     : theme.ControlBackground.Lerp(theme.Foreground, 0.40);
 
-        context.Commands.Add(new RectangleCommand(track, trackColor, 0, null, 0, node.Environment.Opacity));
+        if (style == ScrollbarStyle.Standard)
+        {
+            context.Commands.Add(new RectangleCommand(track, trackColor, 0, null, 0, node.Environment.Opacity));
+        }
+        var thumbRadius = style == ScrollbarStyle.Floating
+            ? Math.Min(thumb.Width, thumb.Height) / 2
+            : Math.Min(track.Width, track.Height) / 2;
         context.Commands.Add(new RectangleCommand(
-            thumb, thumbColor, Math.Min(track.Width, track.Height) / 2, null, 0, node.Environment.Opacity));
+            thumb, thumbColor, thumbRadius, null, 0, node.Environment.Opacity));
     }
 }

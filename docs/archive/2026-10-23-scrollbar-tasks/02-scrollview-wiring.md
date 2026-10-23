@@ -6,7 +6,7 @@
 
 阶段：B
 
-设计依据：[Scrollbar 计划](../plan/2026-10-23-scrollbar-plan.md) §决策一/二/三/四。
+设计依据：[Scrollbar 计划](../../plan/2026-10-23-scrollbar-plan.md) §决策一/二/三/四。
 
 [返回任务索引](README.md)
 

@@ -28,7 +28,7 @@
 | `Flow` | 自动换行布局：`.Spacing(...)`（项间距）、`.LineSpacing(...)`（行间距）、`.Align(Alignment)`（行内对齐） |
 | `AdaptiveStack` | 按父级有效逻辑宽度自动切换横/纵布局；`.Spacing(...)`、`.VerticalSpacing(...)`、`.Align(...)`、`.WideAlign(...)` |
 | `Spacer` / `Spacer(double fixedSize)` | 吸收剩余空间 / 固定空隙 |
-| `ScrollView(View content, ScrollAxis axis)` | 单轴滚动容器，保留滚动位置；内容溢出时沿滚动轴显示滚动条（persistent 12 逻辑像素槽，无溢出留空槽）；滑块可拖拽、轨道点击按视口翻页一次无自动重复；`WheelSensitivity`（有限非负，默认 1）缩放滚轮距离 |
+| `ScrollView(View content, ScrollAxis axis)` | 单轴滚动容器，保留滚动位置；内容溢出时沿滚动轴显示滚动条（init `ScrollbarStyle`：`Standard` 默认 persistent 12 逻辑像素槽、无溢出留空槽；`Floating` 覆盖内容边缘不占槽，实际滚动时显示、静止约 1 秒隐藏、悬停或拖拽期间不隐藏、隐藏后指针落回内容）；滑块可拖拽、轨道点击按视口翻页一次无自动重复；`WheelSensitivity`（有限非负，默认 1）缩放滚轮距离 |
 | `Text` | 文本；`.WithFont(...)`、`.Wrap(maxLines)`、`.Align(...)`、`.Ellipsis()`、`.WithLineHeight(...)` |
 | `Rectangle` | 纯色/圆角/描边矩形 |
 | `Image(string source)` | 图片；`.Resize(ImageResizeMode)` |
@@ -36,7 +36,7 @@
 | `Toggle(Binding<bool> value, string? label)` | 开关（也可用 `Toggle(bool, Action<bool>?, string?)`） |
 | `Slider(Binding<double> value, double min, double max, double step, double? width)` | 数值滑块 |
 | `TextField(Binding<string> text, string? placeholder)` | 单行输入框 |
-| `TextEditor(Binding<string> text, string? placeholder)` | 多行输入框：硬换行 + 按内容区宽软折行，固定 `MinLines`（默认 3）行视口内纵向滚动（内部 `ScrollY`，不随内容增高）；超高内容在右侧 persistent 槽显示纵向滚动条（拖拽/轨道翻页一次）；init `Width`/`Height`/`HorizontalPadding`/`VerticalPadding`/`CornerRadius`/`MaxLength`/`BlinkInterval`/`MinLines` |
+| `TextEditor(Binding<string> text, string? placeholder)` | 多行输入框：硬换行 + 按内容区宽软折行，固定 `MinLines`（默认 3）行视口内纵向滚动（内部 `ScrollY`，不随内容增高）；超高内容在右侧显示纵向滚动条（拖拽/轨道翻页一次；init `ScrollbarStyle`：`Standard` 默认 persistent 槽，`Floating` 不占槽、实际滚动显示、静止约 1 秒隐藏、悬停/拖拽不隐藏）；init `Width`/`Height`/`HorizontalPadding`/`VerticalPadding`/`CornerRadius`/`MaxLength`/`BlinkInterval`/`MinLines`/`ScrollbarStyle` |
 | `ForEach<T>(items, item => view, item => key)` | 带稳定键的动态集合 |
 | `KeyedView`（`.Key(string)`） | 为同级节点提供稳定身份 |
 
@@ -152,7 +152,7 @@
 - **换行归一化**：`OnTextInput` 与粘贴的**插入串**经 `TextInputEvent.SanitizeMultiLine`（`\r\n`/孤 `\r`→`\n`、去 `\t`）；外部写入绑定的原文与 setter 回读值不会被自动重写。
 - **原子事务与历史**：每次编辑走 `TextEditSession` 原子事务；`Enter` 前后显式 `BreakMerge`（换行不并入前序连续键入），Ctrl+Z/Y 按事务粒度恢复文本与选区；连续同类键入、Backspace/Delete 按既有合并规则归并。
 - **视口与滚动**：`MinLines` 决定可视行数；`Height`/`Frame(height:)`/`Flex` 可强制视口；超高内容在内部 `ScrollY` 滚动，滚轮可滚消费、到边界冒泡给外层 `ScrollView`；用户滚轮不改 caret、不自动回滚；键盘/编辑/指针操作后 caret 二维收敛到视口。
-- **滚动条**：内容超视口时在右侧 persistent 12 逻辑像素槽绘制纵向滚动条；滑块可拖拽、点击轨道按视口翻页一次（无自动重复）；槽命中 owner 不进文本 caret/拖选，不改 caret、选区、撤销历史与绑定写入；几何/range/禁用/卸载变化会取消进行中的拖拽手势。IME 组合期用户浏览（滚轮/滚动条）属持久意图：caret 裁出视口时输入几何返回 `Unavailable`（候选锚点撤除、组合保活不取消、不弹回），真实新预编辑/caret 推进后重新锚定。
+- **滚动条**：内容超视口时在右侧绘制纵向滚动条；滑块可拖拽、点击轨道按视口翻页一次（无自动重复）；槽命中 owner 不进文本 caret/拖选，不改 caret、选区、撤销历史与绑定写入；几何/range/禁用/卸载变化会取消进行中的拖拽手势。`ScrollbarStyle.Standard`（默认）为 persistent 12 逻辑像素槽；`Floating` 覆盖内容右缘不占槽，滚轮/拖拽/键盘 caret 收敛等实际滚动时显示，静止约 1 秒隐藏，悬停条上或拖拽期间不隐藏，隐藏后指针落回内容。IME 组合期用户浏览（滚轮/滚动条）属持久意图：caret 裁出视口时输入几何返回 `Unavailable`（候选锚点撤除、组合保活不取消、不弹回），真实新预编辑/caret 推进后重新锚定。
 - **导航**：Left/Right 按字素跨行（非 Shift 与 `TextField` 同语义：移一停点并折叠选区）；Up/Down 用 `PreferredX` 跨不等宽行、按 `TextAffinity` 消软换行共享 offset 歧义；Home/End 行首/行尾；Ctrl(Cmd)+Home/End 文档首/尾；PageUp/Down 按视口行数位移；Shift 扩选；Tab 不消费（焦点遍历）。
 - **指针**：点击按 `HitTestIndex` 落 caret（软换行边界按 `LineEnd`/`LineStart` 归属）；拖动跨行选区；指针在内容区上/下边界外悬停时按固定步进自动滚动，释放/取消/失焦/禁用即停。
 - **外部绑定变化**：保持文本原文，夹取 caret/选区到字素边界并清空撤销历史（与 `TextField` 同接缝协议）；禁用/卸载/失焦行为同 `TextField`。
