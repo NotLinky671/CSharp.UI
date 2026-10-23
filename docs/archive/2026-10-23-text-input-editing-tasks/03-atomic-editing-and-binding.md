@@ -6,7 +6,7 @@
 
 阶段：B
 
-设计依据：[文本输入与编辑基础计划](../plan/2026-10-17-text-input-and-editing-plan.md)（接口冻结前均为设计草案）。
+设计依据：[文本输入与编辑基础计划](../../plan/2026-10-17-text-input-and-editing-plan.md)（接口冻结前均为设计草案）。
 
 [返回任务索引](README.md)
 
@@ -106,9 +106,9 @@ Codex 独立复现与复测的持久证据（只读引用，未改动）：`docs
 修改：
 
 - `src/CSharp.UI/Views/TextField.cs`
-- `docs/task/03-atomic-editing-and-binding.md`（本文件，仅 TI-03 实施记录）
+- `docs/archive/2026-10-23-text-input-editing-tasks/03-atomic-editing-and-binding.md`（本文件，仅 TI-03 实施记录）
 
-未改动：既有测试、既有公开 API、`TextInputEvent`、`TextField` 构造函数、`docs/return`、`docs/plan`、任务索引 `docs/task/README.md`、agents-notebook 与其他任务状态文件。
+未改动：既有测试、既有公开 API、`TextInputEvent`、`TextField` 构造函数、`docs/return`、`docs/plan`、任务索引 `docs/archive/2026-10-23-text-input-editing-tasks/README.md`、agents-notebook 与其他任务状态文件。
 
 ## 平台边界与限制
 
@@ -128,4 +128,4 @@ Codex 独立复现与复测的持久证据（只读引用，未改动）：`docs
 
 ## Codex最终复审
 
-R1～R3及键盘、纯重绘和横向滚动补充已关闭；最终构建通过，核心405、Text67、Integration30、OpenTK242及独立14项实际输入检查通过，来自各自验证轮次。[审核及持久证据](../archive/2026-10-23-completed-reviews/2026-10-17-ti03-atomic-editing-review.md)。TI04～TI10仍待实施。
+R1～R3及键盘、纯重绘和横向滚动补充已关闭；最终构建通过，核心405、Text67、Integration30、OpenTK242及独立14项实际输入检查通过，来自各自验证轮次。[审核及持久证据](../2026-10-23-completed-reviews/2026-10-17-ti03-atomic-editing-review.md)。TI04～TI10仍待实施。

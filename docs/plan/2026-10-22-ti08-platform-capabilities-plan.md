@@ -1,7 +1,7 @@
 # TI-08 设计与差距分析：跨平台能力查询与兼容回退
 
 日期：2026-10-22（阶段一：只读研究 + 最小方案，未经主审批准不动产品码）
-任务：[`docs/task/08-platform-capabilities-and-fallback.md`](../task/08-platform-capabilities-and-fallback.md)
+任务：[`docs/archive/2026-10-23-text-input-editing-tasks/08-platform-capabilities-and-fallback.md`](../archive/2026-10-23-text-input-editing-tasks/08-platform-capabilities-and-fallback.md)
 前置基线：HEAD `30b15cb`（TI-07 P4 已交付；默认 IMM、`UseTsfInputBridge` 内部开关不变）
 
 ---
@@ -175,6 +175,6 @@ dotnet exec tests/CSharp.UI.OpenTK.Tests/bin/Debug/net10.0/CSharp.UI.OpenTK.Test
 | `src/CSharp.UI.OpenTK/UiApplication.cs` | 修正 `UseTsfInputBridge` 注释中不存在的 `UiHostContext.TextInputBackendReason` 引用 |
 | `tests/CSharp.UI.OpenTK.Tests/`（新测试文件或并入现有）| 平台分级/拒绝语义/Reason 断言 |
 | `docs/guide/platform-notes.md` | 文本输入边界节补分级与未验证标注 |
-| `docs/task/08-platform-capabilities-and-fallback.md` | 追加实施记录段（不删用户已有项） |
+| `docs/archive/2026-10-23-text-input-editing-tasks/08-platform-capabilities-and-fallback.md` | 追加实施记录段（不删用户已有项） |
 
 非目标：不改 `NoTextInputService` 既有方法语义、不碰 Windows 桥、不碰 TextField/快捷键解析、不碰 `IsCommandPressed`（主审已裁定不改，见 §5.1）。

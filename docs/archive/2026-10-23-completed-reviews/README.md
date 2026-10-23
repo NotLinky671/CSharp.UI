@@ -31,7 +31,7 @@
 
 ## 文本输入与编辑任务 TI-01～TI-10（2026-10-17～23）
 
-任务索引见 [docs/task/README.md](../../task/README.md)。按最终交付记录：TI-01～TI-08 经 Codex 独立复审通过；TI-09、TI-10 于 2026-10-23 由用户验收收口（无独立复审记录，已知边界见 [TI-08～TI-10 交付记录](../../delivery/2026-10-23-ti09-ti10-delivery.md)）；仓库收尾见[清理交付记录](../../delivery/2026-10-23-cleanup-delivery.md)。
+任务索引见 [docs/task/README.md](../2026-10-23-text-input-editing-tasks/README.md)。按最终交付记录：TI-01～TI-08 经 Codex 独立复审通过；TI-09、TI-10 于 2026-10-23 由用户验收收口（无独立复审记录，已知边界见 [TI-08～TI-10 交付记录](../../delivery/2026-10-23-ti09-ti10-delivery.md)）；仓库收尾见[清理交付记录](../../delivery/2026-10-23-cleanup-delivery.md)。
 
 ### TI-01～TI-06 契约、编辑、组合、撤销、几何
 

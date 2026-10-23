@@ -4,7 +4,7 @@
 
 状态：Codex 已批准隔离可行性原型；未批准生产迁移，TI-07 未完成。
 
-设计依据：[文本输入与编辑计划](2026-10-17-text-input-and-editing-plan.md)、[TI-07](../task/07-windows-ime-and-host-routing.md)、[审核与真实证据](../archive/2026-10-23-completed-reviews/2026-10-19-ti07-windows-ime-review.md)。本文件为现有 TI-07 的路线修订，不启动 TI-08 或更后任务，不替换当前任务集合。
+设计依据：[文本输入与编辑计划](2026-10-17-text-input-and-editing-plan.md)、[TI-07](../archive/2026-10-23-text-input-editing-tasks/07-windows-ime-and-host-routing.md)、[审核与真实证据](../archive/2026-10-23-completed-reviews/2026-10-19-ti07-windows-ime-review.md)。本文件为现有 TI-07 的路线修订，不启动 TI-08 或更后任务，不替换当前任务集合。
 
 ## 已证实的问题
 

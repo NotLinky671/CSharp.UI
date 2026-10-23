@@ -4,7 +4,7 @@
 
 状态：实施中。本文及任务中的新接口为设计草案，TI-01 平台验证和 TI-02 契约复审通过后冻结；文档完成不表示功能已实现。
 
-任务索引：[10 个实施任务](../task/README.md)。执行者：TI-01～TI-06为DeepSeek Harness，TI-07起为Devin CLI；规划与代码审核：Codex。
+任务索引：[10 个实施任务](../archive/2026-10-23-text-input-editing-tasks/README.md)。执行者：TI-01～TI-06为DeepSeek Harness，TI-07起为Devin CLI；规划与代码审核：Codex。
 
 ## 2026-10-19 当前执行修订
 

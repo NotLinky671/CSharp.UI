@@ -39,7 +39,7 @@ UiApplication.Run(new Counter());
 | `tests/` | Core unit tests, text tests, graphics integration tests (xUnit v3) |
 | `tools/CSharp.UI.AssetGenerator` | Generates the sample image assets so they stay reproducible |
 | `docs/guide` | Getting started, API, state, modifiers, keys, components, platform, and testing guides |
-| `docs/task` | Current IME and text-editing tasks; completed task sets live in `docs/archive/` |
+| `docs/task` | Current TextEditor planning and implementation tasks; completed task sets live in `docs/archive/` |
 
 Historical IME tools and their three test projects are preserved at tag `archive/tools-before-removal`. Restore them in a separate checkout using `git worktree add --detach ../CSharp.UI-ime-archive archive/tools-before-removal`; existing acceptance evidence remains under `docs/`.
 
@@ -58,7 +58,8 @@ See the [getting started guide](docs/guide/getting-started.md) for details.
 - [Getting started](docs/guide/getting-started.md)
 - [Public API reference](docs/guide/api-reference.md)
 - [Responsive layout: usage and migration](docs/guide/responsive-layout.md)
-- [Text input and editing plan](docs/plan/2026-10-17-text-input-and-editing-plan.md) (TI-01–TI-10 closed; TI-07 Windows TSF production acceptance completed 2026-10-22 — see [P4 delivery](docs/delivery/2026-10-22-ti07-p4-delivery.md); TI-08 non-Windows platforms report committed-text-only capability, verified at source level and by CPU simulation without real-device IME evidence; TI-09–TI-10 closed on 2026-10-23 by user acceptance without an independent review record, with known boundaries in the [delivery record](docs/delivery/2026-10-23-ti09-ti10-delivery.md))
+- [Text input and editing plan](docs/plan/2026-10-17-text-input-and-editing-plan.md) (TI-01–TI-10 closed; TI-07 Windows TSF production acceptance completed 2026-10-22 — see [P4 delivery](docs/delivery/2026-10-22-ti07-p4-delivery.md); TI-08 non-Windows platforms report committed-text-only capability, verified at source level and by CPU simulation without real-device IME evidence; TI-09–TI-10 closed on 2026-10-23 by user acceptance without an independent review record, with known boundaries in the [delivery record](docs/delivery/2026-10-23-ti09-ti10-delivery.md); task records archived at [docs/archive/2026-10-23-text-input-editing-tasks/](docs/archive/2026-10-23-text-input-editing-tasks/README.md))
+- [Text editor plan](docs/plan/2026-10-23-text-editor-plan.md) (multi-line plain-text notes / task descriptions; **planned, not implemented** — system IME and system candidate UI are sufficient; no public TSF toggle)
 - [State and lifecycle](docs/guide/state-lifecycle.md)
 - [Modifier order](docs/guide/modifier-order.md)
 - [Keys and dynamic lists](docs/guide/keys-and-lists.md)

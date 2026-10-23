@@ -2,7 +2,7 @@
 
 设计日期：2026-10-21
 状态：设计冻结，等待基础模块独立 GPU 验收后再实现；本文件不修改 session/bridge/host 代码。
-依据：[正式接入计划](2026-10-21-ti07-production-tsf-integration-plan.md)、[TI-07](../task/07-windows-ime-and-host-routing.md)、隔离原型 R26/R27/R34/R36 的已验收控制流。
+依据：[正式接入计划](2026-10-21-ti07-production-tsf-integration-plan.md)、[TI-07](../archive/2026-10-23-text-input-editing-tasks/07-windows-ime-and-host-routing.md)、隔离原型 R26/R27/R34/R36 的已验收控制流。
 
 ## 1. 目标与边界
 

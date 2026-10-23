@@ -4,7 +4,7 @@
 
 状态：**路线复核 + 有界诊断准备完成；未运行可见 GUI、未注入按键、未提交推送、未开 TI-08。** 本轮只做两件事：(1) 对真实 IMM 与隔离 TSF 两条已复现失败路线做证据级复核并给出确定缺口/假设分级；(2) 用现有 CLI 准备至多 3 项优先实验。附带一处最小诊断留痕改动（仅 `tools/` 与 `tests/`）。
 
-设计依据：[候选布局路线修订)](../../../../../docs/plan/2026-10-19-windows-ime-candidate-layout-route-amendment.md)、[TI-07)](../../../../../docs/task/07-windows-ime-and-host-routing.md)、[TSF 原型审核](../../2026-10-20-ti07-tsf-prototype-review.md)。
+设计依据：[候选布局路线修订)](../../../../../docs/plan/2026-10-19-windows-ime-candidate-layout-route-amendment.md)、[TI-07)](../../../../../docs/archive/2026-10-23-text-input-editing-tasks/07-windows-ime-and-host-routing.md)、[TSF 原型审核](../../2026-10-20-ti07-tsf-prototype-review.md)。
 
 ---
 

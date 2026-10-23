@@ -6,7 +6,7 @@
 
 阶段：D
 
-设计依据：[文本输入与编辑基础计划](../plan/2026-10-17-text-input-and-editing-plan.md)（接口冻结前均为设计草案）。
+设计依据：[文本输入与编辑基础计划](../../plan/2026-10-17-text-input-and-editing-plan.md)（接口冻结前均为设计草案）。
 
 [返回任务索引](README.md)
 

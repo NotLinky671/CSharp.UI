@@ -6,7 +6,7 @@
 
 阶段：A
 
-设计依据：[文本输入与编辑基础计划](../plan/2026-10-17-text-input-and-editing-plan.md)。
+设计依据：[文本输入与编辑基础计划](../../plan/2026-10-17-text-input-and-editing-plan.md)。
 
 [返回任务索引](README.md)
 
@@ -42,6 +42,6 @@
 
 独立测试命令：`dotnet exec tests/CSharp.UI.ImeProbe.Tests/bin/Debug/net10.0/CSharp.UI.ImeProbe.Tests.dll`；exit 0，86项通过。
 
-[平台决策](../agents-notebook/2026-10-17-ime-platform-decision.md)及其同名前缀-evidence目录保留路线依据；[Codex审核](../archive/2026-10-23-completed-reviews/2026-10-17-text-input-and-editing-review.md)与[独立证据](../archive/2026-10-23-completed-reviews/2026-10-17-text-input-and-editing-review-evidence/README.md)记录最终工具审查与范围修订。
+[平台决策](../../agents-notebook/2026-10-17-ime-platform-decision.md)及其同名前缀-evidence目录保留路线依据；[Codex审核](../2026-10-23-completed-reviews/2026-10-17-text-input-and-editing-review.md)与[独立证据](../2026-10-23-completed-reviews/2026-10-17-text-input-and-editing-review-evidence/README.md)记录最终工具审查与范围修订。
 
 后续DSH自测后等待Codex复审，只有审核通过才英文提交推送。Windows完整输入能力仍须TI-07/TI-10验收；macOS/Linux仅声明能力与回退，不声称完整组合支持。

@@ -6,7 +6,7 @@
 
 阶段：D
 
-设计依据：[文本输入与编辑基础计划](../plan/2026-10-17-text-input-and-editing-plan.md)（接口冻结前均为设计草案）。
+设计依据：[文本输入与编辑基础计划](../../plan/2026-10-17-text-input-and-editing-plan.md)（接口冻结前均为设计草案）。
 
 [返回任务索引](README.md)
 
@@ -41,7 +41,7 @@ Windows完整路径和其他平台的已提交文本回退均可用，能力与�
 
 ### 实施记录（2026-10-22，Devin CLI / ti08-capabilities）
 
-设计：[`docs/plan/2026-10-22-ti08-platform-capabilities-plan.md`](../plan/2026-10-22-ti08-platform-capabilities-plan.md)（§5b 含最小运行复现证据）。
+设计：[`docs/plan/2026-10-22-ti08-platform-capabilities-plan.md`](../../plan/2026-10-22-ti08-platform-capabilities-plan.md)（§5b 含最小运行复现证据）。
 
 实际签名与涉及模块：
 

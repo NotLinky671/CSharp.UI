@@ -4,7 +4,7 @@
 
 状态：实施与审核中。
 
-依据：[TI-03任务](../../task/03-atomic-editing-and-binding.md)。Microsoft Pinyin按用户要求不测试；本轮先验证平台无关实际TextField编辑路径。
+依据：[TI-03任务](../2026-10-23-text-input-editing-tasks/03-atomic-editing-and-binding.md)。Microsoft Pinyin按用户要求不测试；本轮先验证平台无关实际TextField编辑路径。
 
 ## 实施前独立复现
 

@@ -39,7 +39,7 @@ UiApplication.Run(new Counter());
 | `tests/` | 核心单元测试、文本测试、图形集成测试（xUnit v3） |
 | `tools/CSharp.UI.AssetGenerator` | 生成示例图片资源，保证资源可复现 |
 | `docs/guide` | 入门、API、状态、修饰符、Key、组件、平台与测试说明 |
-| `docs/task` | 当前 IME 与文本编辑任务；已完成任务归档于 `docs/archive/` |
+| `docs/task` | 当前 TextEditor 规划与实施任务；已完成任务归档于 `docs/archive/` |
 
 历史输入法工具及其三个测试工程保存在标签 `archive/tools-before-removal`。需要复跑时，用 `git worktree add --detach ../CSharp.UI-ime-archive archive/tools-before-removal` 创建独立检出目录；验收日志和截图仍保留在 `docs/`。
 
@@ -58,7 +58,8 @@ dotnet run --project tests/CSharp.UI.Tests
 - [入门](docs/guide/getting-started.md)
 - [公开 API 参考](docs/guide/api-reference.md)
 - [响应式布局：使用与迁移](docs/guide/responsive-layout.md)
-- [文本输入与编辑计划](docs/plan/2026-10-17-text-input-and-editing-plan.md)（TI-01～TI-10 已收口；TI-07 Windows TSF 生产验收 2026-10-22 完成——见 [P4 交付记录](docs/delivery/2026-10-22-ti07-p4-delivery.md)；TI-08 非 Windows 平台如实报告仅已提交文本能力，仅源码级与 CPU 模拟验证、无真机 IME 证据；TI-09～TI-10 于 2026-10-23 由用户验收收口，没有独立复审记录，已知边界见[交付记录](docs/delivery/2026-10-23-ti09-ti10-delivery.md)）
+- [文本输入与编辑计划](docs/plan/2026-10-17-text-input-and-editing-plan.md)（TI-01～TI-10 已收口；TI-07 Windows TSF 生产验收 2026-10-22 完成——见 [P4 交付记录](docs/delivery/2026-10-22-ti07-p4-delivery.md)；TI-08 非 Windows 平台如实报告仅已提交文本能力，仅源码级与 CPU 模拟验证、无真机 IME 证据；TI-09～TI-10 于 2026-10-23 由用户验收收口，没有独立复审记录，已知边界见[交付记录](docs/delivery/2026-10-23-ti09-ti10-delivery.md)；任务记录归档于 [docs/archive/2026-10-23-text-input-editing-tasks/](docs/archive/2026-10-23-text-input-editing-tasks/README.md)）
+- [多行文本编辑器计划](docs/plan/2026-10-23-text-editor-plan.md)（多行纯文本备注/任务描述；**计划中、未实施**——默认系统输入法与系统候选已足够，不公开 TSF 开关）
 - [状态与生命周期](docs/guide/state-lifecycle.md)
 - [修饰符顺序](docs/guide/modifier-order.md)
 - [Key 与动态列表](docs/guide/keys-and-lists.md)

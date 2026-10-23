@@ -4,7 +4,7 @@
 
 状态：2026-10-19最终独立复审通过，R1～R5及追加场景已关闭；允许DSH提交推送。最终结论见文末，前文保留历史返修记录。
 
-依据：[TI-06](../../task/06-preedit-rendering-and-geometry.md)。本轮只检查平台无关显示与逻辑几何，不宣称原生IME桥完成，不安装或测试微软拼音。
+依据：[TI-06](../2026-10-23-text-input-editing-tasks/06-preedit-rendering-and-geometry.md)。本轮只检查平台无关显示与逻辑几何，不宣称原生IME桥完成，不安装或测试微软拼音。
 
 ## 首轮独立运行时检查
 

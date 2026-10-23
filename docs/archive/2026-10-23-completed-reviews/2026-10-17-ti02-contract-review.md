@@ -4,7 +4,7 @@
 
 状态：发现问题，待DSH返修；不允许冻结接口或提交实现。
 
-依据：[计划](../../plan/2026-10-17-text-input-and-editing-plan.md)、[TI-02](../../task/02-editing-and-input-contracts.md)。用户已免除微软拼音测试，不安装、启用或测试它。以下均为无窗口CPU问题。
+依据：[计划](../../plan/2026-10-17-text-input-and-editing-plan.md)、[TI-02](../2026-10-23-text-input-editing-tasks/02-editing-and-input-contracts.md)。用户已免除微软拼音测试，不安装、启用或测试它。以下均为无窗口CPU问题。
 
 独立复现：使用本轮已编译核心DLL的外部console调用真实契约；输出见[text-input-and-editing-review-evidence/codex-ti02-contract-audit-initial.log](2026-10-17-text-input-and-editing-review-evidence/codex-ti02-contract-audit-initial.log)。最终定位须以返修后的源码行号为准。
 

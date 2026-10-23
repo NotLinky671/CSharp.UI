@@ -2,7 +2,7 @@
 
 决策日期：2026-10-17
 
-任务：[TI-01 平台可行性与 Windows 原型](../task/01-platform-feasibility.md)
+任务：[TI-01 平台可行性与 Windows 原型](../archive/2026-10-23-text-input-editing-tasks/01-platform-feasibility.md)
 计划：[文本输入与编辑基础计划](../plan/2026-10-17-text-input-and-editing-plan.md) §3 / §7 / §11
 
 状态：**2026-10-17 范围修订后，Codex批准TI-01接入路线，允许TI-02实施**。

@@ -4,7 +4,7 @@
 
 状态：实施中复审，尚未通过。首批问题与返修复测按章节保留；R13已通过，最新阻塞为R15真实矩阵与验证脚本。25项独立检查通过不代表整个TI-07真实验收通过。
 
-依据：[TI-07](../../task/07-windows-ime-and-host-routing.md)、TI-02冻结契约、TI-04生命周期与TI-06几何。微软拼音已按用户最新授权恢复主要验收，路线对照见[微软拼音探针记录](../../agents-notebook/2026-10-19-ti07-mspinyin-route-check.md)。Codex负责本记录，Devin实现返修后待独立复测，不提前提交。
+依据：[TI-07](../2026-10-23-text-input-editing-tasks/07-windows-ime-and-host-routing.md)、TI-02冻结契约、TI-04生命周期与TI-06几何。微软拼音已按用户最新授权恢复主要验收，路线对照见[微软拼音探针记录](../../agents-notebook/2026-10-19-ti07-mspinyin-route-check.md)。Codex负责本记录，Devin实现返修后待独立复测，不提前提交。
 
 ## R1 [P1] 按结果字符匹配的回声队列没有真正消息归属，拒绝/转换结果也可能再次写入
 

@@ -4,7 +4,7 @@
 
 状态：**已完成（2026-10-22，主代理最终批准）**。隔离原型、P1、P2、P3b、P4（取消安全/失活零写批）全部经真实验收与独立审核通过，见[P4 交付记录](../delivery/2026-10-22-ti07-p4-delivery.md)。TI-07 在记录的平台/单 DPI/输入模式边界内完成；TI-08～TI-10 未开始；默认 IMM 不变。P2 最终独立结果见[owner 审核](../archive/2026-10-23-completed-reviews/2026-10-21-ti07-production-p2b-owner-review.md)；P3b 见[交付记录](../delivery/2026-10-22-ti07-p3b-delivery.md)。
 
-依据：[原编辑计划](2026-10-17-text-input-and-editing-plan.md)、[候选呈现决策](2026-10-20-ti07-candidate-presentation-decision.md)、[隔离原型交付](../delivery/2026-10-21-ti07-candidate-prototype-delivery.md)。执行归属见 [TI-07](../task/07-windows-ime-and-host-routing.md)。本补充计划继续该任务，不重建 TI-01～TI-10 任务集。
+依据：[原编辑计划](2026-10-17-text-input-and-editing-plan.md)、[候选呈现决策](2026-10-20-ti07-candidate-presentation-decision.md)、[隔离原型交付](../delivery/2026-10-21-ti07-candidate-prototype-delivery.md)。执行归属见 [TI-07](../archive/2026-10-23-text-input-editing-tasks/07-windows-ime-and-host-routing.md)。本补充计划继续该任务，不重建 TI-01～TI-10 任务集。
 
 ## 交付目标
 

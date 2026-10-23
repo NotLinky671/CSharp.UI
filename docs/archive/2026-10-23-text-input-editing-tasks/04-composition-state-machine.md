@@ -2,11 +2,11 @@
 
 创建日期：2026-10-17
 
-状态：已完成，Codex独立复审通过（2026-10-18；[审核及返修记录](../archive/2026-10-23-completed-reviews/2026-10-18-ti04-composition-review.md)）
+状态：已完成，Codex独立复审通过（2026-10-18；[审核及返修记录](../2026-10-23-completed-reviews/2026-10-18-ti04-composition-review.md)）
 
 阶段：B
 
-设计依据：[文本输入与编辑基础计划](../plan/2026-10-17-text-input-and-editing-plan.md)（接口冻结前均为设计草案）。
+设计依据：[文本输入与编辑基础计划](../../plan/2026-10-17-text-input-and-editing-plan.md)（接口冻结前均为设计草案）。
 
 [返回任务索引](README.md)
 
@@ -97,7 +97,7 @@
 
 ## Codex最终验收（2026-10-18）
 
-独立复审通过；[审核记录与持久证据](../archive/2026-10-23-completed-reviews/2026-10-18-ti04-composition-review.md)记录全部返修及最终命令。缓存解决方案构建0警告/0错误，核心467、Text67、Integration30、OpenTK242合计806项全部通过，另有真实UiRuntime客户端独立验收41项通过。OpenTK测试实际运行了Windows窗口、OpenGL和剪贴板；微软拼音按用户要求免测。
+独立复审通过；[审核记录与持久证据](../2026-10-23-completed-reviews/2026-10-18-ti04-composition-review.md)记录全部返修及最终命令。缓存解决方案构建0警告/0错误，核心467、Text67、Integration30、OpenTK242合计806项全部通过，另有真实UiRuntime客户端独立验收41项通过。OpenTK测试实际运行了Windows窗口、OpenGL和剪贴板；微软拼音按用户要求免测。
 
 最终公开按键接缝为NotifyCompositionKeyOrigin(token, consumed)配合DispatchKey(KeyEvent, object? nativeKeyOriginToken)，同一次按键传相同token；原有DispatchKey(KeyEvent)保持兼容。历史DSH自测记录中的“原生测试未运行”仅描述其自测阶段，最终兼容性测试由Codex执行并通过。
 
