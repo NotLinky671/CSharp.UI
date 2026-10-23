@@ -314,9 +314,9 @@ internal sealed class ScrollbarState
 }
 
 /// <summary>
-/// 共享 owner 滚动条绘制：在 <c>node</c> 的 frame clip 内画 track+thumb，
-/// 统一 ScrollView/TextEditor 的配色（Slider 同板：track=ControlBackground、thumb=Accent、
-/// pressed=Accent.Lerp 暗化 / ControlPressedBackground，track hover=ControlHoverBackground）。
+/// 共享 owner 滚动条绘制：在 <c>node</c> 的 frame clip 内画 track+thumb；
+/// thumb 为中性灰（`ControlBackground` 向 `Foreground` 混色 0.40/0.48/0.56），不继承 Accent——
+/// 滚动条是导航辅助而非主操作。track 沿用 Control* 系列；disabled 走 Disabled*。
 /// </summary>
 /// <remarks>
 /// 调用方已确保在 frame clip 内；本方法在 <see cref="ScrollbarMetrics.ShowScrollbar"/> 为 false 时不画。
@@ -357,7 +357,6 @@ internal static class ScrollbarPainter
         var thumbPressed = state?.PressKind == ScrollbarPressKind.Thumb;
         var trackPressed = state?.PressKind == ScrollbarPressKind.Track;
         var trackHovered = hoverKind is ScrollbarTrackHit.Before or ScrollbarTrackHit.After;
-
         var trackColor = disabled
             ? theme.DisabledBackground
             : trackPressed
@@ -365,13 +364,16 @@ internal static class ScrollbarPainter
                 : trackHovered
                     ? theme.ControlHoverBackground
                     : theme.ControlBackground;
+        // 滑块为柔和中性灰——滚动条是导航辅助，非主操作，不继承 Accent。normal 用
+        // ControlBackground 与 Foreground 按 0.40 混色；hover/press 依次提高前景混合
+        // 比例（0.48/0.56），增强交互对比，保持三态可辨但始终中性。
         var thumbColor = disabled
             ? theme.DisabledForeground
             : thumbPressed
-                ? theme.Accent.Lerp(Color.Black, 0.2)
+                ? theme.ControlBackground.Lerp(theme.Foreground, 0.56)
                 : hoverKind == ScrollbarTrackHit.Thumb
-                    ? theme.Accent.Lerp(Color.White, 0.15)
-                    : theme.Accent;
+                    ? theme.ControlBackground.Lerp(theme.Foreground, 0.48)
+                    : theme.ControlBackground.Lerp(theme.Foreground, 0.40);
 
         context.Commands.Add(new RectangleCommand(track, trackColor, 0, null, 0, node.Environment.Opacity));
         context.Commands.Add(new RectangleCommand(

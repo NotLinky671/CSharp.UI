@@ -1,0 +1,8 @@
+PASS light.normal :: thumb@304,42=#A4A5A6FF expect #A4A5A6FF
+PASS light.hover :: hover=#929394FF expect #929394FF
+PASS light.press :: press=#7F8083FF expect #7F8083FF
+PASS light.notAccent :: after release+move-off=#A4A5A6FF must not be Accent #2563EBFF or its hover
+PASS dark.normal :: thumb@304,42=#72757BFF expect #72757BFF
+PASS dark.hover :: hover=#82858AFF expect #82858AFF
+PASS dark.press :: press=#929499FF expect #929499FF
+PASS dark.notAccent :: after release+move-off=#72757BFF must not be Accent #4C8DFFFF or its hover

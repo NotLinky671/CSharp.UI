@@ -1,0 +1,14 @@
+[grayprobe] loaded CSharp.UI: C:\Users\nothh\.omp\tmp\scrollbar-gray\bin\Debug\net10.0\CSharp.UI.dll sha256=b0b80b1937dbec9217671a9ffb585a10ba574025a3ed74f2716cf6352be5ca1e
+[light-normal-sv] thumb=#A4A5A6FF track=#FFFFFFFF bg=#F5F6F8FF thumbRect=(280, 10, 8×24) focused=False
+[light-normal-other=ed] thumb=#A4A5A6FF thumbRect=(332, 126, 8×24)
+[light-hover-sv] thumb=#929394FF track=#FFFFFFFF bg=#F5F6F8FF thumbRect=(280, 10, 8×24) focused=False
+[light-hover-ed] thumb=#929394FF track=#FFFFFFFF bg=#F5F6F8FF thumbRect=(332, 126, 8×24) focused=False
+[light-pressed-sv] thumb=#7F8083FF track=#FFFFFFFF bg=#F5F6F8FF thumbRect=(280, 10, 8×24) focused=False
+[light-pressed-ed] thumb=#7F8083FF track=#FFFFFFFF bg=#F5F6F8FF thumbRect=(332, 126, 8×24) focused=False
+[dark-normal-sv] thumb=#72757BFF track=#24272FFF bg=#15171CFF thumbRect=(280, 10, 8×24) focused=False
+[dark-normal-other=ed] thumb=#72757BFF thumbRect=(332, 126, 8×24)
+[dark-hover-sv] thumb=#82858AFF track=#24272FFF bg=#15171CFF thumbRect=(280, 10, 8×24) focused=False
+[dark-hover-ed] thumb=#82858AFF track=#24272FFF bg=#15171CFF thumbRect=(332, 126, 8×24) focused=False
+[dark-pressed-sv] thumb=#929499FF track=#24272FFF bg=#15171CFF thumbRect=(280, 10, 8×24) focused=False
+[dark-pressed-ed] thumb=#929499FF track=#24272FFF bg=#15171CFF thumbRect=(332, 126, 8×24) focused=False
+[grayprobe] done exit=0
