@@ -45,4 +45,4 @@
 - 快捷键表依据 `TextEditCommandResolver.Resolve`：Ctrl/Command+Z 撤销，Shift 变重做；Ctrl+Y 仅 Windows/Linux 重做；X/C/V/A 不带 Shift；Alt/AltGr、错误平台主修饰键与额外修饰键不触发。
 - 命令与结果：Debug、Release 构建均 0 错误；两种配置下 CSharp.UI.Tests 551、Text.Tests 67（`TEMP`/`TMP` 重定向到仓库内目录）、Integration.Tests 53、OpenTK.Tests 668 全部通过；控件展示示例 `CSHARPUI_SMOKE_FRAMES=5` 两种配置均渲染 5 帧、退出码 0（900×700 逻辑视口、DPI 1.5）。
 - Release 全量重建有 40 个警告，位于本任务未修改的文件（如 `CompositionContracts.cs`、`TsfHostSession.cs` 及部分测试），控件展示示例自身 0 警告。
-- 平台边界：冒烟只覆盖 900×700 一个窗口尺寸，**未**验证 320/480/768/1024 逻辑宽度下新区域的布局；没有真实输入法证据。
+- 平台边界：冒烟只覆盖 900×700 一个真实窗口尺寸；320/480/768/1024 逻辑宽度由 `GalleryResponsiveTests`（OpenTK.Tests，直接实例化真实 `GalleryApp`）在运行时层面覆盖：所有叶子控件不越过右边界、整页可滚到底，含本次新增区域，新增后 668 项全部通过。该覆盖不是真实窗口截图；没有真实输入法证据。
