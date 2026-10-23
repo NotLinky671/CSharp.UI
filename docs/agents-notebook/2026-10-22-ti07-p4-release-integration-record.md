@@ -26,7 +26,7 @@
 - Release 2053/0：UI 549 + OpenTK 666 + TsfHostCheck.Tests 581 + Integration 53 + NativeEditReference 41 + Text 67 + ImeProbe 96（后两项经进程级 TEMP/TMP 重定向）。
 - Debug：UI 549 + OTK 666（TsfCancellation 10/10）+ TSFC 581 + TextFieldComposition 66。
 - postclean2 真实三场景（minimize/hide/window-deactivate）：失活段零写、session_id 1→2、恢复唯一你好提交、候选 PNG 可读。
-- 证据：`docs/delivery/2026-10-22-ti07-p4-delivery.md` + `docs/delivery/2026-10-22-ti07-p4-delivery-evidence/`（持久 raw logs + source manifest）；GUI 证据索引 `docs/return/2026-10-22-ti07-p4-real-validation/`。
+- 证据：`docs/delivery/2026-10-22-ti07-p4-delivery.md` + `docs/delivery/2026-10-22-ti07-p4-delivery-evidence/`（持久 raw logs + source manifest）；GUI 证据索引 `docs/archive/2026-10-23-completed-reviews/2026-10-22-ti07-p4-real-validation/`。
 
 ## 边界
 

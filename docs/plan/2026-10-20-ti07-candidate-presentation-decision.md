@@ -19,7 +19,7 @@
 - R31：暂停 TSF 文档焦点会同步提交组合并写入绑定，失败。不得采用。
 - R27：初始抑制原生候选时取得的 UIElement，在请求显示原生候选时同步结束。不能使用已结束对象实现后续隐藏。
 
-详见 [R29B](../return/2026-10-20-ti07-r29b-real-candidate-review.md)、[R30](../return/2026-10-20-ti07-r30-visibility-review.md)、[R31](../return/2026-10-20-ti07-r31-real-focus-review.md)。现有证据没有证明所有 Windows 路线不可能，但不能支撑继续重复已失败实验或宣称任务通过。
+详见 [R29B](../archive/2026-10-23-completed-reviews/2026-10-20-ti07-r29b-real-candidate-review.md)、[R30](../archive/2026-10-23-completed-reviews/2026-10-20-ti07-r30-visibility-review.md)、[R31](../archive/2026-10-23-completed-reviews/2026-10-20-ti07-r31-real-focus-review.md)。现有证据没有证明所有 Windows 路线不可能，但不能支撑继续重复已失败实验或宣称任务通过。
 
 ## 方案 A：隔离验证应用绘制候选列表
 

@@ -55,4 +55,4 @@ Codex规划与独立审核；DeepSeek Harness实现和测试，通过后英文�
 
 ## 最终验收
 
-2026-10-16：RL-01 至 RL-09 全部完成并由 Codex 复审通过。Debug/Release 构建通过，两配置四套测试各639项全通过；18份示例DLL副本匹配、三Release示例各5帧启动通过。Windows150%真实Gallery/Nested原生SC_SIZE循环及原尺寸图像已验证。详见[交付记录](../../delivery/2026-10-16-responsive-layout-delivery.md)与[审核记录](../../return/2026-10-16-responsive-layout-review.md)。macOS/Linux真机、物理鼠标人工拖拽及LCD/ClearType未验证，详见交付范围。
+2026-10-16：RL-01 至 RL-09 全部完成并由 Codex 复审通过。Debug/Release 构建通过，两配置四套测试各639项全通过；18份示例DLL副本匹配、三Release示例各5帧启动通过。Windows150%真实Gallery/Nested原生SC_SIZE循环及原尺寸图像已验证。详见[交付记录](../../delivery/2026-10-16-responsive-layout-delivery.md)与[审核记录](../2026-10-23-completed-reviews/2026-10-16-responsive-layout-review.md)。macOS/Linux真机、物理鼠标人工拖拽及LCD/ClearType未验证，详见交付范围。

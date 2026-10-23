@@ -2,7 +2,7 @@
 
 日期：2026-10-22 · 配套交付记录：[2026-10-22-ti07-p4-delivery.md](../2026-10-22-ti07-p4-delivery.md)
 
-本目录持久保存从 gitignored `artifacts/ime-work/p4-cancel-safety/` 精选的原始日志。真实 GUI 场景 JSONL/PNG 已持久位于 `docs/return/2026-10-22-ti07-p4-real-validation/`（postclean2-* 等目录），此处只索引不复制。
+本目录持久保存从 gitignored `artifacts/ime-work/p4-cancel-safety/` 精选的原始日志。真实 GUI 场景 JSONL/PNG 已持久位于 `docs/archive/2026-10-23-completed-reviews/2026-10-22-ti07-p4-real-validation/`（postclean2-* 等目录），此处只索引不复制。
 
 ## 最终同源验证（`NativeCompositionOwner.cs` = `58626b17…`，post-stackalloc）
 
@@ -44,9 +44,9 @@
 
 ## 真实 GUI 证据索引（未复制，见 real-validation 目录）
 
-- `docs/return/2026-10-22-ti07-p4-real-validation/postclean2-minimize-restore/`、`postclean2-hide-restore/`、`postclean2-window-deactivate/`：exit 0、`zero_writes_while_*=true`、`restore_commit_ok=true`、`composition_session_id` 1→2、JSONL 无 owner-diag/wnd-msg 残留。
-- 工具自身构建：`docs/return/2026-10-22-ti07-p4-real-validation/build-tool[1-4]/`（`dotnet build tools/CSharp.UI.ImeHostCheck`，各 exit 0）。
-- 全矩阵 manifest：`docs/return/2026-10-22-ti07-p4-real-validation/README.md`。
+- `docs/archive/2026-10-23-completed-reviews/2026-10-22-ti07-p4-real-validation/postclean2-minimize-restore/`、`postclean2-hide-restore/`、`postclean2-window-deactivate/`：exit 0、`zero_writes_while_*=true`、`restore_commit_ok=true`、`composition_session_id` 1→2、JSONL 无 owner-diag/wnd-msg 残留。
+- 工具自身构建：`docs/archive/2026-10-23-completed-reviews/2026-10-22-ti07-p4-real-validation/build-tool[1-4]/`（`dotnet build tools/CSharp.UI.ImeHostCheck`，各 exit 0）。
+- 全矩阵 manifest：`docs/archive/2026-10-23-completed-reviews/2026-10-22-ti07-p4-real-validation/README.md`。
 
 ## 历史阶段日志（保留备查，不计入最终结论）
 

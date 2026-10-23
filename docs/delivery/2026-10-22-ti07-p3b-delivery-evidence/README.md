@@ -1,8 +1,8 @@
 # TI-07 P3b 交付证据索引（2026-10-22）
 
 本目录只做**索引/指向**，不复制截图与大日志；原始证据全部保留在
-`docs/return/2026-10-22-ti07-p3b-real-ime-evidence/` 与
-`docs/return/2026-10-21-ti07-p3b-evidence/`。
+`docs/archive/2026-10-23-completed-reviews/2026-10-22-ti07-p3b-real-ime-evidence/` 与
+`docs/archive/2026-10-23-completed-reviews/2026-10-21-ti07-p3b-evidence/`。
 
 ## 最终 Release（原始 stdout/stderr/exit）
 
@@ -10,7 +10,7 @@
 - `release-final-<Class>/`：AcpTextStoreProtocolTests 75、CandidateSnapshotContractTests 38、TsfUiElementSinkTests 18、HostAcpGeometryProviderTests 5、CandidateOverlayRenderingTests 4、TsfCancellationTests 4、TsfSessionLifetimeTests 1、TsfLayoutNotificationRegressionTests 1、TsfHostIntegrationTests 1、RouterFallbackTests 7、WindowsInputBridgeContractTests 12；合计 **166/166**、Failed 0、exit 0、stderr 空。
 - `release-TsfHostIntegrationTests-final/`、`release-TsfLayoutNotificationRegressionTests-final/`：加非 Windows 守卫后的 Windows 复跑 1/1、1/1。
 - `tool-selftest-final/`：all pass、exit 0。
-- 执行记录：[2026-10-22-ti07-p3b-real-ime-review.md](../../return/2026-10-22-ti07-p3b-real-ime-review.md)。
+- 执行记录：[2026-10-22-ti07-p3b-real-ime-review.md](../../archive/2026-10-23-completed-reviews/2026-10-22-ti07-p3b-real-ime-review.md)。
 
 ## 真实微软拼音与宿主（原始 JSONL/PNG/exit）
 
@@ -27,8 +27,8 @@
 
 ## 非原始（会话转录）
 
-- `docs/return/2026-10-22-ti07-p3b-independent-review.md` 的 Debug 147 项计数：real-ime 会话执行转录，原始 stdout 未持久；不伪造原文。
-- 21 日宿主接线 summary 转录见 `docs/return/2026-10-21-ti07-p3b-host-integration-evidence/`（目录 README 已标注）。
+- `docs/archive/2026-10-23-completed-reviews/2026-10-22-ti07-p3b-independent-review.md` 的 Debug 147 项计数：real-ime 会话执行转录，原始 stdout 未持久；不伪造原文。
+- 21 日宿主接线 summary 转录见 `docs/archive/2026-10-23-completed-reviews/2026-10-21-ti07-p3b-host-integration-evidence/`（目录 README 已标注）。
 
 ## 边界
 

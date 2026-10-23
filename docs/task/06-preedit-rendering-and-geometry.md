@@ -41,7 +41,7 @@
 
 ## Codex 实施中独立检查（2026-10-19）
 
-首批已编译版本已发现 R1～R5（客户端几何回读、撤销通知归属、纯重绘外部同步、150%/200%长预编辑末尾锚点、取消后鼠标按下滚动映射），见[TI-06审核与返修要求](../return/2026-10-19-ti06-preedit-geometry-review.md)。DSH完成初步自测后必须读取并修复，再等待Codex最终复审；这些早期证据不表示最终实现结果。不得在未关闭问题前提交或标已完成。
+首批已编译版本已发现 R1～R5（客户端几何回读、撤销通知归属、纯重绘外部同步、150%/200%长预编辑末尾锚点、取消后鼠标按下滚动映射），见[TI-06审核与返修要求](../archive/2026-10-23-completed-reviews/2026-10-19-ti06-preedit-geometry-review.md)。DSH完成初步自测后必须读取并修复，再等待Codex最终复审；这些早期证据不表示最终实现结果。不得在未关闭问题前提交或标已完成。
 
 
 2026-10-19追加复测：原142项已通过，但R3的“长预编辑滚动→外部短文档→纯重绘”仍有2项失败（144项中142通过）。详见审核文末，发布锚点前仍须收敛ScrollX，不能等Emit才恢复滚动。最终复审尚未通过。
@@ -105,7 +105,7 @@ Release 四套测试同样为 545/67/53/251，均 0 失败。单配置合计 916
 - `artifacts/ime-work/ti06/final-audit-162.log`（当前 162 项独立检查全部通过；工具源码只读引用 `artifacts/ime-work/ti06-audit/Program.cs`）
 - `artifacts/ime-work/ti06/final-audit-146.log`（早期 146 项快照；其最后 2 项新增检查是“撤销回调新会话重入”，不是长滚动外部缩短）
 - `artifacts/ime-work/ti06/r4-ti04-compat.log`、`r4-ti05-compat.log`（41/49 兼容性检查）
-- Codex 审核与过程证据：`docs/return/2026-10-19-ti06-preedit-geometry-review.md` 及同名 `-evidence` 目录（本轮未改动）。
+- Codex 审核与过程证据：`docs/archive/2026-10-23-completed-reviews/2026-10-19-ti06-preedit-geometry-review.md` 及同名 `-evidence` 目录（本轮未改动）。
 
 ### 新增/修改测试文件
 
@@ -127,4 +127,4 @@ Release 四套测试同样为 545/67/53/251，均 0 失败。单配置合计 916
 
 ## Codex 最终复审（2026-10-19）
 
-已通过。Debug/Release各916项工程测试、162项独立运行时检查及TI-04/TI-05兼容41/49项全部通过。R1～R5及追加长滚动、普通caret和组合结果切换问题均关闭；批准DSH英文提交和推送。完整结论、边界及持久证据见[TI-06审核](../return/2026-10-19-ti06-preedit-geometry-review.md)。上述待复审/失败内容保留为实施历史，不代表最终状态；整个文本输入计划尚未完成。
+已通过。Debug/Release各916项工程测试、162项独立运行时检查及TI-04/TI-05兼容41/49项全部通过。R1～R5及追加长滚动、普通caret和组合结果切换问题均关闭；批准DSH英文提交和推送。完整结论、边界及持久证据见[TI-06审核](../archive/2026-10-23-completed-reviews/2026-10-19-ti06-preedit-geometry-review.md)。上述待复审/失败内容保留为实施历史，不代表最终状态；整个文本输入计划尚未完成。

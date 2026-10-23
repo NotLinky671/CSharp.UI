@@ -8,7 +8,7 @@
 
 设计依据：[文本输入与编辑基础计划](../plan/2026-10-17-text-input-and-editing-plan.md)（TI-02 已将草案细化为下述实际签名）。
 
-返修依据：[TI-02 编辑与输入契约首轮审核](../return/2026-10-17-ti02-contract-review.md)（R1–R6 与“第二轮独立复核”）。
+返修依据：[TI-02 编辑与输入契约首轮审核](../archive/2026-10-23-completed-reviews/2026-10-17-ti02-contract-review.md)（R1–R6 与“第二轮独立复核”）。
 
 [返回任务索引](README.md)
 
@@ -234,4 +234,4 @@ DSH自测完成后状态标“待Codex复审”；Codex审核问题写docs/retur
 
 ## Codex最终复审
 
-R1～R6及第二轮边界已关闭；独立最终构建exit0，核心369项通过，定向14项检查通过。其他三套独立回归67/30/242通过（OpenTK在可访问剪贴板环境重跑）；上述结果来自分轮验证，最终不涉及完整原生IME交付。[完整审核与证据](../return/2026-10-17-ti02-contract-review.md)。
+R1～R6及第二轮边界已关闭；独立最终构建exit0，核心369项通过，定向14项检查通过。其他三套独立回归67/30/242通过（OpenTK在可访问剪贴板环境重跑）；上述结果来自分轮验证，最终不涉及完整原生IME交付。[完整审核与证据](../archive/2026-10-23-completed-reviews/2026-10-17-ti02-contract-review.md)。

@@ -82,8 +82,8 @@
 
 ## 关联证据与当前边界
 
-- [P2b owner 审核与最终验收](../return/2026-10-21-ti07-production-p2b-owner-review.md)：排队部分确认和选区子动作导致后续结果丢失，及其独立修复验收。
-- [P3a 审核](../return/2026-10-21-ti07-production-p3a-host-routing-review.md)：ABI、消息回声假通过、服务接线、资源生命周期、默认输入丢失与延后顺序问题。
-- [P3a 独立证据](../return/2026-10-21-ti07-production-p3a-host-routing-review-evidence/)：`echo-audit-debug.log` 记录漏掉的小写 c；`default-input-debug.log` 记录默认输入 writes=0 的失败基线。原始失败证据保留，不因后来修复覆盖其历史含义。
+- [P2b owner 审核与最终验收](../archive/2026-10-23-completed-reviews/2026-10-21-ti07-production-p2b-owner-review.md)：排队部分确认和选区子动作导致后续结果丢失，及其独立修复验收。
+- [P3a 审核](../archive/2026-10-23-completed-reviews/2026-10-21-ti07-production-p3a-host-routing-review.md)：ABI、消息回声假通过、服务接线、资源生命周期、默认输入丢失与延后顺序问题。
+- [P3a 独立证据](../archive/2026-10-23-completed-reviews/2026-10-21-ti07-production-p3a-host-routing-review-evidence/)：`echo-audit-debug.log` 记录漏掉的小写 c；`default-input-debug.log` 记录默认输入 writes=0 的失败基线。原始失败证据保留，不因后来修复覆盖其历史含义。
 
 截至本记录，P2 已通过独立验收，P3 仍未验收。本文总结的是 Codex 的工作失误和改进要求，不以复盘代替剩余修复、独立验证或最终交付。

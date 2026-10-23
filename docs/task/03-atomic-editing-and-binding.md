@@ -94,7 +94,7 @@
 
 证据（可清理 artifacts）：`artifacts/ime-work/ti03-solution-build-debug.log`、`ti03-core-rebuild-warnings.log`、`ti03-test-rebuild-warnings.log`、`ti03-tests-CSharp.UI.Tests.log`、`ti03-tests-CSharp.UI.Text.Tests.log`、`ti03-tests-CSharp.UI.Integration.Tests.log`、`ti03-tests-CSharp.UI.OpenTK.Tests.log`。
 
-Codex 独立复现与复测的持久证据（只读引用，未改动）：`docs/return/2026-10-17-ti03-atomic-editing-review-evidence/`，含原失败场景日志 `codex-sync-audit-initial.log`、`codex-input-sync-audit-initial.log`、`codex-source-audit-initial.log`、`codex-render-scroll-audit-initial.log` 与第二轮通过日志 `codex-sync-audit-round2.log`、`codex-final-*.log`、`codex-core-round2.log`、`codex-text.log`、`codex-integration.log`、`codex-opentk.log`。
+Codex 独立复现与复测的持久证据（只读引用，未改动）：`docs/archive/2026-10-23-completed-reviews/2026-10-17-ti03-atomic-editing-review-evidence/`，含原失败场景日志 `codex-sync-audit-initial.log`、`codex-input-sync-audit-initial.log`、`codex-source-audit-initial.log`、`codex-render-scroll-audit-initial.log` 与第二轮通过日志 `codex-sync-audit-round2.log`、`codex-final-*.log`、`codex-core-round2.log`、`codex-text.log`、`codex-integration.log`、`codex-opentk.log`。
 
 ## 新增/变更文件清单
 
@@ -128,4 +128,4 @@ Codex 独立复现与复测的持久证据（只读引用，未改动）：`docs
 
 ## Codex最终复审
 
-R1～R3及键盘、纯重绘和横向滚动补充已关闭；最终构建通过，核心405、Text67、Integration30、OpenTK242及独立14项实际输入检查通过，来自各自验证轮次。[审核及持久证据](../return/2026-10-17-ti03-atomic-editing-review.md)。TI04～TI10仍待实施。
+R1～R3及键盘、纯重绘和横向滚动补充已关闭；最终构建通过，核心405、Text67、Integration30、OpenTK242及独立14项实际输入检查通过，来自各自验证轮次。[审核及持久证据](../archive/2026-10-23-completed-reviews/2026-10-17-ti03-atomic-editing-review.md)。TI04～TI10仍待实施。

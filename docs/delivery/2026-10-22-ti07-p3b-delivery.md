@@ -4,7 +4,7 @@
 状态：**P3b 范围内验收完成**（Debug/Release 指定回归、真实微软拼音基线、真实滚动/裁出/恢复均通过）。
 **TI-07 整体与 P4 未完成**：本记录不声称整体 TI-07 交付；未覆盖矩阵见 §5。未提交、未推送。
 
-依据：[P3b 设计](../plan/2026-10-21-ti07-p3b-host-integration-design.md)、[正式接入计划](../plan/2026-10-21-ti07-production-tsf-integration-plan.md)、[宿主接线执行记录](../return/2026-10-21-ti07-p3b-host-integration.md)、[独立审核](../return/2026-10-22-ti07-p3b-independent-review.md)。
+依据：[P3b 设计](../plan/2026-10-21-ti07-p3b-host-integration-design.md)、[正式接入计划](../plan/2026-10-21-ti07-production-tsf-integration-plan.md)、[宿主接线执行记录](../archive/2026-10-23-completed-reviews/2026-10-21-ti07-p3b-host-integration.md)、[独立审核](../archive/2026-10-23-completed-reviews/2026-10-22-ti07-p3b-independent-review.md)。
 
 ## 1. 交付范围
 
@@ -61,7 +61,7 @@ Debug 轮 147 项同类（当时未含 RouterFallback/WindowsInputBridgeContract
 
 小型索引/manifest：[`2026-10-22-ti07-p3b-delivery-evidence/README.md`](2026-10-22-ti07-p3b-delivery-evidence/README.md)（只指向 `docs/return/` 原始证据，不复制截图与大日志）。
 
-根目录：`docs/return/2026-10-22-ti07-p3b-real-ime-evidence/`
+根目录：`docs/archive/2026-10-23-completed-reviews/2026-10-22-ti07-p3b-real-ime-evidence/`
 
 | 目录 | 内容 | 原始性 |
 |---|---|---|
@@ -74,10 +74,10 @@ Debug 轮 147 项同类（当时未含 RouterFallback/WindowsInputBridgeContract
 | `release-final-AcpTextStoreProtocolTests/`、`release-final-CandidateSnapshotContractTests/`、`release-final-TsfUiElementSinkTests/`、`release-final-HostAcpGeometryProviderTests/`、`release-final-CandidateOverlayRenderingTests/`、`release-final-TsfCancellationTests/`、`release-final-TsfSessionLifetimeTests/`、`release-final-TsfLayoutNotificationRegressionTests/`、`release-final-TsfHostIntegrationTests/`、`release-final-RouterFallbackTests/`、`release-final-WindowsInputBridgeContractTests/`；以及两个平台守卫测试的新目录 `release-TsfHostIntegrationTests-final/`、`release-TsfLayoutNotificationRegressionTests-final/` | 最终逐类 Release 计数与 exit（166/166） | 原始 |
 | `tool-selftest-final/` | 最终 selftest JSONL、stdout/stderr/exit | 原始 |
 | `enter-select-ready-first-failure/` | Enter 候选 ready 首失败（调度超时）原始证据 | 原始 |
-| 独立审核（real-ime） | [2026-10-22-ti07-p3b-real-ime-review.md](../return/2026-10-22-ti07-p3b-real-ime-review.md) | 执行记录 |
-| 独立审核（review） | [2026-10-22-ti07-p3b-independent-review.md](../return/2026-10-22-ti07-p3b-independent-review.md) | 记录（Debug 为会话转录） |
+| 独立审核（real-ime） | [2026-10-22-ti07-p3b-real-ime-review.md](../archive/2026-10-23-completed-reviews/2026-10-22-ti07-p3b-real-ime-review.md) | 执行记录 |
+| 独立审核（review） | [2026-10-22-ti07-p3b-independent-review.md](../archive/2026-10-23-completed-reviews/2026-10-22-ti07-p3b-independent-review.md) | 记录（Debug 为会话转录） |
 
-宿主接线早期 summary 转录仍见 [`2026-10-21-ti07-p3b-host-integration-evidence/`](../return/2026-10-21-ti07-p3b-host-integration-evidence/README.md)，已标注非原始 stdout。
+宿主接线早期 summary 转录仍见 [`2026-10-21-ti07-p3b-host-integration-evidence/`](../archive/2026-10-23-completed-reviews/2026-10-21-ti07-p3b-host-integration-evidence/README.md)，已标注非原始 stdout。
 
 ## 5. 未覆盖 / P4 矩阵（本记录不声称通过）
 
