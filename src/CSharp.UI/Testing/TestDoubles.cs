@@ -92,7 +92,7 @@ public sealed class TestUiClock : IUiClock
 /// <remarks>
 /// 通过 <see cref="CharWidthScale"/> 可以让文本“变宽”，用于验证宽度变化触发布局重新测量。
 /// </remarks>
-public sealed class StubTextService : ITextService
+public sealed class StubTextService : ITextService, IRichTextService
 {
     private readonly LruCache<TextLayoutRequest, TextLayoutResult> _layouts = new(64);
     private readonly LruCache<StubRasterKey, PixelBuffer> _rasters = new(32);
@@ -498,7 +498,6 @@ public sealed class StubTextService : ITextService
 
         return lines;
     }
-
     private static List<int> GraphemeStarts(string text)
     {
         var result = new List<int>();
@@ -509,6 +508,376 @@ public sealed class StubTextService : ITextService
         }
 
         return result;
+    }
+
+    // IRichTextService：等宽估算镜像真实契约（segment 宽 = 段内字素数 × 字号 × CharWidthScale；
+    // 行高 = 行内最大字号 × 1.25 或显式 LineHeight 钳制到行内字高下限；hit/rangerects 可用）。
+    // core 无原生资源，backend 是计数 no-op 占位。
+    // ------------------------------------------------------------------
+
+    private readonly LruCache<RichTextLayoutRequest, RichLayoutCore> _richLayouts = CreateRichCache();
+    private readonly LruCache<RichStubRasterKey, PixelBuffer> _richRasters = new(32);
+    private int _richLayoutMisses;
+    private int _richRasterMisses;
+
+    /// <summary>富文本实际排版次数。</summary>
+    public int RichLayoutMisses => _richLayoutMisses;
+
+    /// <summary>富文本实际栅格化次数。</summary>
+    public int RichRasterMisses => _richRasterMisses;
+
+    /// <inheritdoc />
+    int IRichTextService.CachedLayoutCount => _richLayouts.Count;
+
+    /// <inheritdoc />
+    int IRichTextService.CachedRasterCount => _richRasters.Count;
+
+    /// <inheritdoc />
+    int IRichTextService.LayoutCacheCapacity
+    {
+        get => _richLayouts.Capacity;
+        set => _richLayouts.Capacity = value;
+    }
+
+    private static LruCache<RichTextLayoutRequest, RichLayoutCore> CreateRichCache()
+    {
+        var cache = new LruCache<RichTextLayoutRequest, RichLayoutCore>(64);
+        cache.OnEvicted = (_, core) => core.Release();
+        return cache;
+    }
+
+    /// <inheritdoc />
+    public RichTextLayoutResult Layout(RichTextLayoutRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (_richLayouts.TryGet(request, out var cached))
+        {
+            cached.AddRef();
+            return new RichTextLayoutResult(cached);
+        }
+
+        _richLayoutMisses++;
+        var core = BuildRich(request);
+        core.AddRef();
+        _richLayouts.GetOrAdd(request, _ => core, out _);
+        return new RichTextLayoutResult(core);
+    }
+
+    /// <inheritdoc />
+    public Size Measure(RichTextLayoutRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var handle = Layout(request);
+        try
+        {
+            return handle.Size;
+        }
+        finally
+        {
+            handle.Dispose();
+        }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// 替身输出真实可用的 RGBA 位图：按 run 前景色把各 segment 的行内矩形涂成该颜色
+    /// （预乘语义——alpha 通道直接写 color.A，像素 RGB 按 alpha 预乘），保证调用方能区分
+    /// 不同 paint。背景/装饰字段进缓存键但不烘入位图（装饰由视图层绘制，与真实实现一致）。
+    /// </remarks>
+    public PixelBuffer Rasterize(RichTextLayoutResult layout, RichTextPaint paint)
+    {
+        ArgumentNullException.ThrowIfNull(layout);
+        ArgumentNullException.ThrowIfNull(paint);
+        var identity = layout.LayoutIdentity;
+        if (paint.Runs.Count != layout.Segments.Count)
+        {
+            throw new ArgumentException(
+                $"paint.Runs 数量（{paint.Runs.Count}）必须与 layout.Segments（{layout.Segments.Count}）一一对应。",
+                nameof(paint));
+        }
+
+        var key = new RichStubRasterKey(identity, paint);
+        if (_richRasters.TryGet(key, out var cached))
+        {
+            return cached;
+        }
+
+        _richRasterMisses++;
+        var scale = layout.PixelScale <= 0 ? 1 : layout.PixelScale;
+        // buffer 覆盖 RasterBounds 的物理取整范围；stub 该值即布局盒，行为与真实实现同源。
+        var bounds = layout.RasterBounds;
+        var width = Math.Max(1, (int)Math.Ceiling(bounds.Right * scale) - (int)Math.Floor(bounds.Left * scale));
+        var height = Math.Max(1, (int)Math.Ceiling(bounds.Bottom * scale) - (int)Math.Floor(bounds.Top * scale));
+        var buffer = new PixelBuffer(width, height, PixelFormat.Rgba8888Premultiplied);
+        var originX = Math.Floor(bounds.Left * scale) / scale;
+        var originY = Math.Floor(bounds.Top * scale) / scale;
+        var segmentIndex = 0;
+        foreach (var segment in layout.Segments)
+        {
+            var color = paint.Runs[segmentIndex].Foreground;
+            segmentIndex++;
+            var line = layout.Lines[segment.LineIndex];
+            var left = (int)Math.Round((segment.X - originX) * scale);
+            var top = (int)Math.Round((line.Bounds.Y - originY) * scale);
+            var right = (int)Math.Round((segment.X + segment.Width - originX) * scale);
+            var bottom = (int)Math.Round((line.Bounds.Bottom - originY) * scale);
+            var r = (byte)((color.R * color.A + 127) / 255);
+            var g = (byte)((color.G * color.A + 127) / 255);
+            var b = (byte)((color.B * color.A + 127) / 255);
+            for (var y = Math.Max(0, top); y < Math.Min(height, bottom); y++)
+            {
+                for (var x = Math.Max(0, left); x < Math.Min(width, right); x++)
+                {
+                    var offset = (y * buffer.Stride) + (x * 4);
+                    buffer.Pixels[offset] = r;
+                    buffer.Pixels[offset + 1] = g;
+                    buffer.Pixels[offset + 2] = b;
+                    buffer.Pixels[offset + 3] = color.A;
+                }
+            }
+        }
+
+        _richRasters.GetOrAdd(key, _ => buffer, out _);
+        return buffer;
+    }
+
+    /// <inheritdoc />
+    void IRichTextService.ClearCaches()
+    {
+        _richLayouts.Clear();
+        _richRasters.Clear();
+    }
+
+    private readonly record struct RichStubRasterKey(RichLayoutIdentity Identity, RichTextPaint Paint);
+
+    /// <summary>替身后端：无原生资源，Release/Dispose 仅计数 no-op（语义与真实 core 一致便于测试）。</summary>
+    private sealed class StubRichBackend : IRichTextLayoutBackend
+    {
+        public void Dispose()
+        {
+        }
+    }
+
+    private RichLayoutCore BuildRich(RichTextLayoutRequest request)
+    {
+        var styled = request.Text;
+        var text = styled.Text;
+        var clusters = GraphemeStarts(text);
+        if (clusters.Count == 0 || clusters[^1] != text.Length)
+        {
+            clusters.Add(text.Length);
+        }
+        // 每字素的模型段序号：纯查找（不捕获游标；行 metrics 与 run 聚合两轮都从头按位置定位）。
+        int SegmentAt(int clusterStart)
+        {
+            var seg = 0;
+            while (seg < styled.Segments.Count && styled.Segments[seg].End <= clusterStart)
+            {
+                seg++;
+            }
+
+            return seg;
+        }
+
+        double WidthOfSegment(int modelSegment)
+        {
+            var size = styled.Segments[modelSegment].FontSignature.Size ?? request.ParagraphFont.Size;
+            return Math.Max(1, size * CharWidthScale);
+        }
+
+        // 断行：wrap 时按累计宽贪心切；硬换行切段落（\r\n 计一个 terminator）。
+        var lines = new List<(int Start, int End, int TrimEnd)>();
+        var lineStart = 0;
+        var lineWidth = 0.0;
+        var lineFirst = 0;
+        var spacing = request.LetterSpacing;
+        for (var i = 0; i + 1 < clusters.Count; i++)
+        {
+            var start = clusters[i];
+            if (IsLineBreak(text[start]))
+            {
+                var end = start + 1;
+                if (text[start] == '\r' && end < text.Length && text[end] == '\n')
+                {
+                    end++;
+                }
+
+                lines.Add((lineStart, end, start));
+                lineStart = end;
+                lineWidth = 0;
+                lineFirst = i + 1;
+                continue;
+            }
+
+            var w = WidthOfSegment(SegmentAt(start));
+            if (request.Wrapping == TextWrapping.Wrap && !double.IsPositiveInfinity(request.MaxWidth)
+                && i > lineFirst && lineWidth + w > request.MaxWidth)
+            {
+                lines.Add((lineStart, start, start));
+                lineStart = start;
+                lineWidth = 0;
+                lineFirst = i;
+            }
+
+            lineWidth += w;
+        }
+
+        if (lineStart < text.Length || lines.Count == 0)
+        {
+            lines.Add((lineStart, text.Length, text.Length));
+        }
+
+        // 行/segment/caret 生成。
+        var lineInfos = new List<TextLineInfo>(lines.Count);
+        var segments = new List<RichTextSegment>();
+        var caretsByLine = new LineCarets[lines.Count];
+        var caretXs = new double[clusters.Count];
+        var fonts = new List<ResolvedFontIdentity>();
+        var fontIds = new Dictionary<FontDescription, int>();
+        var top = 0.0;
+
+        for (var li = 0; li < lines.Count; li++)
+        {
+            var (ls, le, ltrim) = lines[li];
+
+            // 行 metrics：行内最大字号 × 1.25（或显式 LineHeight 钳到字高下限）。
+            var maxSize = request.ParagraphFont.Size;
+            for (var i = 0; i + 1 < clusters.Count; i++)
+            {
+                if (clusters[i] >= ls && clusters[i] < ltrim)
+                {
+                    maxSize = Math.Max(maxSize, styled.Segments[SegmentAt(clusters[i])].FontSignature.Size ?? request.ParagraphFont.Size);
+                }
+            }
+
+            var fontHeight = maxSize * 1.25;
+            var lineHeight = request.LineHeight > 0 ? Math.Max(request.LineHeight, fontHeight) : fontHeight;
+            var baseline = top + ((lineHeight - fontHeight) / 2) + (fontHeight * 0.8);
+
+            // 行内 segment：同模型段的连续簇聚合；X 从行起点累计（含字距）。
+            var offsetX = 0.0;
+            var stops = new List<int>();
+            var xs = new List<double>();
+            var x = offsetX;
+            var runStart = -1;
+            var runSeg = -1;
+            var runX = 0.0;
+            var runW = 0.0;
+            var firstInLine = true;
+
+            void FlushRun(int boundary)
+            {
+                if (runStart < 0)
+                {
+                    return;
+                }
+
+                var modelSeg = styled.Segments[runSeg];
+                var font = new FontDescription(
+                    modelSeg.FontSignature.Family ?? request.ParagraphFont.Family,
+                    modelSeg.FontSignature.Size ?? request.ParagraphFont.Size,
+                    modelSeg.FontSignature.Weight ?? request.ParagraphFont.Weight,
+                    modelSeg.FontSignature.Italic ?? request.ParagraphFont.Italic);
+                if (!fontIds.TryGetValue(font, out var fontId))
+                {
+                    fontId = fonts.Count;
+                    fonts.Add(ResolvedFontIdentity.Create(font, font.Family.DisplayName, ResolvedFontIdentity.NextFaceId()));
+                    fontIds[font] = fontId;
+                }
+
+                segments.Add(new RichTextSegment(li, runStart, boundary, fontId, runX, runW, baseline));
+                runStart = -1;
+            }
+
+            for (var i = 0; i + 1 < clusters.Count; i++)
+            {
+                var cs = clusters[i];
+                if (cs < ls)
+                {
+                    continue;
+                }
+
+                if (cs >= ltrim)
+                {
+                    break;
+                }
+
+                // caret stop：行首（软换行共享/硬换行后）取 offsetX；行内按累计 x。
+                if (firstInLine)
+                {
+                    stops.Add(cs);
+                    xs.Add(offsetX);
+                    firstInLine = false;
+                }
+
+                var seg = SegmentAt(cs);
+                if (runSeg != seg)
+                {
+                    FlushRun(cs);
+                    runStart = cs;
+                    runSeg = seg;
+                    runX = x;
+                    runW = 0;
+                }
+
+                var w = WidthOfSegment(seg);
+                runW += w;
+                x += w + spacing;
+
+                // 每个字素起点之后写一个 caret stop（下一边界的 X）。
+                var next = clusters[i + 1];
+                stops.Add(next);
+                xs.Add(x);
+            }
+
+            FlushRun(ltrim);
+
+            // 软换行共享 offset / 行尾：行末 stop 若已在字素循环写过（next==le 且下一行 Start==le），
+            // 上面的 stops 已含 le（X=行右缘）；下行首在下一行 firstInLine 分支写 offsetX。
+            var contentWidth = x;
+            lineInfos.Add(new TextLineInfo(ls, le, new Rect(offsetX, top, contentWidth, lineHeight), baseline));
+            caretsByLine[li] = new LineCarets(stops, xs);
+
+            // 全局 caretXs：吸附到 stop（行内单调，跨行共享 offset 归上行值）。
+            for (var i = 0; i < clusters.Count; i++)
+            {
+                var stop = clusters[i];
+                if (stop < ls || stop > le)
+                {
+                    continue;
+                }
+
+                var idx = stops.IndexOf(stop);
+                if (idx >= 0)
+                {
+                    caretXs[i] = xs[idx];
+                }
+            }
+
+            top += lineHeight;
+        }
+
+        var maxLineWidth = 0.0;
+        foreach (var info in lineInfos)
+        {
+            maxLineWidth = Math.Max(maxLineWidth, info.Bounds.Width);
+        }
+
+        return new RichLayoutCore(
+            text,
+            request.ParagraphFont,
+            request.PixelScale,
+            request.LetterSpacing,
+            new Size(maxLineWidth, top),
+            lineInfos,
+            segments,
+            fonts,
+            clusters,
+            caretXs,
+            caretsByLine,
+            // 等宽估算无真实墨迹：RasterBounds = 布局盒。
+            Rect.FromLtrb(0, 0, maxLineWidth, top),
+            new StubRichBackend());
     }
 }
 

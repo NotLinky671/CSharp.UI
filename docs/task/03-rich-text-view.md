@@ -45,8 +45,8 @@ public sealed class RichText : View
 - **paint 解算**（脏时）：按**当前** `StyledText.Ranges` 与 layout canonical segment **文本区间交集**归并——segment 是"模型端点起始、再按换行/回退 face/script 细分"的实际几何片段（不跨任何模型端点但可在其内细分），映射取交集后按 segment 覆盖的唯一 style range / interaction range 解算 → resolved fg/bg/underline/strike + `ParagraphForeground`（环境）；hover Id 命中时该 Id 覆盖 segment 用 `LinkHoverStyle`（`TextPaintStyle`）覆盖字段。**不经 layout 回查旧 `StyledText`/`StyleIndex`**。装饰矩形合并（相邻 segment 同背景色）只影响绘制矩形数量，不改 glyph 几何。
 - Emit 命令顺序：背景矩形（相邻 segment 同背景合并、TrimEnd 内）→ 文本纹理（`RichTextTextureKey(LayoutIdentity, paint, PixelScale)`——core 稳定身份非 caller handle 引用，Tint=White，opacity=环境）→ underline → strikethrough。
 - `RichTextTextureKey = (LayoutIdentity, RichTextPaint 值, double PixelScale)`——`LayoutIdentity` 为 `RichLayoutCore` 的后端无关稳定身份（同 core 全 handle 共享；caller handle 只是所有权 wrapper 不入键，多 view 同 core 共享 raster/texture 缓存）。
-- `Rasterize`（Skia）：RGBA premultiplied `PixelBuffer`（Size×PixelScale）；run 色 alpha=255 入像素。
-- 纹理原点吸附复用 `TextPainter.ResolveOrigin` 同规则；`LayoutPropertiesEquivalent` 比较 `Content` 的 **GeometryKey**（分段拓扑+每段几何样式）+ Font/Alignment/Wrapping/LineHeight/LetterSpacing——**不**比颜色/payload（paint/interaction 变化走 `OnUpdate`+`PaintDirty`/hit 刷新，不触发 Measure）。
+- `Rasterize`（Skia）：RGBA premultiplied `PixelBuffer`（`RasterBounds` × PixelScale 向外取整：左/上 floor、右/下 ceil——墨迹可越 advance 盒，**不裁字**）；run 色 alpha=255 入像素。
+- 纹理原点：纹理放在 **排版原点 + `layout.RasterOrigin`**（=`floor(RasterBounds·scale)/scale`——位图像素 (0,0) 的逻辑坐标，可为负）；纹理尺寸对应 `RasterBounds`（不是 `layout.Size`）——视图按此把位图对齐回 caret/segment 逻辑坐标。负 bearing/斜体尾画的越界墨迹随位图落在 `layout.Size` 盒外属合法（`layout.Size` 仍只表示 advance 度量）。
 - handle 生命周期：`ViewCache` 持有；`OnUpdate`/`OnUnmount`/plain↔rich 切换 → `Dispose` 旧 handle（幂等）。
 - plain fast path `Emit` 与 `Text.Emit` 等价（Alpha8+tint）。
 

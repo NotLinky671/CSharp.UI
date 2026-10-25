@@ -11,6 +11,12 @@ public sealed record UiRuntimeServices
     /// <summary>文本服务（必需）；无文本能力时使用 <c>StubTextService</c>。</summary>
     public required ITextService TextService { get; init; }
 
+    /// <summary>
+    /// 富文本服务；null 表示宿主不支持富文本（<c>RichText</c> 富文本路径会明确报错）。
+    /// 与 <see cref="TextService"/> 可为同实例（Skia 实现同时实现两接口）。
+    /// </summary>
+    public IRichTextService? RichTextService { get; init; }
+
     /// <summary>纹理服务；无 GPU 能力时为 null（文本与图片命令会被跳过）。</summary>
     public ITextureService? TextureService { get; init; }
 
@@ -198,6 +204,10 @@ public sealed class UiRuntime : IDisposable
         if (scaleChanged)
         {
             Services.TextService.ClearCaches();
+            if (!ReferenceEquals(Services.RichTextService, Services.TextService))
+            {
+                Services.RichTextService?.ClearCaches();
+            }
             Services.TextureService?.Clear();
         }
     }

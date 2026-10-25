@@ -108,12 +108,18 @@ public sealed record UiApplicationOptions
 
     /// <summary>清屏色；null 表示使用主题背景色。</summary>
     public Color? ClearColor { get; init; }
-
     /// <summary>
     /// 文本服务；null 时宿主创建并持有 <c>CSharp.UI.Text.SkiaTextService</c>（退出时由宿主释放）。
     /// 由应用传入的实例由应用自行释放，宿主不会代为释放。
     /// </summary>
     public ITextService? TextService { get; init; }
+
+    /// <summary>
+    /// 富文本服务；null 时若 <see cref="TextService"/>（或宿主自建的默认实现）本身是
+    /// <see cref="IRichTextService"/> 则复用同一实例，否则为 null（外部只实现
+    /// <see cref="ITextService"/> 的实例不会被强转）。
+    /// </summary>
+    public IRichTextService? RichTextService { get; init; }
 
     /// <summary>
     /// 图片解码服务；null 时宿主创建并持有 <c>CSharp.UI.Text.SkiaImageService</c>（退出时由宿主释放）。

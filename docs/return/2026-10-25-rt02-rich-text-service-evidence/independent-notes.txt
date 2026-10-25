@@ -1,0 +1,149 @@
+RT-02 independent smoke evidence (verification agent rt02-verification)
+
+Binary under test — FROZEN SNAPSHOT copied 2026-10-25 to %TEMP%/rt02-smoke/lib
+(outside repo; repo was NOT built by this agent). Source-of-truth product bins:
+  src/CSharp.UI/bin/Debug/net10.0/CSharp.UI.dll        sha256 a0a53331...71e30
+  src/CSharp.UI.Text/bin/Debug/net10.0/CSharp.UI.Text.dll sha256 baffd6d6...97a5c
+Loaded-assembly provenance (Assembly.Location + live sha) is printed at the top
+of independent-smoke-stdout.txt — snapshot sha matches lib-sha.txt exactly.
+SkiaSharp 3.119.4 / HarfBuzzSharp 8.3.1.5 + win-x64 natives copied flat from the
+existing test bin (central-pinned versions; no repo restore triggered).
+
+How run: dotnet build && dotnet run (temp console, .NET 10, real public API only;
+no GL, no UI, no repo project references). Exit codes:
+  run1: FAIL 1/42 — test-side bug only: c3 compared caret stops to grapheme
+        STARTS but omitted the trailing Text.Length stop; implementation
+        emitted the correct full set [0,1,9,10,12,13]. Fixed expectation, rerun.
+        (The run-1 raw stdout was overwritten by the passing transcript in the
+        same path per single-file capture; recorded here instead of fabricating
+        a separate historical file.)
+  run2 (recorded): 42/42 PASS, exit 0.
+
+Coverage actually exercised (see stdout labels):
+  c1 mixed-size LineHeight clamp + per-segment baseline inside line box (42.7px
+     line, baseline 34.5 across 16px/32px runs — line-height clamp honoured).
+  c2 real RGBA premul raster: per-segment red 'f'/blue 'i' sampled by channel
+     (red=17px, blue=20px), premul invariant r,g,b≤a verified, semi-transparent
+     foreground produces real partial alpha (NOT forced opaque like plain mask),
+     same paint → raster cache hit, changed paint → +1 raster, swapped paint →
+     swapped colour distribution. PNG: c2-fi-red-blue.png (visual: red f, blue
+     i, no cross-boundary ligature merge).
+  c3 cross-style word "cattle dogs" with bold interior wraps whole word to L1
+     (not split at style boundary); ZWJ-emoji/combining/CJK caret stops equal
+     grapheme boundaries + end.
+  c4a 'ABCD' narrow wrap: shared wrap offset hit from both line sides
+     (end=2/start=2), cross-line GetRangeRects → 2 line-correct rects.
+  c4b same-topology different-text → different LayoutIdentity (7 vs 8);
+     colour-only change → same core; payload-only change → same core;
+     endpoint change → different core.
+  c4c Lines/Segments exposed as ReadOnlyCollection — not mutable-castable.
+  c5 multi-handle same core: sibling dispose survives; ClearCaches keeps held
+     handle rasterable; disposed handle + Rasterize → ObjectDisposedException;
+     Measure == Layout.Size; >64 distinct font sizes (pressure eviction) leaves
+     held handle raster valid.
+  c6 disposed service → Layout ODE; held handle geometry self-contained.
+
+Out of scope per RT-02 boundary: bg/underline/strike pixels (RT-03 view decor,
+paint fields verified only as cache key participants); no RichText view, no
+Markdown, no GL texture path.
+
+FINAL RUN (frozen binaries 649cdc32.../13e2bcef... — post-freeze snapshot lib-final):
+48 checks: 47 PASS + 1 real observation:
+  c4f italic 'fj' (Segoe UI 32, italic): production RGBA buffer 18x43 = ceil(advance
+  width). Real ink (proven via same production glyph IDs/points/leased SKFont redrawn
+  on a +64px padded canvas, same baseline/origin — 0 pixel mismatch inside overlap)
+  extends to prod x=18 → exactly 1px column of alpha clipped at the RIGHT edge.
+  clip L0 R1 T0 B0. This is italic ink overhang beyond advance — identical to plain
+  Alpha8 path semantics (same ceil(layout.Size.Width) buffer contract); consistent
+  established behavior, not an RT-02 regression. Reported for contract adjudication:
+  if raster must cover ink bounds, fix = pad buffer/rasterBounds (product fix owned
+  by implementer, not this agent).
+  Prior runs: two earlier FAIL lines in this case were FIXTURE bugs (wrong
+  expectation: forgot trailing caret stop; then an unshaped-advance estimate probe
+  + first-row-only rightmost scan + invented 2px tolerance — reverted per director).
+  Evidence: c4f-italic-fj.png (prod buffer), c4f-italic-fj-padded-ref.png (true ink).
+New coverage vs initial run:
+  c4d ParagraphFont fallbacks: different fallback list → different LayoutIdentity
+  (11 vs 12); equal fallback content re-requested → same core. PASS.
+  c4e script partition: 'ab'+Han+Arabic no-style-ranges → 3 canonical segments,
+  Han in own segment [2,3), full coverage. PASS.
+
+C4F GENERALIZED VERIFIER (same lib-final binaries, still PRE-RasterBounds-fix):
+Real ink vs production buffer, faithful production-glyph reference (0 mismatch in
+overlap at every case):
+  trailing 'fj' ps=1.0 : buf 18x43  clip L0 R1 T0 B0   (rasterBounds=(0,0,17.56,42.56)=Size)
+  trailing 'fj' ps=1.5 : buf 27x64  clip L0 R1 T0 B0
+  trailing 'fj' ps=2.0 : buf 36x86  clip L0 R1 T0 B0
+  leading  'jf' ps=1.0 : buf 18x43  clip L6 R4 T0 B0   (negative left bearing on italic j)
+All scale-consistent: clip is in LOGICAL units beyond advance box, grows with
+italic sidebearing, is identical across PixelScale (independent of scale rounding
+beyond ±1px). PNGs: c4f-fj-ps1p0/1p5/2p0.png (padded refs), c4f-jf-leading.png.
+Prior narrower statement (trailing-only 1px) superseded by this run: left-bearing
+clip on 'jf' is 6px — substantially larger, a real visible crop.
+
+T5-BINARY INTERIM RUN (snapshot lib-final refreshed to t5: 262169c1.../01c64555...):
+81/81 PASS exit 0 — RasterBounds fix verified by faithful same-production-glyph
+padded reference (drawn per canonical segment LineIndex + half-open cluster,
+mapped via RasterOrigin floor semantics — no advance guessing, no tolerances):
+  trailing 'fj' ps1/1.5/2 → RasterBounds right-extended to 18.875, all clip=0
+  leading  'jf' ps1 → RasterBounds=(-6,0,27.7,42.6) covers -6px left bearing, clip=0
+  wrapped 'q jq' with 'j' at line-1 start → RasterBounds=(-6,0,31.1,85.1), clip=0
+  RasterOrigin == floor(bounds*scale)/scale at every case; buffer dims ==
+  outward-rounded bounds; overlap pixel-identical (mismatch=0).
+c5b third-party non-IVT managed IRichTextService (CSharp.UI public surface only,
+  no IVT/Skia): public 13-param ctor + RetainHandle multi-handle same identity,
+  owner Dispose exactly once after all shares released, ODE on disposed handle,
+  real per-run-colored raster + hit test. PASS.
+NOTE: t6 half-open line-mapping patch still in-flight; this is an INTERIM result —
+final run waits for director's freeze gate on post-t6 binaries.
+
+FINAL FROZEN RUN (binaries 262169c1.../01c64555... — post-t6, source-frozen):
+82 checks, all PASS, exit 0. Includes:
+- c4f ink/RasterBounds: trailing-fj ×ps1/1.5/2, leading-jf, wrapped-j-line1-start —
+  all clip L0 R0 T0 B0, overlap mismatch=0 (same-production-glyph reference, drawn
+  per canonical segment LineIndex + half-open cluster, mapped via public
+  RasterOrigin; buffer dims == outward-rounded RasterBounds*scale).
+- c4g ligature-cross-line probe: 'office' Segoe UI 32 forced narrow wrap found
+  break at [0,3)|[3,6); production glyph run = 6 glyphs/6 clusters (IDs
+  82,73,73,76,70,72) — NO ffi/fi ligature formed by this font/shaper, so the
+  mid-ligature split scenario is NOT exercisable here. Confirmed: every drawn
+  glyph's cluster lies within its own line range (cross=0), both lines ink.
+  Honest result: 未观察到 — not claimed as defect, not claimed as verified-
+  ligature-safe (no ligature existed to test with).
+- c5b third-party non-IVT managed IRichTextService via public ctor+RetainHandle —
+  real geometry, owner disposed exactly once, ODE contract, per-run raster.
+
+FULL REGRESSION (this frozen source, fresh slnx --no-incremental):
+  Debug   build 0w0e 12.7s; Release build 0w0e 14.2s
+  CSharp.UI.Tests         670/670 Debug + 670/670 Release
+  CSharp.UI.Text.Tests    109/109 Debug + 109/109 Release
+  CSharp.UI.Integration    53/53  Debug +  53/53  Release
+  CSharp.UI.OpenTK        684/684 Debug + 684/684 Release
+  = 1516 tests per config, 3032 total, all green (direct exe runner; the earlier
+  'dotnet test' MSBuild-node failure raw was overwritten by exe output — noted,
+  not re-fabricated).
+Samples: 3 projects built Debug+Release 0 err; 6 window runs
+  (CSHARPUI_SMOKE_FRAMES=5, each exit 0, self-terminated).
+
+FINAL MANIFEST / SNAPSHOT SCOPE:
+final-source-sha.txt = filesystem walk of src/, tests/, samples/ — all code and
+build inputs (.cs/.csproj/.slnx/.props/.resx/.json/assets incl. tracked README),
+excluding bin/obj/.git/TestResults/artifacts. 237 files = 232 previously-tracked
++ 5 new untracked RT-02 files (RichTextContracts.cs, RichTextLayoutBuilder.cs,
+SkiaTextService.Rich.cs, RichTextServiceTests.cs, RichTextServiceStubTests.cs).
+All hashes re-verified against current disk: 0 missing, 0 drift. Earlier
+232-entry version (git ls-files only) silently missed the 5 untracked files —
+corrected, recorded here, not hidden.
+
+Step exits (all captured via direct subprocess return codes, not inferred):
+  slnx fresh builds        : Debug exit 0, Release exit 0 (--no-incremental -m1
+                             -nodeReuse:false, 0w0e each)
+  4 suites via exe runner  : exit 0 ×8 (Debug+Release; 670+109+53+684=1516/cfg)
+  3 sample builds          : exit 0 ×6 (Debug+Release)
+  6 window smokes          : exit 0 ×6 (CSHARPUI_SMOKE_FRAMES=5 self-terminated)
+  independent smoke        : exit 0, 82/82 checks PASS
+Historical note: earliest 'dotnet test' MSBuild-node infrastructure-failure raw
+was overwritten when the same path was reused for exe-runner output; the failure
+was environment-level (runner pipe), not test failures — recorded, not
+re-fabricated. Primary record should cite final-frozen-* files (esp.
+final-frozen-independent-stdout.txt for the 82-check run).

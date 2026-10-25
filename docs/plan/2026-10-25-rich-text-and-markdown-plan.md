@@ -2,7 +2,7 @@
 
 计划日期：2026-10-25
 
-状态：**实施中**（RT-01 已完成；其余任务未开始，待授权）。
+状态：**实施中**（RT-01、RT-02 已完成并验收；其余任务未开始，待授权）。
 
 关联：前置任务组 FS-01~FS-07（Floating 滚动条）已完成并归档至 [docs/archive/2026-10-25-floating-scrollbar-tasks/](../archive/2026-10-25-floating-scrollbar-tasks/README.md)。
 
@@ -157,7 +157,7 @@ public interface IRichTextService
 
 - 段落切分/断行机会/`TrimEnd` 语义与 `TextLayoutBuilder` 同域（同组换行码点、拉丁空白/连字符、CJK 逐字素、超词硬断、行尾空白不推进）。
 - 断行机会只看字符属性不看区间边界（英文单词跨 bold 不拆行）；advance 按 shape 段累加。
-- 行几何：行高 = `max(LineHeight>0 ? LineHeight : 0, max(ascent)+max(descent))`——**`LineHeight` 下限即行内 max(ascent)+max(descent)**：显式值小于字高时按字高取（钳制），glyph 不越行盒、RGBA 纹理按 `layout.Size` 即完整覆盖，无需额外 ink bounds 契约；baseline = leading/2 + max(ascent)；run 按 baseline 对齐。此钳制语义已冻结（glyph 不被纹理截断，行距过小的请求被合法收敛）。
+- 行几何：行高 = `max(LineHeight>0 ? LineHeight : 0, max(ascent)+max(descent))`——**`LineHeight` 下限即行内 max(ascent)+max(descent)**：显式值小于字高时按字高取（钳制），baseline = leading/2 + max(ascent)；run 按 baseline 对齐。此钳制语义已冻结。**修订（RT-02 实施后）**：逻辑 `layout.Size`（advance 度量）不变；**墨迹不总落在 advance 盒内**——斜体尾画、j 类负 bearing 可左右越界，故 `RichTextLayoutResult` 增加 `RasterBounds`（逻辑坐标，glyph ink bounds ∪ 布局盒）与 `RasterOrigin`（=`floor(bounds·PixelScale)/scale`，位图像素 (0,0) 的逻辑坐标）；RGBA 纹理按 `RasterBounds` 在 `PixelScale` 下向外取整（左/上 floor、右/下 ceil）完整覆盖，**不裁字**。
 - canonical segment = 不跨任何模型端点的实际几何片段（以模型端点起始，可在其内因换行/回退 face/script 再细分）；paint 同色合并只影响装饰矩形批次，不改变几何。
 
 ### 决策五：`RichText` 视图与 Emit 无额外富文本分配

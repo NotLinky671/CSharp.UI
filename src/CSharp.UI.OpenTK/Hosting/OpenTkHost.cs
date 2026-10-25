@@ -190,6 +190,8 @@ internal sealed class OpenTkHost : IDisposable
             {
                 Dispatcher = _dispatcher,
                 TextService = textService,
+                // null → 复用 TextService 若其实现 IRichTextService；外部单接口实现不强转（得 null）。
+                RichTextService = options.RichTextService ?? (textService as IRichTextService),
                 TextureService = _textures,
                 ImageService = imageService,
                 Clipboard = options.ClipboardService ?? _clipboard,

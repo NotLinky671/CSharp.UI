@@ -1,0 +1,45 @@
+ASM CSharp.UI location=C:\Users\nothh\AppData\Local\Temp\rt02-smoke\bin\Debug\net10.0\CSharp.UI.dll sha256=a0a5333150635fa8b6e6a1c549c591d56c8db27c5c42fe6bb3edee47b3071e30
+ASM CSharp.UI.Text location=C:\Users\nothh\AppData\Local\Temp\rt02-smoke\bin\Debug\net10.0\CSharp.UI.Text.dll sha256=baffd6d6fdd4352211240dd6824c5d1ae4fa7f42d2463cfbe589a12334a97a5c
+ASM SkiaSharp location=C:\Users\nothh\AppData\Local\Temp\rt02-smoke\bin\Debug\net10.0\SkiaSharp.dll sha256=aaaaa18c68ba1f3a3408b00dff28b11d5705198e17ba9d3aa59222bfd35407c8
+PASS c1.mixed-size height ≥ max font size h=42.7
+PASS c1.segments ≥2 n=4
+PASS c1.single line 
+PASS c1.lineheight clamp ≥ glyph height clamped=42.7 natural=42.7
+PASS c1.seg[0,1) baseline in line box b=34.5 box=[0.0,42.7]
+PASS c1.seg[1,2) baseline in line box b=34.5 box=[0.0,42.7]
+PASS c1.seg[2,3) baseline in line box b=34.5 box=[0.0,42.7]
+PASS c1.seg[3,4) baseline in line box b=34.5 box=[0.0,42.7]
+PASS c2.rgba format Rgba8888Premultiplied
+PASS c2.premul invariant r,g,b≤a 
+PASS c2.red 'f' pixels present red=17
+PASS c2.blue 'i' pixels present blue=20
+PASS c2.same paint → raster cache hit 
+PASS c2.paint change → +1 raster n=2
+PASS c2.swapped paint → swapped color distribution 
+PASS c2.semi-alpha premul invariant 
+PASS c2.semi-alpha produces partially-transparent red glyph pixels (not alpha=255) 
+PASS c3.word spanning style boundary not split lines=2 L1='cattle '
+PASS c3.caret stops == grapheme boundaries + end stops=[0,1,9,10,12,13] expected=[0,1,9,10,12,13]
+PASS c4a.ABCD wraps to ≥2 lines lines=2
+PASS c4a.shared stop hit both sides end=2 start=2 shared=2
+PASS c4a.cross-line range → 2 rects n=2
+PASS c4a.rects on successive lines 
+PASS c4a.line0 rect bounded by line0 
+PASS c4a.line1 rect starts at line1 left 
+PASS c4b.same topology different text → different core RichLayoutIdentity { Value = 7 } vs RichLayoutIdentity { Value = 8 }
+PASS c4b.same topology color-only diff → same core 
+PASS c4b.payload value change → same core 
+PASS c4b.endpoint change → different core 
+PASS c4c.Lines not mutable-castable ReadOnlyCollection`1
+PASS c4c.Segments not mutable-castable ReadOnlyCollection`1
+PASS c5.same core multi-handle 
+PASS c5.sibling handle survives dispose 
+PASS c5.raster after sibling dispose 
+PASS c5.raster after ClearCaches on held handle 
+PASS c5.disposed handle throws ODE 
+PASS c5.rasterize disposed → ODE 
+PASS c5.Measure == Layout.Size 
+PASS c5.>64 font pressure → held handle raster still valid 
+PASS c6.disposed service Layout → ODE 
+PASS c6.held handle geometry survives service dispose 
+DONE failures=0 evidence=C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-25-rt02-rich-text-service-evidence

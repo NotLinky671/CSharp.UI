@@ -66,7 +66,7 @@ dotnet run --project tests/CSharp.UI.Tests
 - [编写自定义组件](docs/guide/custom-components.md)
 - [平台、字体与原生依赖](docs/guide/platform-notes.md)
 - [测试指南](docs/guide/testing.md)
-- 设计与任务：[首版计划](docs/plan/2026-10-14-declarative-ui-framework-plan.md)、[响应式布局计划](docs/plan/2026-10-16-responsive-layout-plan.md)、[文本编辑器计划](docs/plan/2026-10-23-text-editor-plan.md)、[滚动条计划](docs/plan/2026-10-23-scrollbar-plan.md)、[Floating 滚动条计划](docs/plan/2026-10-23-floating-scrollbar-plan.md)、[富文本与 Markdown 计划](docs/plan/2026-10-25-rich-text-and-markdown-plan.md)（规划完成，待用户授权实施）、[当前任务](docs/task/README.md)、[任务历史归档](docs/archive/)、[首版验收记录](docs/archive/2026-10-14-framework-tasks/README.md)、[响应式布局交付记录](docs/delivery/2026-10-16-responsive-layout-delivery.md)
+- 设计与任务：[首版计划](docs/plan/2026-10-14-declarative-ui-framework-plan.md)、[响应式布局计划](docs/plan/2026-10-16-responsive-layout-plan.md)、[文本编辑器计划](docs/plan/2026-10-23-text-editor-plan.md)、[滚动条计划](docs/plan/2026-10-23-scrollbar-plan.md)、[Floating 滚动条计划](docs/plan/2026-10-23-floating-scrollbar-plan.md)、[富文本与 Markdown 计划](docs/plan/2026-10-25-rich-text-and-markdown-plan.md)（实施中——RT-01 样式文本模型与 RT-02 富文本排版服务已完成；其余任务未授权）、[当前任务](docs/task/README.md)、[任务历史归档](docs/archive/)、[首版验收记录](docs/archive/2026-10-14-framework-tasks/README.md)、[响应式布局交付记录](docs/delivery/2026-10-16-responsive-layout-delivery.md)
 
 ## 响应式布局
 

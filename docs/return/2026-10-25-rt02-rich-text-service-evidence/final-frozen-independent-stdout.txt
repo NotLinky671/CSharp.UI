@@ -1,0 +1,103 @@
+ASM CSharp.UI location=C:\Users\nothh\AppData\Local\Temp\rt02-smoke\bin\Debug\net10.0\CSharp.UI.dll sha256=262169c17a56ee38ca023cf4f238d89997c61c20a8ed8a4df7f159a8e428c9bd
+ASM CSharp.UI.Text location=C:\Users\nothh\AppData\Local\Temp\rt02-smoke\bin\Debug\net10.0\CSharp.UI.Text.dll sha256=01c6455589e8418fcf01eddfb581e8a090b8626780b95846b81f6b45239861a9
+ASM SkiaSharp location=C:\Users\nothh\AppData\Local\Temp\rt02-smoke\bin\Debug\net10.0\SkiaSharp.dll sha256=aaaaa18c68ba1f3a3408b00dff28b11d5705198e17ba9d3aa59222bfd35407c8
+PASS c1.mixed-size height ≥ max font size h=42.7
+PASS c1.segments ≥2 n=4
+PASS c1.single line 
+PASS c1.lineheight clamp ≥ glyph height clamped=42.7 natural=42.7
+PASS c1.seg[0,1) baseline in line box b=34.5 box=[0.0,42.7]
+PASS c1.seg[1,2) baseline in line box b=34.5 box=[0.0,42.7]
+PASS c1.seg[2,3) baseline in line box b=34.5 box=[0.0,42.7]
+PASS c1.seg[3,4) baseline in line box b=34.5 box=[0.0,42.7]
+PASS c2.rgba format Rgba8888Premultiplied
+PASS c2.premul invariant r,g,b≤a 
+PASS c2.red 'f' pixels present red=17
+PASS c2.blue 'i' pixels present blue=20
+PASS c2.same paint → raster cache hit 
+PASS c2.paint change → +1 raster n=2
+PASS c2.swapped paint → swapped color distribution 
+PASS c2.semi-alpha premul invariant 
+PASS c2.semi-alpha produces partially-transparent red glyph pixels (not alpha=255) 
+PASS c3.word spanning style boundary not split lines=2 L1='cattle '
+PASS c3.caret stops == grapheme boundaries + end stops=[0,1,9,10,12,13] expected=[0,1,9,10,12,13]
+PASS c4a.ABCD wraps to ≥2 lines lines=2
+PASS c4a.shared stop hit both sides end=2 start=2 shared=2
+PASS c4a.cross-line range → 2 rects n=2
+PASS c4a.rects on successive lines 
+PASS c4a.line0 rect bounded by line0 
+PASS c4a.line1 rect starts at line1 left 
+PASS c4b.same topology different text → different core RichLayoutIdentity { Value = 7 } vs RichLayoutIdentity { Value = 8 }
+PASS c4b.same topology color-only diff → same core 
+PASS c4b.payload value change → same core 
+PASS c4b.endpoint change → different core 
+PASS c4c.Lines not mutable-castable ReadOnlyCollection`1
+PASS c4c.Segments not mutable-castable ReadOnlyCollection`1
+PASS c4d.different fallbacks → different core RichLayoutIdentity { Value = 11 } vs RichLayoutIdentity { Value = 12 }
+PASS c4d.equal fallback values → same core 
+PASS c4e.segments cover text sum=5 len=5
+PASS c4e.Han grapheme in its own segment (script split) hanSeg=[2,3)
+PASS c4e.script partitions produce ≥2 segments n=3
+  c4f.trailing-italic-j-ps1p0 rasterBounds=(0, 0, 18.875×42.563) rasterOrigin=(0, 0) size=17.563×42.563 scale=1 buf=19x43
+PASS c4f.trailing-italic-j-ps1p0.RasterOrigin == floor(RasterBounds*scale)/scale origin=(0,0) expected=(0,0)
+PASS c4f.trailing-italic-j-ps1p0.buffer dims == outward-rounded RasterBounds*scale buf=19x43 expected=19x43
+PASS c4f.trailing-italic-j-ps1p0.reference has ink ink=[64,75..82,105] ref=147x171
+  c4f.trailing-italic-j-ps1p0 clip px L0 R0 T0 B0
+PASS c4f.trailing-italic-j-ps1p0.all production ink inside raster buffer clip L0 R0 T0 B0 buf=19x43
+PASS c4f.trailing-italic-j-ps1p0.overlap pixel-identical to production mismatch=0
+  c4f.trailing-italic-j-ps1p5 rasterBounds=(0, 0, 18.875×42.563) rasterOrigin=(0, 0) size=17.563×42.563 scale=1.5 buf=29x64
+PASS c4f.trailing-italic-j-ps1p5.RasterOrigin == floor(RasterBounds*scale)/scale origin=(0,0) expected=(0,0)
+PASS c4f.trailing-italic-j-ps1p5.buffer dims == outward-rounded RasterBounds*scale buf=29x64 expected=29x64
+PASS c4f.trailing-italic-j-ps1p5.reference has ink ink=[64,80..91,126] ref=157x192
+  c4f.trailing-italic-j-ps1p5 clip px L0 R0 T0 B0
+PASS c4f.trailing-italic-j-ps1p5.all production ink inside raster buffer clip L0 R0 T0 B0 buf=29x64
+PASS c4f.trailing-italic-j-ps1p5.overlap pixel-identical to production mismatch=0
+  c4f.trailing-italic-j-ps2p0 rasterBounds=(0, 0, 18.875×42.563) rasterOrigin=(0, 0) size=17.563×42.563 scale=2 buf=38x86
+PASS c4f.trailing-italic-j-ps2p0.RasterOrigin == floor(RasterBounds*scale)/scale origin=(0,0) expected=(0,0)
+PASS c4f.trailing-italic-j-ps2p0.buffer dims == outward-rounded RasterBounds*scale buf=38x86 expected=38x86
+PASS c4f.trailing-italic-j-ps2p0.reference has ink ink=[64,85..100,148] ref=166x214
+  c4f.trailing-italic-j-ps2p0 clip px L0 R0 T0 B0
+PASS c4f.trailing-italic-j-ps2p0.all production ink inside raster buffer clip L0 R0 T0 B0 buf=38x86
+PASS c4f.trailing-italic-j-ps2p0.overlap pixel-identical to production mismatch=0
+  c4f.leading-italic-j rasterBounds=(-6, 0, 27.688×42.563) rasterOrigin=(-6, 0) size=17.125×42.563 scale=1 buf=28x43
+PASS c4f.leading-italic-j.RasterOrigin == floor(RasterBounds*scale)/scale origin=(-6,0) expected=(-6,0)
+PASS c4f.leading-italic-j.buffer dims == outward-rounded RasterBounds*scale buf=28x43 expected=28x43
+PASS c4f.leading-italic-j.reference has ink ink=[64,75..91,105] ref=156x171
+  c4f.leading-italic-j clip px L0 R0 T0 B0
+PASS c4f.leading-italic-j.all production ink inside raster buffer clip L0 R0 T0 B0 buf=28x43
+PASS c4f.leading-italic-j.overlap pixel-identical to production mismatch=0
+  c4f.wrapped-j-line1-start rasterBounds=(-6, 0, 31.063×85.125) rasterOrigin=(-6, 0) size=25.063×85.125 scale=1 buf=32x86
+PASS c4f.wrapped-j-line1-start.RasterOrigin == floor(RasterBounds*scale)/scale origin=(-6,0) expected=(-6,0)
+PASS c4f.wrapped-j-line1-start.buffer dims == outward-rounded RasterBounds*scale buf=32x86 expected=32x86
+PASS c4f.wrapped-j-line1-start.reference has ink ink=[64,83..94,147] ref=160x214
+  c4f.wrapped-j-line1-start clip px L0 R0 T0 B0
+PASS c4f.wrapped-j-line1-start.all production ink inside raster buffer clip L0 R0 T0 B0 buf=32x86
+PASS c4f.wrapped-j-line1-start.overlap pixel-identical to production mismatch=0
+  c4g setup w=46 line0=[0,3) line1=[3,6)
+  c4g run clusters=[0,1,2,3,4,5] glyphs=[82,73,73,76,70,72]
+  c4g glyphruns=1 glyphs=6 shared-cluster glyphs=0
+  c4g cross-line cluster draws=0
+PASS c4g.no glyph drawn on line not owning its cluster cross=0
+PASS c4g.raster has ink 
+PASS c4g.line 'off' has ink y[0,42]
+PASS c4g.line 'ice' has ink y[42,85]
+PASS c5.same core multi-handle 
+PASS c5.sibling handle survives dispose 
+PASS c5.raster after sibling dispose 
+PASS c5.raster after ClearCaches on held handle 
+PASS c5.disposed handle throws ODE 
+PASS c5.rasterize disposed → ODE 
+PASS c5.Measure == Layout.Size 
+PASS c5.>64 font pressure → held handle raster still valid 
+PASS c5b.managed layout real geometry lines=3 segs=3
+PASS c5b.managed RasterBounds real (0, 0, 30×62.4)
+PASS c5b.managed multi-handle same core 
+PASS c5b.managed distinct handle objects 
+PASS c5b.owner alive while handles+cache share remain disposed=0
+PASS c5b.managed real raster pixels 30x63
+PASS c5b.managed hit test works 
+PASS c5b.owner survives caller dispose (cache share holds) disposed=0
+PASS c5b.owner disposed exactly once after all shares released disposed=1
+PASS c5b.managed disposed handle → ODE 
+PASS c6.disposed service Layout → ODE 
+PASS c6.held handle geometry survives service dispose 
+DONE failures=0 evidence=C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-25-rt02-rich-text-service-evidence

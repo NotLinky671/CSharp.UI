@@ -22,7 +22,7 @@ namespace CSharp.UI.Skia;
 /// 线程约定：与核心一致，只在 UI 线程使用。实例不是线程安全的。
 /// </para>
 /// </remarks>
-public sealed class SkiaTextService : ITextService, IDisposable
+public sealed partial class SkiaTextService : ITextService, IDisposable
 {
     /// <summary>排版缓存默认容量。</summary>
     public const int DefaultLayoutCacheCapacity = 128;
@@ -36,6 +36,7 @@ public sealed class SkiaTextService : ITextService, IDisposable
     private readonly LruCache<TextRasterKey, PixelBuffer> _rasters;
     private readonly SkiaFontResolver _fonts;
     private readonly TextLayoutBuilder _builder;
+    private readonly RichTextLayoutBuilder _richBuilder;
     private readonly List<TextDiagnostic> _diagnostics = [];
     private readonly HashSet<string> _diagnosticKeys = new(StringComparer.Ordinal);
     private int _layoutMisses;
@@ -53,6 +54,7 @@ public sealed class SkiaTextService : ITextService, IDisposable
         _rasters = new LruCache<TextRasterKey, PixelBuffer>(Math.Max(1, rasterCacheCapacity));
         _fonts = new SkiaFontResolver(ReportDiagnostic);
         _builder = new TextLayoutBuilder(_fonts);
+        _richBuilder = new RichTextLayoutBuilder(_fonts);
     }
 
     /// <summary>字体解析或字形回退的诊断记录（按需累积，最多 64 条，去重）。</summary>
@@ -93,7 +95,12 @@ public sealed class SkiaTextService : ITextService, IDisposable
     public int LayoutCacheCapacity
     {
         get => _layouts.Capacity;
-        set => _layouts.Capacity = Math.Max(1, value);
+        set
+        {
+            var capacity = Math.Max(1, value);
+            _layouts.Capacity = capacity;
+            _richLayouts.Capacity = capacity;
+        }
     }
 
     /// <summary>栅格缓存容量上限；超出后按最近最少使用淘汰。</summary>
@@ -166,6 +173,7 @@ public sealed class SkiaTextService : ITextService, IDisposable
     {
         _layouts.Clear();
         _rasters.Clear();
+        ClearRichCaches();
         _fonts.Clear();
     }
 

@@ -2,7 +2,7 @@
 
 创建日期：2026-10-25
 
-状态：**待实施**（规划完成，待用户授权）
+状态:**已完成并主审验收通过**(2026-10-25 冻结；独立 82-check API smoke 0 fail、四套件双配置全绿)
 
 阶段：A
 
@@ -32,14 +32,14 @@ public interface IRichTextService
 {
     RichTextLayoutResult Layout(RichTextLayoutRequest request);              // 每次返回新 handle
     Size Measure(RichTextLayoutRequest request);
-    PixelBuffer Rasterize(RichTextLayoutResult layout, RichTextPaint paint);  // RGBA premultiplied
+    PixelBuffer Rasterize(RichTextLayoutResult layout, RichTextPaint paint);  // RGBA premultiplied；buffer = RasterBounds×PixelScale 向外取整（不裁字）
     int CachedLayoutCount { get; }
     int CachedRasterCount { get; }
     int LayoutCacheCapacity { get; set; }
     void ClearCaches();
 }
 ```
-
+- `RichTextLayoutResult`（公开，`IDisposable` handle）：`Size`/`Lines`/`CaretStops`/`CaretXs`/`HitTestIndex`/`GetRangeBounds`/canonical `Segments`（每行 `{Start,End,ResolvedFontId,X,Width,Baseline}`）+ `RasterBounds`/`RasterOrigin`（墨迹包围盒与位图原点，逻辑坐标——墨迹可越 advance 盒）。**不持** `StyledText`/`StyleIndex`/payload 引用——paint 解算在视图侧按当前 `Ranges` 与 segment 文本区间归并（决策二）。**外部 `IRichTextService` 实现可仅凭公开 API 构造**（`RichTextLayoutResult` 公开 ctor + `ResolvedFontIdentity.Create`/`NextFaceId` + 公开 `LineCarets` + `RetainHandle()`；可选 `IDisposable owner` 末句柄归还一次）——测试替身可无字体构造，不需要 Skia/IVT。
 - `RichTextLayoutRequest`（GeometryKey）：`Text` + **分段端点拓扑** + 每 segment resolved font 度量字段（Family/Size/Weight/Italic——由 `StyledText` 预算签名提供）+ `ParagraphFont` + `MaxWidth`/`Wrapping`/`Alignment`/`LineHeight`/`PixelScale`/`LetterSpacing`。**颜色/payload 值不进键**。
 - `RichTextPaint`：`IReadOnlyList<RichTextRunPaint>`（与 canonical segment 一一对应：resolved fg/bg/underline/strike）+ `Color ParagraphForeground`。栅格缓存键=`(core 引用, paint 值相等)`。
 - `RichTextLayoutResult`（公开，`IDisposable` handle）：`Size`/`Lines`/`CaretStops`/`CaretXs`/`HitTestIndex`/`GetRangeBounds`/canonical `Segments`（每行 `{Start,End,ResolvedFontId,X,Width,Baseline}`）。**不持** `StyledText`/`StyleIndex`/payload 引用——paint 解算在视图侧按当前 `Ranges` 与 segment 文本区间归并（决策二）。测试替身可无字体构造。
