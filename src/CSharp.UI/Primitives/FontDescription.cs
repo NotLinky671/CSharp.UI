@@ -42,6 +42,18 @@ public sealed record FontFamily
     /// <summary>平台默认字体（由文本服务选择，并按缺字回退覆盖中英文）。</summary>
     public static readonly FontFamily Default = new();
 
+    /// <summary>
+    /// 返回与本描述相等、但 <see cref="Fallbacks"/> 已冻结为独立只读集合的副本。
+    /// 供不可变模型（<see cref="StyledText"/>）快照样式时调用——<see cref="Fallbacks"/> 的公开类型
+    /// <see cref="IReadOnlyList{String}"/> 可能由调用方持有可变的底层引用，不改既有公开语义。
+    /// </summary>
+    internal FontFamily FrozenSnapshot() => new()
+    {
+        FilePath = FilePath,
+        FamilyName = FamilyName,
+        Fallbacks = new System.Collections.ObjectModel.ReadOnlyCollection<string>([.. Fallbacks]),
+    };
+
     private FontFamily()
     {
     }

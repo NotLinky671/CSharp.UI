@@ -4,7 +4,7 @@
 
 设计依据：[只读富文本基础与 Markdown 接入实施计划](../plan/2026-10-25-rich-text-and-markdown-plan.md)。
 
-状态：**规划完成，待用户授权实施**。上一轮任务组 FS-01~FS-07（Floating 滚动条）已完成并归档至 [docs/archive/2026-10-25-floating-scrollbar-tasks/](../archive/2026-10-25-floating-scrollbar-tasks/README.md)。
+状态：**实施中**（RT-01 已完成并验收；其余任务未开始）。
 
 ## 核心决策（已冻结，见计划全文）
 
@@ -21,7 +21,7 @@
 
 | 完成 | ID | 任务 | 前置依赖 | 阶段 |
 |---|---|---|---|---|
-| ☐ | RT-01 | [StyledText 模型：展示文本、样式区间、交互区间](01-styled-text-model.md) | 无 | A |
+| ☑ | RT-01 | [StyledText 模型：展示文本、样式区间、交互区间](01-styled-text-model.md) | 无 | A |
 | ☐ | RT-02 | [IRichTextService 契约、Skia 排版实现与 face lease](02-rich-text-service.md) | RT-01 | A |
 | ☐ | RT-03 | [RichText 视图：paint 解算、装饰、纹理缓存](03-rich-text-view.md) | RT-02 | B |
 | ☐ | RT-04 | [链接 hit：run 矩形命中与 Id 身份状态机](04-rich-text-link-hit.md) | RT-03 | B |

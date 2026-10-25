@@ -2,7 +2,7 @@
 
 计划日期：2026-10-25
 
-状态：**规划完成，待用户授权实施**。
+状态：**实施中**（RT-01 已完成；其余任务未开始，待授权）。
 
 关联：前置任务组 FS-01~FS-07（Floating 滚动条）已完成并归档至 [docs/archive/2026-10-25-floating-scrollbar-tasks/](../archive/2026-10-25-floating-scrollbar-tasks/README.md)。
 

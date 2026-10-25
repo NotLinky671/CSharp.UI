@@ -1,0 +1,35 @@
+PASS dict-lookup-separate-instance: TryGetValue(independent equal instance)=True value=42; expected True/42
+PASS dict-distinct-key-not-echo: keys are distinct objects
+PASS mutation-hash-stable: hash 240536775==240536775
+PASS mutation-topology-stable: topology hash -1343733303==-1343733303
+PASS mutation-dict-key-valid: self lookup after caller mutation
+PASS mutation-fallbacks-frozen: frozen fallbacks=[Arial]; caller list now [MUT,EVIL]
+PASS ranges-snapshot: caller list edit did not leak
+PASS interactions-snapshot: cleared caller list did not leak
+PASS color-only-topology-same: TopologyEquals=True
+PASS color-only-full-differs: full equality sees Foreground
+PASS id-only-topology-same: interaction Id not in topology
+PASS id-only-full-differs: full equality sees Id
+PASS url-only-topology-same: payload URL not in topology
+PASS url-only-full-differs: full equality sees payload
+PASS endpoint-shift-topology-differs: interaction end 4->5 changes boundaries
+PASS interaction-split-inherits-bold: segments=3 weights=[Bold,Bold,Bold] expected 3 all Bold
+INFO boundaries=[0,2,4,6]
+PASS half-normal-not-same-geometry: bold|normal signature differs from all-bold
+INFO emoji len=10 graphemeStarts=[0,1,9]
+PASS emoji-legal-full-range: full range on ZWJ text ok
+PASS emoji-split-surrogate: ArgumentException("区间端点 2 不在字素边界上（会切开代理对/组合序列/ZWJ 序列）…")
+PASS emoji-split-zwj: ArgumentException("区间端点 4 不在字素边界上（会切开代理对/组合序列/ZWJ 序列）…")
+PASS combining-split: ArgumentException("区间端点 1 不在字素边界上（会切开代理对/组合序列/ZWJ 序列）…")
+PASS flag-split: ArgumentException("区间端点 1 不在字素边界上（会切开代理对/组合序列/ZWJ 序列）…")
+INFO flag len=5 graphemeStarts=[0,4]
+PASS flag-pair-legal: regional indicator pair boundary at 4 ok
+PASS unsorted-normalized: sorted=[0,4]
+PASS orthogonal-overlap-legal: interaction overlaps both style ranges
+PASS overlap-same-table: ArgumentException("样式区间重叠：[0,3) 与 [2,5)…")
+PASS out-of-range: ArgumentException("样式区间越界：[0,9) 超出文本长度 3…")
+PASS empty-range: ArgumentException("样式区间为空或逆序：[1,1)…")
+PASS negative-start: ArgumentException("样式区间越界：[-1,2) 超出文本长度 3…")
+PASS plain-create: HasRichContent false
+PASS empty-text-legal: zero text ok
+RESULT pass=31 fail=0
