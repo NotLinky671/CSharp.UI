@@ -1,0 +1,139 @@
+{
+  "date": "2026-10-25",
+  "scope": "Floating-scrollbar demo viewport-width fix — GL offscreen 4-scenario + ControlGallery builds + real-window smoke",
+  "productBinariesVerified": {
+    "ControlGallery.dll": "0d1775a718c118900ea689d9e35e00c717d4894f43ea2be14f4864db1ebe48d3",
+    "CSharp.UI.dll": "9f5b59fe3ab39e9cbf2db9a02e50f770b2816126c111e418ebc28d853ec04ccd",
+    "CSharp.UI.Text.dll": "9373a7ca289898131df11bf901500271940c43585a34a307653c7fc544ec3fc2",
+    "CSharp.UI.OpenTK.dll": "0c81c44755bbb166302d0719c0fd6ab82a7a447aaf433d9c7086c8f5a56b06b1",
+    "Program.cs": "6eb4627e97755c40f4a4dadf9641b3a7fd929e7b5b161aa64fdba879ef3a70f8",
+    "GalleryScrollbarDemoLayoutTests.cs": "9d1545944f0dcd6163c74a29872c32856f8b55a6434a8037815e120cf98561a5 (final frozen; supersedes failed variant 0a1bdc19 kept as history)",
+    "CSharp.UI.OpenTK.Tests.dll (Debug)": "8bea5621fcd767c45e322d3367004efcb5b57fadd4869e1f1bff53f8189d0e68"
+  },
+  "runs": [
+    {
+      "step": "fsdemo 4-scenario GL offscreen (w320/w1024 x light/dark)",
+      "argv": "dotnet CSharp.UI.OpenTK.Tests.dll (harness ~/.omp/tmp/fsdemo-driver, assembly renamed for InternalsVisibleTo; refs = frozen sample-bin DLLs)",
+      "exit": 0,
+      "checks": "90 PASS / 0 FAIL",
+      "log": "final-fsdemo-run.txt",
+      "stderr": "final-fsdemo-stderr.txt",
+      "notes": "Real GalleryApp + SkiaTextService + GlOffscreenSurface; floating toggled via real DispatchPointer click on the Toggle control; scrolling via DispatchWheel WheelDeltaMode.Pixels (never sets ScrollOffset); hide via TestUiClock +1100ms + OnClockTick. Dark = real 暗色主题 button click + SetEnvironment; ResolvedTheme.IsDark verified at demo node. Thumb color = ControlBackground->Foreground lerp 0.40 (#ffa4a5a6 light, #ff72757b dark). Demo viewport = parent content width (w320: 244, w1024: 948); thumb at viewport right edge; text ink ends left of thumb; Standard gutter 12 restored on toggle-back; horizontal demo FillWidth + bottom thumb."
+    },
+    {
+      "step": "dotnet build samples/CSharp.UI.Samples.ControlGallery -c Debug --no-incremental -m:1 -nodeReuse:false",
+      "exit": 0,
+      "warnings": 0,
+      "errors": 0,
+      "stdout": "build-gallery-Debug.stdout.txt",
+      "stderr": "build-gallery-Debug.stderr.txt"
+    },
+    {
+      "step": "dotnet build samples/CSharp.UI.Samples.ControlGallery -c Release --no-incremental -m:1 -nodeReuse:false",
+      "exit": 0,
+      "warnings": 0,
+      "errors": 0,
+      "stdout": "build-gallery-Release.stdout.txt",
+      "stderr": "build-gallery-Release.stderr.txt"
+    },
+    {
+      "step": "CSHARPUI_SMOKE_FRAMES=5 ControlGallery.exe (Debug) real window",
+      "exit": 0,
+      "stdout": "smoke-Debug.stdout.txt",
+      "stderr": "smoke-Debug.stderr.txt",
+      "result": "5 frames rendered; logical 900x700; framebuffer 1350x1050; DPI 1.5; GL 3.3.0 Intel"
+    },
+    {
+      "step": "CSHARPUI_SMOKE_FRAMES=5 ControlGallery.exe (Release) real window",
+      "exit": 0,
+      "stdout": "smoke-Release.stdout.txt",
+      "stderr": "smoke-Release.stderr.txt",
+      "result": "5 frames rendered; logical 900x700; framebuffer 1350x1050; DPI 1.5; GL 3.3.0 Intel"
+    },
+    {
+      "step": "dotnet build tests/CSharp.UI.OpenTK.Tests -c Debug --no-incremental -m:1 -nodeReuse:false",
+      "exit": 1,
+      "stdout": "build-opentk-tests-Debug.stdout.txt",
+      "stderr": "build-opentk-tests-Debug.stderr.txt",
+      "result": "3 compile errors in GalleryScrollbarDemoLayoutTests.cs (test sha 0a1bdc19): Assert.Same 3-arg overload CS1501 x2 + unassigned 'bar' CS0165 — test-source issue, fix owned by good"
+    },
+    {
+      "step": "dotnet build tests/CSharp.UI.OpenTK.Tests -c Release --no-incremental -m:1 -nodeReuse:false",
+      "exit": 1,
+      "stdout": "build-opentk-tests-Release.stdout.txt",
+      "stderr": "build-opentk-tests-Release.stderr.txt",
+      "result": "same 3 compile errors (source-identical failure across configs, not independently reproduced)"
+    },
+    {
+      "step": "dotnet build tests/CSharp.UI.OpenTK.Tests -c Debug --no-incremental -m:1 -nodeReuse:false",
+      "exit": 0,
+      "warnings": 0,
+      "errors": 0,
+      "stdout": "final-build-opentk-tests-Debug.stdout.txt",
+      "stderr": "final-build-opentk-tests-Debug.stderr.txt"
+    },
+    {
+      "step": "dotnet build tests/CSharp.UI.OpenTK.Tests -c Release --no-incremental -m:1 -nodeReuse:false",
+      "exit": 0,
+      "warnings": 0,
+      "errors": 0,
+      "stdout": "final-build-opentk-tests-Release.stdout.txt",
+      "stderr": "final-build-opentk-tests-Release.stderr.txt"
+    },
+    {
+      "step": "dotnet run --no-build -c Debug --project tests/CSharp.UI.OpenTK.Tests (full suite)",
+      "exit": 0,
+      "result": "Total 684, Failed 0, Skipped 0 (19.7s) — includes new GalleryScrollbarDemoLayoutTests 6/6",
+      "stdout": "final-suite-opentk-Debug.stdout.txt",
+      "stderr": "final-suite-opentk-Debug.stderr.txt"
+    },
+    {
+      "step": "dotnet run --no-build -c Release --project tests/CSharp.UI.OpenTK.Tests (full suite)",
+      "exit": 0,
+      "result": "Total 684, Failed 0, Skipped 0 (17.6s)",
+      "stdout": "final-suite-opentk-Release.stdout.txt",
+      "stderr": "final-suite-opentk-Release.stderr.txt"
+    },
+    {
+      "step": "dotnet build samples/CSharp.UI.Samples.ControlGallery -c Debug --no-incremental -m:1 -nodeReuse:false (final rebuild)",
+      "exit": 0,
+      "warnings": 0,
+      "errors": 0,
+      "stdout": "final-build-gallery-Debug.stdout.txt",
+      "stderr": "final-build-gallery-Debug.stderr.txt"
+    },
+    {
+      "step": "dotnet build samples/CSharp.UI.Samples.ControlGallery -c Release --no-incremental -m:1 -nodeReuse:false (final rebuild)",
+      "exit": 0,
+      "warnings": 0,
+      "errors": 0,
+      "stdout": "final-build-gallery-Release.stdout.txt",
+      "stderr": "final-build-gallery-Release.stderr.txt"
+    },
+    {
+      "step": "CSHARPUI_SMOKE_FRAMES=5 ControlGallery.exe (Debug) real window",
+      "exit": 0,
+      "result": "5 frames, 900x700 @ DPI1.5, GL 3.3 Intel",
+      "stdout": "final-smoke-Debug.stdout.txt",
+      "stderr": "final-smoke-Debug.stderr.txt"
+    },
+    {
+      "step": "CSHARPUI_SMOKE_FRAMES=5 ControlGallery.exe (Release) real window",
+      "exit": 0,
+      "result": "5 frames, 900x700 @ DPI1.5, GL 3.3 Intel",
+      "stdout": "final-smoke-Release.stdout.txt",
+      "stderr": "final-smoke-Release.stderr.txt"
+    },
+    {
+      "step": "good-owned: test-fix build + new class only (raw logs)",
+      "exit": 0,
+      "stdout": "testfix-build-debug.txt",
+      "stderr": "testfix-newclass-debug.txt",
+      "note": "captured by good before freeze; included for provenance"
+    }
+  ],
+  "interim": "interim-flow/ contains PNGs/logs from an EARLIER wrapper variant (source 46BDD633, dll A5AE1EEE) — kept for provenance, NOT the final proof; final-* files are the authoritative evidence.",
+  "deferred": null,
+  "checksums": "SHA256SUMS.txt covers every file in this directory incl. .gitattributes and interim-flow contents; verified 0 mismatches at write time.",
+  "status": "ALL FINAL GATES GREEN"
+}

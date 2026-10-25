@@ -1,0 +1,113 @@
+gl-context: 3.3.0 - Build 32.0.101.6790 / Intel(R) RaptorLake-S Mobile Graphics Controller / Intel
+asm-sha256 CSharp.UI.dll: 9F5B59FE3AB39E9C
+asm-sha256 CSharp.UI.Text.dll: 9373A7CA28989813
+asm-sha256 CSharp.UI.OpenTK.dll: 0C81C44755BBB166
+asm-sha256 ControlGallery.dll: A5AE1EEFFF929F0A
+src-sha256 Program.cs: 46BDD633015381EA
+---- w320 w=320 theme=light ----
+PASS w320 resolved-theme :: resolved=light
+PASS w320 runtime-default-not-misused :: RuntimeDefaultTheme=light
+w320 root frame=(32, 1775.485, 244×120) parent=Frame(-×120) parentFrame=(32, 1775.485, 244×120)
+PASS w320 root-scroll-is-outer :: rootW=320 demoW=244
+PASS w320 demo-visible :: frame=(32, 575.485, 244×120)
+PASS w320 standard-gutter-12 :: frame=244 child=232 gap=12
+PASS w320 viewport-uses-available-width :: viewportW=244 parentContentW=244 (shrink-wrap bug would give ~119)
+PASS w320 toggle-floating :: style=Floating
+PASS w320 floating-no-gutter-same-frame :: frame=244 child=244 (pre-toggle frame 244 unchanged)
+PASS w320 wheeled-to-mid :: offset=468.439 target=468.439 (delta applied via pixel wheel)
+PASS w320 bar-visible-after-wheel :: IsFloatingVisible
+w320 saved C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-25-floating-demo-width-evidence/gallery-w320-light-floating-shown.png
+PASS w320 thumb-found :: thumb=(268, 632.677, 4×24)
+PASS w320 thumb-width-4 :: w=4
+PASS w320 thumb-at-viewport-right-edge :: thumbRight=272 frameRight=276
+PASS w320 text-ink-left-of-thumb :: textInkRight=138 thumbLeft=268
+PASS w320 thumb-gray-0.40-lerp :: actual=#ffa4a5a6 expected≈#ffa4a5a6
+PASS w320 bar-hidden-after-1s :: IsFloatingVisible=false
+w320 saved C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-25-floating-demo-width-evidence/gallery-w320-light-floating-hidden.png
+PASS w320 hidden-no-thumb-command :: no thumb rect in command list
+PASS w320 hidden-frame-unchanged :: frame=244 (no reflow)
+PASS w320 horizontal-fillwidth :: hFrameW=244
+PASS w320 horizontal-scrolled :: offsetX=60
+PASS w320 horizontal-thumb-bottom :: thumb=(43.804, 811.348, 39.869×4)
+PASS w320 standard-gutter-restored :: style=Standard gap=12
+---- w320-dark w=320 theme=dark ----
+PASS w320-dark resolved-theme :: resolved=dark
+PASS w320-dark runtime-default-not-misused :: RuntimeDefaultTheme=light
+PASS w320-dark gallery-theme-dark :: resolved=dark at demo node
+w320-dark root frame=(32, 1775.485, 244×120) parent=Frame(-×120) parentFrame=(32, 1775.485, 244×120)
+PASS w320-dark root-scroll-is-outer :: rootW=320 demoW=244
+PASS w320-dark demo-visible :: frame=(32, 575.485, 244×120)
+PASS w320-dark standard-gutter-12 :: frame=244 child=232 gap=12
+PASS w320-dark viewport-uses-available-width :: viewportW=244 parentContentW=244 (shrink-wrap bug would give ~119)
+PASS w320-dark toggle-floating :: style=Floating
+PASS w320-dark floating-no-gutter-same-frame :: frame=244 child=244 (pre-toggle frame 244 unchanged)
+PASS w320-dark wheeled-to-mid :: offset=468.439 target=468.439 (delta applied via pixel wheel)
+PASS w320-dark bar-visible-after-wheel :: IsFloatingVisible
+w320-dark saved C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-25-floating-demo-width-evidence/gallery-w320-dark-floating-shown.png
+PASS w320-dark thumb-found :: thumb=(268, 632.677, 4×24)
+PASS w320-dark thumb-width-4 :: w=4
+PASS w320-dark thumb-at-viewport-right-edge :: thumbRight=272 frameRight=276
+PASS w320-dark text-ink-left-of-thumb :: textInkRight=139 thumbLeft=268
+PASS w320-dark thumb-gray-0.40-lerp :: actual=#ff72757b expected≈#ff72757b
+PASS w320-dark bar-hidden-after-1s :: IsFloatingVisible=false
+w320-dark saved C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-25-floating-demo-width-evidence/gallery-w320-dark-floating-hidden.png
+PASS w320-dark hidden-no-thumb-command :: no thumb rect in command list
+PASS w320-dark hidden-frame-unchanged :: frame=244 (no reflow)
+PASS w320-dark horizontal-fillwidth :: hFrameW=244
+PASS w320-dark horizontal-scrolled :: offsetX=60
+PASS w320-dark horizontal-thumb-bottom :: thumb=(43.804, 811.348, 39.869×4)
+PASS w320-dark standard-gutter-restored :: style=Standard gap=12
+---- w1024 w=1024 theme=light ----
+PASS w1024 resolved-theme :: resolved=light
+PASS w1024 runtime-default-not-misused :: RuntimeDefaultTheme=light
+w1024 root frame=(32, 1267.664, 948×120) parent=Frame(-×120) parentFrame=(32, 1267.664, 948×120)
+PASS w1024 root-scroll-is-outer :: rootW=1024 demoW=948
+PASS w1024 demo-visible :: frame=(32, 547.664, 948×120)
+PASS w1024 standard-gutter-12 :: frame=948 child=936 gap=12
+PASS w1024 viewport-uses-available-width :: viewportW=948 parentContentW=948 (shrink-wrap bug would give ~119)
+PASS w1024 toggle-floating :: style=Floating
+PASS w1024 floating-no-gutter-same-frame :: frame=948 child=948 (pre-toggle frame 948 unchanged)
+PASS w1024 wheeled-to-mid :: offset=468.439 target=468.439 (delta applied via pixel wheel)
+PASS w1024 bar-visible-after-wheel :: IsFloatingVisible
+w1024 saved C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-25-floating-demo-width-evidence/gallery-w1024-light-floating-shown.png
+PASS w1024 thumb-found :: thumb=(972, 604.856, 4×24)
+PASS w1024 thumb-width-4 :: w=4
+PASS w1024 thumb-at-viewport-right-edge :: thumbRight=976 frameRight=980
+PASS w1024 text-ink-left-of-thumb :: textInkRight=138 thumbLeft=972
+PASS w1024 thumb-gray-0.40-lerp :: actual=#ffa4a5a6 expected≈#ffa4a5a6
+PASS w1024 bar-hidden-after-1s :: IsFloatingVisible=false
+w1024 saved C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-25-floating-demo-width-evidence/gallery-w1024-light-floating-hidden.png
+PASS w1024 hidden-no-thumb-command :: no thumb rect in command list
+PASS w1024 hidden-frame-unchanged :: frame=948 (no reflow)
+PASS w1024 horizontal-fillwidth :: hFrameW=948
+PASS w1024 horizontal-scrolled :: offsetX=60
+PASS w1024 horizontal-thumb-bottom :: thumb=(72.562, 746.285, 609.276×4)
+PASS w1024 standard-gutter-restored :: style=Standard gap=12
+---- w1024-dark w=1024 theme=dark ----
+PASS w1024-dark resolved-theme :: resolved=dark
+PASS w1024-dark runtime-default-not-misused :: RuntimeDefaultTheme=light
+PASS w1024-dark gallery-theme-dark :: resolved=dark at demo node
+w1024-dark root frame=(32, 1267.664, 948×120) parent=Frame(-×120) parentFrame=(32, 1267.664, 948×120)
+PASS w1024-dark root-scroll-is-outer :: rootW=1024 demoW=948
+PASS w1024-dark demo-visible :: frame=(32, 547.664, 948×120)
+PASS w1024-dark standard-gutter-12 :: frame=948 child=936 gap=12
+PASS w1024-dark viewport-uses-available-width :: viewportW=948 parentContentW=948 (shrink-wrap bug would give ~119)
+PASS w1024-dark toggle-floating :: style=Floating
+PASS w1024-dark floating-no-gutter-same-frame :: frame=948 child=948 (pre-toggle frame 948 unchanged)
+PASS w1024-dark wheeled-to-mid :: offset=468.439 target=468.439 (delta applied via pixel wheel)
+PASS w1024-dark bar-visible-after-wheel :: IsFloatingVisible
+w1024-dark saved C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-25-floating-demo-width-evidence/gallery-w1024-dark-floating-shown.png
+PASS w1024-dark thumb-found :: thumb=(972, 604.856, 4×24)
+PASS w1024-dark thumb-width-4 :: w=4
+PASS w1024-dark thumb-at-viewport-right-edge :: thumbRight=976 frameRight=980
+PASS w1024-dark text-ink-left-of-thumb :: textInkRight=139 thumbLeft=972
+PASS w1024-dark thumb-gray-0.40-lerp :: actual=#ff72757b expected≈#ff72757b
+PASS w1024-dark bar-hidden-after-1s :: IsFloatingVisible=false
+w1024-dark saved C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-25-floating-demo-width-evidence/gallery-w1024-dark-floating-hidden.png
+PASS w1024-dark hidden-no-thumb-command :: no thumb rect in command list
+PASS w1024-dark hidden-frame-unchanged :: frame=948 (no reflow)
+PASS w1024-dark horizontal-fillwidth :: hFrameW=948
+PASS w1024-dark horizontal-scrolled :: offsetX=60
+PASS w1024-dark horizontal-thumb-bottom :: thumb=(72.562, 746.285, 609.276×4)
+PASS w1024-dark standard-gutter-restored :: style=Standard gap=12
+---- DONE failures=0 ----

@@ -167,7 +167,8 @@ public sealed class GalleryApp : Component
                                 ScrollbarStyle = scrollbarFloating.Value ? ScrollbarStyle.Floating : ScrollbarStyle.Standard,
                             }
                             .Key("scrollbar-vertical-demo")
-                            .Frame(height: scrollbarTall.Value ? 180 : 120),
+                            .Frame(height: scrollbarTall.Value ? 180 : 120, alignment: Alignment.Stretch)
+                            .FillWidth(),
                         new Text("横向 ScrollView：宽内容溢出在底部显示横向滚动条（同一套共享几何/交互）。").Wrap(),
                         new ScrollView(
                             new HStack(
@@ -177,7 +178,8 @@ public sealed class GalleryApp : Component
                             {
                                 ScrollbarStyle = scrollbarFloating.Value ? ScrollbarStyle.Floating : ScrollbarStyle.Standard,
                             }
-                            .Frame(height: 56),
+                            .Frame(height: 56, alignment: Alignment.Stretch)
+                            .FillWidth(),
                         new Text("多行 TextEditor：内容超过视口显示纵向滚动条；组合期间用滑块浏览时候选锚点跟随 caret——caret 被裁出视口时锚点撤除但组合保活，真实新预编辑/caret 推进后重新锚定（同值通知不回弹）。Ctrl+End 到底后滚轮上滚到顶，继续滚则冒泡给外层整页滚动。").Wrap(),
                         new TextEditor(scrollbarText.ToBinding(), "行数超视口出滚动条")
                         {
