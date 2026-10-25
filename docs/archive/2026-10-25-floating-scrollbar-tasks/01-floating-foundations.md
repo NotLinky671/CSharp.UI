@@ -1,12 +1,14 @@
+> **历史归档**（2026-10-25 移自 `docs/task/`）：本任务已完成并验收通过，仅供历史追溯；当前任务索引见 [docs/task/README.md](../../task/README.md)。
+
 # FS-01：基础件（ScrollbarStyle + TimedWakes + HitTestOverlay + ScrollbarState/Painter 扩展）
 
 创建日期：2026-10-23
 
-状态：**已实施并主审验收通过**（最终验收 2026-10-24）——交付记录 [docs/delivery/2026-10-23-floating-scrollbar-delivery.md](../delivery/2026-10-23-floating-scrollbar-delivery.md)；审查记录 [docs/return/2026-10-23-floating-scrollbar-review.md](../return/2026-10-23-floating-scrollbar-review.md)。
+状态：**已实施并主审验收通过**（最终验收 2026-10-24）——交付记录 [docs/delivery/2026-10-23-floating-scrollbar-delivery.md](../../delivery/2026-10-23-floating-scrollbar-delivery.md)；审查记录 [docs/return/2026-10-23-floating-scrollbar-review.md](../../return/2026-10-23-floating-scrollbar-review.md)。
 
 阶段：A
 
-设计依据：[Floating 滚动条计划](../plan/2026-10-23-floating-scrollbar-plan.md) §决策一/三/四/五/九。
+设计依据：[Floating 滚动条计划](../../plan/2026-10-23-floating-scrollbar-plan.md) §决策一/三/四/五/九。
 
 [返回任务索引](README.md)
 

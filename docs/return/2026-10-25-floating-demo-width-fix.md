@@ -1,7 +1,7 @@
 # Floating 演示视口宽度修复记录
 
 日期：2026-10-25
-关联：[Floating 交付记录](../delivery/2026-10-23-floating-scrollbar-delivery.md)、[任务索引](../task/README.md)（FS-01~FS-07 已验收）。本记录是交付后用户反馈的最小样例修复；证据目录 [2026-10-25-floating-demo-width-evidence/](2026-10-25-floating-demo-width-evidence/)。
+关联：[Floating 交付记录](../delivery/2026-10-23-floating-scrollbar-delivery.md)、[任务索引](../archive/2026-10-25-floating-scrollbar-tasks/README.md)（FS-01~FS-07 已验收，已归档）。本记录是交付后用户反馈的最小样例修复；证据目录 [2026-10-25-floating-demo-width-evidence/](2026-10-25-floating-demo-width-evidence/)。
 
 ## 用户反馈（ground truth）
 

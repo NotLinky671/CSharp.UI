@@ -39,7 +39,7 @@ UiApplication.Run(new Counter());
 | `tests/` | 核心单元测试、文本测试、图形集成测试（xUnit v3） |
 | `tools/CSharp.UI.AssetGenerator` | 生成示例图片资源，保证资源可复现 |
 | `docs/guide` | 入门、API、状态、修饰符、Key、组件、平台与测试说明 |
-| `docs/task` | 当前 Floating 滚动条规划与实施任务；已完成任务归档于 `docs/archive/` |
+| `docs/task` | 当前富文本与 Markdown 规划任务；已完成任务归档于 `docs/archive/` |
 
 历史输入法工具及其三个测试工程保存在标签 `archive/tools-before-removal`。需要复跑时，用 `git worktree add --detach ../CSharp.UI-ime-archive archive/tools-before-removal` 创建独立检出目录；验收日志和截图仍保留在 `docs/`。
 
@@ -66,7 +66,7 @@ dotnet run --project tests/CSharp.UI.Tests
 - [编写自定义组件](docs/guide/custom-components.md)
 - [平台、字体与原生依赖](docs/guide/platform-notes.md)
 - [测试指南](docs/guide/testing.md)
-- 设计与任务：[首版计划](docs/plan/2026-10-14-declarative-ui-framework-plan.md)、[响应式布局计划](docs/plan/2026-10-16-responsive-layout-plan.md)、[文本编辑器计划](docs/plan/2026-10-23-text-editor-plan.md)、[滚动条计划](docs/plan/2026-10-23-scrollbar-plan.md)、[Floating 滚动条计划](docs/plan/2026-10-23-floating-scrollbar-plan.md)、[当前任务](docs/task/README.md)、[任务历史归档](docs/archive/)、[首版验收记录](docs/archive/2026-10-14-framework-tasks/README.md)、[响应式布局交付记录](docs/delivery/2026-10-16-responsive-layout-delivery.md)
+- 设计与任务：[首版计划](docs/plan/2026-10-14-declarative-ui-framework-plan.md)、[响应式布局计划](docs/plan/2026-10-16-responsive-layout-plan.md)、[文本编辑器计划](docs/plan/2026-10-23-text-editor-plan.md)、[滚动条计划](docs/plan/2026-10-23-scrollbar-plan.md)、[Floating 滚动条计划](docs/plan/2026-10-23-floating-scrollbar-plan.md)、[富文本与 Markdown 计划](docs/plan/2026-10-25-rich-text-and-markdown-plan.md)（规划完成，待用户授权实施）、[当前任务](docs/task/README.md)、[任务历史归档](docs/archive/)、[首版验收记录](docs/archive/2026-10-14-framework-tasks/README.md)、[响应式布局交付记录](docs/delivery/2026-10-16-responsive-layout-delivery.md)
 
 ## 响应式布局
 

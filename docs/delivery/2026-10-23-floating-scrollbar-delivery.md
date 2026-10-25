@@ -3,7 +3,7 @@
 日期：2026-10-23（计划日；最终验收 2026-10-24，证据见 [2026-10-23-floating-scrollbar-delivery-evidence](2026-10-23-floating-scrollbar-delivery-evidence/)）
 状态：**FS-01~FS-07 全部完成并主审验收通过。**
 
-设计与任务：[实施计划](../plan/2026-10-23-floating-scrollbar-plan.md)、[任务索引](../task/README.md)（FS-01~FS-07）、[审查记录](../return/2026-10-23-floating-scrollbar-review.md)。前置共享滚动条交付 [2026-10-23-scrollbar-delivery.md](2026-10-23-scrollbar-delivery.md)（SB-01~SB-07 已归档）。
+设计与任务：[实施计划](../plan/2026-10-23-floating-scrollbar-plan.md)、[任务索引](../archive/2026-10-25-floating-scrollbar-tasks/README.md)（FS-01~FS-07，已归档）、[审查记录](../return/2026-10-23-floating-scrollbar-review.md)。前置共享滚动条交付 [2026-10-23-scrollbar-delivery.md](2026-10-23-scrollbar-delivery.md)（SB-01~SB-07 已归档）。
 
 ## 范围与公开 API
 

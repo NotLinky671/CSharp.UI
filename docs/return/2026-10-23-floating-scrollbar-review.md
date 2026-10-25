@@ -1,7 +1,7 @@
 # Floating 滚动条 — 实施与审查记录
 
 日期：2026-10-23
-关联：[实施计划](../plan/2026-10-23-floating-scrollbar-plan.md)、[任务索引](../task/README.md)（FS-01~FS-07）、前置共享滚动条交付 [2026-10-23-scrollbar-delivery.md](../delivery/2026-10-23-scrollbar-delivery.md)。
+关联：[实施计划](../plan/2026-10-23-floating-scrollbar-plan.md)、[任务索引](../archive/2026-10-25-floating-scrollbar-tasks/README.md)（FS-01~FS-07，已归档）、前置共享滚动条交付 [2026-10-23-scrollbar-delivery.md](../delivery/2026-10-23-scrollbar-delivery.md)。
 
 本文只记录本轮事实；不复述 SB 组旧结论。状态：**FS-01~FS-07 全部完成并主审验收通过**——FS-01~FS-04 核心经五轮主审返修、source-freeze 后仅删 2 个确认死入口并重建验证；FS-05/06 实现已验收；FS-07 最终 runs 与 PNG/Gallery 视觉证据全过。未声称全平台真机/真实 IME 本轮已通过——本轮未跑真实 IME；fast 之后若需 IMM 验收另行计划。
 
