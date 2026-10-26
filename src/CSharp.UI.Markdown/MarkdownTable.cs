@@ -26,20 +26,24 @@ internal sealed class MarkdownTable : View
     private readonly IReadOnlyList<IReadOnlyList<View>> _rows;
     private readonly double _availableWidth;
     private readonly double _cellPadding;
+    private readonly double _cellVerticalPadding;
     private readonly int _columnCount;
     private IReadOnlyList<View>? _children;
 
     /// <param name="rows">每行 cell 视图；缺 cell 由构造按最大列补空 VStack。</param>
     /// <param name="availableWidth">父有效宽；<see cref="double.PositiveInfinity"/> 无界。</param>
-    /// <param name="cellPadding">cell 单侧水平 padding。</param>
+    /// <param name="cellPadding">cell 单侧水平 padding（计入列宽 min/pref）。</param>
+    /// <param name="cellVerticalPadding">cell 单侧垂直 padding（计入行高，不影响列宽）。</param>
     public MarkdownTable(
         IReadOnlyList<IReadOnlyList<View>> rows,
         double availableWidth,
-        double cellPadding = 8)
+        double cellPadding = 8,
+        double cellVerticalPadding = 6)
     {
         _rows = rows;
         _availableWidth = availableWidth;
         _cellPadding = cellPadding;
+        _cellVerticalPadding = Math.Max(0, cellVerticalPadding);
         _columnCount = rows.Count == 0 ? 0 : rows.Max(r => r.Count);
     }
 
@@ -133,7 +137,7 @@ internal sealed class MarkdownTable : View
                 if (h > maxH) maxH = h;
             }
 
-            rowHeights[r] = maxH;
+            rowHeights[r] = maxH + _cellVerticalPadding * 2;
             childIndex += _columnCount;
         }
 
@@ -164,11 +168,12 @@ internal sealed class MarkdownTable : View
 
             var x = bounds.X;
             var rowH = layout.RowHeights[r];
+            var contentH = Math.Max(0, rowH - _cellVerticalPadding * 2);
             for (var c = 0; c < _columnCount; c++)
             {
                 var cellNode = node.ChildList[childIndex + c];
                 var w = layout.ColumnWidths[c];
-                context.Arrange(cellNode, new Rect(x + _cellPadding, y, Math.Max(0, w - _cellPadding * 2), rowH));
+                context.Arrange(cellNode, new Rect(x + _cellPadding, y + _cellVerticalPadding, Math.Max(0, w - _cellPadding * 2), contentH));
                 x += w;
             }
             childIndex += _columnCount;
@@ -185,6 +190,7 @@ internal sealed class MarkdownTable : View
         => other is MarkdownTable t
            && t._availableWidth.Equals(_availableWidth)
            && t._cellPadding.Equals(_cellPadding)
+           && t._cellVerticalPadding.Equals(_cellVerticalPadding)
            && t._columnCount == _columnCount
            && t._rows.Count == _rows.Count;
 

@@ -1,0 +1,6 @@
+PASS evidence-dir-real-repo C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-markdown-spacing-evidence
+PASS logo-exists C:\Users\nothh\code\C#\CSharp.UI\samples\Shared\Assets\logo.png
+ASM CSharp.UI C:\Users\nothh\AppData\Local\Temp\md-spacing\app\bin\Release\net10.0\CSharp.UI.dll sha256=9EAFF221FCBB6BE8
+ASM CSharp.UI.Markdown C:\Users\nothh\AppData\Local\Temp\md-spacing\app\bin\Release\net10.0\CSharp.UI.Markdown.dll sha256=3CE8C91621D82AC8
+ASM CSharp.UI.OpenTK C:\Users\nothh\AppData\Local\Temp\md-spacing\app\bin\Release\net10.0\CSharp.UI.OpenTK.dll sha256=EDD408CE589BE69C
+ASM CSharp.UI.Text C:\Users\nothh\AppData\Local\Temp\md-spacing\app\bin\Release\net10.0\CSharp.UI.Text.dll sha256=C15D013D51C7FB5B

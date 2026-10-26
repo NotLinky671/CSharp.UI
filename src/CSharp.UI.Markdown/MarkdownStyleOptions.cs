@@ -39,6 +39,21 @@ public sealed record MarkdownStyleOptions
     /// <summary>表格 cell 单侧水平内边距。</summary>
     public double CellPadding { get; init; } = 8;
 
+    /// <summary>表格 cell 单侧垂直内边距（参与行高，不影响列宽）。</summary>
+    public double CellVerticalPadding { get; init; } = 6;
+
+    /// <summary>非标题块的后间距（块间基线；与下一块前间距取最大值合并）。</summary>
+    public double BlockSpacing { get; init; } = 12;
+
+    /// <summary>标题块的前间距（节间分隔；文档首块不产生前空白）。</summary>
+    public double HeadingSpacingBefore { get; init; } = 20;
+
+    /// <summary>标题块的后间距（标题与其正文之间的距离，小于节间分隔）。</summary>
+    public double HeadingSpacingAfter { get; init; } = 8;
+
+    /// <summary>列表项之间的间距。</summary>
+    public double ListItemSpacing { get; init; } = 4;
+
     /// <summary>分隔线（thematic break）颜色；null → Emit 时解 <see cref="Theme.Border"/>（主题感知）。</summary>
     public Color? ThematicBreakColor { get; init; }
 

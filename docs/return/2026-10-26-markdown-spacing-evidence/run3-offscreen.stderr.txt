@@ -1,0 +1,23 @@
+Unhandled exception. CSharp.UI.OpenTK.UiHostException: 无法创建 OpenTK/GLFW 窗口或 OpenGL 上下文（离屏 framebuffer 测试）。
+平台：Microsoft Windows 10.0.26200（X64，X64 进程，.NET 10.0.11）
+GLFW：未初始化或不可用（DllNotFoundException：Unable to load DLL 'glfw' or one of its dependencies: 找不到指定的模块。 (0x8007007E)）
+OpenGL 请求：3.3 Core
+用途：离屏 framebuffer 测试
+OpenGL 实际：无法读取 GL 信息（DllNotFoundException：Unable to load DLL 'glfw' or one of its dependencies: 找不到指定的模块。 (0x8007007E)）
+原因：DllNotFoundException：Unable to load DLL 'glfw' or one of its dependencies: 找不到指定的模块。 (0x8007007E)
+ ---> System.DllNotFoundException: Unable to load DLL 'glfw' or one of its dependencies: 找不到指定的模块。 (0x8007007E)
+   at System.Runtime.InteropServices.NativeLibrary.LoadLibraryByName(String libraryName, Assembly assembly, Nullable`1 searchPath, Boolean throwOnError)
+   at OpenTK.Windowing.GraphicsLibraryFramework.GLFWNative.LoadLibrary(String libraryName, Version version, Assembly assembly, Nullable`1 searchPath)
+   at OpenTK.Windowing.GraphicsLibraryFramework.GLFWNative.<>c.<.cctor>b__4_0(String name, Assembly assembly, Nullable`1 path)
+   at System.Runtime.InteropServices.NativeLibrary.LoadLibraryCallbackStub(String libraryName, Assembly assembly, Boolean hasDllImportSearchPathFlags, UInt32 dllImportSearchPathFlags)
+   at OpenTK.Windowing.GraphicsLibraryFramework.GLFWNative.glfwSetErrorCallback(ErrorCallback callback)
+   at OpenTK.Windowing.GraphicsLibraryFramework.GLFWNative.glfwSetErrorCallback(ErrorCallback callback)
+   at OpenTK.Windowing.GraphicsLibraryFramework.GLFW.SetErrorCallback(ErrorCallback callback)
+   at OpenTK.Windowing.Desktop.GLFWProvider.EnsureInitialized()
+   at OpenTK.Windowing.Desktop.NativeWindowSettings..ctor()
+   at CSharp.UI.OpenTK.GlWindowFactory.CreateSettings(String title, Int32 clientWidth, Int32 clientHeight, Boolean resizable, Boolean vsync, Boolean visible, Boolean isEventDriven) in C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.OpenTK\Hosting\GlWindowFactory.cs:line 108
+   at CSharp.UI.OpenTK.GlWindowFactory.CreateWindow(String title, Int32 clientWidth, Int32 clientHeight, Boolean resizable, Boolean vsync, Boolean visible, String purpose, Boolean scaleToMonitor) in C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.OpenTK\Hosting\GlWindowFactory.cs:line 165
+   --- End of inner exception stack trace ---
+   at CSharp.UI.OpenTK.GlWindowFactory.CreateWindow(String title, Int32 clientWidth, Int32 clientHeight, Boolean resizable, Boolean vsync, Boolean visible, String purpose, Boolean scaleToMonitor) in C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.OpenTK\Hosting\GlWindowFactory.cs:line 203
+   at CSharp.UI.OpenTK.GlOffscreenSurface..ctor(Int32 width, Int32 height, String title) in C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.OpenTK\Testing\GlOffscreenSurface.cs:line 49
+   at Program.<Main>$(String[] args) in C:\Users\nothh\AppData\Local\Temp\md-spacing\app\Program.cs:line 53

@@ -23,21 +23,55 @@ internal static class BlockAdapter
 
         var style = view.Style ?? new MarkdownStyleOptions();
         var linkPolicy = view.LinkPolicy ?? MarkdownLinkPolicy.Default;
-        var children = new List<View>();
 
-        foreach (var block in document.Ast)
+        return AdaptSequence(document.Ast, view, style, linkPolicy);
+    }
+
+    // —— 块序列装配（margin-collapse）——
+    /// <summary>
+    /// 块序列 → 容器 <see cref="View"/>：相邻块间按 margin-collapse 插固定
+    /// <see cref="Spacer"/>（gap = max(前块 after, 后块 before)）；首块不产前空白。
+    /// cell 内单块适配另有 cell 级后处理（对齐/header bold），经 <paramref name="postProcess"/> 钩子注入。
+    /// </summary>
+    private static View AdaptSequence(IEnumerable<Block> blocks, MarkdownBlockView view, MarkdownStyleOptions style, MarkdownLinkPolicy linkPolicy, Func<View, View>? postProcess = null)
+    {
+        var children = new List<View>();
+        var prevAfter = 0.0;
+        var hasPrev = false;
+
+        foreach (var block in blocks)
         {
             var v = AdaptBlock(block, view, style, linkPolicy);
-            if (v is not null)
+            if (v is null)
             {
-                children.Add(v);
+                continue;
             }
-        }
 
+            if (hasPrev)
+            {
+                var gap = Math.Max(prevAfter, BlockBefore(block, style));
+                if (gap > 0)
+                {
+                    children.Add(new Spacer(gap));
+                }
+            }
+
+            children.Add(postProcess is { } pp ? pp(v) : v);
+            prevAfter = BlockAfter(block, style);
+            hasPrev = true;
+        }
         return children.Count == 1 ? children[0] : new VStack(children.ToArray());
     }
 
     // —— 块级映射 ——
+
+    /// <summary>块前间距：仅标题非零（节间分隔）；其余块靠前一块的 after。</summary>
+    private static double BlockBefore(Block block, MarkdownStyleOptions style)
+        => block is HeadingBlock ? Math.Max(0, style.HeadingSpacingBefore) : 0;
+
+    /// <summary>块后间距：标题 <see cref="MarkdownStyleOptions.HeadingSpacingAfter"/>，其余 <see cref="MarkdownStyleOptions.BlockSpacing"/>。</summary>
+    private static double BlockAfter(Block block, MarkdownStyleOptions style)
+        => block is HeadingBlock ? Math.Max(0, style.HeadingSpacingAfter) : Math.Max(0, style.BlockSpacing);
 
     private static View? AdaptBlock(Block block, MarkdownBlockView view, MarkdownStyleOptions style, MarkdownLinkPolicy linkPolicy)
     {
@@ -116,24 +150,16 @@ internal static class BlockAdapter
                 marker = taskPrefix + " " + marker;
             }
 
-            var content = new List<View>();
-            foreach (var child in li)
-            {
-                var v = AdaptBlock(child, view, style, linkPolicy);
-                if (v is not null)
-                {
-                    content.Add(v);
-                }
-            }
+            // item 内多块（段落/嵌套列表/代码…）走统一 margin-collapse，不双重累积段距。
+            var contentView = AdaptSequence(li, view, style, linkPolicy).FillWidth();
 
             // hanging indent：marker 固定宽列 + content 弹性占满剩余。
             var markerView = new RichText(StyledText.Create(marker)) { Wrapping = TextWrapping.NoWrap };
-            var contentView = new VStack(content.ToArray()).FillWidth();
             var itemView = new HStack(markerView, contentView) { Spacing = style.ListMarkerGap, VerticalAlignment = Alignment.Start };
             items.Add(itemView);
         }
 
-        return new VStack(items.ToArray());
+        return new VStack(items.ToArray()) { Spacing = Math.Max(0, style.ListItemSpacing) };
     }
 
     /// <summary>TaskList 项的 "[ ]"/"[x]" 前缀；非 task 项 → null。</summary>
@@ -157,18 +183,12 @@ internal static class BlockAdapter
 
     private static View AdaptQuote(QuoteBlock quote, MarkdownBlockView view, MarkdownStyleOptions style, MarkdownLinkPolicy linkPolicy)
     {
-        var children = new List<View>();
-        foreach (var child in quote)
-        {
-            var v = AdaptBlock(child, view, style, linkPolicy);
-            if (v is not null)
-            {
-                children.Add(v);
-            }
-        }
+        // 引用内块序列同样按 margin-collapse 间距（首块无顶部空白）。
+        var inner = AdaptSequence(quote, view, style, linkPolicy)
+            .Padding(left: style.QuotePadding, top: 0, right: 0, bottom: 0)
+            .FillWidth();
 
         var bar = new ThemedBar { Fill = style.QuoteBarColor, FixedSize = new Size(style.QuoteBarWidth, 0) };
-        var inner = new VStack(children.ToArray()).Padding(left: style.QuotePadding, top: 0, right: 0, bottom: 0).FillWidth();
 
         return new HStack(bar, inner) { VerticalAlignment = Alignment.Stretch };
     }
@@ -205,7 +225,7 @@ internal static class BlockAdapter
 
     /// <summary>
     /// TableBlock → <see cref="Responsive"/> + <see cref="ScrollView"/> + <see cref="MarkdownTable"/>。
-    /// cell <see cref="VStack"/> 承载递归块序列；header 行 bold；缺 cell 补空；
+    /// cell 块序列（margin-collapse + 对齐/header bold 后处理）；header 行 bold；缺 cell 补空；
     /// <see cref="Table.ColumnDefinitions"/> 对齐下到 cell <see cref="RichText.Alignment"/>。
     /// </summary>
     private static View AdaptTable(Table table, MarkdownBlockView view, MarkdownStyleOptions style, MarkdownLinkPolicy linkPolicy)
@@ -222,71 +242,12 @@ internal static class BlockAdapter
             foreach (var cellObj in row)
             {
                 if (cellObj is not TableCell cell) continue;
-                var cellChildren = new List<View>();
-                foreach (var block in cell)
-                {
-                    var v = AdaptBlock(block, view, style, linkPolicy);
-                    if (v is not null)
-                    {
-                        // 对齐：cell 序号（Markdig TableCell.ColumnIndex 可能为 -1）→ ColumnDefinitions[ci]。
-                        var ci = cell.ColumnIndex >= 0 ? cell.ColumnIndex : colIdx;
-                        if (v is RichText rt && ci < aligns.Count)
-                        {
-                            v = new RichText(rt.Content)
-                            {
-                                Wrapping = rt.Wrapping,
-                                Alignment = aligns[ci] switch
-                                {
-                                    TableColumnAlign.Center => TextAlignment.Center,
-                                    TableColumnAlign.Right => TextAlignment.Right,
-                                    _ => TextAlignment.Left,
-                                },
-                                OnLinkActivate = rt.OnLinkActivate,
-                                OnLinkHover = rt.OnLinkHover,
-                                LinkHoverStyle = rt.LinkHoverStyle,
-                            };
-                        }
-                        // header cell：整条 [0, len) 加 Bold overlay —— 原 style range 保留其他属性
-                        // （italic/foreground 等），未覆盖的 plain 段补 base bold range。
-                        if (row.IsHeader && v is RichText rich && rich.Content.Text.Length > 0)
-                        {
-                            var styled = rich.Content;
-                            var textLen = styled.Text.Length;
-                            // 端点集 = {0, len} ∪ 原 range 端点；按端点切片、逐片合 bold（不重叠）。
-                            var cuts = new SortedSet<int> { 0, textLen };
-                            foreach (var r in styled.Ranges) { cuts.Add(r.Start); cuts.Add(r.End); }
-                            var cutList = cuts.ToList();
-                            var byStart = styled.Ranges.ToDictionary(r => r.Start);
-                            var ranges = new List<TextStyleRange>(cutList.Count - 1);
-                            for (var i = 0; i + 1 < cutList.Count; i++)
-                            {
-                                var segStart = cutList[i];
-                                var segEnd = cutList[i + 1];
-                                // 该切片落在某原 range 内 → 保留原 style + Weight=Bold；洞 → base bold。
-                                if (byStart.TryGetValue(segStart, out var orig) && orig.End == segEnd)
-                                {
-                                    var merged = (orig.Style ?? new TextStyle()) with { Weight = FontWeight.Bold };
-                                    ranges.Add(new TextStyleRange(segStart, segEnd, merged));
-                                }
-                                else
-                                {
-                                    ranges.Add(new TextStyleRange(segStart, segEnd, new TextStyle { Weight = FontWeight.Bold }));
-                                }
-                            }
-                            v = new RichText(styled.WithRanges(ranges))
-                            {
-                                Wrapping = rich.Wrapping,
-                                Alignment = rich.Alignment,
-                                OnLinkActivate = rich.OnLinkActivate,
-                                OnLinkHover = rich.OnLinkHover,
-                                LinkHoverStyle = rich.LinkHoverStyle,
-                            };
-                        }
-                        cellChildren.Add(v);
-                    }
-                }
+                // 对齐：cell 序号（Markdig TableCell.ColumnIndex 可能为 -1）→ ColumnDefinitions[ci]。
+                var ci = cell.ColumnIndex >= 0 ? cell.ColumnIndex : colIdx;
+                var isHeader = row.IsHeader;
+                cells.Add(AdaptSequence(cell, view, style, linkPolicy,
+                    v => PostProcessCellBlock(v, ci, isHeader, aligns)));
                 colIdx++;
-                cells.Add(new VStack(cellChildren.ToArray()));
             }
             rows.Add(cells);
         }
@@ -294,8 +255,67 @@ internal static class BlockAdapter
         return new Responsive(info => new ScrollView(
             new MarkdownTable(rows,
                 info.IsWidthBounded ? info.AvailableWidth : double.PositiveInfinity,
-                style.CellPadding),
+                style.CellPadding,
+                style.CellVerticalPadding),
             ScrollAxis.Horizontal));
+    }
+
+    /// <summary>cell 内单个块的适配后处理：<see cref="Table.ColumnDefinitions"/> 对齐下传 <see cref="RichText.Alignment"/>；header 行整条 [0,len) 补 Bold overlay（原 range 保留其他属性，洞补 base bold）。</summary>
+    private static View PostProcessCellBlock(View v, int columnIndex, bool isHeader, IReadOnlyList<TableColumnAlign?> aligns)
+    {
+        if (v is RichText rt && columnIndex < aligns.Count)
+        {
+            v = new RichText(rt.Content)
+            {
+                Wrapping = rt.Wrapping,
+                Alignment = aligns[columnIndex] switch
+                {
+                    TableColumnAlign.Center => TextAlignment.Center,
+                    TableColumnAlign.Right => TextAlignment.Right,
+                    _ => TextAlignment.Left,
+                },
+                OnLinkActivate = rt.OnLinkActivate,
+                OnLinkHover = rt.OnLinkHover,
+                LinkHoverStyle = rt.LinkHoverStyle,
+            };
+        }
+
+        if (isHeader && v is RichText rich && rich.Content.Text.Length > 0)
+        {
+            var styled = rich.Content;
+            var textLen = styled.Text.Length;
+            // 端点集 = {0, len} ∪ 原 range 端点；按端点切片、逐片合 bold（不重叠）。
+            var cuts = new SortedSet<int> { 0, textLen };
+            foreach (var r in styled.Ranges) { cuts.Add(r.Start); cuts.Add(r.End); }
+            var cutList = cuts.ToList();
+            var byStart = styled.Ranges.ToDictionary(r => r.Start);
+            var ranges = new List<TextStyleRange>(cutList.Count - 1);
+            for (var i = 0; i + 1 < cutList.Count; i++)
+            {
+                var segStart = cutList[i];
+                var segEnd = cutList[i + 1];
+                // 该切片落在某原 range 内 → 保留原 style + Weight=Bold；洞 → base bold。
+                if (byStart.TryGetValue(segStart, out var orig) && orig.End == segEnd)
+                {
+                    var merged = (orig.Style ?? new TextStyle()) with { Weight = FontWeight.Bold };
+                    ranges.Add(new TextStyleRange(segStart, segEnd, merged));
+                }
+                else
+                {
+                    ranges.Add(new TextStyleRange(segStart, segEnd, new TextStyle { Weight = FontWeight.Bold }));
+                }
+            }
+            v = new RichText(styled.WithRanges(ranges))
+            {
+                Wrapping = rich.Wrapping,
+                Alignment = rich.Alignment,
+                OnLinkActivate = rich.OnLinkActivate,
+                OnLinkHover = rich.OnLinkHover,
+                LinkHoverStyle = rich.LinkHoverStyle,
+            };
+        }
+
+        return v;
     }
 
     private static View AdaptUnknownBlock(Block block, MarkdownBlockView view, MarkdownStyleOptions style, MarkdownLinkPolicy linkPolicy)

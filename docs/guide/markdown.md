@@ -81,6 +81,9 @@ var view = new ScrollView(
 | `UnorderedMarker` / `ListMarkerGap` | `"•"` / `8` | 无序列表 marker + 与文本间距 |
 | `QuoteBarWidth` / `QuoteBarColor` / `QuotePadding` | `3` / `null` / `12` | `QuoteBarColor` null → 主题 `Border` 色 |
 | `CellPadding` | `8` | 表格单元**单侧**水平 padding（列宽含 `2×CellPadding`) |
+| `CellVerticalPadding` | `6` | 表格单元**单侧**垂直 padding（计入行高，不影响列宽/横滚判定） |
+| `BlockSpacing` / `HeadingSpacingBefore` / `HeadingSpacingAfter` | `12` / `20` / `8` | 块级间距（margin-collapse：相邻块 gap = max(前块 after, 后块 before)；文档/引用/列表项/单元格内首块不产生前空白） |
+| `ListItemSpacing` | `4` | 列表项之间的间距 |
 | `ThematicBreakColor` / `ThematicBreakHeight` | `null` / `1` | `ThematicBreakColor` null → 主题 `Border` 色 |
 | `LinkForeground` | `null` | null → 继承段落 `Foreground`（不默认 Accent) |
 | `LinkHoverStyle` | `null` | 链接悬停 paint 覆盖；独立生效，**不要求** `OnLinkHover` 非 null |
@@ -121,8 +124,8 @@ internal 实现——公开 API 是 `MarkdownBlockView`，不直接构造表格�
 | 压缩 | `min < availableWidth < pref` | 各列按 `(pref-min)` 比例收缩，长行 wrap |
 | 横滚 | `Σmin > availableWidth` | 列宽 = `min`，外层 `ScrollView` 横向滚动 |
 
-列宽含 cell **水平 padding** `2×CellPadding`（行高不额外加）。行间有 1px `Color.LightGray` 分隔条；
-cell 无独立 border。header 行 bold。跨档 resize 行高随 wrap 自适应。
+列宽含 cell **水平 padding** `2×CellPadding`；行高含 **垂直 padding** `2×CellVerticalPadding`。
+行间有 1px `Color.LightGray` 分隔条；cell 无独立 border。header 行 bold。跨档 resize 行高随 wrap 自适应。
 
 ## 范围外（不实现、不 stub、不假渲染）
 

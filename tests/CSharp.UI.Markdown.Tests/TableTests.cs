@@ -30,10 +30,8 @@ public class TableTests
     {
         var table = BuildTable("| h1 | h2 |\n|---|---|\n| a | b |", width: 400);
         // 首行 cell 的 RichText 应有 Weight=Bold range。
-        var headerCell = table.Children[0];
-        var vstack = Assert.IsType<VStack>(headerCell);
-        var rich = Assert.IsType<RichText>(vstack.Children[0]);
-        Assert.Contains(rich.Content.Ranges, r => r.Style?.Weight == FontWeight.Bold);
+        var headerCell = Assert.IsType<RichText>(table.Children[0]);
+        Assert.Contains(headerCell.Content.Ranges, r => r.Style?.Weight == FontWeight.Bold);
     }
 
     [Fact]
@@ -41,9 +39,7 @@ public class TableTests
     {
         // `| plain *italic* tail |`：原 ranges 只覆盖 italic 区段——bold overlay 须补满 style holes。
         var table = BuildTable("| plain *italic* tail |\n|---|\n| a |", width: 400);
-        var headerCell = table.Children[0];
-        var vstack = Assert.IsType<VStack>(headerCell);
-        var rich = Assert.IsType<RichText>(vstack.Children[0]);
+        var rich = Assert.IsType<RichText>(table.Children[0]);
         var text = rich.Content.Text;
         var ranges = rich.Content.Ranges;
         Assert.True(ranges.Count > 0);
@@ -65,10 +61,7 @@ public class TableTests
     public void Table_列对齐_Right_下RichTextAlignment()
     {
         var table = BuildTable("| a | b |\n|---|---:|\n| 1 | 2 |", width: 400);
-        // children 展平：[cell0, cell1, 分隔条, cell0, cell1]
-        var secondCell = table.Children[1];
-        var vstack = Assert.IsType<VStack>(secondCell);
-        var rich = Assert.IsType<RichText>(vstack.Children[0]);
+        var rich = Assert.IsType<RichText>(table.Children[1]);
         Assert.Equal(TextAlignment.Right, rich.Alignment);
     }
 
@@ -177,5 +170,40 @@ public class TableTests
         Assert.Equal(w320a, w320b, 1); // 回 320 仍 Σmin
         runtime.Dispose();
         textSvc.Dispose();
+    }
+
+    /// <summary>
+    /// 垂直 padding 参与行高（DesiredSize 变高），但不进列宽（DesiredSize.Width 不变）。
+    /// </summary>
+    [Fact]
+    public void Table_垂直Padding_入行高不入列宽()
+    {
+        static Size MeasureTable(double vp)
+        {
+            var rows = new IReadOnlyList<View>[]
+            {
+                new View[] { new RichText(StyledText.Create("cell a")), new RichText(StyledText.Create("cell b")) },
+                new View[] { new RichText(StyledText.Create("row2 a")), new RichText(StyledText.Create("row2 b")) },
+            };
+            var table = new MarkdownTable(rows, 400, cellPadding: 8, cellVerticalPadding: vp);
+            var stub = new StubTextService();
+            using var runtime = new UiRuntime(table, new UiRuntimeServices
+            {
+                Dispatcher = new HeadlessUiDispatcher(),
+                TextService = stub,
+                RichTextService = stub,
+            });
+            runtime.SetViewport(new Size(600, 400), 1.0);
+            runtime.ProcessPendingWork();
+            return runtime.Root!.DesiredSize;
+        }
+
+        var s0 = MeasureTable(0);
+        var s10 = MeasureTable(10);
+
+        // 2 行 → Δ高 = 2 行 × 2×10 = 40；列宽不受垂直 padding 影响。
+        Assert.True(s10.Height > s0.Height, $"vp=10 高度({s10.Height}) 应大于 vp=0({s0.Height})");
+        Assert.Equal(s0.Height + 40, s10.Height, 0.5);
+        Assert.Equal(s0.Width, s10.Width, 0.5);
     }
 }
