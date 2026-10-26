@@ -21,6 +21,15 @@ public sealed record MarkdownStyleOptions
     /// <summary>代码块内边距。</summary>
     public double CodePadding { get; init; } = 8;
 
+    /// <summary>代码块背景圆角（逻辑像素）。</summary>
+    public double CodeCornerRadius { get; init; } = 8;
+
+    /// <summary>代码块右上"复制"按钮：<c>true</c> → 工具行含复制按钮（写真实系统剪贴板）；<c>false</c> → 不产按钮行。</summary>
+    public bool ShowCodeCopyButton { get; init; } = true;
+
+    /// <summary>复制按钮标签文本。</summary>
+    public string CodeCopyLabel { get; init; } = "Copy";
+
     /// <summary>无序列表 marker 字符。</summary>
     public string UnorderedMarker { get; init; } = "•";
 

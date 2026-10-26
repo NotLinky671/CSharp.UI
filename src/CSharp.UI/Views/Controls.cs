@@ -222,6 +222,10 @@ public sealed class Button : View
     /// <summary>点击回调；协调更新后会替换为最新的回调，旧回调不会被调用。</summary>
     public Action? OnClick { get; init; }
 
+    /// <summary>点击回调（internal，带 <see cref="InputContext"/>）：供友好程序集（Markdown 等）
+    /// 在激活点直接访问 runtime 服务（剪贴板等）；与 <see cref="OnClick"/> 同一点派发，先 context 版后普通版。</summary>
+    internal Action<InputContext>? OnClickContext { get; init; }
+
     /// <summary>显式字体；null 表示继承环境字体。</summary>
     public FontDescription? Font { get; init; }
 
@@ -246,9 +250,9 @@ public sealed class Button : View
     /// <inheritdoc />
     public override bool IsFocusable => true;
 
-    /// <summary>返回替换标签与回调的副本。</summary>
     public Button With(string label, Action? onClick) => new(label, onClick ?? OnClick)
     {
+        OnClickContext = OnClickContext,
         Font = Font,
         HorizontalPadding = HorizontalPadding,
         VerticalPadding = VerticalPadding,
@@ -260,6 +264,7 @@ public sealed class Button : View
     /// <summary>返回主操作按钮副本。</summary>
     public Button Primary() => new(Label, OnClick)
     {
+        OnClickContext = OnClickContext,
         Font = Font,
         HorizontalPadding = HorizontalPadding,
         VerticalPadding = VerticalPadding,
@@ -333,7 +338,7 @@ public sealed class Button : View
 
         if (node.Frame.Contains(e.Position))
         {
-            Invoke(node);
+            Invoke(node, context);
         }
 
         return true;
@@ -377,7 +382,7 @@ public sealed class Button : View
         if (e.Key is UiKey.Enter or UiKey.Space)
         {
             node.IsPressed = false;
-            Invoke(node);
+            Invoke(node, context);
             context.MarkHandled();
             return true;
         }
@@ -385,9 +390,10 @@ public sealed class Button : View
         return false;
     }
 
-    private void Invoke(ViewNode node)
+    private void Invoke(ViewNode node, InputContext context)
     {
         node.IsPressed = false;
+        OnClickContext?.Invoke(context);
         OnClick?.Invoke();
     }
 

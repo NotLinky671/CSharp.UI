@@ -192,12 +192,11 @@ internal static class BlockAdapter
 
         return new HStack(bar, inner) { VerticalAlignment = Alignment.Stretch };
     }
-
     private static View AdaptCodeBlock(CodeBlock code, MarkdownStyleOptions style)
     {
         var text = code.Lines.ToString();
         // 空代码块：不产 range（TextStyleRange(0,0) 会被 StyledText 拒绝），但保留
-        // ScrollView+padding+background 的可见盒。
+        // ScrollView+padding+背景盒的可见区域。
         var ranges = text.Length == 0
             ? (IReadOnlyList<TextStyleRange>)[]
             : [new TextStyleRange(0, text.Length, new TextStyle
@@ -207,12 +206,10 @@ internal static class BlockAdapter
         var styled = new StyledText(text, ranges, []);
         View content = new RichText(styled) { Wrapping = TextWrapping.NoWrap }
             .Padding(style.CodePadding);
-        if (style.CodeBackground is { } codeBg)
-        {
-            content = content.Background(codeBg);
-        }
 
-        return new ScrollView(content, ScrollAxis.Horizontal);
+        // 背景/圆角/复制按钮由宿主视图承担：圆角底不随代码横滚，按钮行在文档坐标系。
+        var scroll = new ScrollView(content, ScrollAxis.Horizontal);
+        return new MarkdownCodeBlockView(scroll, text, style);
     }
 
     private static View? AdaptHtmlBlock(HtmlBlock html, MarkdownBlockView view, MarkdownStyleOptions style, MarkdownLinkPolicy linkPolicy)

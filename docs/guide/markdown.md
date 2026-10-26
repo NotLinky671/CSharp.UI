@@ -76,8 +76,9 @@ var view = new ScrollView(
 |---|---|---|
 | `HeadingSizes` | `[28,24,20,18,16,14]` | H1–H6 字号（逻辑像素） |
 | `CodeFontFamily` | `DefaultCodeFontFamily` = `FontFamily.FromName("Cascadia Mono").WithFallbacks("Consolas","Menlo","monospace")` | 行内/围栏代码字体；null → 默认链 |
-| `CodeBackground` | `Color(128,128,128,40)` | `null` → 代码行无底色矩形 |
-| `CodePadding` | `8` | 围栏代码块内边距 |
+| `CodeBackground` | `Color(128,128,128,40)` | `null` → 代码块无底色矩形 |
+| `CodePadding` / `CodeCornerRadius` | `8` / `8` | 代码块内边距 / 背景圆角（逻辑像素） |
+| `ShowCodeCopyButton` / `CodeCopyLabel` | `true` / `"Copy"` | 右上工具行复制按钮（写系统剪贴板）/ 标签文本 |
 | `UnorderedMarker` / `ListMarkerGap` | `"•"` / `8` | 无序列表 marker + 与文本间距 |
 | `QuoteBarWidth` / `QuoteBarColor` / `QuotePadding` | `3` / `null` / `12` | `QuoteBarColor` null → 主题 `Border` 色 |
 | `CellPadding` | `8` | 表格单元**单侧**水平 padding（列宽含 `2×CellPadding`) |
@@ -88,6 +89,23 @@ var view = new ScrollView(
 | `LinkForeground` | `null` | null → 继承段落 `Foreground`（不默认 Accent) |
 | `LinkHoverStyle` | `null` | 链接悬停 paint 覆盖；独立生效，**不要求** `OnLinkHover` 非 null |
 | `UnsupportedNodeStyle` | 橙色 | 未识别节点 literal 文本的强调色 |
+
+## 代码块（fenced/indented 共用）
+
+围栏与缩进代码块渲染为圆角底块：`CodeCornerRadius`（默认 8）圆角背景包整个块
+（含工具行），代码文本超宽时内部横向滚动，背景与按钮行不随内容横滚。
+`ShowCodeCopyButton`（默认 `true`）在右上工具行产"Copy"按钮——点击把
+`CodeBlock.Lines` 生成的代码文本（保留缩进与行间空行；Markdig 结构上去掉末行
+尾部换行；不含 fence 语言标识）写入系统剪贴板（`UiRuntimeServices.Clipboard`，
+OpenTK 宿主默认 GLFW 实现）；剪贴板服务为 null 时按钮点击 no-op（框架既有契约）。
+
+```csharp
+// 关闭复制按钮，只保留圆角底。
+Style = new MarkdownStyleOptions { ShowCodeCopyButton = false, CodeCornerRadius = 8 }
+
+// 换标签文案（本地化）。
+Style = new MarkdownStyleOptions { CodeCopyLabel = "复制" }
+```
 
 ## 图片策略（`MarkdownImagePolicy`)
 

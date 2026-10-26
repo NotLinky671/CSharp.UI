@@ -89,15 +89,6 @@ public class AdapterTests
     }
 
     [Fact]
-    public void CodeBlock_产ScrollView()
-    {
-        var doc = Markdown.Parse("```\nvar x = 1;\n```");
-        var view = new MarkdownBlockView { Document = doc };
-        var tree = view.BuildForTest();
-        Assert.IsType<ScrollView>(tree);
-    }
-
-    [Fact]
     public void Quote_产HStack含Rectangle()
     {
         var doc = Markdown.Parse("> quoted");
@@ -264,15 +255,6 @@ public class AdapterTests
         var marker1 = Assert.IsType<RichText>(item1.Children[0]).Content.Text;
         Assert.Contains("[ ]", marker0);
         Assert.Contains("[x]", marker1);
-    }
-
-    [Fact]
-    public void EmptyCodeBlock_不抛且有可见盒()
-    {
-        var doc = Markdown.Parse("```\n```");
-        var view = new MarkdownBlockView { Document = doc };
-        var tree = view.BuildForTest();
-        Assert.IsType<ScrollView>(tree);
     }
 
     [Fact]

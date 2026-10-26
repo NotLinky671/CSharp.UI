@@ -1,0 +1,12 @@
+﻿  正在确定要还原的项目…
+  所有项目均是最新的，无法还原。
+C:\Users\nothh\AppData\Local\Temp\md-codeblock\app\Program.cs(369,21): warning CS0618: “NativeWindowSettings.Size”已过时:“Use the ClientSize property to get or set the initial size of the contents of the window.” [C:\Users\nothh\AppData\Local\Temp\md-codeblock\app\mdcblock.csproj]
+  mdcblock -> C:\Users\nothh\AppData\Local\Temp\md-codeblock\app\bin\Release\net10.0\win-x64\MdCodeblockOffscreen.dll
+
+已成功生成。
+
+C:\Users\nothh\AppData\Local\Temp\md-codeblock\app\Program.cs(369,21): warning CS0618: “NativeWindowSettings.Size”已过时:“Use the ClientSize property to get or set the initial size of the contents of the window.” [C:\Users\nothh\AppData\Local\Temp\md-codeblock\app\mdcblock.csproj]
+    1 个警告
+    0 个错误
+
+已用时间 00:00:01.53
