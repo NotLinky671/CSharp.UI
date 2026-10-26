@@ -4,7 +4,8 @@
 
 设计依据：[只读富文本基础与 Markdown 接入实施计划](../plan/2026-10-25-rich-text-and-markdown-plan.md)。
 
-状态：**实施中**（RT-01、RT-02 已完成并验收；其余任务未开始）。
+状态:**已完成**(RT-01~RT-04、MD-01~MD-06 全部完成并验收——G1/G2/G3 达标,交付记录见
+[docs/delivery/2026-10-26-rich-text-markdown-delivery.md](../delivery/2026-10-26-rich-text-markdown-delivery.md))。
 
 ## 核心决策（已冻结，见计划全文）
 
@@ -23,15 +24,14 @@
 |---|---|---|---|---|
 | ☑ | RT-01 | [StyledText 模型：展示文本、样式区间、交互区间](01-styled-text-model.md) | 无 | A |
 | ☑ | RT-02 | [IRichTextService 契约、Skia 排版实现与 face lease](02-rich-text-service.md) | RT-01 | A |
-| ☐ | RT-03 | [RichText 视图：paint 解算、装饰、纹理缓存](03-rich-text-view.md) | RT-02 | B |
-| ☐ | RT-04 | [链接 hit：run 矩形命中与 Id 身份状态机](04-rich-text-link-hit.md) | RT-03 | B |
-| ☐ | MD-01 | [CSharp.UI.Markdown 模块、管线与解析缓存](05-markdown-module-pipeline.md) | RT-04（G1） | C |
-| ☐ | MD-02 | [AST→视图适配：inline 样式栈与块映射](06-markdown-block-adapter.md) | MD-01 | C |
-| ☐ | MD-03 | [MarkdownTable：Responsive + internal 专用表格布局 View](07-markdown-table.md) | MD-02 | C |
-| ☐ | MD-04 | [图片/链接策略落地与不支持内容降级核对](08-markdown-assets-links.md) | MD-02 | C |
-| ☐ | MD-05 | [示例、文档与 BSD notice](09-markdown-samples-docs.md) | MD-03、MD-04（G2） | D |
-| ☐ | MD-06 | [交付验收：构建、套件、真实 smoke、NOTICE 与记录](10-markdown-delivery.md) | MD-05（G3） | D |
-
+| ☑ | RT-03 | [RichText 视图：paint 解算、装饰、纹理缓存](03-rich-text-view.md) | RT-02 | B |
+| ☑ | RT-04 | [链接 hit：run 矩形命中与 Id 身份状态机](04-rich-text-link-hit.md) | RT-03 | B |
+| ☑ | MD-01 | [CSharp.UI.Markdown 模块、管线与解析缓存](05-markdown-module-pipeline.md) | RT-04（G1） | C |
+| ☑ | MD-02 | [AST→视图适配：inline 样式栈与块映射](06-markdown-block-adapter.md) | MD-01 | C |
+| ☑ | MD-03 | [MarkdownTable：Responsive + internal 专用表格布局 View](07-markdown-table.md) | MD-02 | C |
+| ☑ | MD-04 | [图片/链接策略落地与不支持内容降级核对](08-markdown-assets-links.md) | MD-02 | C |
+| ☑ | MD-05 | [示例、文档与 BSD notice](09-markdown-samples-docs.md) | MD-03、MD-04(G2) | D |
+| ☑ | MD-06 | [交付验收:构建、套件、真实 smoke、NOTICE 与记录](10-markdown-delivery.md) | MD-05(G3) | D |
 依赖链：RT-01→RT-02→RT-03→RT-04（G1）→ MD-01→MD-02→{MD-03, MD-04}（G2）→ MD-05（G3）→ MD-06。
 
 ## 阶段门槛

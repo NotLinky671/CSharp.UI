@@ -1,0 +1,44 @@
+=== md02 block/inline adapter verification ===
+assembly: C:\Users\nothh\AppData\Local\Temp\rt03-verify\app\bin\Debug\net10.0\CSharp.UI.Markdown.dll
+PASS MD02-blocks-materialize rich nodes=8 (expect ≥5: h1,para,quote,list,list,code…)
+PASS MD02-heading-present 
+NOTE MD02-h1 h=35.561 body h=17.78 font=default 28 Bold
+PASS MD02-heading-height>body h1=35.561 body=17.78
+PASS MD02-quote-present 
+PASS MD02-list-items 
+PASS MD02-fenced-code 
+PASS MD02-hanging-item-found 
+NOTE MD02-hanging lines=1 frameW=882
+NOTE MD02-hanging: item fit one line at this width — widen text next time
+PASS MD02-nested-node 
+NOTE MD02-nested marks over codeZ: 1; bold=True italic=True mono=True
+PASS MD02-nested-bold-italic 
+PASS MD02-html-literal text=[pre <b>htmltag</b> post]
+PASS MD02-html-strip text=[pre htmltag post] (tags removed; inner literal 'htmltag' may remain — that is correct)
+PASS MD02-links-para-found rich nodes=1
+FAIL MD02-link-https-activates acts=0
+FAIL MD02-link-relative-activates acts=0
+PASS MD02-link-js-no-activate 
+PASS MD02-link-data-no-activate 
+FAIL MD02-payload-verbatim payloads=[]
+PASS MD02-same-url-diff-id-no-activate acts=0 (down A / up B across same-URL links must not activate)
+PASS MD02-grapheme-node 
+PASS MD02-grapheme-text-intact text=[家‍👩 flag é ébold tail]
+PASS MD02-ranges-grapheme-aligned 
+NOTE MD02-empty-fence threw ArgumentException: 样式区间为空或逆序：[0,0)。 (Parameter 'ranges')
+FAIL MD02-empty-fenced-code 
+NOTE MD02-tasklist texts=[•‖ done‖•‖ todo]
+FAIL MD02-tasklist-checkbox-done done item carries checked marker
+PASS MD02-tasklist-checkbox-todo todo item present
+PASS MD02-mono-node 
+NOTE MD02-mono ii-w=6.781 WW-w=26.141
+FAIL MD02-mono-equal-advance mono font: 2-char runs equal width (prop font gives ii<WW)
+NOTE MD02-theme-Theme { Background = #15171CFF, Surface = #1D2026FF, Foreground = #E8EAEDFF, MutedForeground = #9AA1ADFF, Accent = #4C8DFFFF, AccentForeground = #0B1220FF, Border = #333842FF, ControlBackground = #24272FFF, ControlHoverBackground = #2C313AFF, ControlPressedBackground = #3A404BFF, DisabledForeground = #5C626DFF, DisabledBackground = #22252BFF, SelectionBackground = #2F4B7CFF, Danger = #F87171FF, FocusRing = #4C8DFFFF, IsDark = True } bg=#15171CFF ink=162
+PASS MD02-theme-Theme { Background = #15171CFF, Surface = #1D2026FF, Foreground = #E8EAEDFF, MutedForeground = #9AA1ADFF, Accent = #4C8DFFFF, AccentForeground = #0B1220FF, Border = #333842FF, ControlBackground = #24272FFF, ControlHoverBackground = #2C313AFF, ControlPressedBackground = #3A404BFF, DisabledForeground = #5C626DFF, DisabledBackground = #22252BFF, SelectionBackground = #2F4B7CFF, Danger = #F87171FF, FocusRing = #4C8DFFFF, IsDark = True }-visible quote bar + hr + text must produce ink vs bg
+NOTE MD02-theme-Theme { Background = #F5F6F8FF, Surface = #FFFFFFFF, Foreground = #1B1D21FF, MutedForeground = #6B7280FF, Accent = #2563EBFF, AccentForeground = #FFFFFFFF, Border = #D6DAE1FF, ControlBackground = #FFFFFFFF, ControlHoverBackground = #EDF1F7FF, ControlPressedBackground = #DCE3EDFF, DisabledForeground = #A3A9B5FF, DisabledBackground = #EDEFF3FF, SelectionBackground = #BBD3FBFF, Danger = #DC2626FF, FocusRing = #2563EBFF, IsDark = False } bg=#F5F6F8FF ink=162
+PASS MD02-theme-Theme { Background = #F5F6F8FF, Surface = #FFFFFFFF, Foreground = #1B1D21FF, MutedForeground = #6B7280FF, Accent = #2563EBFF, AccentForeground = #FFFFFFFF, Border = #D6DAE1FF, ControlBackground = #FFFFFFFF, ControlHoverBackground = #EDF1F7FF, ControlPressedBackground = #DCE3EDFF, DisabledForeground = #A3A9B5FF, DisabledBackground = #EDEFF3FF, SelectionBackground = #BBD3FBFF, Danger = #DC2626FF, FocusRing = #2563EBFF, IsDark = False }-visible quote bar + hr + text must produce ink vs bg
+PASS MD02-320-item 
+NOTE MD02-320 lines=1 line1X=0 
+NOTE MD02-320 no wrap at 320 — item too short
+PASS MD02-gl-ink-pixels inkPixels=1384 png=md02-render.png
+=== MD02 RESULT 24 PASS / 6 FAIL ===

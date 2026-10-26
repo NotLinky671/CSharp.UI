@@ -247,9 +247,17 @@ internal sealed class InputRouter
 
                 if (_captured is not null)
                 {
-                    _captured.IsPointerCaptured = true;
+                    // 视图可拒捕（如 RichText 未命中链接区间 / 无激活回调）：路由回退到
+                    // _pressed/_hovered 的既有冒泡路径——父链仍能正常消费 Up/后续事件。
+                    if (_captured.View.WantsPointerCapture(_captured, e))
+                    {
+                        _captured.IsPointerCaptured = true;
+                    }
+                    else
+                    {
+                        _captured = null;
+                    }
                 }
-
                 if (_hovered is not null)
                 {
                     Route<PointerEvent>(_hovered, context, static (node, ctx, pointer) => node.View.OnPointerDown(ctx, node, pointer), e);

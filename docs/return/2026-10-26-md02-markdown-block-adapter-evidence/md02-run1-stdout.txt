@@ -1,0 +1,16 @@
+=== md02 block/inline adapter verification ===
+assembly: C:\Users\nothh\AppData\Local\Temp\rt03-verify\app\bin\Debug\net10.0\CSharp.UI.Markdown.dll
+PASS MD02-blocks-materialize rich nodes=8 (expect ≥5: h1,para,quote,list,list,code…)
+PASS MD02-heading-present 
+FAIL MD02-heading-height>body h1 line h=17.78 (body≈18.6)
+PASS MD02-quote-present 
+PASS MD02-list-items 
+PASS MD02-fenced-code 
+PASS MD02-hanging-item-found 
+NOTE MD02-hanging lines=1 frameW=490
+NOTE MD02-hanging: item fit one line at this width — widen text next time
+PASS MD02-nested-node 
+NOTE MD02-nested marks over codeZ: 1; bold=True italic=True mono=True
+PASS MD02-nested-bold-italic 
+PASS MD02-html-literal text=[pre <b>htmltag</b> post]
+FAIL MD02-html-strip text=[pre htmltag post]

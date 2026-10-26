@@ -1,0 +1,21 @@
+PASS u-longword-table-found 
+FAIL u-longword-table-overflow tableW=320
+PASS u-longword-scroll-clipped scrollW=320
+PASS u-longword-content cellW=285.6
+PASS u-compress-width-bound tw=400
+PASS u-compress-cell-present 
+FAIL u-compress-cell-wrapped cellH=17.5
+FAIL u-natural-narrower-than-1024 tw=1024
+PASS u-resize-1024-wider 320=320 1024=1024
+FAIL u-equalcols w0=84.00000000000001 w1=92.40000000000002
+PASS u-header-bold 
+PASS u-missingcell-no-crash 
+PASS u-missingcell-headers 
+FAIL u-cjk-overflow tw=160
+FAIL u-wheel-scrolls before=0 after=0
+PASS u-wheel-cell-visible cells=8,309.6
+FAIL gl-md03-natural-1024.png-nonwhite nw=5
+PASS gl-md03-compress-320.png-nonwhite nw=45
+PASS gl-md03-overflow-320.png-nonwhite nw=70
+PASS gl-md03-mixed-cjk.png-nonwhite nw=76
+PASS gl-md03-header-mixed.png-nonwhite nw=34

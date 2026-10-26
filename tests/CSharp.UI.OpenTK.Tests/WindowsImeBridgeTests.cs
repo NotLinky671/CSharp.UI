@@ -127,6 +127,7 @@ public sealed class WindowsImeBridgeTests
                 {
                     Dispatcher = new HeadlessUiDispatcher(),
                     TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                     TextureService = new RecordingTextureService(),
                     TextInputService = Bridge,
                 });
@@ -549,6 +550,7 @@ public sealed class WindowsImeBridgeTests
             {
                 Dispatcher = new HeadlessUiDispatcher(),
                 TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                 TextureService = new RecordingTextureService(),
                 TextInputService = bridge,
             });
@@ -646,6 +648,7 @@ public sealed class WindowsImeBridgeTests
             {
                 Dispatcher = new HeadlessUiDispatcher(),
                 TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                 TextureService = new RecordingTextureService(),
                 TextInputService = bridge,
             });

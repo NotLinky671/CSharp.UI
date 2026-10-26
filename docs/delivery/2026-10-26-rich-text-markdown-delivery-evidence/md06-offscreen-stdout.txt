@@ -1,0 +1,100 @@
+PASS evidence-dir-real-repo C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence
+PASS logo-exists C:\Users\nothh\code\C#\CSharp.UI\samples\Shared\Assets\logo.png
+HOST 3.3.0 - Build 32.0.101.6790 / Intel(R) RaptorLake-S Mobile Graphics Controller / Intel
+PASS md06-light-320x1-docscroll 
+PASS md06-light-320x1-locate-link-node pt=(4, 405.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-320x1-link-echo.png 320x700
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-320x1-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-320x1-table-node f=(-323.215, 255.454, 631.215×169.749) docscroll=(0, 77.203, 320×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-320x1-doc-bottom.png 320x700
+=== md06-light-320x1 done ===
+PASS md06-light-1024x1-docscroll 
+PASS md06-light-1024x1-locate-link-node pt=(4, 385.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-1024x1-link-echo.png 1024x700
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-1024x1-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-1024x1-table-node f=(0, 357.856, 1012×76.644) docscroll=(0, 77.203, 1024×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-1024x1-doc-bottom.png 1024x700
+=== md06-light-1024x1 done ===
+PASS md06-light-320x1.5-docscroll 
+PASS md06-light-320x1.5-locate-link-node pt=(4, 405.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-320x1.5-link-echo.png 480x1050
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-320x1.5-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-320x1.5-table-node f=(-323.215, 255.454, 631.215×169.749) docscroll=(0, 77.203, 320×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-320x1.5-doc-bottom.png 480x1050
+=== md06-light-320x1.5 done ===
+PASS md06-light-1024x1.5-docscroll 
+PASS md06-light-1024x1.5-locate-link-node pt=(4, 385.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-1024x1.5-link-echo.png 1536x1050
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-1024x1.5-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-1024x1.5-table-node f=(0, 357.856, 1012×76.644) docscroll=(0, 77.203, 1024×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-1024x1.5-doc-bottom.png 1536x1050
+=== md06-light-1024x1.5 done ===
+PASS md06-light-320x2-docscroll 
+PASS md06-light-320x2-locate-link-node pt=(4, 405.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-320x2-link-echo.png 640x1400
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-320x2-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-320x2-table-node f=(-323.215, 255.454, 631.215×169.749) docscroll=(0, 77.203, 320×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-320x2-doc-bottom.png 640x1400
+=== md06-light-320x2 done ===
+PASS md06-light-1024x2-docscroll 
+PASS md06-light-1024x2-locate-link-node pt=(4, 385.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-1024x2-link-echo.png 2048x1400
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-1024x2-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-light-1024x2-table-node f=(0, 357.856, 1012×76.644) docscroll=(0, 77.203, 1024×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-light-1024x2-doc-bottom.png 2048x1400
+=== md06-light-1024x2 done ===
+PASS md06-dark-320x1-docscroll 
+PASS md06-dark-320x1-locate-link-node pt=(4, 405.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-320x1-link-echo.png 320x700
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-320x1-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-320x1-table-node f=(-323.215, 255.454, 631.215×169.749) docscroll=(0, 77.203, 320×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-320x1-doc-bottom.png 320x700
+=== md06-dark-320x1 done ===
+PASS md06-dark-1024x1-docscroll 
+PASS md06-dark-1024x1-locate-link-node pt=(4, 385.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-1024x1-link-echo.png 1024x700
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-1024x1-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-1024x1-table-node f=(0, 357.856, 1012×76.644) docscroll=(0, 77.203, 1024×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-1024x1-doc-bottom.png 1024x700
+=== md06-dark-1024x1 done ===
+PASS md06-dark-320x1.5-docscroll 
+PASS md06-dark-320x1.5-locate-link-node pt=(4, 405.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-320x1.5-link-echo.png 480x1050
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-320x1.5-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-320x1.5-table-node f=(-323.215, 255.454, 631.215×169.749) docscroll=(0, 77.203, 320×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-320x1.5-doc-bottom.png 480x1050
+=== md06-dark-320x1.5 done ===
+PASS md06-dark-1024x1.5-docscroll 
+PASS md06-dark-1024x1.5-locate-link-node pt=(4, 385.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-1024x1.5-link-echo.png 1536x1050
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-1024x1.5-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-1024x1.5-table-node f=(0, 357.856, 1012×76.644) docscroll=(0, 77.203, 1024×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-1024x1.5-doc-bottom.png 1536x1050
+=== md06-dark-1024x1.5 done ===
+PASS md06-dark-320x2-docscroll 
+PASS md06-dark-320x2-locate-link-node pt=(4, 405.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-320x2-link-echo.png 640x1400
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-320x2-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-320x2-table-node f=(-323.215, 255.454, 631.215×169.749) docscroll=(0, 77.203, 320×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-320x2-doc-bottom.png 640x1400
+=== md06-dark-320x2 done ===
+PASS md06-dark-1024x2-docscroll 
+PASS md06-dark-1024x2-locate-link-node pt=(4, 385.203)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-1024x2-link-echo.png 2048x1400
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-1024x2-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md06-dark-1024x2-table-node f=(0, 357.856, 1012×76.644) docscroll=(0, 77.203, 1024×360)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\md06-dark-1024x2-doc-bottom.png 2048x1400
+=== md06-dark-1024x2 done ===
+=== MD06-OFFSCREEN RESULT 50 PASS / 0 FAIL ===

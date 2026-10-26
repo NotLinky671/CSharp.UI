@@ -2,7 +2,7 @@
 
 创建日期：2026-10-25
 
-状态：**待实施**（规划完成，待用户授权）
+状态:**已完成并验收**(2026-10-26;Markdig 1.5.0 LRU+CacheLock;EmphasisExtras 收紧至 Strikethrough-only 修复)
 
 阶段：C（G1 之后）
 

@@ -83,6 +83,7 @@ public sealed class ClockTickTests
         {
             Dispatcher = dispatcher,
             TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
             Clock = clock,
         });
         runtime.SetViewport(new Size(200, 40), 1.0);

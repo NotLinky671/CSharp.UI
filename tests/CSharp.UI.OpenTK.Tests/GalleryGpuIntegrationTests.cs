@@ -306,6 +306,7 @@ public sealed class GalleryGpuIntegrationTests
         {
             Dispatcher = new HeadlessUiDispatcher(),
             TextService = textService,
+            RichTextService = textService as IRichTextService,
             TextureService = scope.Textures,
             ImageService = images,
             Clipboard = new StubClipboardService(),

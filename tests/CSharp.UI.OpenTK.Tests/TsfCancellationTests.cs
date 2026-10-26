@@ -581,6 +581,7 @@ public sealed class TsfCancellationTests
                 {
                     Dispatcher = new HeadlessUiDispatcher(),
                     TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                     TextureService = new RecordingTextureService(),
                     TextInputService = service,
                 });
@@ -926,6 +927,7 @@ public sealed class TsfCancellationTests
                 {
                     Dispatcher = new HeadlessUiDispatcher(),
                     TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                     TextureService = new RecordingTextureService(),
                     TextInputService = Service,
                 });

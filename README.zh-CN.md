@@ -65,8 +65,9 @@ dotnet run --project tests/CSharp.UI.Tests
 - [Key 与动态列表](docs/guide/keys-and-lists.md)
 - [编写自定义组件](docs/guide/custom-components.md)
 - [平台、字体与原生依赖](docs/guide/platform-notes.md)
+- [Markdown 模块（可选）](docs/guide/markdown.md)
 - [测试指南](docs/guide/testing.md)
-- 设计与任务：[首版计划](docs/plan/2026-10-14-declarative-ui-framework-plan.md)、[响应式布局计划](docs/plan/2026-10-16-responsive-layout-plan.md)、[文本编辑器计划](docs/plan/2026-10-23-text-editor-plan.md)、[滚动条计划](docs/plan/2026-10-23-scrollbar-plan.md)、[Floating 滚动条计划](docs/plan/2026-10-23-floating-scrollbar-plan.md)、[富文本与 Markdown 计划](docs/plan/2026-10-25-rich-text-and-markdown-plan.md)（实施中——RT-01 样式文本模型与 RT-02 富文本排版服务已完成；其余任务未授权）、[当前任务](docs/task/README.md)、[任务历史归档](docs/archive/)、[首版验收记录](docs/archive/2026-10-14-framework-tasks/README.md)、[响应式布局交付记录](docs/delivery/2026-10-16-responsive-layout-delivery.md)
+- 设计与任务：[首版计划](docs/plan/2026-10-14-declarative-ui-framework-plan.md)、[响应式布局计划](docs/plan/2026-10-16-responsive-layout-plan.md)、[文本编辑器计划](docs/plan/2026-10-23-text-editor-plan.md)、[滚动条计划](docs/plan/2026-10-23-scrollbar-plan.md)、[Floating 滚动条计划](docs/plan/2026-10-23-floating-scrollbar-plan.md)、[富文本与 Markdown 计划](docs/plan/2026-10-25-rich-text-and-markdown-plan.md)（全部已验收——RT-01～04 `StyledText`/`IRichTextService`/`RichText`/链接命中与 MD-01～06 Markdig 管道、块适配器、表格、资源/链接策略、Gallery 示例+文档、交付——见[交付记录](docs/delivery/2026-10-26-rich-text-markdown-delivery.md))、[当前任务](docs/task/README.md)、[任务历史归档](docs/archive/)、[首版验收记录](docs/archive/2026-10-14-framework-tasks/README.md)、[响应式布局交付记录](docs/delivery/2026-10-16-responsive-layout-delivery.md)
 
 ## 响应式布局
 
@@ -95,6 +96,8 @@ static View Search(State<string> query) =>
 ## 首版范围
 
 包含：`VStack`/`HStack`/`ZStack`/`Spacer`/`ScrollView`、`Text`/`Image`/`Rectangle`、`Button`/`Toggle`/`Slider`/`TextField`/`TextEditor`（多行：硬换行加按内容区宽软折行、固定 `MinLines` 视口内部 `ScrollY` 滚动、指针拖选边缘自滚、撤销重做与剪贴板命令）、`Padding`/`Frame`/`Background`/`Foreground`/`Border`/`CornerRadius`/`Opacity`/`Clip`/`Disabled`/`Key`、`ForEach`、明暗主题、字体/颜色环境继承、鼠标/键盘/滚轮/焦点/指针捕获、中文显示与**默认 IMM 路径**的已提交文本输入。`ScrollView`/`TextEditor` 内容溢出时沿滚动轴显示滚动条（init `ScrollbarStyle`：`Standard` 默认 persistent 12 逻辑像素槽、无溢出留空槽；`Floating` 覆盖内容边缘不占槽、实际滚动显示、静止约 1 秒隐藏、悬停或拖拽不隐藏、隐藏后指针落回内容；滑块可拖拽、轨道点击按视口翻页一次）。
+
+`RichText` 提供只读富文本——多样式分段、装饰（下划线/删除线/背景）、链接命中与激活回调、paint-only 悬停覆盖。可选 `CSharp.UI.Markdown` 包在同一视图树上渲染 CommonMark 文档（标题、强调、列表、引用、hr、围栏代码、链接、resolver 本地图片、三档 `Responsive` 表格）——见 [Markdown 指南](docs/guide/markdown.md)。
 
 文本编辑命令（撤销/重做、剪切/复制/粘贴、全选）只通过键盘快捷键触发，没有公开的命令 API。见 [API 参考](docs/guide/api-reference.md)与[输入法手动验收清单](docs/guide/ime-manual-acceptance.md)。
 

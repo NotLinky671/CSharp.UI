@@ -282,6 +282,7 @@ public sealed class OpenTkInputAdapterTests
         {
             Dispatcher = new HeadlessUiDispatcher(),
             TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
         });
         runtime.SetViewport(new Size(400, 60), 1);
         runtime.Start();
@@ -345,6 +346,7 @@ public sealed class OpenTkInputAdapterTests
         {
             Dispatcher = dispatcher,
             TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
         });
         var adapter = new OpenTkInputAdapter(runtime, requestExit ?? (() => { }), exitOnEscape, exitOnCloseShortcut: true);
         return (adapter, runtime, dispatcher);

@@ -38,6 +38,7 @@ public class TextureEvictionRegressionTests
             {
                 Dispatcher = dispatcher,
                 TextService = textService,
+            RichTextService = textService as IRichTextService,
                 TextureService = scope.Textures,
                 Clock = new TestUiClock(),
             });
@@ -92,6 +93,7 @@ public class TextureEvictionRegressionTests
             {
                 Dispatcher = dispatcher,
                 TextService = textService,
+            RichTextService = textService as IRichTextService,
                 TextureService = scope.Textures,
                 Clock = new TestUiClock(),
             });

@@ -173,6 +173,7 @@ public sealed class GalleryTextSamplingTests
             {
                 Dispatcher = new HeadlessUiDispatcher(),
                 TextService = _textService,
+            RichTextService = _textService as IRichTextService,
                 TextureService = _textures,
                 ImageService = CreateImages(),
                 Clock = new TestUiClock(),

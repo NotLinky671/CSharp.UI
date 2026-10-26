@@ -126,6 +126,7 @@ public sealed class WheelScrollIntegrationTests
         {
             Dispatcher = new HeadlessUiDispatcher(),
             TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
         });
         runtime.SetViewport(viewport, pixelScale);
         runtime.ProcessPendingWork();

@@ -131,13 +131,17 @@ public sealed class GalleryScrollbarDemoLayoutTests
         => host.Runtime.Root.Descendants()
             .First(n => n.View is Toggle t && t.Label == label);
 
-    /// <summary>“滚动条”区块内没有 Key 的横向演示 ScrollView：整页唯一的横向轴 ScrollView。</summary>
+    /// <summary>"滚动条"区块内的横向演示 ScrollView:先按标题定位区块 VStack,再筛其下横向 ScrollView——
+    /// 整页含 markdown 表格/代码块等其他横向 ScrollView,不能按"唯一横向"断言。</summary>
     private static ViewNode FindHorizontalDemo(GalleryIntegrationHost host)
     {
-        var scrolls = host.Runtime.Root.FindDescendants<ScrollView>()
-            .Where(n => ((ScrollView)n.View).Axis == ScrollAxis.Horizontal)
+        var sectionTitle = host.Runtime.Root.Descendants()
+            .First(n => n.View is Text t && t.Content == "滚动条");
+        // Section 外层 VStack 是 title 的最近 VStack 祖先(content VStack 是其子级,demo 在 content VStack 内)。
+        var section = SectionContentStack(sectionTitle);
+        var scrolls = section.Descendants()
+            .Where(n => n.View is ScrollView sv && sv.Axis == ScrollAxis.Horizontal)
             .ToList();
-        // 页面只有这一个横向 ScrollView 演示。
         return Assert.Single(scrolls);
     }
 

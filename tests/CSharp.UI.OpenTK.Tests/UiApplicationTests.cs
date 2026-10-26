@@ -525,6 +525,7 @@ public sealed class UiApplicationTests
         var framesAtStart = -1;
         var framesAtEnd = -1;
         var wakeupObserved = false;
+        var textService = new StubTextService();
 
         var result = UiApplication.Run(new TextField(Binding<string>.Constant("abc")), new UiApplicationOptions
         {
@@ -533,8 +534,9 @@ public sealed class UiApplicationTests
             Height = 40,
             VSync = false,
             StartVisible = false,
-            // 使用测试替身文本服务，避免图形测试依赖字体渲染结果。
-            TextService = new StubTextService(),
+            // 使用测试替身文本服务，避免图形测试依赖字体渲染结果;Stub 双接口同实例注入。
+            TextService = textService,
+            RichTextService = textService as IRichTextService,
             Started = context =>
             {
                 // 先完成一次布局，再走与真实输入相同的路径点击输入框获得焦点。

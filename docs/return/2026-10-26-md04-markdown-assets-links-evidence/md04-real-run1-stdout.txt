@@ -1,0 +1,19 @@
+PASS real-remote-resolver0 calls=0
+PASS real-remote-alt text=alt-text
+PASS real-remote-alt-frame frame=(0, 0, 400×300)
+PASS real-remote-resolve 
+PASS real-remote-img-size img=(0, 0, 50×25)
+PASS real-wide-aspect img=(0, 0, 400×100)
+PASS real-fail-alt alt=(0, 0, 400×300) text=miss
+PASS real-fail-img-empty img=(0, 0, 0×0)
+PASS real-tiny-natural img=(0, 0, 40×20)
+PASS real-switch-a a=(0, 0, 100×40)
+PASS real-switch-b b=(0, 0, 200×160)
+PASS real-fail-alt-preswitch 
+PASS real-fail-to-img img=(0, 0, 60×24)
+PASS real-mixed-no-image 
+PASS real-mixed-literal text=before [alt] after
+PASS gl-local-red red=3200
+PASS gl-remote-alt calls=0 dark=31
+PASS gl-fail-alt dark=133
+=== MD04-REAL RESULT 18 PASS / 0 FAIL ===

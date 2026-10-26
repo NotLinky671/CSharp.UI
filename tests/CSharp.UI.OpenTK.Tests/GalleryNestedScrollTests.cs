@@ -289,6 +289,7 @@ public sealed class GalleryNestedScrollTests
             {
                 Dispatcher = new HeadlessUiDispatcher(),
                 TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                 TextureService = _textures,
                 ImageService = CreateImages(),
                 Clipboard = new StubClipboardService(),

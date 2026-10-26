@@ -184,6 +184,16 @@ public interface ITextureService
     int Capacity { get; set; }
 }
 
+/// <summary>
+/// 富文本纹理缓存键：core 稳定身份 + 已解析 paint 值 + DPI 缩放。
+/// 同一 <see cref="RichLayoutIdentity"/>（同 core）的全部调用方句柄共享纹理缓存；
+/// paint 内含各 segment 已解析前/背景与装饰标志及段落默认前景。
+/// </summary>
+internal readonly record struct RichTextTextureKey(
+    RichLayoutIdentity Identity,
+    RichTextPaint Paint,
+    double PixelScale);
+
 /// <summary>绘制命令基类。命令集合按提交顺序表达层叠次序。</summary>
 public abstract record DrawCommand
 {

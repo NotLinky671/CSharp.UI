@@ -72,6 +72,7 @@ public sealed class NativeCompositionOwnerTests
                 {
                     Dispatcher = new HeadlessUiDispatcher(),
                     TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                     TextureService = new RecordingTextureService(),
                     TextInputService = Service,
                 });

@@ -27,6 +27,7 @@ internal sealed class GalleryIntegrationHost : IDisposable
         {
             Dispatcher = new HeadlessUiDispatcher(),
             TextService = TextService,
+            RichTextService = TextService as IRichTextService,
             TextureService = Textures,
             ImageService = _images,
             Clipboard = Clipboard,

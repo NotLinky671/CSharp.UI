@@ -50,6 +50,7 @@ public sealed class TsfHostIntegrationTests
                     VSync = false,
                     StartVisible = false,
                     TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                     UseTsfInputBridge = true,
                     Started = context =>
                     {

@@ -1,0 +1,20 @@
+=== md01 parse verification ===
+assembly: C:\Users\nothh\AppData\Local\Temp\rt03-verify\app\bin\Debug\net10.0\CSharp.UI.Markdown.dll
+markdig : C:\Users\nothh\AppData\Local\Temp\rt03-verify\app\bin\Debug\net10.0\Markdig.dll v1.5.0.0
+PASS MD01-null-source-ane got ArgumentNullException: Value cannot be null. (Parameter 'source')
+PASS MD01-source-verbatim len 48 vs 48
+PASS MD01-options-default options=MarkdownPipelineOptions { PipeTables = True, EmphasisExtras = True, TaskLists = False, AutoLinks = True, Html = Literal }
+PASS MD01-doc-equals-self 
+PASS MD01-cache-same-instance 
+PASS MD01-diff-option-diff-instance 
+PASS MD01-diff-source-diff-instance 
+PASS MD01-option-PipeTables-differs ref-eq=False val=False
+PASS MD01-option-EmphasisExtras-differs ref-eq=False val=False
+PASS MD01-option-TaskLists-differs ref-eq=False val=True
+PASS MD01-option-AutoLinks-differs ref-eq=False val=False
+PASS MD01-option-Html-differs ref-eq=False val=Strip
+NOTE MD01-diag ast root type=MarkdownDocument
+NOTE MD01-diag ast child count=1
+NOTE MD01-diag lru: first==again ? False
+PASS MD01-lru-consistent re-parse of same key is internally consistent
+=== MD01 RESULT 13 PASS / 0 FAIL ===

@@ -1,0 +1,30 @@
+PASS md3-overflow-desired desiredW=577.4296875
+PASS md3-overflow-scroll-clip scrollW=320
+NOTE fixture2 pref=434.0 min=78.3 W=256.2
+PASS md3-compress-to-W desired=256.177734375 W=256.177734375
+PASS md3-natural-narrow desired=47.77734375
+PASS md3-resize-pref-stable w320=154.2265625 w1024=154.2265625
+PASS md3-samecol-equal-width w0=41.53515625 w1=41.53515625 w2=41.53515625 x0=8 x1=8 x2=8
+PASS md3-header-all-bold boldCoverage=17/17
+PASS md3-header-italic-kept italic=1
+PASS md3-missing-x-rendered x=(8, 19.621, 6.426×18.621)
+PASS md3-missing-x-col0 x.X=8 (padding≈8)
+PASS md3-missing-hdr-b 
+PASS md3-mono-inline families=?;Cascadia Mono;?
+PASS md3-cjk-fits desired=109.546875
+PASS md3-wheel-overflow desired=673.51171875
+NOTE wheel neg=24 plus=0
+PASS md3-wheel-moved before=0 neg=24 after=0
+PASS md3-resize-320-compress desired=320
+PASS md3-resize-1024-pref desired=434.03515625
+PASS md3-resize-rowheight-diff h320=56.86328125 h1024=38.2421875
+PASS md3-resize-back-320 desired=320
+PASS md3-overflow-320-scrolled offset=24
+PASS md3-overflow-1024-clamped offset=0 desired1024=673.51171875
+PASS md3-overflow-1024-fits desired=673.51171875
+PASS gl-md03-gl-overflow-320.png-glyph win=(8, 19.621, 514.063×18.621) dark=39
+PASS gl-md03-gl-natural-1024.png-glyph win=(8, 0, 7.547×18.621) dark=16
+PASS gl-md03-gl-compress-320.png-glyph win=(8, 0, 281.027×37.242) dark=697
+PASS gl-md03-gl-mixed.png-glyph win=(8, 0, 87.145×18.669) dark=240
+PASS gl-md03-gl-hdr-mixed.png-glyph win=(8, 0, 84.957×18.621) dark=166
+=== MD03 RESULT 27 PASS / 0 FAIL ===

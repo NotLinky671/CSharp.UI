@@ -31,6 +31,7 @@ internal sealed class TestApp : IDisposable
         {
             Dispatcher = Dispatcher,
             TextService = Text,
+            RichTextService = Text,
             TextureService = Textures,
             ImageService = Images,
             Clipboard = Clipboard,

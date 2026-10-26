@@ -124,6 +124,7 @@ public sealed class WindowsInputBridgeContractTests
                 {
                     Dispatcher = new HeadlessUiDispatcher(),
                     TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                     TextureService = new RecordingTextureService(),
                     TextInputService = Bridge,
                 });
@@ -355,6 +356,7 @@ public sealed class WindowsInputBridgeContractTests
                 {
                     Dispatcher = new HeadlessUiDispatcher(),
                     TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                     TextureService = new RecordingTextureService(),
                     TextInputService = Bridge,
                 });

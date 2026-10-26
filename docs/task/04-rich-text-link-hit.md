@@ -2,7 +2,7 @@
 
 创建日期：2026-10-25
 
-状态：**待实施**（规划完成，待用户授权）
+状态：**已完成并验收**（2026-10-26 主审：34 项真实 GL/pointer 检查 0 失败，含 Q clip-out 不激活、O/F capture 策略、hover GL 原色恢复与 cache 稳定；fast r3+ 证据）
 
 阶段：B（G1 出口）
 
@@ -27,7 +27,7 @@
 
 ### 状态机（node 级 interaction state）
 
-- `OnPointerDown`（`IsHitTestVisible`、非 disabled、frame 内）：命中 Id → `pressedId=Id`、`cancelled=false`、pointer capture、return true；未命中 → return false **不吞事件**。
+- `OnPointerDown`（`IsHitTestVisible`、非 disabled、frame 内）：命中 Id → `pressedId=Id`、`cancelled=false`、pointer capture、return true；未命中 → return false **不吞事件**。**捕获经最小内部接缝**：`View.WantsPointerCapture(node,e)` 默认 true（既有语义）；`RichText` 仅"有 `OnLinkActivate` 回调且命中 link"时返回 true——非 link 区/空回调按下不 capture、不吞事件、祖先 Button 照常激活。
 - `OnPointerMove`（capture 中）：`命中Id != pressedId` → `cancelled=true`（**离区即取消，移回不恢复**）。
 - `OnPointerUp`：`!cancelled && 命中Id == pressedId` → `OnLinkActivate?.Invoke(payload)`；清态释放 capture、return true。Down A/Up B（同 URL 不同 Id）→ 不激活。
 - `OnPointerCancel`/`OnUpdate`（新 `StyledText`）/`OnUnmount`/disabled → 清 pressed+hover；hover 收敛发 `OnLinkHover(null)`（若曾 hover）。

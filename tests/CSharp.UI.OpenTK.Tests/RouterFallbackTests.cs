@@ -99,6 +99,7 @@ public sealed class RouterFallbackTests
                 {
                     Dispatcher = new HeadlessUiDispatcher(),
                     TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                     TextureService = new RecordingTextureService(),
                     TextInputService = router,
                 });

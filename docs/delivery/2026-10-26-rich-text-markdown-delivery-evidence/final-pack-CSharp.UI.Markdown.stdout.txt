@@ -1,0 +1,6 @@
+  正在确定要还原的项目…
+  所有项目均是最新的，无法还原。
+  CSharp.UI -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\bin\Release\net10.0\CSharp.UI.dll
+  CSharp.UI.Markdown -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.Markdown\bin\Release\net10.0\CSharp.UI.Markdown.dll
+  包 CSharp.UI.Markdown.0.1.0-preview.1 缺少自述文件。转到 https://aka.ms/nuget/authoring-best-practices/readme 了解为什么包阅读主题很重要。
+  已成功创建包“C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\final-pack-CSharp.UI.Markdown\CSharp.UI.Markdown.0.1.0-preview.1.nupkg”。

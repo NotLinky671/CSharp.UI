@@ -160,6 +160,7 @@ public sealed class TextColorMaskTests
         {
             Dispatcher = new HeadlessUiDispatcher(),
             TextService = textService,
+            RichTextService = textService as IRichTextService,
             TextureService = scope.Textures,
             Clock = new TestUiClock(),
         });
@@ -261,6 +262,7 @@ public sealed class TextColorMaskTests
         {
             Dispatcher = new HeadlessUiDispatcher(),
             TextService = textService,
+            RichTextService = textService as IRichTextService,
             TextureService = scope.Textures,
             Clock = new TestUiClock(),
         });

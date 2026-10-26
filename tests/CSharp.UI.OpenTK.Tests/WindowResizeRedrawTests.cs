@@ -295,6 +295,7 @@ public sealed class WindowResizeRedrawTests
                 VSync = false,
                 StartVisible = false,
                 TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
             });
 
         host.Window.MakeCurrent();
@@ -333,6 +334,7 @@ public sealed class WindowResizeRedrawTests
                 // 无法进行原生最小化验证，用例会动态跳过而不是伪装通过。
                 StartVisible = true,
                 TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                 FrameRendered = context =>
                 {
                     // 首帧之后再启动驱动线程，消除“最小化早于首帧”的调度竞态。
@@ -447,6 +449,7 @@ public sealed class WindowResizeRedrawTests
                 VSync = false,
                 StartVisible = false,
                 TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                 FrameRendered = context =>
                 {
                     if (context.RenderedFrameCount != 1)
@@ -610,6 +613,7 @@ public sealed class WindowResizeRedrawTests
             VSync = false,
             StartVisible = false,
             TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
             FrameRendered = frameRendered,
         };
 

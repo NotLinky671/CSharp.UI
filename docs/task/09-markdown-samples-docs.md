@@ -2,7 +2,7 @@
 
 创建日期：2026-10-25
 
-状态：**待实施**（规划完成，待用户授权）
+状态:**已完成并验收**(2026-10-26;真实 `UiRuntime` harness 点击 URL→echo 通过;dark/900/doc-bottom PNG 有 URL+logo+alt+表格;`Guide/API/NOTICE/pack` 主审已读接受)
 
 阶段：D
 

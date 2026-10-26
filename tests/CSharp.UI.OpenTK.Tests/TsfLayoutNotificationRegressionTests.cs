@@ -61,6 +61,7 @@ public sealed class TsfLayoutNotificationRegressionTests
                     VSync = false,
                     StartVisible = false,
                     TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                     UseTsfInputBridge = true,
                     Started = context =>
                     {

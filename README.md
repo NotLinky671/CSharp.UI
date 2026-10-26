@@ -65,8 +65,9 @@ See the [getting started guide](docs/guide/getting-started.md) for details.
 - [Keys and dynamic lists](docs/guide/keys-and-lists.md)
 - [Writing custom components](docs/guide/custom-components.md)
 - [Platform, fonts, and native dependencies](docs/guide/platform-notes.md)
+- [Markdown module (optional)](docs/guide/markdown.md)
 - [Testing guide](docs/guide/testing.md)
-- Design and tasks: [first-release plan](docs/plan/2026-10-14-declarative-ui-framework-plan.md), [responsive-layout plan](docs/plan/2026-10-16-responsive-layout-plan.md), [text-editor plan](docs/plan/2026-10-23-text-editor-plan.md), [scrollbar plan](docs/plan/2026-10-23-scrollbar-plan.md), [floating-scrollbar plan](docs/plan/2026-10-23-floating-scrollbar-plan.md), [rich-text and Markdown plan](docs/plan/2026-10-25-rich-text-and-markdown-plan.md) (in progress — RT-01 styled-text model and RT-02 rich-text layout service done; further tasks unauthorized), [current tasks](docs/task/README.md), [archived task groups](docs/archive/), [first-release acceptance record](docs/archive/2026-10-14-framework-tasks/README.md), [responsive-layout delivery record](docs/delivery/2026-10-16-responsive-layout-delivery.md)
+- Design and tasks: [first-release plan](docs/plan/2026-10-14-declarative-ui-framework-plan.md), [responsive-layout plan](docs/plan/2026-10-16-responsive-layout-plan.md), [text-editor plan](docs/plan/2026-10-23-text-editor-plan.md), [scrollbar plan](docs/plan/2026-10-23-scrollbar-plan.md), [floating-scrollbar plan](docs/plan/2026-10-23-floating-scrollbar-plan.md), [rich-text and Markdown plan](docs/plan/2026-10-25-rich-text-and-markdown-plan.md) (all accepted — RT-01~04 styled-text/`IRichTextService`/`RichText`/link-hit and MD-01~06 Markdig pipeline, block adapter, table, asset/link policy, Gallery sample+docs, delivery — see [delivery record](docs/delivery/2026-10-26-rich-text-markdown-delivery.md)), [current tasks](docs/task/README.md), [archived task groups](docs/archive/), [first-release acceptance record](docs/archive/2026-10-14-framework-tasks/README.md), [responsive-layout delivery record](docs/delivery/2026-10-16-responsive-layout-delivery.md)
 
 ## Responsive layout
 
@@ -101,6 +102,8 @@ Included: `VStack`/`HStack`/`ZStack`/`Spacer`/`ScrollView`, `Text`/`Image`/`Rect
 `Padding`/`Frame`/`Background`/`Foreground`/`Border`/`CornerRadius`/`Opacity`/`Clip`/`Disabled`/`Key`,
 `ForEach`, light and dark themes, font/color environment inheritance, mouse/keyboard/wheel/focus/pointer capture,
 and Chinese text display with committed text input on the default IMM path. `ScrollView` and `TextEditor` show a scrollbar when content overflows (init `ScrollbarStyle`: `Standard` default persistent 12 logical-pixel gutter; `Floating` overlays the content edge without a gutter, appears on actual scrolling, hides after about 1 second, stays while hovered or dragged; drag thumb or click track to page once).
+
+`RichText` provides read-only rich text — multi-style segments, decorations (underline/strikethrough/background), link hit/activation callbacks, and paint-only hover overrides. The optional `CSharp.UI.Markdown` package renders CommonMark documents (headings, emphasis, lists, quotes, hr, fenced code, links, local images via resolver, three-tier `Responsive` tables) through the same view tree — see the [Markdown guide](docs/guide/markdown.md).
 
 Text editing commands (undo/redo, cut/copy/paste, select all) are keyboard shortcuts only; there is no public command API. See the [API reference](docs/guide/api-reference.md) and the [manual IME acceptance checklist](docs/guide/ime-manual-acceptance.md).
 

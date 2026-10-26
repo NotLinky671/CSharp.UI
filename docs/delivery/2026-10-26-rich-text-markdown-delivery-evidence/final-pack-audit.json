@@ -1,0 +1,42 @@
+{
+  "generated": "2026-10-26T12:26:33.506062",
+  "csharp_ui": {
+    "nupkg": "CSharp.UI.0.1.0-preview.1.nupkg",
+    "sha256": "694c5278639ba96d8d6efe730b267693202d32a0bd202b08709c8162f069835e",
+    "size_bytes": 187299,
+    "members": [
+      "CSharp.UI.nuspec",
+      "[Content_Types].xml",
+      "_rels/.rels",
+      "lib/net10.0/CSharp.UI.dll",
+      "package/services/metadata/core-properties/498763d337f240218a154a6efc664919.psmdcp"
+    ],
+    "nuspec_dependencies": "(empty group — see nuspec extract)",
+    "notice_member_present": false
+  },
+  "csharp_ui_markdown": {
+    "nupkg": "CSharp.UI.Markdown.0.1.0-preview.1.nupkg",
+    "sha256": "1129b2360feb2a948f89bedfcbecdbd0ff88bb4eb7f96a6311bca2911058cf1d",
+    "size_bytes": 32141,
+    "members": [
+      "CSharp.UI.Markdown.nuspec",
+      "NOTICE",
+      "[Content_Types].xml",
+      "_rels/.rels",
+      "lib/net10.0/CSharp.UI.Markdown.dll",
+      "package/services/metadata/core-properties/d09de78f38f3474cbcfb3ec271ff0b83.psmdcp"
+    ],
+    "nuspec_dependencies": [
+      "CSharp.UI 0.1.0-preview.1",
+      "Markdig 1.5.0"
+    ],
+    "notice_member": true,
+    "notice_bytes_len": 1701,
+    "notice_sha256": "589053950c9c1ede0bf50207f6c5ea733ea6085f610bae004ffec348223e91f2"
+  },
+  "repo_notice": {
+    "len": 1701,
+    "sha256": "589053950c9c1ede0bf50207f6c5ea733ea6085f610bae004ffec348223e91f2"
+  },
+  "notice_byte_equal": true
+}

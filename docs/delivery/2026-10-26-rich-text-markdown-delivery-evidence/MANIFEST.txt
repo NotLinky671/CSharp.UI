@@ -1,0 +1,91 @@
+﻿MD06 manifest — 2026-10-26T12:05:39.2268615+08:00
+build-debug	2026-10-26T12:05:39.2379465+08:00	exit=0	stdout=1824B	stderr=0B	dotnet build CSharp.UI.slnx -c Debug --no-incremental -m:1 -nodeReuse:false
+build-release	2026-10-26T12:05:49.3976615+08:00	exit=0	stdout=1850B	stderr=0B	dotnet build CSharp.UI.slnx -c Release --no-incremental -m:1 -nodeReuse:false
+suite-csharp-ui-tests-Debug	2026-10-26T12:05:58.5529291+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Tests\bin\Debug\net10.0\CSharp.UI.Tests.exe 
+suite-text-tests-Debug	2026-10-26T12:05:58.6483469+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Text.Tests\bin\Debug\net10.0\CSharp.UI.Text.Tests.exe 
+suite-integration-tests-Debug	2026-10-26T12:05:58.6713530+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\bin\Debug\net10.0\CSharp.UI.Integration.Tests.exe 
+suite-opentk-tests-Debug	2026-10-26T12:05:58.6818708+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.OpenTK.Tests\bin\Debug\net10.0\CSharp.UI.OpenTK.Tests.exe 
+suite-markdown-tests-Debug	2026-10-26T12:05:58.6931907+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Markdown.Tests\bin\Debug\net10.0\CSharp.UI.Markdown.Tests.exe 
+suite-csharp-ui-tests-Release	2026-10-26T12:05:58.7040798+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Tests\bin\Release\net10.0\CSharp.UI.Tests.exe 
+suite-text-tests-Release	2026-10-26T12:05:58.7406146+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Text.Tests\bin\Release\net10.0\CSharp.UI.Text.Tests.exe 
+suite-integration-tests-Release	2026-10-26T12:05:58.7512414+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\bin\Release\net10.0\CSharp.UI.Integration.Tests.exe 
+suite-opentk-tests-Release	2026-10-26T12:05:58.7623171+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.OpenTK.Tests\bin\Release\net10.0\CSharp.UI.OpenTK.Tests.exe 
+suite-markdown-tests-Release	2026-10-26T12:05:58.7731628+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Markdown.Tests\bin\Release\net10.0\CSharp.UI.Markdown.Tests.exe 
+sample-build-Counter-Debug	2026-10-26T12:05:58.7857272+08:00	exit=0	stdout=620B	stderr=0B	dotnet build samples\CSharp.UI.Samples.Counter\CSharp.UI.Samples.Counter.csproj -c Debug --no-incremental -m:1 -nodeReuse:false
+sample-smoke-Counter-Debug	2026-10-26T12:06:01.8462657+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.Counter\bin\Debug\net10.0\Counter.exe 
+sample-build-TodoList-Debug	2026-10-26T12:06:01.8589614+08:00	exit=0	stdout=623B	stderr=0B	dotnet build samples\CSharp.UI.Samples.TodoList\CSharp.UI.Samples.TodoList.csproj -c Debug --no-incremental -m:1 -nodeReuse:false
+sample-smoke-TodoList-Debug	2026-10-26T12:06:04.9153774+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.TodoList\bin\Debug\net10.0\TodoList.exe 
+sample-build-ControlGallery-Debug	2026-10-26T12:06:04.9284719+08:00	exit=0	stdout=763B	stderr=0B	dotnet build samples\CSharp.UI.Samples.ControlGallery\CSharp.UI.Samples.ControlGallery.csproj -c Debug --no-incremental -m:1 -nodeReuse:false
+sample-smoke-ControlGallery-Debug	2026-10-26T12:06:08.9861350+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.ControlGallery\bin\Debug\net10.0\ControlGallery.exe 
+sample-build-Counter-Release	2026-10-26T12:06:09.0062093+08:00	exit=0	stdout=628B	stderr=0B	dotnet build samples\CSharp.UI.Samples.Counter\CSharp.UI.Samples.Counter.csproj -c Release --no-incremental -m:1 -nodeReuse:false
+sample-smoke-Counter-Release	2026-10-26T12:06:12.0567858+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.Counter\bin\Release\net10.0\Counter.exe 
+sample-build-TodoList-Release	2026-10-26T12:06:12.0695488+08:00	exit=0	stdout=631B	stderr=0B	dotnet build samples\CSharp.UI.Samples.TodoList\CSharp.UI.Samples.TodoList.csproj -c Release --no-incremental -m:1 -nodeReuse:false
+sample-smoke-TodoList-Release	2026-10-26T12:06:15.1103734+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.TodoList\bin\Release\net10.0\TodoList.exe 
+sample-build-ControlGallery-Release	2026-10-26T12:06:15.1205883+08:00	exit=0	stdout=773B	stderr=0B	dotnet build samples\CSharp.UI.Samples.ControlGallery\CSharp.UI.Samples.ControlGallery.csproj -c Release --no-incremental -m:1 -nodeReuse:false
+sample-smoke-ControlGallery-Release	2026-10-26T12:06:18.1736561+08:00	exit=9999	stdout=0B	stderr=703B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.ControlGallery\bin\Release\net10.0\ControlGallery.exe 
+list-package-core	2026-10-26T12:06:18.1836135+08:00	exit=0	stdout=179B	stderr=0B	dotnet list src\CSharp.UI\CSharp.UI.csproj package --include-transitive
+list-package-md	2026-10-26T12:06:20.2278117+08:00	exit=0	stdout=241B	stderr=0B	dotnet list src\CSharp.UI.Markdown\CSharp.UI.Markdown.csproj package --include-transitive
+pack-CSharp.UI	2026-10-26T12:06:22.3091279+08:00	exit=0	stdout=512B	stderr=0B	dotnet pack src\CSharp.UI\CSharp.UI.csproj -c Release -o C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\pack-CSharp.UI
+pack-CSharp.UI.Markdown	2026-10-26T12:06:24.4375754+08:00	exit=0	stdout=663B	stderr=0B	dotnet pack src\CSharp.UI.Markdown\CSharp.UI.Markdown.csproj -c Release -o C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\pack-CSharp.UI.Markdown
+NOTICE sha256=589053950c9c1ede0bf50207f6c5ea733ea6085f610bae004ffec348223e91f2
+files=2867
+manifest done
+MD06 retry-2026-10-26T12:07:03.1350034+08:00
+suite-csharp-ui-tests-Debug	2026-10-26T12:07:03.1557626+08:00	exit=0	stdout=398B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Tests\bin\Debug\net10.0\CSharp.UI.Tests.exe 
+suite-text-tests-Debug	2026-10-26T12:07:07.3270709+08:00	exit=0	stdout=423B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Text.Tests\bin\Debug\net10.0\CSharp.UI.Text.Tests.exe 
+suite-integration-tests-Debug	2026-10-26T12:07:11.4231100+08:00	exit=0	stdout=457B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\bin\Debug\net10.0\CSharp.UI.Integration.Tests.exe 
+suite-opentk-tests-Debug	2026-10-26T12:07:14.5092570+08:00	exit=1	stdout=952430B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.OpenTK.Tests\bin\Debug\net10.0\CSharp.UI.OpenTK.Tests.exe 
+suite-markdown-tests-Debug	2026-10-26T12:07:28.7048650+08:00	exit=0	stdout=442B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Markdown.Tests\bin\Debug\net10.0\CSharp.UI.Markdown.Tests.exe 
+suite-csharp-ui-tests-Release	2026-10-26T12:07:32.8105338+08:00	exit=0	stdout=398B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Tests\bin\Release\net10.0\CSharp.UI.Tests.exe 
+suite-text-tests-Release	2026-10-26T12:07:36.9691994+08:00	exit=0	stdout=423B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Text.Tests\bin\Release\net10.0\CSharp.UI.Text.Tests.exe 
+suite-integration-tests-Release	2026-10-26T12:07:41.1096996+08:00	exit=0	stdout=457B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\bin\Release\net10.0\CSharp.UI.Integration.Tests.exe 
+suite-opentk-tests-Release	2026-10-26T12:07:45.2524656+08:00	exit=1	stdout=957134B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.OpenTK.Tests\bin\Release\net10.0\CSharp.UI.OpenTK.Tests.exe 
+suite-markdown-tests-Release	2026-10-26T12:07:59.5054661+08:00	exit=0	stdout=442B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Markdown.Tests\bin\Release\net10.0\CSharp.UI.Markdown.Tests.exe 
+sample-smoke-Counter-Debug	2026-10-26T12:08:03.6429152+08:00	exit=0	stdout=218B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.Counter\bin\Debug\net10.0\Counter.exe 
+sample-smoke-TodoList-Debug	2026-10-26T12:08:06.7727241+08:00	exit=0	stdout=220B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.TodoList\bin\Debug\net10.0\TodoList.exe 
+sample-smoke-ControlGallery-Debug	2026-10-26T12:08:09.9056666+08:00	exit=0	stdout=227B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.ControlGallery\bin\Debug\net10.0\ControlGallery.exe 
+sample-smoke-Counter-Release	2026-10-26T12:08:14.0361944+08:00	exit=0	stdout=218B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.Counter\bin\Release\net10.0\Counter.exe 
+sample-smoke-TodoList-Release	2026-10-26T12:08:17.1674426+08:00	exit=0	stdout=220B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.TodoList\bin\Release\net10.0\TodoList.exe 
+sample-smoke-ControlGallery-Release	2026-10-26T12:08:20.2982706+08:00	exit=0	stdout=227B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.ControlGallery\bin\Release\net10.0\ControlGallery.exe 
+retry done
+md06-offscreen-12-matrix	2026-10-26T12:13:33+08:00	exit=0	50 PASS / 0 FAIL	GlOffscreenSurface UiRuntime MarkdownDemo × light|dark × ps 1|1.5|2 × w 320|1024
+md06-api-example	2026-10-26T12:13:33+08:00	exit=0	PASS	quick-example compile+run: 6 RichText + 1 MarkdownTable + 1 link node + 9 draw commands on headless UiRuntime
+MD06 FINAL 2026-10-26T12:19:54.8240902+08:00
+final-build-debug	2026-10-26T12:19:54.8310908+08:00	exit=0	stdout=1824B	stderr=0B	dotnet build CSharp.UI.slnx -c Debug --no-incremental -m:1 -nodeReuse:false
+final-build-release	2026-10-26T12:20:03.9772476+08:00	exit=0	stdout=1850B	stderr=0B	dotnet build CSharp.UI.slnx -c Release --no-incremental -m:1 -nodeReuse:false
+final-suite-csharp-ui-tests-Debug	2026-10-26T12:20:13.1170697+08:00	exit=0	stdout=398B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Tests\bin\Debug\net10.0\CSharp.UI.Tests.exe 
+final-suite-text-tests-Debug	2026-10-26T12:20:17.2648029+08:00	exit=0	stdout=423B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Text.Tests\bin\Debug\net10.0\CSharp.UI.Text.Tests.exe 
+final-suite-integration-tests-Debug	2026-10-26T12:20:21.3542936+08:00	exit=0	stdout=457B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\bin\Debug\net10.0\CSharp.UI.Integration.Tests.exe 
+final-suite-opentk-tests-Debug	2026-10-26T12:20:24.4423440+08:00	exit=0	stdout=8453B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.OpenTK.Tests\bin\Debug\net10.0\CSharp.UI.OpenTK.Tests.exe 
+final-suite-markdown-tests-Debug	2026-10-26T12:20:38.6419080+08:00	exit=0	stdout=442B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Markdown.Tests\bin\Debug\net10.0\CSharp.UI.Markdown.Tests.exe 
+final-suite-csharp-ui-tests-Release	2026-10-26T12:20:41.7358578+08:00	exit=0	stdout=398B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Tests\bin\Release\net10.0\CSharp.UI.Tests.exe 
+final-suite-text-tests-Release	2026-10-26T12:20:45.8716364+08:00	exit=0	stdout=423B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Text.Tests\bin\Release\net10.0\CSharp.UI.Text.Tests.exe 
+final-suite-integration-tests-Release	2026-10-26T12:20:49.9810225+08:00	exit=0	stdout=457B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Integration.Tests\bin\Release\net10.0\CSharp.UI.Integration.Tests.exe 
+final-suite-opentk-tests-Release	2026-10-26T12:20:54.1003463+08:00	exit=0	stdout=8453B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.OpenTK.Tests\bin\Release\net10.0\CSharp.UI.OpenTK.Tests.exe 
+final-suite-markdown-tests-Release	2026-10-26T12:21:10.4117957+08:00	exit=0	stdout=442B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\tests\CSharp.UI.Markdown.Tests\bin\Release\net10.0\CSharp.UI.Markdown.Tests.exe 
+final-sample-build-Counter-Debug	2026-10-26T12:21:14.5674619+08:00	exit=0	stdout=620B	stderr=0B	dotnet build samples\CSharp.UI.Samples.Counter\CSharp.UI.Samples.Counter.csproj -c Debug --no-incremental -m:1 -nodeReuse:false
+final-sample-smoke-Counter-Debug	2026-10-26T12:21:17.6214073+08:00	exit=0	stdout=218B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.Counter\bin\Debug\net10.0\Counter.exe 
+final-sample-build-TodoList-Debug	2026-10-26T12:21:20.7254943+08:00	exit=0	stdout=623B	stderr=0B	dotnet build samples\CSharp.UI.Samples.TodoList\CSharp.UI.Samples.TodoList.csproj -c Debug --no-incremental -m:1 -nodeReuse:false
+final-sample-smoke-TodoList-Debug	2026-10-26T12:21:23.7775633+08:00	exit=0	stdout=220B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.TodoList\bin\Debug\net10.0\TodoList.exe 
+final-sample-build-ControlGallery-Debug	2026-10-26T12:21:26.8945486+08:00	exit=0	stdout=763B	stderr=0B	dotnet build samples\CSharp.UI.Samples.ControlGallery\CSharp.UI.Samples.ControlGallery.csproj -c Debug --no-incremental -m:1 -nodeReuse:false
+final-sample-smoke-ControlGallery-Debug	2026-10-26T12:21:30.9566900+08:00	exit=0	stdout=227B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.ControlGallery\bin\Debug\net10.0\ControlGallery.exe 
+final-sample-build-Counter-Release	2026-10-26T12:21:35.0969735+08:00	exit=0	stdout=628B	stderr=0B	dotnet build samples\CSharp.UI.Samples.Counter\CSharp.UI.Samples.Counter.csproj -c Release --no-incremental -m:1 -nodeReuse:false
+final-sample-smoke-Counter-Release	2026-10-26T12:21:38.1404419+08:00	exit=0	stdout=218B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.Counter\bin\Release\net10.0\Counter.exe 
+final-sample-build-TodoList-Release	2026-10-26T12:21:41.2489879+08:00	exit=0	stdout=631B	stderr=0B	dotnet build samples\CSharp.UI.Samples.TodoList\CSharp.UI.Samples.TodoList.csproj -c Release --no-incremental -m:1 -nodeReuse:false
+final-sample-smoke-TodoList-Release	2026-10-26T12:21:44.2964907+08:00	exit=0	stdout=220B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.TodoList\bin\Release\net10.0\TodoList.exe 
+final-sample-build-ControlGallery-Release	2026-10-26T12:21:47.3952278+08:00	exit=0	stdout=773B	stderr=0B	dotnet build samples\CSharp.UI.Samples.ControlGallery\CSharp.UI.Samples.ControlGallery.csproj -c Release --no-incremental -m:1 -nodeReuse:false
+final-sample-smoke-ControlGallery-Release	2026-10-26T12:21:51.4680197+08:00	exit=0	stdout=227B	stderr=0B	C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.ControlGallery\bin\Release\net10.0\ControlGallery.exe 
+final-list-package-core	2026-10-26T12:21:54.5699484+08:00	exit=0	stdout=179B	stderr=0B	dotnet list src\CSharp.UI\CSharp.UI.csproj package --include-transitive
+final-list-package-md	2026-10-26T12:21:56.6060815+08:00	exit=0	stdout=241B	stderr=0B	dotnet list src\CSharp.UI.Markdown\CSharp.UI.Markdown.csproj package --include-transitive
+final-pack-CSharp.UI	2026-10-26T12:21:58.6614441+08:00	exit=0	stdout=518B	stderr=0B	dotnet pack src\CSharp.UI\CSharp.UI.csproj -c Release -o C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\final-pack-CSharp.UI
+final-pack-CSharp.UI.Markdown	2026-10-26T12:22:00.6949522+08:00	exit=0	stdout=669B	stderr=0B	dotnet pack src\CSharp.UI.Markdown\CSharp.UI.Markdown.csproj -c Release -o C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-26-rich-text-markdown-delivery-evidence\final-pack-CSharp.UI.Markdown
+NOTICE-sha256=589053950c9c1ede0bf50207f6c5ea733ea6085f610bae004ffec348223e91f2
+final-ps-done 2026-10-26T12:22:02.8644568+08:00
+final-md06-offscreen	2026-10-26T12:23:34.486586	exit=0	50 PASS / 0 FAIL	on-final-DLLs sha=00ad025c...CSharp.UI.dll
+final-md06-api-example	2026-10-26T12:23:34.486603	exit=0	6 RichText / 1 table / 1 link / 9 cmds
+final-source-sha	files=220	SHA256SUMS entries=220
+final-done
+final-source-sha-correction	2026-10-26T12:26:38+08:00	note	source_files=270 evidence_payloads=220	prior row mislabeled payload count as source count
+final-pack-audit	2026-10-26T12:26:38+08:00	note	final-pack-audit.json + final-pack-audit.txt	recorded nupkg contents/deps/NOTICE bytes hash
+final-metadata-seal	2026-10-26T12:30:03+08:00	note	source_files=270 evidence_payloads=224	post-doc-freeze SOURCE-SHA256 regen; SHA256SUMS covers all payloads incl .gitattributes byte-preservation marker; 0 missing 0 drift
+final-done-all	2026-10-26T12:30:03+08:00	note	awaiting main review; good commit+push gate next step

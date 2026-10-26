@@ -30,6 +30,7 @@
 | `Spacer` / `Spacer(double fixedSize)` | 吸收剩余空间 / 固定空隙 |
 | `ScrollView(View content, ScrollAxis axis)` | 单轴滚动容器，保留滚动位置；内容溢出时沿滚动轴显示滚动条（init `ScrollbarStyle`：`Standard` 默认 persistent 12 逻辑像素槽、无溢出留空槽；`Floating` 覆盖内容边缘不占槽，实际滚动时显示、静止约 1 秒隐藏、悬停或拖拽期间不隐藏、隐藏后指针落回内容）；滑块可拖拽、轨道点击按视口翻页一次无自动重复；`WheelSensitivity`（有限非负，默认 1）缩放滚轮距离 |
 | `Text` | 文本；`.WithFont(...)`、`.Wrap(maxLines)`、`.Align(...)`、`.Ellipsis()`、`.WithLineHeight(...)` |
+| `RichText(StyledText)` | 只读富文本：多样式分段、装饰（下划线/删除线/背景色）、`LinkHoverStyle` 悬停 paint 覆盖、`OnLinkActivate`/`OnLinkHover` 链接回调（命中=行内矩形并集，`HitTestIndex` 吸附不用于判定）；`StyledText.Create("x")` 无样式时经 `ITextService` fast path，不需 `IRichTextService`；有样式而 `RichTextService` null 时抛 `InvalidOperationException` |
 | `Rectangle` | 纯色/圆角/描边矩形 |
 | `Image(string source)` | 图片；`.Resize(ImageResizeMode)` |
 | `Button(string label, Action? onClick)` | 按钮；`.Primary()`、`.With(label, onClick)` |
@@ -160,6 +161,22 @@
 
 ## 基础类型
 
+## 可选 Markdown 模块（`CSharp.UI.Markdown`)
+
+独立可选程序集，基于 `Markdig 1.5.0` 解析 → `MarkdownBlockView` 转视图树。Core `CSharp.UI` **不引用** Markdig。
+
+| 类型 | 说明 |
+|---|---|
+| `Markdown` | `Markdown.Parse(source, MarkdownPipelineOptions?) → MarkdownDocument` |
+| `MarkdownPipelineOptions` | `PipeTables=true`、`EmphasisExtras=true`(仅 `~~strike~~`,`^`/`++`/`==` 保留字面量)、`TaskLists=false`、`AutoLinks=true`、`Html=HtmlPolicy.Literal`（可改 `Strip`)；其余 Markdig 扩展不启用 |
+| `MarkdownDocument` | 解析结果：`Source`、`Options`;AST 由 internal 字段持有，公开面不暴露 Markdig 可变对象 |
+| `MarkdownBlockView` | 视图：`Document`、`Style`、`ImagePolicy`、`LinkPolicy`、`OnLinkActivate`、`OnLinkHover`（回调参数 `object`,payload 为 `MarkdownLinkPayload`) |
+| `MarkdownLinkPayload` | `record (string Url, string? Title)`——`OnLinkActivate`/`OnLinkHover` 的实参类型 |
+| `MarkdownStyleOptions` | 标题尺寸、`CodeFontFamily`(null → `Cascadia Mono` → `Consolas` → `Menlo` → `monospace` 链）、代码底色（默认 `Color(128,128,128,40)`)、列表 marker、引用 bar、表格 cell padding、hr、`LinkForeground`(null 继承段落前景，不默认 Accent)、`LinkHoverStyle`、`UnsupportedNodeStyle` |
+| `MarkdownImagePolicy` | `Resolve(url)→localPath`、`AllowRemote`(false 默认所有 http(s) 落 alt；true 仅把 url 交 Resolve，框架仍不加载网络） |
+| `MarkdownLinkPolicy` | `AllowActivation(url)→bool`;null → `IsSafeUrl`（无 scheme 相对路径放行、`http`/`https` 放行、其他拒绝）；自定义返回 false → 不产 interaction；无 OS `Process.Start` |
+
+行为详见 [Markdown 使用指南](markdown.md)。`MarkdownBlockView` 内块产出 `RichText`/`Image` 等公开视图（表格由外层 `Responsive`→`ScrollView`→internal `MarkdownTable` 承载，`MarkdownTable` 不是可构造公共 API),RichText 渲染要求 `UiRuntimeServices.RichTextService` 非 null（`UiApplication.Run` 默认经 `SkiaTextService` 装配——`TextService` 同时实现 `IRichTextService` 时自动复用；显式注入单接口 `ITextService` 而无 `IRichTextService` 时含样式 `RichText` 抛 `InvalidOperationException`,plain `StyledText.Create("x")` 走 fast path 不需要 `IRichTextService`)。
 
 ## 绘制与服务契约
 
@@ -176,6 +193,13 @@
 | `IWheelScrollSettingsService` | 系统滚轮设置来源（Windows 宿主只读 `SPI_GETWHEELSCROLLLINES/CHARS`；默认每格 3 行/3 字符） |
 | `IUiDispatcher` / `IUiClock` | 调度与时钟 |
 | `UiRuntime` / `UiRuntimeServices` / `ViewNode` | 运行时：节点树、布局、输入分发与诊断；无窗口测试可直接驱动 |
+| `StyledText` | 不可变单根 UTF-16 字符串 + `TextStyleRange[]` + `TextInteractionRange[]`；构造时验证字素边界/表内不重叠；值相等 + 预计算哈希 + 分段端点拓扑 |
+| `TextStyleRange` | `[Start,End)` + `TextStyle`（字体/前景/背景/装饰；无 payload) |
+| `TextInteractionRange` | `[Start,End)` + `Id` + `Payload`(object)；命中按 `RichTextLayoutResult.GetRangeRects` 行内矩形并集 |
+| `IRichTextService` | 富文本排版/栅格：`Layout(RichTextLayoutRequest) → RichTextLayoutResult`（独立 `IDisposable` handle 共享 core);`Rasterize(layout, paint)` 不重 shape；缓存键 = `LayoutIdentity` + paint + `PixelScale`;`Measure`/`Rasterize`/hit 同 core；已 Dispose handle 再用抛 `ObjectDisposedException` |
+| `RichTextLayoutRequest` / `RichTextLayoutResult` | 富文本排版请求（`Text`、`ParagraphFont`、`MaxWidth`、`Wrapping`、`Alignment`、`LineHeight`、`PixelScale`、`LetterSpacing`）与结果（`Text`/`Size`/`Lines`/`Segments`/`Interactions`/`LayoutIdentity`/`GetRangeRects`/`HitTestIndex`;`IDisposable`) |
+| `RichTextPaint` | paint-only 重绘：`ResolvedRuns`（每段实际前景/背景/装饰）+ `ParagraphForeground`;`LinkHoverStyle` 命中时按 id 覆盖——端点不变不重排版 |
+| `TextPaintStyle` | paint-only 覆盖：`Foreground`/`Background`/`Underline`/`Strikethrough`（无字体字段） |
 
 ## 无窗口测试替身
 

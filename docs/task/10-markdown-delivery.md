@@ -2,7 +2,7 @@
 
 创建日期：2026-10-25
 
-状态：**待实施**（规划完成，待用户授权）
+状态:**已完成并验收**(2026-10-26;final-* 双 config 全套件 1592/config 0 fail;3 sample×2 cfg fresh build+真窗 smoke 全绿;NOTICE 入包 byte-identical;manifest+sha256 落盘)
 
 阶段：D
 

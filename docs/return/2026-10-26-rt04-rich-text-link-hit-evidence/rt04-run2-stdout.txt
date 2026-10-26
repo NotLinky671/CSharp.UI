@@ -1,0 +1,36 @@
+=== rt04 link-hit verification ===
+PASS A-activate-once activations=[PAYLOAD-A1]
+PASS B-cross-id-no-activate activations=0
+PASS C-drag-out-no-activate 
+PASS D-return-no-activate 
+PASS E-cancel-no-activate 
+PASS F-nonlink-no-activate 
+NOTE trimX=21.684 lineBounds=(0, 0, 21.684×18.621) probe=(23.684, 2)
+PASS G-trimend-no-activate acts=0
+PASS I-hover-enter-payload hovers=[PAYLOAD-A1]
+PASS J-hover-repaint rasterMisses 1->2
+PASS I-hover-leave-null hovers=2
+PASS J-leave-hits-original-cache rasterMisses 2->2 (leave must reuse cached original paint)
+PASS J-reenter-hits-hover-cache rasterMisses 2->2 (re-hover reuses hover texture)
+PASS I-hover-reenter-payload hovers=3
+PASS K-pre-hover hovers=1
+PASS K-hover-sequence hovers=[PAYLOAD-A1|null|NEW]
+PASS K-no-stale-activate acts=[NEW]
+PASS L-unmount-pressed-no-crash 
+PASS M-disabled-no-activate 
+PASS N-inside-clip-activates acts=1 clip=(120, 0, 60×18.621) linkRect=(32.375, 0, 32.156×18.621) point=(149, 9.311)
+PASS N-outside-clip-no-activate 
+NOTE H rects=2 lines=2
+PASS H-past-last-rect-no-activate probe=(57.324, 27.932) lastRect=(0, 18.621, 51.324×18.621) nodeFrame=(0, 0, 140×37.242)
+PASS H-intraline-hole-no-activate probe=(114.098, 9.311) r0=(0, 0, 104.098×18.621)
+NOTE H interline: contiguous (l0.Bottom=18.621 l1.Y=18.621), no gap to probe
+NOTE O during-press captured=True (router-level assignment, expected true)
+PASS O-null-activate-released captured=False after Up
+PASS P-hover-color-changes before=#D0D1D3FF during=#F7C3F9FF
+PASS P-hover-restores after=#D0D1D3FF before=#D0D1D3FF
+PASS P-hover-magenta-tint during=#F7C3F9FF (expected magenta-ish from LinkHoverStyle)
+NOTE clipBounds=(60, 0, 80×18.621) linkLayoutRect=(0, 0, 214.102×18.621) nodeFrame=(60, 0, 80×18.621)
+PASS Q-down-captured captured=True
+FAIL Q-clip-escape-no-activate activations=1 outP=(146, 9.311) (stillInLayout=True)
+FAIL Q-clip-return-no-activate activations=2
+=== RT04 RESULT 27 PASS / 2 FAIL ===

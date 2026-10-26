@@ -1,0 +1,14 @@
+PASS evidence-dir-real-repo C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-md05-gallery-evidence
+PASS logo-exists C:\Users\nothh\code\C#\CSharp.UI\samples\Shared\Assets\logo.png
+HOST gl=3.3.0 - Build 32.0.101.6790 / Intel(R) RaptorLake-S Mobile Graphics Controller / Intel logical=1200×700 fb=1800×1050 dpi=1.5
+PASS md5-docscroll 
+link probe=(4, 385.203) frame=13
+PASS md5-locate-link-node 
+PASS md5-link-inside-clip 
+echo=点击 URL：https://github.com/NotLinky671/CSharp.UI
+PASS md5-link-echo 点击 URL：https://github.com/NotLinky671/CSharp.UI
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-md05-gallery-evidence\md05-link-echo-dark-1200x700x1.png 1800x1050
+table visible frame=(0, 357.856, 1188×76.644) docScroll=(0, 77.203, 1200×360)
+PASS md5-table-node 
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-md05-gallery-evidence\md05-doc-bottom-dark-1200x700x1.png 1800x1050
+=== MD05-REAL dark-1200x700x1 RESULT 7 PASS / 0 FAIL exit=0 ===

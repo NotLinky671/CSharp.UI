@@ -1,0 +1,64 @@
+=== rt03-verify formal run ===
+assemblies: C:\Users\nothh\AppData\Local\Temp\rt03-verify\app\bin\Debug\net10.0\CSharp.UI.dll
+evidence: C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-26-rt03-rich-text-view-evidence
+PASS plain-no-rich-service-call richCalls=0
+PASS plain-desired-size-eq-text rich=87.992×18.621 text=87.992×18.621
+PASS plain-emits-mask-texture tint=#1B1D21FF opacity=1
+PNG  rt03-mixed-styles-ps1
+PASS segments-count segments=10
+PASS texture-command-present 
+PASS backgrounds-before-texture bgRects=2
+PASS decorations-after-texture decoRects=4
+PASS ord-texture-present 
+PASS deco-both-kinds-both-colors U=2 S=2 ys=[16.1, 16.1, 10.4, 10.4] midY=15.11
+PASS all-U-before-all-S lastU@1 firstS@2 seq=[UR, UB, SR, SB]
+PASS pixel-seg-bold-red seg=[6,12) dominant=#E57272FF
+PASS pixel-seg-blue seg=[13,17) dominant=#5067E2FF
+PASS trim-deco-present rects=2
+PASS trim-end-bounds-clamped caretX=30.13 overhang=0 rights=[30.13, 30.13]
+DIAG segments: L0[0,6) x=0 w=33.9 bl=15.1 | L0[6,12) x=33.9 w=51.9 bl=15.1 | L0[12,13) x=85.8 w=3.8 bl=15.1 | L0[13,17) x=89.6 w=26.9 bl=15.1 | L0[17,18) x=116.5 w=3.8 bl=15.1 | L0[18,23) x=120.3 w=44.9 bl=15.1 | L0[23,24) x=165.2 w=10.5 bl=15.1 | L0[24,25) x=175.7 w=3.8 bl=15.1 | L0[25,30) x=179.5 w=25.9 bl=15.1 | L0[30,36) x=205.4 w=29.8 bl=15.1
+PASS underline-ink band=(117.512, 15.807, 1.828×4.2) baseline=15.11 fontSize=14
+PASS key-color-no-layout-miss layoutMisses 4->4
+PASS key-color-raster-miss+1 rasterMisses 4->5
+PASS key-envfg-no-layout-miss layoutMisses=4
+PASS key-envfg-raster-miss+1 rasterMisses 5->6
+PASS key-payload-no-layout-miss layoutMisses 4->4
+PASS key-payload-no-raster-miss rasterMisses 7->7
+PASS key-endpoint-layout-miss layoutMisses 4->5
+PASS key-fontsize-layout-miss layoutMisses 5->6
+PASS key-fontsize-desired-changes desired 235.266×18.621->351.367×74.484
+PASS key-width-layout-miss layoutMisses 6->7
+PASS emit-factory-flat-10f factoryInvocations 1->1
+PASS two-rich-nodes nodes=2
+PASS two-views-same-geometry 235.266×18.621 vs 235.266×18.621
+NOTE shared-core: layoutMisses=8 cachedLayouts=1
+PASS unmount-second remaining=1
+PASS survivor-still-renders commands=8
+PASS core-cache-alive-after-unmount layouts=1
+PASS probe-views-mounted nodes=3
+PASS probe-resize-commands textureCommands=3
+PNG  rt03-light-ps1
+PASS gl-light-ps1-ink diff=2129 bg=#F5F6F8FF
+PNG  rt03-dark-ps1
+PASS gl-dark-ps1-ink diff=2129 bg=#15171CFF
+PNG  rt03-light-ps1.5
+PASS gl-light-ps1.5-ink diff=4746 bg=#F5F6F8FF
+PNG  rt03-dark-ps1.5
+PASS gl-dark-ps1.5-ink diff=4726 bg=#15171CFF
+PNG  rt03-light-ps2
+PASS gl-light-ps2-ink diff=8117 bg=#F5F6F8FF
+PNG  rt03-dark-ps2
+PASS gl-dark-ps2-ink diff=8079 bg=#15171CFF
+PNG  rt03-semi-fg
+FAIL semi-alpha-visible-blend dominant=#E69FA0FF bg=#F5F6F8FF
+PNG  rt03-clip
+FAIL clip-no-leak clipRight=120
+PASS rich-to-plain-ok commands=1
+PASS plain-to-rich-ok commands=7
+PNG  rt03-italic-leading-j
+PASS italic-leading-j-rasterbounds-covers bounds=(-2, 0, 10.391×18.621) size=7.766×18.621
+PASS italic-leading-j-ink inkPixels=224
+PNG  rt03-italic-trailing-j
+PASS italic-trailing-j-rasterbounds-covers bounds=(0, 0, 7.766×18.621) size=7.766×18.621
+PASS italic-trailing-j-ink inkPixels=224
+=== RESULT 45 PASS / 2 FAIL ===

@@ -20,6 +20,7 @@
 
 发布检查覆盖 Windows x64、Linux x64、macOS x64/arm64 四种架构（命令与结果见 [../task/14-cross-platform-validation.md](../archive/2026-10-14-framework-tasks/14-cross-platform-validation.md)）。
 核心库 `CSharp.UI` **不引用** OpenTK、SkiaSharp 或任何原生库，因此核心单元测试不需要图形上下文。
+可选 `CSharp.UI.Markdown` 模块唯一新依赖是 `Markdig 1.5.0`（纯托管，BSD-2-Clause，版权 Alexandre Mutel——完整 notice 见仓库根 `NOTICE` 文件，亦随 NuGet 包分发）。`Markdig` 只做托管解析，不引入新原生依赖；`CSharp.UI` Core 仍不引用 Markdig。
 
 ## DPI 与三个坐标空间
 
@@ -123,7 +124,7 @@ var capabilities = TextInputForwarder.EffectiveService(
 默认发布**不包含**：
 
 - 把自绘候选或 TSF 路径作为公开/默认选项；
-- 鼠标候选选择、富文本、彩色 Emoji 字形图集、完整双向文本排版；
+- 鼠标候选选择、富文本**编辑**、彩色 Emoji 字形图集、完整双向文本排版；
 - 系统无障碍桥接、动画系统、列表虚拟化、移动端与浏览器目标。
 
 ### 多行编辑（TextEditor）边界
@@ -142,3 +143,4 @@ var capabilities = TextInputForwarder.EffectiveService(
 - `ScrollView`/`TextEditor` 在内容溢出时沿滚动轴绘制滚动条（init `ScrollbarStyle`：`Standard` 默认 persistent 12 逻辑像素槽、无溢出时槽仍占宽留空，换取显隐不回流的布局确定性；`Floating` 覆盖内容边缘不占槽、实际滚动时显示、静止约 1 秒隐藏、悬停/拖拽不隐藏、隐藏后指针落回内容）；滑块可拖拽、轨道点击按视口翻页一次（无自动重复）。滚动条不做虚拟化（内容仍全部布局）、不做惯性/动画、不抢焦点；命中 owner 的槽/可见条不透到内容，滚轮语义不变（边界仍冒泡外层）。
 - `Rectangle` 圆角为矩形圆角，不支持每角独立半径。
 - 图形验证受运行环境影响：缺少 OpenGL 上下文的机器上，图形集成测试会真实失败而不是被跳过。
+- `CSharp.UI.Markdown` 模块为纯托管依赖（`Markdig 1.5.0`，见上"原生依赖"段），不引入新原生库；Markdown 块布局/链接 hit/表格横滚等消费者验收在 **Windows x64** 完成（`docs/delivery/` 记录），macOS/Linux 仍按统一 GL 3.3/Skia 路径运行，未单独真机验证。

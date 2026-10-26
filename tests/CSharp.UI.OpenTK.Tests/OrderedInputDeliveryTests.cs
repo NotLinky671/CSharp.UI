@@ -78,6 +78,7 @@ public sealed class OrderedInputDeliveryTests
             {
                 Dispatcher = new HeadlessUiDispatcher(),
                 TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                 TextureService = new RecordingTextureService(),
                 TextInputService = bridge ?? (ITextInputService)new NullInputService(),
             });

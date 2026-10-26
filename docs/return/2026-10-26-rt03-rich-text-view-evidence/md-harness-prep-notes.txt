@@ -1,0 +1,90 @@
+MD-01..06 harness preparation notes (pre-freeze, no acceptance)
+================================================================
+
+1) MODULE / DEPENDENCY VERIFICATION (MD-01, MD-06 §5)
+-----------------------------------------------------
+Once src/CSharp.UI.Markdown exists, external checks runnable from an out-of-repo
+console snapshot (same lib-snapshot pattern as rt03-verify):
+
+  - Dependency isolation: `dotnet list src/CSharp.UI.Markdown/CSharp.UI.Markdown.csproj
+    package --include-transitive` must list Markdig 1.5.0 and NO transitive deps;
+    `dotnet list src/CSharp.UI/CSharp.UI.csproj package --include-transitive` must NOT
+    contain Markdig. Save raw stdout both ways.
+  - Package identity: after `dotnet pack -c Release` on the Markdown csproj, expand the
+    .nupkg (zip) and assert the packed lib folder contains CSharp.UI.Markdown.dll,
+    .deps.json references Markdig 1.5.0, and NOTICE/license content expected by MD-05
+    ships inside the package (NOT a doc-copy assertion — unzip real artifact).
+  - Assembly-level check from harness: load CSharp.UI.dll via reflection and assert
+    `Assembly.GetReferencedAssemblies()` does NOT contain "Markdig"; loading
+    CSharp.UI.Markdown.dll DOES. This is a real binary dependency-graph probe, not a
+    source grep.
+  - Cache behavior (public): `Markdown.Parse` returns equal/identical document for
+    same (source, options) — compare via object identity or the module's equality
+    contract; change one options field (e.g. PipeTables=false) → reparse. Evidence:
+    wrap with timing/allocation-free probe or the module's own diagnostic counters
+    if exposed; otherwise observable through two Parse calls returning distinct
+    instances vs same instance.
+
+2) MARKDIG VERSION PINNING
+--------------------------
+Markdig 1.5.0 must enter Directory.Packages.props (central). The harness will
+reference the BUILT CSharp.UI.Markdown.dll + Markdig.dll copied into lib/ — no
+repo restore needed at verify time if binaries are snapshotted post-build.
+
+3) VIEW-LEVEL CHECKS (MD-02/03/04) — preview of planned coverage
+----------------------------------------------------------------
+Once MarkdownBlockView exists, the same UiRuntime+GL harness covers:
+  - heading sizes → real pixel height differences
+  - bold/italic/strike inline → per-segment color/decor evidence (reuse rt03 paint samplers)
+  - link interaction → DispatchPointer on link rect activates payload URL (RT-04 path)
+  - image fallback: remote URL with AllowRemote=false → alt literal rendered;
+    AllowRemote=true + resolver null → alt; registered local source → real pixels
+  - table: Responsive → ScrollView horizontal; 320-wide viewport → real horizontal
+    scroll metrics; 1024-wide → no scroll needed; column min/pref two-band widths
+    measured via node.DesiredSize / ScrollView extent (public)
+  - HtmlPolicy Literal vs Strip → literal markup rendered vs absent (pixel or
+    command-text diff)
+
+4) MD-05 / MD-06 DELIVERY COMMANDS (to run at freeze)
+-----------------------------------------------------
+  - `dotnet build CSharp.UI.slnx -c Debug --no-incremental` and `-c Release` (0w0e)
+  - test exes direct (xunit v3 in-proc): `tests/*/bin/<cfg>/net10.0/*.Tests.exe -noLogo`
+    per suite per config; counts captured.
+  - samples: `CSHARPUI_SMOKE_FRAMES=5 dotnet run --project samples/<X> -c <cfg>` exit 0
+  - `dotnet list package --include-transitive` per shipped csproj → evidence
+  - `dotnet pack src/CSharp.UI.Markdown -c Release -o <out>`; unzip nupkg; verify
+    NOTICE file present in package root and Markdig BSD-2-Clause attribution text
+    inside it (byte search, not doc paraphrase).
+  - SOURCE-SHA256: filesystem walk of src/, tests/, samples/, plus new
+    CSharp.UI.Markdown trees — include untracked files (RT-02 lesson).
+  - Raw stdout/stderr + real exit codes per step into the delivery evidence dir;
+    PNG for GL pixel evidence; no overwrite of historical failure logs.
+
+5) SCENARIO TIERS — which evidence needs real GL pixels vs runtime+Skia suffices
+REAL GL (GlOffscreenSurface render + pixel sampling) required for:
+    rects (nested "**bold _it_ `code`**" — innermost code font+bg must win
+    over emphasis; bold italic both present)
+    single style, no doubled ink
+    pixels; oversized image aspect-scaled within available width
+    visible under horizontal wheel/drag
+
+RUNTIME + REAL SKIA (commands/counters/DesiredSize, no pixels) sufficient for:
+    field change → reparse (identity/equality observable publicly)
+    rendered commands (or rendered paragraph count)
+    (no activation callback on dispatch; activation list empty)
+    once OnLinkActivate exists)
+    on child nodes — public geometry)
+    desired sizes at 320 vs 768 vs 1024 without new parse — cache identity
+    unchanged across resize)
+    bubbles when none (existing wheel semantics)
+
+6) CORPUS (written into %TEMP%/rt03-verify/app/Md.cs, gated by Compile Remove)
+InlineRich / Links / Blocks / Table / Htmlish covering: 中文 heading, nested
+bold>italic>code, &shy; entity, soft break (line join) vs two-space hard break,
+e+́ across inline boundary, ~~strike~~, safe/js/relative links, local+remote
+images, nested+ordered lists, quote, hr, fenced long-line code, task lists,
+pipe table right-align column, inline & block HTML.
+
+MD.cs is compiled OUT by default (<Compile Remove="Md.cs"/>) — enables with
+(MarkdownBlockView ctor, policy props) are best-guess from docs/task/05-08 and
+adapted on first real compile — no product/test edits.

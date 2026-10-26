@@ -162,6 +162,14 @@ public abstract class View
     /// <summary>节点自身是否命中指定点（默认使用排列矩形）。</summary>
     internal virtual bool HitTestSelf(ViewNode node, Point position) => node.Frame.Contains(position);
 
+    /// <summary>
+    /// 指针按下时本节点是否申请捕获（捕获期间 Move/Up 路由锁定本节点，祖先 clip 外仍收到）。
+    /// 默认 true 保持既有语义（按下即捕获最深命中节点）；不需要按下的视图（如
+    /// <see cref="RichText"/> 非命中链接区间或无激活回调时）返回 false，让按下落到祖先链
+    /// 正常消费而不锁住捕获。
+    /// </summary>
+    internal virtual bool WantsPointerCapture(ViewNode node, PointerEvent e) => true;
+
     /// <summary>指针按下；返回 true 表示已处理并阻止继续冒泡。</summary>
     internal virtual bool OnPointerDown(InputContext context, ViewNode node, PointerEvent e) => false;
 

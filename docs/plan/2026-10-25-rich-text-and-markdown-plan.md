@@ -2,7 +2,8 @@
 
 计划日期：2026-10-25
 
-状态：**实施中**（RT-01、RT-02 已完成并验收；其余任务未开始，待授权）。
+状态:**已完成**(RT-01~RT-04、MD-01~MD-06 全部完成并验收——交付记录
+[docs/delivery/2026-10-26-rich-text-markdown-delivery.md](../delivery/2026-10-26-rich-text-markdown-delivery.md))
 
 关联：前置任务组 FS-01~FS-07（Floating 滚动条）已完成并归档至 [docs/archive/2026-10-25-floating-scrollbar-tasks/](../archive/2026-10-25-floating-scrollbar-tasks/README.md)。
 

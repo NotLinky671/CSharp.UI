@@ -1,0 +1,30 @@
+PASS remote-default-true 
+PASS remote-default-alt got RichText
+PASS resolve-not-invoked resolve=0
+PASS allowremote-true 
+PASS allowremote-resolved-called 
+PASS wrapper-children got Image,RichText
+PASS image-source src=resolved://a.png
+PASS local-true 
+PASS local-wrapper 
+PASS mixed-false ok=False v=null
+PASS loadok-image-frame img=(0, 0, 100×40)
+PASS loadok-image-size img=(0, 0, 100×40)
+PASS loadok-alt-empty alt=(0, 0, 0×0)
+PASS fail-image-empty img=(0, 0, 0×0)
+PASS fail-alt-visible alt=(0, 0, 400×300)
+PASS fail-alt-text 
+PASS fail-count fails=1
+PASS wide-scaled-width w=400
+PASS wide-scaled-height h=100
+PASS tiny-natural img=(0, 0, 40×20)
+PASS resolvenull-true 
+PASS resolvenull-alt 
+PASS policy-eq 
+PASS link-para-false 
+PASS single-image-true 
+PASS switch-a-size a=(0, 0, 100×40)
+PASS switch-b-size b=(0, 0, 200×160)
+PASS switch-fail-alt 
+PASS switch-success-size img=(0, 0, 60×24)
+=== MD04 RESULT 29 PASS / 0 FAIL ===

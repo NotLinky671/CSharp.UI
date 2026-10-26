@@ -1,0 +1,22 @@
+=== rt03-verify formal run ===
+assemblies: C:\Users\nothh\AppData\Local\Temp\rt03-verify\app\bin\Debug\net10.0\CSharp.UI.dll
+evidence: C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-26-rt03-rich-text-view-evidence
+PASS plain-no-rich-service-call richCalls=0
+PASS plain-desired-size-eq-text rich=87.992×18.621 text=87.992×18.621
+PASS plain-emits-mask-texture tint=#1B1D21FF opacity=1
+PNG  rt03-mixed-styles-ps1
+PASS segments-count segments=10
+PASS texture-command-present 
+PASS backgrounds-before-texture bgRects=2
+PASS decorations-after-texture decoRects=4
+PASS ord-texture-present 
+PASS deco-both-kinds-both-colors U=2 S=2 ys=[16.1, 16.1, 10.4, 10.4] midY=15.11
+PASS all-U-before-all-S lastU@1 firstS@2 seq=[UR, UB, SR, SB]
+PASS pixel-seg-bold-red dominant=#E57272FF
+FAIL pixel-seg-blue dominant=none
+PASS trim-deco-present rects=2
+PASS trim-end-bounds-clamped caretX=30.13 overhang=0 rights=[30.13, 30.13]
+Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+   at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.First[TSource](IEnumerable`1 source, Func`2 predicate)
+   at Program.<Main>$(String[] args) in C:\Users\nothh\AppData\Local\Temp\rt03-verify\app\Program.cs:line 296

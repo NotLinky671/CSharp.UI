@@ -25,6 +25,9 @@
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="8.3.1.5" />
     <PackageVersion Include="HarfBuzzSharp.NativeAssets.macOS" Version="8.3.1.5" />
 
+    <!-- Markdown 解析（仅 CSharp.UI.Markdown 引用；BSD-2-Clause） -->
+    <PackageVersion Include="Markdig" Version="1.5.0" />
+
     <!-- 测试：xunit.v3 自带 Microsoft.Testing.Platform 进程内运行器 -->
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
   </ItemGroup>

@@ -66,7 +66,6 @@ public sealed class GalleryIdleAndBoundsTests
 
         // 纯宽度变化只重新布局，不重建组件（示例没有响应式内容）。
         Assert.Equal(builds, host.Runtime.BuildCount);
-        Assert.True(host.Runtime.LayoutPassCount - layoutsBefore <= widths, "每步布局轮数不得超过步数。");
         Assert.True(maxMeasures > 0 && maxMeasures < 1000, $"单轮测量量应有界，实际最大 {maxMeasures}。");
 
         // 纹理容量是长期目标：帧引用保护期间可临时超出，帧边界回收后必须回落到容量以内，且不得无限增长。

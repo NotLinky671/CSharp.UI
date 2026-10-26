@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>CSharp.UI.Markdown</id>
+    <version>0.1.0-preview.1</version>
+    <authors>CSharp.UI contributors</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <description>Markdown → CSharp.UI 视图树适配：基于 Markdig 的解析、样式栈 inline 适配与块布局。依赖 CSharp.UI，不依赖 OpenTK/SkiaSharp。</description>
+    <tags>ui markdown rich-text</tags>
+    <repository type="git" commit="817f5cd63eedbddbf119a6b12e6890211d41617a" />
+    <dependencies>
+      <group targetFramework="net10.0">
+        <dependency id="CSharp.UI" version="0.1.0-preview.1" exclude="Build,Analyzers" />
+        <dependency id="Markdig" version="1.5.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

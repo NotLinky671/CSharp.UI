@@ -50,6 +50,7 @@ public sealed class TextRasterSamplingTests
             {
                 Dispatcher = new HeadlessUiDispatcher(),
                 TextService = textService,
+            RichTextService = textService as IRichTextService,
                 TextureService = scope.Textures,
                 Clock = new TestUiClock(),
             });

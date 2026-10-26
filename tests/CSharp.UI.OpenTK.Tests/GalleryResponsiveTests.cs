@@ -269,6 +269,7 @@ public sealed class GalleryResponsiveTests
         {
             Dispatcher = new HeadlessUiDispatcher(),
             TextService = new SkiaTextService(),
+            RichTextService = new SkiaTextService() as IRichTextService,
             TextureService = new RecordingTextureService(),
             ImageService = CreateImages(),
             Clipboard = new StubClipboardService(),

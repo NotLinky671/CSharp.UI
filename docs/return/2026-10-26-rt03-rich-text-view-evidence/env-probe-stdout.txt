@@ -1,0 +1,12 @@
+=== rt03-verify environment probe ===
+CSharp.UI: C:\Users\nothh\AppData\Local\Temp\rt03-verify\app\bin\Debug\net10.0\CSharp.UI.dll
+CSharp.UI.Text: C:\Users\nothh\AppData\Local\Temp\rt03-verify\app\bin\Debug\net10.0\CSharp.UI.Text.dll
+CSharp.UI.OpenTK: C:\Users\nothh\AppData\Local\Temp\rt03-verify\app\bin\Debug\net10.0\CSharp.UI.OpenTK.dll
+PASS headless-frame commands=1
+PASS pointer-dispatch no-throw
+GL: 3.3.0 - Build 32.0.101.6790 / Intel(R) RaptorLake-S Mobile Graphics Controller / Intel
+PASS gl-render size=256x256
+PASS gl-ink inkPixels=217 bg=#F5F6F8FF
+PASS rt03-view-present-recorded RichText type in snapshot: ABSENT (pre-RT03 baseline)
+NOTE: RichText not in this binary snapshot; RT-03 behavior checks will activate after freeze.
+=== 5 pass / 0 fail ===

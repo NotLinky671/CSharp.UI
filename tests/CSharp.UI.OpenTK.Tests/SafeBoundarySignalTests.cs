@@ -44,6 +44,7 @@ public sealed class SafeBoundarySignalTests
             {
                 Dispatcher = new HeadlessUiDispatcher(),
                 TextService = new StubTextService(),
+            RichTextService = new StubTextService() as IRichTextService,
                 TextureService = new RecordingTextureService(),
                 TextInputService = router,
             });

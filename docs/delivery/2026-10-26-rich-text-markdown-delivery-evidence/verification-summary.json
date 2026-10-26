@@ -1,0 +1,195 @@
+{
+  "generated": "2026-10-26T12:26:38+08:00",
+  "delivery_target": "docs/delivery/2026-10-26-rich-text-markdown-delivery-evidence",
+  "platform": "Windows x64, .NET 10.0.11, OpenGL 3.3 Core, Intel RaptorLake-S, monitor DPI 1.5 (offscreen ps matrix covers 1/1.5/2 via SetViewport)",
+  "build": {
+    "debug": {
+      "exit": 0,
+      "warnings": 0,
+      "errors": 0,
+      "args": "dotnet build CSharp.UI.slnx -c Debug --no-incremental -m:1 -nodeReuse:false"
+    },
+    "release": {
+      "exit": 0,
+      "warnings": 0,
+      "errors": 0,
+      "args": "dotnet build CSharp.UI.slnx -c Release --no-incremental -m:1 -nodeReuse:false"
+    }
+  },
+  "test_suites": {
+    "CSharp.UI.Tests": {
+      "Debug": {
+        "exit": 0,
+        "total": 698,
+        "failed": 0
+      },
+      "Release": {
+        "exit": 0,
+        "total": 698,
+        "failed": 0
+      }
+    },
+    "CSharp.UI.Text.Tests": {
+      "Debug": {
+        "exit": 0,
+        "total": 109,
+        "failed": 0
+      },
+      "Release": {
+        "exit": 0,
+        "total": 109,
+        "failed": 0
+      }
+    },
+    "CSharp.UI.Integration.Tests": {
+      "Debug": {
+        "exit": 0,
+        "total": 53,
+        "failed": 0
+      },
+      "Release": {
+        "exit": 0,
+        "total": 53,
+        "failed": 0
+      }
+    },
+    "CSharp.UI.OpenTK.Tests": {
+      "Debug": {
+        "exit": 0,
+        "total": 684,
+        "failed": 0
+      },
+      "Release": {
+        "exit": 0,
+        "total": 684,
+        "failed": 0
+      }
+    },
+    "CSharp.UI.Markdown.Tests": {
+      "Debug": {
+        "exit": 0,
+        "total": 48,
+        "failed": 0
+      },
+      "Release": {
+        "exit": 0,
+        "total": 48,
+        "failed": 0
+      }
+    },
+    "combined_total_per_config": 1592
+  },
+  "samples": {
+    "fresh_build_exit_0_count": 6,
+    "real_window_smoke_CSHARPUI_SMOKE_FRAMES_5_exit_0_count": 6,
+    "sample_names": [
+      "Counter",
+      "TodoList",
+      "ControlGallery"
+    ]
+  },
+  "packaging": {
+    "CSharp.UI": {
+      "nupkg": "final-pack-CSharp.UI/CSharp.UI.0.1.0-preview.1.nupkg",
+      "sha256": "694c5278639ba96d8d6efe730b267693202d32a0bd202b08709c8162f069835e",
+      "size_bytes": 187299,
+      "members": [
+        "CSharp.UI.nuspec",
+        "[Content_Types].xml",
+        "_rels/.rels",
+        "lib/net10.0/CSharp.UI.dll",
+        "package/services/metadata/core-properties/498763d337f240218a154a6efc664919.psmdcp"
+      ],
+      "nuspec_dependencies": [],
+      "notice_member_present": false,
+      "transitive_packages": []
+    },
+    "CSharp.UI.Markdown": {
+      "nupkg": "final-pack-CSharp.UI.Markdown/CSharp.UI.Markdown.0.1.0-preview.1.nupkg",
+      "sha256": "1129b2360feb2a948f89bedfcbecdbd0ff88bb4eb7f96a6311bca2911058cf1d",
+      "size_bytes": 32141,
+      "members": [
+        "CSharp.UI.Markdown.nuspec",
+        "NOTICE",
+        "[Content_Types].xml",
+        "_rels/.rels",
+        "lib/net10.0/CSharp.UI.Markdown.dll",
+        "package/services/metadata/core-properties/d09de78f38f3474cbcfb3ec271ff0b83.psmdcp"
+      ],
+      "nuspec_dependencies": [
+        "CSharp.UI 0.1.0-preview.1",
+        "Markdig 1.5.0"
+      ],
+      "notice_member": "NOTICE",
+      "notice_member_bytes_len": 1701,
+      "notice_member_sha256": "589053950c9c1ede0bf50207f6c5ea733ea6085f610bae004ffec348223e91f2",
+      "repo_notice_bytes_len": 1701,
+      "repo_notice_sha256": "589053950c9c1ede0bf50207f6c5ea733ea6085f610bae004ffec348223e91f2",
+      "notice_byte_equal": true,
+      "transitive_packages": [
+        "Markdig 1.5.0"
+      ]
+    }
+  },
+  "real_gl_offscreen_matrix": {
+    "harness": "GlOffscreenSurface + UiRuntime + real MarkdownDemo, Dispatch → ProcessPendingWork → BuildFrame → Render → ReadPixels",
+    "configs": "theme light|dark × pixelScale 1|1.5|2 × width 320|1024 = 12",
+    "checks_total": 50,
+    "pass": 50,
+    "fail": 0,
+    "exit": 0,
+    "link_echo_assertion": "https://github.com/NotLinky671/CSharp.UI",
+    "png_count": 24,
+    "assembly_sha256_used": "00ad025c8d6bc8a50f527b0b03404552150f2b3fde9b77d3bcaa122d7acf9214 (CSharp.UI.dll Debug net10.0)"
+  },
+  "api_example": {
+    "script": "docs/guide/markdown.md 快速示例 verbatim",
+    "observed": "6 RichText nodes, 1 MarkdownTable node, 1 link-carrying RichText, 9 draw commands emitted"
+  },
+  "source_snapshot": {
+    "files": 270,
+    "topdirs": {
+      "src": 129,
+      "tests": 122,
+      "samples": 10,
+      "tools": 2,
+      "root_files": 7
+    },
+    "excluded_segments_any_depth_case_insensitive": [
+      "bin",
+      "obj",
+      ".git",
+      "artifacts",
+      "TestResults",
+      "node_modules",
+      ".vs",
+      "packages"
+    ],
+    "manifest": "SOURCE-SHA256.txt",
+    "note": "FINAL — post doc-freeze; README.md + README.zh-CN.md landed and hashed",
+    "readme_sha256": "8d64c6dac6ac356aa03ddd3de6f0c667b72854dfc774acab468a87d6246f4567",
+    "readme_zh_sha256": "ef0ceab1def85210c54784d1f855239b6976f7dd4d2ed5079d47ff06cd234d4c"
+  },
+  "evidence_payloads_hashed": {
+    "entries": 224,
+    "manifest": "SHA256SUMS.txt",
+    "drift": 0,
+    "missing": 0,
+    "scope": "MANIFEST.txt, NOTES.md, all final-* and prior suite-*/sample-*/pack-* stdout/stderr/exit, 24 PNGs, nupkg extracted members, SOURCE-SHA256.txt, SOURCE-COUNT.txt, NOTICE-sha256.txt, final-pack-audit.{json,txt}, .gitattributes (byte-preservation marker for this round evidence dirs)"
+  },
+  "history_preserved": {
+    "prior_opentk_fail_raw_stdout_bytes": [
+      952430,
+      957134
+    ],
+    "prior_opentk_fail_exit": [
+      1,
+      1
+    ],
+    "prior_fail_count": 66,
+    "prior_root_cause": "GalleryIntegrationHost / GlTestScope did not inject UiRuntimeServices.RichTextService; MarkdownDemo→MarkdownBlockView→RichText threw InvalidOperationException. Fixed by good in test hosts (single-instance SkiaTextService shared ITextService+IRichTextService)."
+  },
+  "outstanding": [],
+  "final_state": "complete — all metadata sealed post-doc-freeze; awaiting main review then good commit+push",
+  "gitattributes_marker": "* -text in each new evidence dir; verified via git check-attr text=unset"
+}

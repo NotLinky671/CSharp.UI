@@ -213,7 +213,8 @@ public sealed class GalleryApp : Component
                         new Text("中文输入法的预编辑与候选显示取决于平台，详见 docs/guide/platform-notes.md。").Wrap(),
                         new Text($"当前文本长度：{editDemo.Value.Length}")
                             .WithFont(FontDescription.Default.WithSize(12)))
-                        .Spacing(6)))
+                        .Spacing(6)),
+                    Section("Markdown", new MarkdownDemo(logoPath)))
                 .Spacing(18)
                 .Padding(20))
             .Background(current.Background)

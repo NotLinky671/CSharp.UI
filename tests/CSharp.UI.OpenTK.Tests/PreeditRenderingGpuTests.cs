@@ -234,6 +234,7 @@ public sealed class PreeditRenderingGpuTests
         {
             Dispatcher = new HeadlessUiDispatcher(),
             TextService = textService,
+            RichTextService = textService as IRichTextService,
             TextureService = scope.Textures,
             Clipboard = new StubClipboardService(),
             Clock = new TestUiClock(),

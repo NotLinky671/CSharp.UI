@@ -3,6 +3,7 @@
     <Project Path="src/CSharp.UI/CSharp.UI.csproj" />
     <Project Path="src/CSharp.UI.Text/CSharp.UI.Text.csproj" />
     <Project Path="src/CSharp.UI.OpenTK/CSharp.UI.OpenTK.csproj" />
+    <Project Path="src/CSharp.UI.Markdown/CSharp.UI.Markdown.csproj" />
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/CSharp.UI.Samples.Counter/CSharp.UI.Samples.Counter.csproj" />
@@ -14,6 +15,7 @@
     <Project Path="tests/CSharp.UI.Text.Tests/CSharp.UI.Text.Tests.csproj" />
     <Project Path="tests/CSharp.UI.Integration.Tests/CSharp.UI.Integration.Tests.csproj" />
     <Project Path="tests/CSharp.UI.OpenTK.Tests/CSharp.UI.OpenTK.Tests.csproj" />
+    <Project Path="tests/CSharp.UI.Markdown.Tests/CSharp.UI.Markdown.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/CSharp.UI.AssetGenerator/CSharp.UI.AssetGenerator.csproj" />

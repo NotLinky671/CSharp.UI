@@ -8,6 +8,7 @@
 | `tests/CSharp.UI.Text.Tests` | 文本：字体解析与回退、排版/换行/对齐/省略、字素与代理对映射、缓存上限、图片解码 | 否（需要原生 Skia/HarfBuzz） |
 | `tests/CSharp.UI.Integration.Tests` | 跨模块：真实 SkiaSharp/HarfBuzz 排版驱动核心布局与 TextField，文本纹理上传与复用（不注入 GL 上下文，使用记录型纹理服务） | 否（需要原生 Skia/HarfBuzz） |
 | `tests/CSharp.UI.OpenTK.Tests` | 图形集成：离屏 framebuffer 渲染、颜色/圆角/边框、层叠顺序、透明混合、裁剪与 DPI、GPU 资源计数 | **是**（OpenGL 3.3） |
+| `tests/CSharp.UI.Markdown.Tests` | Markdown:Markdig 解析、块/行内适配、样式栈、图片与链接策略、表格 `Responsive` 三档（min/pref/W 切换与横滚） | 否（需要原生 Skia 排版服务） |
 
 核心测试全部基于 `CSharp.UI.Testing` 提供的无窗口替身（调度器、文本、纹理、图片、剪贴板、时钟），因此不需要窗口、字体原生库或 GL 上下文。
 
@@ -27,6 +28,9 @@ dotnet run --project tests/CSharp.UI.Integration.Tests
 
 # 图形集成测试（需要 OpenGL 上下文）
 dotnet run --project tests/CSharp.UI.OpenTK.Tests
+
+# Markdown 模块测试（需要原生 Skia)
+dotnet run --project tests/CSharp.UI.Markdown.Tests
 
 # 只跑图形类测试（按 Trait 过滤）
 dotnet run --project tests/CSharp.UI.OpenTK.Tests -- -trait "Category=Graphics"

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CSharp.UI.Markdown</RootNamespace>
+    <AssemblyName>CSharp.UI.Markdown</AssemblyName>
+    <IsPackable>true</IsPackable>
+    <PackageId>CSharp.UI.Markdown</PackageId>
+    <Description>Markdown → CSharp.UI 视图树适配：基于 Markdig 的解析、样式栈 inline 适配与块布局。依赖 CSharp.UI，不依赖 OpenTK/SkiaSharp。</Description>
+    <PackageTags>ui;markdown;rich-text</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CSharp.UI\CSharp.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CSharp.UI.Markdown.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 打包随包 BSD-2-Clause 归属（MD-05);Core 不依赖 Markdig -->
+    <None Include="..\..\NOTICE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

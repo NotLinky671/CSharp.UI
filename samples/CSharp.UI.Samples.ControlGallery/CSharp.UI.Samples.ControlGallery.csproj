@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\CSharp.UI.OpenTK\CSharp.UI.OpenTK.csproj" />
     <ProjectReference Include="..\..\src\CSharp.UI.Text\CSharp.UI.Text.csproj" />
+    <ProjectReference Include="..\..\src\CSharp.UI.Markdown\CSharp.UI.Markdown.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -17,6 +17,8 @@
     <InternalsVisibleTo Include="CSharp.UI.Text.Tests" />
     <InternalsVisibleTo Include="CSharp.UI.Integration.Tests" />
     <InternalsVisibleTo Include="CSharp.UI.OpenTK.Tests" />
+    <InternalsVisibleTo Include="CSharp.UI.Markdown" />
+    <InternalsVisibleTo Include="CSharp.UI.Markdown.Tests" />
   </ItemGroup>
 
 </Project>

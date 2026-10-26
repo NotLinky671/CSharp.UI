@@ -1,0 +1,4 @@
+files=270 FINAL post-doc-freeze
+topdirs={'AGENTS.md': 1, 'CSharp.UI.slnx': 1, 'Directory.Build.props': 1, 'Directory.Packages.props': 1, 'NOTICE': 1, 'README.md': 1, 'README.zh-CN.md': 1, 'samples': 10, 'src': 129, 'tests': 122, 'tools': 2}
+extensions={'.cs': 248, '.csproj': 13, '.md': 4, '.props': 2, '.slnx': 1, '': 1, '.png': 1}
+excluded=bin/obj/.git/artifacts/TestResults/node_modules/.vs/packages (any depth,case-insensitive)

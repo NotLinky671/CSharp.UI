@@ -1,0 +1,9 @@
+PASS gl-local-image-pixels red=3200
+PASS gl-remote-resolver-zero calls=0
+PASS gl-remote-alt-pixels dark=115 red=0
+PASS gl-fail-alt-pixels dark=133
+PASS gl-wide-blue-pixels blue=40000
+DEBUG plain cmds=1 kinds=TextureCommand
+DEBUG tex bounds=(0, 141, 64×19) src=(0, 0, 64×19) tint=#1B1D21FF valid=True
+PASS gl-plain-richtext nw=133
+=== MD04-GL RESULT 6 PASS / 0 FAIL ===

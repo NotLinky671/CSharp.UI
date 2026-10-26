@@ -1,0 +1,56 @@
+=== md02 block/inline adapter verification ===
+assembly: C:\Users\nothh\AppData\Local\Temp\rt03-verify\app\bin\Debug\net10.0\CSharp.UI.Markdown.dll
+PASS MD02-blocks-materialize rich nodes=8 (expect ≥5: h1,para,quote,list,list,code…)
+PASS MD02-heading-present 
+NOTE MD02-h1 h=35.561 body h=17.78 font=default 28 Bold
+PASS MD02-heading-height>body h1=35.561 body=17.78
+PASS MD02-quote-present 
+PASS MD02-list-items 
+PASS MD02-fenced-code 
+PASS MD02-hanging-item-found 
+NOTE MD02-hanging lines=7 frameW=146.31 itemX=13.69 markerR=5.69
+PASS MD02-hanging-indent line2 frameX=13.688 vs markerRight=5.688
+PASS MD02-hanging-marker-separate content col 13.69 >= marker right 5.69
+PASS MD02-nested-node 
+NOTE MD02-nested marks over codeZ: 1; bold=True italic=True mono=True
+PASS MD02-nested-bold-italic 
+PASS MD02-html-literal text=[pre <b>htmltag</b> post]
+PASS MD02-html-strip text=[pre htmltag post] (tags removed; inner literal 'htmltag' may remain — that is correct)
+PASS MD02-links-para-found rich nodes=1
+NOTE MD02-diag interactions=[[0,2)id=1p=https://e/x,[3,6)id=2p=../r/p?q=1] text=[ok rel badjs badat]
+NOTE MD02-diag paraFrame=(0, 0, 600×200) rect0=(0, 0, 15.176×18.621)
+NOTE MD02-diag hovers=[https://e/x] at (7.588, 100.311)
+NOTE MD02-diag plainRichText acts=1 payload=https://e/x
+PASS MD02-link-https-activates acts=2
+PASS MD02-link-relative-activates acts=2
+PASS MD02-link-js-no-activate 
+PASS MD02-link-data-no-activate 
+PASS MD02-payload-verbatim payloads=[https://e/x,../r/p?q=1]
+PASS MD02-same-url-A-activates acts=1 payload=https://same
+PASS MD02-same-url-diff-id-no-activate acts=0 (down A / up B across same-URL links must not activate)
+PASS MD02-grapheme-node 
+PASS MD02-grapheme-text-intact text=[家‍👩 flag é ébold tail]
+PASS MD02-ranges-grapheme-aligned 
+PASS MD02-empty-fenced-code 
+NOTE MD02-tasklist texts=[[x] •‖ done‖[ ] •‖ todo]
+PASS MD02-tasklist-checkbox-done done item carries checked marker
+PASS MD02-tasklist-checkbox-todo todo item present
+PASS MD02-mono-node 
+NOTE MD02-mono ii-w=16.406 WW-w=16.406
+PASS MD02-mono-equal-advance mono font: 2-char runs equal width (prop font gives ii<WW)
+NOTE MD02-theme-diag bars=2 frames=[(0, 9.311, 3×0);(0, 18.621, 240×1)]
+NOTE MD02-theme-dark rectCmds=1 bounds=[(0, 18.621, 240×1)]
+FAIL MD02-theme-dark-bars-present expect quote-bar + thematic-break RectangleCommands
+NOTE MD02-theme-dark bg=#15171CFF visibleRects=1/1
+FAIL MD02-theme-dark-bars-visible quote bar AND hr centers must render distinct-from-bg color (theme-aware)
+NOTE MD02-theme-diag bars=2 frames=[(0, 9.311, 3×0);(0, 18.621, 240×1)]
+NOTE MD02-theme-light rectCmds=1 bounds=[(0, 18.621, 240×1)]
+FAIL MD02-theme-light-bars-present expect quote-bar + thematic-break RectangleCommands
+NOTE MD02-theme-light bg=#F5F6F8FF visibleRects=1/1
+FAIL MD02-theme-light-bars-visible quote bar AND hr centers must render distinct-from-bg color (theme-aware)
+PASS MD02-320-item 
+NOTE MD02-320 frameW=306.31 lines=2 line1X=0 line2X=0
+PASS MD02-320-fill-width frameW=306.31 (item must fill/constrain to 320 viewport, not spill)
+PASS MD02-320-hanging-indent continuation frameX=13.688
+PASS MD02-gl-ink-pixels inkPixels=2202 png=md02-render.png
+=== MD02 RESULT 33 PASS / 4 FAIL ===

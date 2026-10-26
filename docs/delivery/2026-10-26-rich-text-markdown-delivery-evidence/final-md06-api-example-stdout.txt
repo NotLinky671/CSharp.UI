@@ -1,0 +1,2 @@
+rich=6 table=1 linkNodes=1 frameCmds=9
+PASS api-example
