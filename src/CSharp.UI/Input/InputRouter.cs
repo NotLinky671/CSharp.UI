@@ -263,6 +263,18 @@ internal sealed class InputRouter
                     Route<PointerEvent>(_hovered, context, static (node, ctx, pointer) => node.View.OnPointerDown(ctx, node, pointer), e);
                 }
 
+                // 左键点"非交互空白"清焦：本次按下未被任何节点消费（含 deepest==null）且
+                // 命中链上没有 mounted+enabled+IsFocusable 祖先接管——消费节点（Button/TextField
+                // 自 SetFocus、ScrollView 吞 bar、RichText 按住、slider 拖拽）与控件内 Text 修饰符
+                // 区不清焦；右键/中键不 blur（上下文/辅助输入非 primary）。消费方自己 SetFocus(null)
+                // 的罕见重入由 Handled 保留——消费优先，不覆盖其决定。
+                if (!context.Handled
+                    && e.Button == PointerButton.Left
+                    && !ChainHasFocusable(_hovered))
+                {
+                    _focus.SetFocus(null);
+                }
+
                 break;
 
             case PointerEventKind.Move:
@@ -587,6 +599,23 @@ internal sealed class InputRouter
             if (handler(node, context, e))
             {
                 context.MarkHandled();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 命中链上是否存在仍可作为键盘焦点目标的节点（mounted + 未 disabled + <see cref="View.IsFocusable"/>）。
+    /// deepest 自身不可聚焦但祖先可聚焦（控件内 Text、包裹修饰符）→ 返回 true，按下不清焦。
+    /// </summary>
+    private static bool ChainHasFocusable(ViewNode? deepest)
+    {
+        for (var node = deepest; node is not null; node = node.Parent)
+        {
+            if (node.IsMounted && !node.IsEffectivelyDisabled && node.View.IsFocusable)
+            {
                 return true;
             }
         }

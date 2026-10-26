@@ -1,0 +1,76 @@
+﻿PASS evidence-dir-real-repo C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-blank-click-focus-evidence
+ASM CSharp.UI C:\Users\nothh\AppData\Local\Temp\blank-focus-smoke\app\bin\Release\net10.0\win-x64\CSharp.UI.dll sha256=8334219979B3B933
+ASM CSharp.UI.OpenTK C:\Users\nothh\AppData\Local\Temp\blank-focus-smoke\app\bin\Release\net10.0\win-x64\CSharp.UI.OpenTK.dll sha256=C9C3FF1F81695261
+ASM CSharp.UI.Text C:\Users\nothh\AppData\Local\Temp\blank-focus-smoke\app\bin\Release\net10.0\win-x64\CSharp.UI.Text.dll sha256=ACE0330419F3C187
+HOST 3.3.0 - Build 32.0.101.6790 / Intel(R) RaptorLake-S Mobile Graphics Controller / Intel
+PASS light-gallery-button 
+PASS light-btn-focused focused=Button("点击计数：1") btnFrame=(32, 454.812, 105.547×34.621)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-blank-click-focus-evidence\run4-light-1-btn-ring.png 1024x768
+PASS light-btn-ring-pixels focusring px=291 frame=(32, 454.812, 105.547×34.621) scale=1
+PASS light-blank-clears-focus focused=null
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-blank-click-focus-evidence\run4-light-2-blank-noring.png 1024x768
+PASS light-blank-noring-pixels ring px on=291 off=0
+PASS light-tab-refocuses 
+PASS light-enter-activates label '暗色主题' -> '明亮主题'
+PASS light-textfield-found 
+PASS light-tf-focused 
+PASS light-tf-session-started text-input session started on focus
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-blank-click-focus-evidence\run4-light-3-tf-caret.png 1024x768
+PASS light-tf-blur-on-blank focused=null
+PASS light-tf-session-ended text-input session ended on blur
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-blank-click-focus-evidence\run4-light-4-tf-nocaret.png 1024x768
+PASS light-tf2-focused 
+PASS light-transfer-to-button 
+PASS light-blur-once endcalls delta=1 (must be exactly 1)
+PASS light-wheel-keeps-focus 
+PASS light-move-keeps-focus 
+PASS light-pre-scrollbar-focus 
+PASS light-scrollbar-keeps-focus focused=Button("点击计数：3") after scrollbar click
+PASS light-scrollbar-drag-keeps-focus 
+PASS light-scrollbar-release-keeps-focus 
+PASS light-pre-rclick-focus 
+PASS light-rightclick-blank-keeps focused=Button("点击计数：5") after right click
+PASS light-pre-text-focus 
+PASS light-plaintext-clears focused=null after Text click
+PASS light-comp-session 
+PASS light-comp-started outcome=Started reject=False
+PASS light-comp-blur-cancels composing=False active=False
+=== light done ===
+PASS dark-gallery-button 
+PASS dark-btn-focused focused=Button("点击计数：1") btnFrame=(32, 454.812, 105.547×34.621)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-blank-click-focus-evidence\run4-dark-1-btn-ring.png 1024x768
+FAIL dark-btn-ring-pixels focusring px=0 frame=(32, 454.812, 105.547×34.621) scale=1
+PASS dark-blank-clears-focus focused=null
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-blank-click-focus-evidence\run4-dark-2-blank-noring.png 1024x768
+PASS dark-blank-noring-pixels ring px on=0 off=0
+PASS dark-tab-refocuses 
+PASS dark-enter-activates label '暗色主题' -> '明亮主题'
+PASS dark-textfield-found 
+PASS dark-tf-focused 
+PASS dark-tf-session-started text-input session started on focus
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-blank-click-focus-evidence\run4-dark-3-tf-caret.png 1024x768
+PASS dark-tf-blur-on-blank focused=null
+PASS dark-tf-session-ended text-input session ended on blur
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-blank-click-focus-evidence\run4-dark-4-tf-nocaret.png 1024x768
+PASS dark-tf2-focused 
+PASS dark-transfer-to-button 
+PASS dark-blur-once endcalls delta=1 (must be exactly 1)
+PASS dark-wheel-keeps-focus 
+PASS dark-move-keeps-focus 
+PASS dark-pre-scrollbar-focus 
+PASS dark-scrollbar-keeps-focus focused=Button("点击计数：3") after scrollbar click
+PASS dark-scrollbar-drag-keeps-focus 
+PASS dark-scrollbar-release-keeps-focus 
+PASS dark-pre-rclick-focus 
+PASS dark-rightclick-blank-keeps focused=Button("点击计数：5") after right click
+PASS dark-pre-text-focus 
+PASS dark-plaintext-clears focused=null after Text click
+PASS dark-comp-session 
+PASS dark-comp-started outcome=Started reject=False
+PASS dark-comp-blur-cancels composing=False active=False
+=== dark done ===
+PASS nest-field-focused 
+PASS nest-button-focused focused=Button("嵌套按钮")
+PASS nest-gap-clears focused=null gap=(24, 54.621) btnFrame=(28, 58.621, 344×34.621)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-blank-click-focus-evidence\run4-nested-gap.png 400x300
+=== BCF RESULT 59 PASS / 1 FAIL ===

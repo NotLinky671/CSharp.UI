@@ -131,6 +131,12 @@
 | `KeyEvent` / `UiKey` / `KeyModifiers` / `KeyEventKind` | 控制键与修饰键；字符输入不通过键盘事件传递 |
 | `TextInputEvent` | 宿主提交的 Unicode 文本；`TextInputEvent.SanitizeSingleLine(...)` 按单行规则过滤、`SanitizeMultiLine(...)` 归一化多行换行（`\r\n`/孤 `\r`→`\n`、去 `\t`） |
 
+焦点/点击语义：**左键**点在未被任何节点消费的非聚焦区（空白容器、普通 Text、
+根 padding 等）→ 清除当前键盘焦点（`UiRuntime.FocusedNode` 变 null），输入框失焦
+结束文本输入会话；点在按钮/输入框/滚动条槽/链接等交互命中区（消费链或命中链上存在
+`IsFocusable` 祖先）→ 正常接管或转移焦点，不先清后转。**右键/中键**按下不清焦；
+滚轮、悬停、按下取消、滚动条拖拽等其余指针路径也不动焦点。
+
 ## 文本编辑快捷键
 
 `TextField`/`TextEditor` 的内置编辑命令只通过平台快捷键触发，没有公开的方法入口：

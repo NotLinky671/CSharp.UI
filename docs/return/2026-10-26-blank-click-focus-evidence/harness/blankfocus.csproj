@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>14.0</LangVersion>
+    <AssemblyName>BlankFocusOffscreen</AssemblyName>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <EnableDefaultNoneItems>true</EnableDefaultNoneItems>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="..\lib\CSharp.UI.dll" />
+    <Reference Include="..\lib\CSharp.UI.Text.dll" />
+    <Reference Include="..\lib\CSharp.UI.OpenTK.dll" />
+    <Reference Include="..\lib\ControlGallery.dll" />
+    <Reference Include="..\lib\SkiaSharp.dll" />
+    <Reference Include="..\lib\OpenTK.Graphics.dll" />
+    <Reference Include="..\lib\OpenTK.Core.dll" />
+    <Reference Include="..\lib\OpenTK.Mathematics.dll" />
+    <Reference Include="..\lib\OpenTK.Windowing.Common.dll" />
+    <Reference Include="..\lib\OpenTK.Windowing.Desktop.dll" />
+    <Reference Include="..\lib\OpenTK.Windowing.GraphicsLibraryFramework.dll" />
+    <Reference Include="..\lib\HarfBuzzSharp.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\lib\**\*" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+</Project>

@@ -249,7 +249,137 @@ public class InputFocusTests
         app.Click(new Point(frame.Frame.Right + 10, frame.Frame.Center.Y));
         Assert.Empty(log);
     }
+
+    [Fact]
+    public void BlankLeftPress_ClearsButtonFocus_RingDropsToBorder()
+    {
+        using var app = new TestApp(
+            new VStack(new Button("ok").Frame(width: 80, height: 30)).Align(Alignment.Start),
+            new Size(300, 100));
+        app.Frame();
+
+        var button = app.Runtime.Root.Require<Button>();
+        app.Click(button.Frame.Center);
+        Assert.Same(button, app.Runtime.FocusedNode);
+        Assert.Equal(Theme.Light.FocusRing,
+            app.Frame().OfType<RectangleCommand>().First(c => c.Bounds == button.Frame).Stroke);
+
+        // 左键点窗口内、控件外空白 → 焦点清空、环回 Border 色（消费者可见）。
+        app.Click(new Point(280, 50));
+        Assert.Null(app.Runtime.FocusedNode);
+        Assert.False(button.IsFocused);
+        Assert.Equal(Theme.Light.Border,
+            app.Frame().OfType<RectangleCommand>().First(c => c.Bounds == button.Frame).Stroke);
+    }
+
+    [Fact]
+    public void BlankLeftPress_ClearsFieldFocus_EndsTextInputSession()
+    {
+        var service = new BlankPressRecordingTextInputService();
+        var host = new FieldHost();
+        using var app = new TestApp(host, new Size(300, 120), textInputService: service);
+        app.Frame();
+
+        var field = app.Runtime.Root.Require<TextField>();
+        app.Runtime.SetFocus(field);
+        app.Runtime.ProcessPendingWork();
+        Assert.NotNull(service.ActiveClient);
+
+        // 点在窗口内、控件外空白（field 宽 200 + 宿主 VStack padding/对齐外即空白）。
+        app.Runtime.DispatchPointer(new PointerEvent(
+            PointerEventKind.Down, new Point(280, 100), PointerButton.Left));
+
+        Assert.Null(app.Runtime.FocusedNode);
+        Assert.False(field.IsFocused);
+        Assert.Null(service.ActiveClient);
+        Assert.Equal(1, service.EndCallCount);
+    }
+
+    [Fact]
+    public void BlankLeftPress_KeepsFocus_WhenHitChainHasFocusableAncestor()
+    {
+        // deepest 命中不可聚焦 child Text；父 FocusablePassThroughHost 可聚焦但不消费
+        // OnPointerDown（返回 false）→ 链上仍有可聚焦祖先，按下不清焦。
+        var host = new FocusablePassThroughHost();
+        using var app = new TestApp(host, new Size(300, 120));
+        app.Frame();
+
+        var container = app.Runtime.Root.Require<FocusablePassThrough>();
+        var button = app.Runtime.Root.Require<Button>();
+        app.Click(button.Frame.Center);
+        Assert.Same(button, app.Runtime.FocusedNode);
+
+        // 点 pass-through 容器内的 Text（deepest=Text，父=focusable）：焦点保留在 Button。
+        var text = app.Runtime.Root.Require<Text>();
+        app.Runtime.DispatchPointer(new PointerEvent(PointerEventKind.Down, text.Frame.Center, PointerButton.Left));
+        Assert.Same(button, app.Runtime.FocusedNode);
+    }
+
+    [Fact]
+    public void NonLeftPress_DoesNotClearFocus()
+    {
+        using var app = new TestApp(new VStack(new Button("ok").Frame(width: 80, height: 30)).Align(Alignment.Start), new Size(300, 100));
+        app.Frame();
+
+        var button = app.Runtime.Root.Require<Button>();
+        app.Click(button.Frame.Center);
+        Assert.Same(button, app.Runtime.FocusedNode);
+
+        var blank = new Point(280, 50);
+        app.Runtime.DispatchPointer(new PointerEvent(PointerEventKind.Down, blank, PointerButton.Right));
+        Assert.Same(button, app.Runtime.FocusedNode);
+        app.Runtime.DispatchPointer(new PointerEvent(PointerEventKind.Down, blank, PointerButton.Middle));
+        Assert.Same(button, app.Runtime.FocusedNode);
+    }
+    [Fact]
+    public void ConsumedScrollbarPress_DoesNotClearFieldFocus()
+    {
+        // ScrollView standard 滚动条槽/区消费按下——属交互，不是空白 → 保留文本焦点。
+        var host = new FocusedScrollFieldHost();
+        using var app = new TestApp(host, new Size(200, 160));
+        app.Frame();
+
+        var field = app.Runtime.Root.Require<TextField>();
+        var scroll = app.Runtime.Root.Require<ScrollView>();
+        app.Runtime.SetFocus(field);
+        app.Runtime.ProcessPendingWork();
+        Assert.Same(field, app.Runtime.FocusedNode);
+
+        // bar 区按下（standard 槽——消费返回 true）：焦点保留。
+        var track = scroll.Frame;
+        app.Runtime.DispatchPointer(new PointerEvent(
+            PointerEventKind.Down, new Point(track.Right - 4, track.Y + 10), PointerButton.Left));
+        Assert.Same(field, app.Runtime.FocusedNode);
+    }
+
+    [Fact]
+    public void FocusTransfer_GoesDirectly_NoInterimClear()
+    {
+        // field 焦点 → 左键点 button：一次转移（old EndSession + new focused），无先清后转。
+        var log = new List<string>();
+        var service = new BlankPressRecordingTextInputService();
+        var binding = Binding<string>.From(() => "", _ => { });
+        using var app = new TestApp(
+            new VStack(new TextField(binding), new Button("go", () => log.Add("go"))),
+            new Size(300, 140),
+            textInputService: service);
+        app.Frame();
+
+        var field = app.Runtime.Root.Require<TextField>();
+        var button = app.Runtime.Root.Require<Button>();
+        app.Runtime.SetFocus(field);
+        app.Runtime.ProcessPendingWork();
+
+        Assert.NotNull(service.ActiveClient);
+
+        app.Runtime.DispatchPointer(new PointerEvent(PointerEventKind.Down, button.Frame.Center, PointerButton.Left));
+
+        Assert.Same(button, app.Runtime.FocusedNode);
+        Assert.Equal(1, service.EndCallCount);
+        Assert.Null(service.ActiveClient);
+    }
 }
+
 
 /// <summary>带滑块的组件。</summary>
 internal sealed class SliderHost : Component
@@ -282,3 +412,85 @@ internal sealed class ConditionalFocusHost : Component
     }
 }
 
+/// <summary>一个 TextField + 溢出 ScrollView：用于验证滚动条区按下不清焦。</summary>
+internal sealed class FocusedScrollFieldHost : Component
+{
+    public State<string>? Text { get; private set; }
+
+    protected override View Build()
+    {
+        Text = UseState("scroll-text", "");
+        var rows = Enumerable.Range(0, 60).Select(i => (View)new Text($"row {i}")).ToArray();
+        return new VStack(new TextField(Text.ToBinding()), new ScrollView(new VStack(rows), ScrollAxis.Vertical));
+    }
+}
+
+/// <summary>Focusable 但不消费 OnPointerDown 的裸容器：用于验证链上 focusable 祖先保留焦点。</summary>
+internal sealed class FocusablePassThrough : View
+{
+    public View Child { get; }
+
+    public FocusablePassThrough(View child) => Child = child;
+
+    public override bool IsFocusable => true;
+
+    internal override IReadOnlyList<View> Children => [Child];
+
+    internal override void Measure(ViewNode node, LayoutConstraints constraints, LayoutContext context)
+    {
+        context.Measure(node.ChildList[0], constraints);
+        node.DesiredSize = node.ChildList[0].DesiredSize;
+    }
+
+    internal override void Arrange(ViewNode node, Rect bounds, LayoutContext context)
+        => context.Arrange(node.ChildList[0], bounds);
+
+    internal override void Emit(ViewNode node, DrawContext context) => context.EmitChild(node.ChildList[0]);
+
+    internal override bool OnPointerDown(InputContext context, ViewNode node, PointerEvent e) => false;
+}
+
+/// <summary>宿主：一个 Button + 一个 FocusablePassThrough(Text)。</summary>
+internal sealed class FocusablePassThroughHost : Component
+{
+    protected override View Build()
+        => new VStack(new Button("b"), new FocusablePassThrough(new Text("inside")));
+}
+
+/// <summary>最小假服务：记录 Start/EndSession 调用与活动客户端，不模拟 IME 细节。</summary>
+internal sealed class BlankPressRecordingTextInputService : ITextInputService
+{
+    public TextInputCapabilities Capabilities => TextInputCapabilities.Full;
+
+    public ITextInputClient? ActiveClient { get; private set; }
+
+    public int StartCount { get; private set; }
+
+    public int EndCallCount { get; private set; }
+
+    public bool StartSession(ITextInputClient client)
+    {
+        StartCount++;
+        ActiveClient = client;
+        return true;
+    }
+
+    public bool EndSession()
+    {
+        EndCallCount++;
+        if (ActiveClient is null)
+        {
+            return false;
+        }
+
+        ActiveClient = null;
+        return true;
+    }
+
+    public TextInputApplyResult ApplyComposition(IReadOnlyList<CompositionEvent> events)
+        => ActiveClient?.ApplyComposition(events) ?? TextInputApplyResult.NotHandled(TextSnapshot.Empty);
+
+    public bool RequestCancel() => ActiveClient?.CancelComposition() ?? false;
+
+    public bool PublishGeometry(TextInputGeometry geometry) => false;
+}
