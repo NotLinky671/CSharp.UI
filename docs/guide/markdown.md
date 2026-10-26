@@ -78,6 +78,8 @@ var view = new ScrollView(
 | `CodeFontFamily` | `DefaultCodeFontFamily` = `FontFamily.FromName("Cascadia Mono").WithFallbacks("Consolas","Menlo","monospace")` | 行内/围栏代码字体；null → 默认链 |
 | `CodeBackground` | `Color(128,128,128,40)` | `null` → 代码块无底色矩形 |
 | `CodePadding` / `CodeCornerRadius` | `8` / `8` | 代码块内边距 / 背景圆角（逻辑像素） |
+| `InlineCodeCornerRadius` | `4` | **行内**代码背景圆角（逻辑像素），与块级独立 |
+| `InlineCodeForeground` | `null` | 行内代码前景色；`null` → Emit 时解 `theme.Accent`（light/dark 感知），显式色覆盖 |
 | `ShowCodeCopyButton` / `CodeCopyLabel` | `true` / `"Copy"` | 右上工具行复制按钮（写系统剪贴板）/ 标签文本 |
 | `UnorderedMarker` / `ListMarkerGap` | `"•"` / `8` | 无序列表 marker + 与文本间距 |
 | `QuoteBarWidth` / `QuoteBarColor` / `QuotePadding` | `3` / `null` / `12` | `QuoteBarColor` null → 主题 `Border` 色 |

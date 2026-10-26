@@ -50,6 +50,13 @@ public sealed record TextStyle
     /// <summary>背景色；<c>null</c> 表示无背景。</summary>
     public Color? Background { get; init; }
 
+    /// <summary>背景矩形圆角（逻辑像素）；<c>null</c> 或 <c>0</c> 为直角（向后兼容）。</summary>
+    public double? CornerRadius { get; init; }
+
+    /// <summary>前景色按 Emit 时 <see cref="EnvironmentValues.ResolvedTheme"/> 的 accent 解
+    /// （<c>true</c> → accent）；<see cref="Foreground"/> 显式值优先于本标记，因此 parse/Build 期不绑主题。</summary>
+    public bool? ForegroundIsAccent { get; init; }
+
     /// <summary>下划线；<c>null</c> 继承段落默认。</summary>
     public bool? Underline { get; init; }
 

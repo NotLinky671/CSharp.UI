@@ -201,6 +201,7 @@
 | `UiRuntime` / `UiRuntimeServices` / `ViewNode` | 运行时：节点树、布局、输入分发与诊断；无窗口测试可直接驱动 |
 | `StyledText` | 不可变单根 UTF-16 字符串 + `TextStyleRange[]` + `TextInteractionRange[]`；构造时验证字素边界/表内不重叠；值相等 + 预计算哈希 + 分段端点拓扑 |
 | `TextStyleRange` | `[Start,End)` + `TextStyle`（字体/前景/背景/装饰；无 payload) |
+| `TextStyle` | 富文本样式覆盖：`Family`/`Size`/`Weight`/`Italic`（几何字段，参与分段拓扑）、`Foreground`（具体色）、`Background`、`CornerRadius`（背景矩形圆角；`null`/0=直角）、`ForegroundIsAccent`（Emit 时解 `Theme.Accent`，`Foreground` 显式值优先）、`Underline`/`Strikethrough` |
 | `TextInteractionRange` | `[Start,End)` + `Id` + `Payload`(object)；命中按 `RichTextLayoutResult.GetRangeRects` 行内矩形并集 |
 | `IRichTextService` | 富文本排版/栅格：`Layout(RichTextLayoutRequest) → RichTextLayoutResult`（独立 `IDisposable` handle 共享 core);`Rasterize(layout, paint)` 不重 shape；缓存键 = `LayoutIdentity` + paint + `PixelScale`;`Measure`/`Rasterize`/hit 同 core；已 Dispose handle 再用抛 `ObjectDisposedException` |
 | `RichTextLayoutRequest` / `RichTextLayoutResult` | 富文本排版请求（`Text`、`ParagraphFont`、`MaxWidth`、`Wrapping`、`Alignment`、`LineHeight`、`PixelScale`、`LetterSpacing`）与结果（`Text`/`Size`/`Lines`/`Segments`/`Interactions`/`LayoutIdentity`/`GetRangeRects`/`HitTestIndex`;`IDisposable`) |

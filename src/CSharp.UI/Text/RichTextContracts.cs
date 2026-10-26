@@ -155,6 +155,8 @@ public sealed record RichTextLayoutRequest
 /// 一个 canonical segment 的绘制属性：已解析（不含继承位）的前/背景色与装饰标志。
 /// 前景色 <see cref="Color.A"/> 参与预乘输出；装饰字段本轮只作为 paint 键与元数据，
 /// 装饰像素由 RT-03 视图以矩形命令绘制（栅格层不烘背景/装饰，避免双层绘制）。
+/// 背景矩形圆角不属于本结构——圆角只影响视图层 <c>RectangleCommand</c>，由
+/// <c>RichText.Emit</c> 从 <c>TextStyle.CornerRadius</c> 按段取，不进 glyph raster 键。
 /// </summary>
 public readonly record struct RichTextRunPaint(Color Foreground, Color Background, bool Underline, bool Strikethrough);
 

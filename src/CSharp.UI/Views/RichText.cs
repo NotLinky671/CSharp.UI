@@ -153,9 +153,9 @@ public sealed class RichText : View
             ?? throw new InvalidOperationException(
                 "RichText 含有样式或交互区间，需要富文本排版服务；" +
                 "请通过 UiRuntimeServices.RichTextService 注入（默认装配复用同实例的 SkiaTextService）。");
-
         var request = CreateRichRequest(node, constraints, context.PixelScale);
         var paragraphForeground = node.Environment.ResolvedForeground;
+        var accentForeground = node.Environment.ResolvedTheme.Accent;
 
         // 探测（BeginProbe）的结果只在本作用域内有效：退出时测量快照把原 ViewCache 引用
         // 原样放回节点（Contexts.cs 快照语义），绝不能在这里替换或 Dispose 已提交的
@@ -184,11 +184,12 @@ public sealed class RichText : View
             && request.Equals(cachedRequest))
         {
             // GeometryKey 相同：复用现有 handle，不重复 Layout/AddRef。
-            // 环境前景可能在缓存复用路径上变化（命中分支不重跑 Measure 前的环境同步仍由
-            // 框架保证 node.Environment 最新）；paint 语义变化在提交路径即时重算。
-            if (cache.ParagraphForeground != paragraphForeground)
+            // 环境前景或主题 accent 变化（Theme.Light→Light{Accent=X} 前景不变但 accent 变）
+            // 都会改变 paint 语义；缓存复用路径即时重解，不重排版。
+            if (cache.ParagraphForeground != paragraphForeground || cache.AccentForeground != accentForeground)
             {
                 cache.ParagraphForeground = paragraphForeground;
+                cache.AccentForeground = accentForeground;
                 cache.Paint = ResolvePaint(node, handle, HoveredId(node));
             }
 
@@ -202,11 +203,11 @@ public sealed class RichText : View
         var paint = ResolvePaint(node, layout, HoveredId(node));
         if (node.ViewCache is RichTextViewCache existing)
         {
-            existing.Set(layout, request, paint, paragraphForeground);
+            existing.Set(layout, request, paint, paragraphForeground, accentForeground);
         }
         else
         {
-            node.ViewCache = new RichTextViewCache(layout, request, paint, paragraphForeground);
+            node.ViewCache = new RichTextViewCache(layout, request, paint, paragraphForeground, accentForeground);
         }
 
         node.DesiredSize = layout.Size;
@@ -293,14 +294,18 @@ public sealed class RichText : View
         var fonts = layout.ResolvedFonts;
         var runs = paint.Runs;
         var origin = TextPainter.ResolveOrigin(frame, layout.Size, Alignment, layout.PixelScale);
-
-        // 1. 背景：同一行内相邻同色 segment 合并为一次矩形命令。
+        // 1. 背景：同一行内相邻同色 segment 合并为一次矩形命令；圆角从 TextStyle.CornerRadius
+        // 按段取（paint-only 视图元数据，不进 glyph raster 键），同色+同半径才合并。
         var pendingStart = -1;
         var pendingColor = Color.Transparent;
+        var pendingRadius = 0.0;
         var pendingLine = -1;
+        var rangeIndex = 0;
+        var ranges = Content.Ranges;
         for (var i = 0; i <= segments.Count; i++)
         {
             var current = Color.Transparent;
+            var currentRadius = 0.0;
             var lineIndex = -1;
             if (i < segments.Count)
             {
@@ -309,11 +314,20 @@ public sealed class RichText : View
                 if (candidate.A > 0)
                 {
                     current = candidate;
+                    var segment = segments[i];
+                    while (rangeIndex < ranges.Count && ranges[rangeIndex].End <= segment.Start)
+                    {
+                        rangeIndex++;
+                    }
+
+                    currentRadius = rangeIndex < ranges.Count && ranges[rangeIndex].Start <= segment.Start
+                        ? ranges[rangeIndex].Style?.CornerRadius ?? 0
+                        : 0;
                 }
             }
 
-            // 在行边界或颜色变化处收尾（相邻定义 = 同一行内连续）。
-            if (pendingStart >= 0 && (lineIndex != pendingLine || current != pendingColor))
+            // 在行边界、颜色变化或圆角变化处收尾（相邻定义 = 同一行内连续且同样式）。
+            if (pendingStart >= 0 && (lineIndex != pendingLine || current != pendingColor || currentRadius != pendingRadius))
             {
                 var line = lines[pendingLine];
                 var left = segments[pendingStart].X;
@@ -322,6 +336,7 @@ public sealed class RichText : View
                 context.Commands.Add(new RectangleCommand(
                     new Rect(origin.X + left, origin.Y + line.Bounds.Y, Math.Max(0, right - left), line.Bounds.Height),
                     pendingColor,
+                    pendingRadius,
                     Opacity: opacity));
                 pendingStart = -1;
             }
@@ -332,6 +347,7 @@ public sealed class RichText : View
                 {
                     pendingStart = i;
                     pendingColor = current;
+                    pendingRadius = currentRadius;
                     pendingLine = lineIndex;
                 }
             }
@@ -407,6 +423,7 @@ public sealed class RichText : View
         var interactions = Content.Interactions;
         var segments = layout.Segments;
         var paragraphForeground = node.Environment.ResolvedForeground;
+        var accentForeground = node.Environment.ResolvedTheme.Accent;
         var runs = new RichTextRunPaint[segments.Count];
         var rangeIndex = 0;
         var interactionIndex = 0;
@@ -434,7 +451,9 @@ public sealed class RichText : View
                 && interactions[interactionIndex].Id == id;
             var hover = hovered ? LinkHoverStyle : null;
 
-            var foreground = hover?.Foreground ?? style?.Foreground ?? paragraphForeground;
+            var foreground = hover?.Foreground
+                ?? style?.Foreground
+                ?? (style?.ForegroundIsAccent == true ? accentForeground : paragraphForeground);
             var background = hover?.Background ?? style?.Background ?? Color.Transparent;
             var underline = hover?.Underline ?? style?.Underline ?? false;
             var strikethrough = hover?.Strikethrough ?? style?.Strikethrough ?? false;
@@ -541,12 +560,14 @@ public sealed class RichText : View
             RichTextLayoutResult layout,
             RichTextLayoutRequest request,
             RichTextPaint paint,
-            Color paragraphForeground)
+            Color paragraphForeground,
+            Color accentForeground)
         {
             Layout = layout;
             Request = request;
             Paint = paint;
             ParagraphForeground = paragraphForeground;
+            AccentForeground = accentForeground;
         }
 
         /// <summary>产生当前 handle 的排版请求（GeometryKey 复用判定）。</summary>
@@ -561,14 +582,18 @@ public sealed class RichText : View
         /// <summary>解算 paint 时的段落前景（缓存复用路径上据此检测环境前景变化）。</summary>
         public Color ParagraphForeground { get; set; }
 
+        /// <summary>解算 paint 时的主题 accent（缓存复用路径上据此检测 accent-only 主题变化）。</summary>
+        public Color AccentForeground { get; set; }
+
         /// <summary>替换为新的排版结果；旧 handle（本节点份额）先 Dispose。</summary>
-        public void Set(RichTextLayoutResult layout, RichTextLayoutRequest request, RichTextPaint paint, Color paragraphForeground)
+        public void Set(RichTextLayoutResult layout, RichTextLayoutRequest request, RichTextPaint paint, Color paragraphForeground, Color accentForeground)
         {
             Layout.Dispose();
             Layout = layout;
             Request = request;
             Paint = paint;
             ParagraphForeground = paragraphForeground;
+            AccentForeground = accentForeground;
         }
 
         /// <summary>释放持有的 handle；幂等。</summary>

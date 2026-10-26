@@ -105,6 +105,108 @@ public class RichTextViewTests
     }
 
     [Fact]
+    public void 行内代码_Accent主题切换_同geometry重解paint不重排版()
+    {
+        // "pre " + code + " post"：code 段默认解 theme.Accent；换同 foreground 不同 accent 的
+        // theme → 缓存复用路径即时重解 paint，不重排版。
+        var codeBg = new Color(128, 128, 128, 60);
+        var styled = Styled(
+            "pre code post",
+            new TextStyleRange(4, 8, new TextStyle
+            {
+                Background = codeBg,
+                CornerRadius = 4,
+                ForegroundIsAccent = true,
+            }));
+        var app = App(new RichText(styled));
+        var node = RichNode(app);
+        app.Frame();
+
+        var paint1 = ((RichText.RichTextViewCache)node.ViewCache!).Paint!;
+        Assert.Equal(Theme.Light.Accent, paint1.Runs[1].Foreground);
+        var layout1 = ((RichText.RichTextViewCache)node.ViewCache!).Layout!;
+
+        // 切换 theme：同 foreground、不同 accent —— 触发 Measure 复用路径（GeometryKey 相同）。
+        var accent2 = Theme.Light.Accent.Lerp(Color.Red, 0.5);
+        app.Runtime.SetEnvironment(EnvironmentValues.Default with { Theme = Theme.Light with { Accent = accent2 } });
+        app.Runtime.ProcessPendingWork();
+        app.Frame();
+
+        var cache = (RichText.RichTextViewCache)node.ViewCache!;
+        Assert.Same(layout1, cache.Layout); // 不重排版：handle 复用
+        Assert.Equal(accent2, cache.Paint!.Runs[1].Foreground); // 重解 paint：新 accent
+
+    }
+
+    [Fact]
+    public void 行内代码_显式前景_覆盖Accent()
+    {
+        var codeBg = new Color(128, 128, 128, 60);
+        var styled = Styled(
+            "pre code post",
+            new TextStyleRange(4, 8, new TextStyle
+            {
+                Background = codeBg,
+                CornerRadius = 4,
+                Foreground = Color.Red,
+                ForegroundIsAccent = true, // 显式 Foreground 优先于 accent 标记
+            }));
+        var app = App(new RichText(styled));
+        var node = RichNode(app);
+        app.Frame();
+
+        var paint = ((RichText.RichTextViewCache)node.ViewCache!).Paint!;
+        Assert.Equal(Color.Red, paint.Runs[1].Foreground);
+    }
+
+    [Fact]
+    public void 行内代码_跨行_每行独立圆角片段()
+    {
+        // code 跨行：行内同色段不跨行合并，每行一个独立圆角矩形；断言真实几何——
+        // 每行至多一个连续 code 片段、行间不重叠、前后缀不被覆盖、X/Right 在 frame 有效宽内。
+        var codeBg = new Color(128, 128, 128, 60);
+        var styled = Styled(
+            "aaaa code code code code",
+            new TextStyleRange(5, 24, new TextStyle
+            {
+                Background = codeBg,
+                CornerRadius = 4,
+                ForegroundIsAccent = true,
+            }));
+        // 窄宽强制折行：RichText 默认 Wrapping.Wrap，外层 Frame 限宽即多行。
+        var app = App(new RichText(styled).Frame(width: 70));
+        var node = RichNode(app);
+        var commands = app.Frame();
+
+        var backgrounds = commands.OfType<RectangleCommand>().Where(c => c.Fill == codeBg)
+            .OrderBy(c => c.Bounds.Y).ToArray();
+        Assert.True(backgrounds.Length >= 2, "跨行 code 应产至少两个背景矩形。");
+
+        var frame = node.Frame;
+        const double eps = 0.5; // 排版 origin 取整/半像素抖动容忍
+        for (var i = 0; i < backgrounds.Length; i++)
+        {
+            var rect = backgrounds[i].Bounds;
+            Assert.True(backgrounds[i].CornerRadius > 0, "code 背景必须圆角。");
+            Assert.True(rect.X >= frame.X - eps && rect.Right <= frame.Right + eps,
+                $"第{i}个片段 {rect} 必须在 frame 有效宽内 {frame}。");
+            if (i > 0)
+            {
+                Assert.True(rect.Y >= backgrounds[i - 1].Bounds.Bottom - eps,
+                    $"第{i}个片段应在上行之下、不重叠（Y={rect.Y} vs 上行 Bottom={backgrounds[i - 1].Bounds.Bottom}）。");
+            }
+        }
+
+        // 前缀 "aaaa " 与末尾不被 code 覆盖：首个片段左缘应落在 layout 的 code 段起点之后。
+        var layout = ((RichText.RichTextViewCache)node.ViewCache!).Layout!;
+        var codeSegments = layout.Segments.Where(s => s.Start >= 5).ToArray();
+        Assert.True(codeSegments.Length >= 2, "折行后 code 至少分两段。");
+        Assert.True(backgrounds[0].Bounds.X >= frame.X + codeSegments[0].X - 1,
+            "首个 code 片段不应覆盖前导 'aaaa ' 段。");
+    }
+
+
+    [Fact]
     public void 换前景只重栅格化_不重排版_纹理键变化()
     {
         var component = new StyledTextHost(Styled("hi", new TextStyleRange(0, 2, new TextStyle { Foreground = Color.Red })));

@@ -90,6 +90,8 @@ internal static class InlineAdapter
         public bool? Strikethrough { get; init; }
         public Color? Foreground { get; init; }
         public Color? Background { get; init; }
+        public bool? ForegroundIsAccent { get; init; }
+        public double? CornerRadius { get; init; }
 
         /// <summary>overlay 已设置字段覆盖 base；未设置字段继承。</summary>
         public ResolvedStyle Overlay(ResolvedStyle overlay) => new()
@@ -101,6 +103,8 @@ internal static class InlineAdapter
             Strikethrough = overlay.Strikethrough ?? Strikethrough,
             Foreground = overlay.Foreground ?? Foreground,
             Background = overlay.Background ?? Background,
+            ForegroundIsAccent = overlay.ForegroundIsAccent ?? ForegroundIsAccent,
+            CornerRadius = overlay.CornerRadius ?? CornerRadius,
         };
 
         public TextStyle ToTextStyle() => new()
@@ -112,6 +116,8 @@ internal static class InlineAdapter
             Strikethrough = Strikethrough,
             Foreground = Foreground,
             Background = Background,
+            ForegroundIsAccent = ForegroundIsAccent,
+            CornerRadius = CornerRadius,
         };
     }
 
@@ -178,6 +184,9 @@ internal static class InlineAdapter
                 {
                     Family = ctx.Style.CodeFontFamily ?? MarkdownStyleOptions.DefaultCodeFontFamily,
                     Background = ctx.Style.CodeBackground,
+                    Foreground = ctx.Style.InlineCodeForeground,
+                    ForegroundIsAccent = ctx.Style.InlineCodeForeground is null,
+                    CornerRadius = ctx.Style.InlineCodeCornerRadius,
                 });
                 EmitText(ref ctx, code.Content, resolved, linkId, linkPayload, depth + 1);
                 break;

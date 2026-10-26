@@ -24,6 +24,13 @@ public sealed record MarkdownStyleOptions
     /// <summary>代码块背景圆角（逻辑像素）。</summary>
     public double CodeCornerRadius { get; init; } = 8;
 
+    /// <summary>行内代码背景圆角（逻辑像素）；与块级 <see cref="CodeCornerRadius"/> 独立。</summary>
+    public double InlineCodeCornerRadius { get; init; } = 4;
+
+    /// <summary>行内代码前景色；<c>null</c> → Emit 时解 <see cref="EnvironmentValues.ResolvedTheme"/>.Accent
+    /// （主题感知，随 light/dark 与外层 theme 切换）。显式色覆盖 accent。</summary>
+    public Color? InlineCodeForeground { get; init; }
+
     /// <summary>代码块右上"复制"按钮：<c>true</c> → 工具行含复制按钮（写真实系统剪贴板）；<c>false</c> → 不产按钮行。</summary>
     public bool ShowCodeCopyButton { get; init; } = true;
 
