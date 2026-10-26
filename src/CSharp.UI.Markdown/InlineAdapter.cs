@@ -92,6 +92,8 @@ internal static class InlineAdapter
         public Color? Background { get; init; }
         public bool? ForegroundIsAccent { get; init; }
         public double? CornerRadius { get; init; }
+        public double? InlineCodePaddingHorizontal { get; init; }
+        public double? InlineCodePaddingVertical { get; init; }
 
         /// <summary>overlay 已设置字段覆盖 base；未设置字段继承。</summary>
         public ResolvedStyle Overlay(ResolvedStyle overlay) => new()
@@ -105,6 +107,8 @@ internal static class InlineAdapter
             Background = overlay.Background ?? Background,
             ForegroundIsAccent = overlay.ForegroundIsAccent ?? ForegroundIsAccent,
             CornerRadius = overlay.CornerRadius ?? CornerRadius,
+            InlineCodePaddingHorizontal = overlay.InlineCodePaddingHorizontal ?? InlineCodePaddingHorizontal,
+            InlineCodePaddingVertical = overlay.InlineCodePaddingVertical ?? InlineCodePaddingVertical,
         };
 
         public TextStyle ToTextStyle() => new()
@@ -118,6 +122,8 @@ internal static class InlineAdapter
             Background = Background,
             ForegroundIsAccent = ForegroundIsAccent,
             CornerRadius = CornerRadius,
+            InlineCodePaddingHorizontal = InlineCodePaddingHorizontal,
+            InlineCodePaddingVertical = InlineCodePaddingVertical,
         };
     }
 
@@ -187,6 +193,8 @@ internal static class InlineAdapter
                     Foreground = ctx.Style.InlineCodeForeground,
                     ForegroundIsAccent = ctx.Style.InlineCodeForeground is null,
                     CornerRadius = ctx.Style.InlineCodeCornerRadius,
+                    InlineCodePaddingHorizontal = ctx.Style.InlineCodePaddingHorizontal,
+                    InlineCodePaddingVertical = ctx.Style.InlineCodePaddingVertical,
                 });
                 EmitText(ref ctx, code.Content, resolved, linkId, linkPayload, depth + 1);
                 break;

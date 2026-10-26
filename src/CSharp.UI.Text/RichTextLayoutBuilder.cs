@@ -38,9 +38,15 @@ internal sealed class RichTextLayoutBuilder
         var graphemeStarts = Graphemes.Starts(text);
         var trimBoundaries = BuildTrimBoundaries(text, graphemeStarts);
         var paragraphs = SplitParagraphs(text);
+        // 行内 padding（盒几何，非纯绘制扩边）：shape 阶段 pad-free 得原始 xAt/glyph points；
+        // Assemble 按行内每 style-range 片段（line fragment）把左 pad 落在片段首个
+        // 字形前、右 pad 落在片段末字形后——生成 padShift[boundary] 再统一偏移
+        // xAt/glyph points/line infos/segments/carets。wrap 按盒宽预算
+        // （padAt 事件 + 行首续片段左 pad），行几何经 padShift 后同样按盒宽重算。
+        var pads = BuildInlinePadding(styled, text.Length);
 
         // —— 第一阶段：模型段 × 段落区间取交 → resolved 字体 → face 子段分次 shape，
-        //    写 xAt（每字素边界累计 X）、收集租约/glyph/字体表。
+        //    写 xAt（字形边界累计 X，pad-free）。
         var fontRuns = new List<FontRun>();
         var glyphRuns = new List<GlyphRun>();
         var fonts = new List<ResolvedFontIdentity>();
@@ -63,7 +69,7 @@ internal sealed class RichTextLayoutBuilder
         var backend = new RichTextBackend(glyphRuns, xAt);
         try
         {
-            var core = Assemble(request, text, graphemeStarts, trimBoundaries, paragraphs, xAt, fontRuns, fonts, backend);
+            var core = Assemble(request, styled, text, graphemeStarts, trimBoundaries, paragraphs, xAt, pads, fontRuns, fonts, backend);
             backend = null!; // 所有权移交 core
             return core;
         }
@@ -73,7 +79,54 @@ internal sealed class RichTextLayoutBuilder
         }
     }
 
-    /// <summary>模型段 → resolved 字体 → 分次 shape（face 子段），写 xAt 并累积租约/glyph/字体表。</summary>
+    /// <summary>按样式区间构造 padding 几何表；无 padding 区间返回 null（零分配）。</summary>
+    /// <returns>
+    /// <para><c>InsidePad[b]</c>：覆盖边界 b 的 padding 区间 pad 值（range.Start ≤ b &lt; range.End）
+    /// —— 折行时行首落在区间内的 fragment 需要补左 pad，用它做 wrap 预算。</para>
+    /// <para><c>CumPadAt[b]</c>：Σ padAt[0..b]（range Start/End 处各 +pad 事件的前缀和）——
+    /// 行内 (lineStart, b] 的 pad 事件 = CumPadAt[b] − CumPadAt[lineStart]。</para>
+    /// </returns>
+    private static (double[] InsidePad, double[] CumPadAt)? BuildInlinePadding(StyledText styled, int textLength)
+    {
+        double[]? insidePad = null;
+        double[]? cumPadAt = null;
+        foreach (var range in styled.Ranges)
+        {
+            var pad = range.Style?.InlineCodePaddingHorizontal ?? 0;
+            if (pad <= 0)
+            {
+                continue;
+            }
+
+            insidePad ??= new double[textLength + 1];
+            cumPadAt ??= new double[textLength + 1];
+            // 差分写入：InsidePad 先存覆盖增量差分，CumPadAt 先存 Start/End +pad
+            // 事件；扫尾一趟原地转前缀和——只 2 个结果数组，不再要 scratch。
+            insidePad[range.Start] += pad;
+            insidePad[range.End] -= pad;
+            cumPadAt[range.Start] += pad;
+            cumPadAt[range.End] += pad;
+        }
+
+        if (insidePad is null)
+        {
+            return null;
+        }
+
+        var cover = 0.0;
+        var cum = 0.0;
+        for (var i = 0; i <= textLength; i++)
+        {
+            cover += insidePad[i];
+            cum += cumPadAt![i];
+            insidePad[i] = cover;
+            cumPadAt[i] = cum;
+        }
+
+        return (insidePad, cumPadAt!);
+    }
+    /// <summary>模型段 → resolved 字体 → 分次 shape（face 子段），写 xAt/beforeXAt
+    /// 并累积租约/glyph/字体表。beforeXAt 为盒坐标（含 padding 增量），xAt 为字形坐标。</summary>
     private void ResolveAndShape(
         RichTextLayoutRequest request,
         StyledText styled,
@@ -175,7 +228,6 @@ internal sealed class RichTextLayoutBuilder
             var runX = runBaseX;
             var glyphIndex = 0;
             var cursor = Graphemes.BoundaryAtOrBefore(graphemeStarts, runStart);
-            // 逐字素边界写 xAt：boundary 是字素起点；该边界的 X = runBaseX + 已处理 advance + 已处理字素 × spacing。
             for (; cursor + 1 < graphemeStarts.Length && graphemeStarts[cursor] < runEnd; cursor++)
             {
                 var boundary = graphemeStarts[cursor];
@@ -185,7 +237,6 @@ internal sealed class RichTextLayoutBuilder
                     runX += glyphs[glyphIndex].Advance;
                     glyphIndex++;
                 }
-
                 if (boundary >= runStart)
                 {
                     xAt[boundary] = runX + (spacing * ord);
@@ -199,7 +250,6 @@ internal sealed class RichTextLayoutBuilder
                 runX += glyphs[glyphIndex].Advance;
                 glyphIndex++;
             }
-
             if (runEnd <= text.Length)
             {
                 xAt[runEnd] = runX + (spacing * ord);
@@ -280,24 +330,37 @@ internal sealed class RichTextLayoutBuilder
     /// <summary>第二阶段：断行 → 行 metrics → 对齐 → canonical segment + caret 表 → core。</summary>
     private RichLayoutCore Assemble(
         RichTextLayoutRequest request,
+        StyledText styled,
         string text,
         int[] graphemeStarts,
         int[] trimBoundaries,
         List<Paragraph> paragraphs,
         double[] xAt,
+        (double[] InsidePad, double[] CumPadAt)? pads,
         List<FontRun> fontRuns,
         List<ResolvedFontIdentity> fonts,
         RichTextBackend backend)
     {
-        var lines = BuildLines(request, text, graphemeStarts, trimBoundaries, xAt, paragraphs);
-        var metrics = ComputeLineMetrics(lines, fontRuns, request);
+        var lines = BuildLines(request, text, graphemeStarts, trimBoundaries, xAt, paragraphs, pads?.InsidePad, pads?.CumPadAt);
+        var metrics = ComputeLineMetrics(lines, fontRuns, request.Text, request);
+
+        // 行内盒 padding：每个 style-range 在每个折行行内是一个连续片段，
+        // 片段首字形前 +hPad、片段末字形后 +hPad——生成 padShift[boundary]
+        // （盒坐标累计偏移）。wrap 已按盒宽预算（含 pad），此处把片段级
+        // padding 并入 xAt（累计 shift）与 glyph points。
+        var padShift = pads is null ? null : ComputeLineFragmentPadShift(styled, lines);
+        if (padShift is not null)
+        {
+            ApplyPadShift(padShift, xAt, backend.GlyphRuns, lines, pads!.Value.InsidePad);
+        }
 
         var lineInfos = new List<TextLineInfo>(lines.Count);
         var top = 0.0;
         for (var i = 0; i < lines.Count; i++)
         {
             var line = lines[i];
-            var contentWidth = xAt[line.TrimEnd] - xAt[line.Start];
+            var contentWidth = xAt[line.TrimEnd] - xAt[line.Start]
+                + (pads?.InsidePad[line.Start] ?? 0) - (pads?.InsidePad[line.TrimEnd] ?? 0);
             lineInfos.Add(new TextLineInfo(line.Start, line.End, new Rect(0, top, contentWidth, metrics[i].Height), top + metrics[i].Baseline));
             top += metrics[i].Height;
         }
@@ -323,7 +386,7 @@ internal sealed class RichTextLayoutBuilder
             }
         }
 
-        var segments = BuildCanonicalSegments(lines, lineInfos, fontRuns, xAt);
+        var segments = BuildCanonicalSegments(lines, lineInfos, fontRuns, xAt, pads?.InsidePad, styled);
 
         var caretXs = new double[graphemeStarts.Length];
         for (var i = 0; i < graphemeStarts.Length; i++)
@@ -331,7 +394,11 @@ internal sealed class RichTextLayoutBuilder
             var stop = graphemeStarts[i];
             var lineIndex = LineIndexForStop(lines, stop);
             var line = lines[lineIndex];
-            caretXs[i] = lineInfos[lineIndex].Bounds.X + (xAt[Math.Min(stop, line.TrimEnd)] - xAt[line.Start]);
+            var stopX = Math.Min(stop, line.TrimEnd);
+            // caret = 行盒原点起算位置：下一片段左 pad 不属本片段盒右缘。
+            caretXs[i] = lineInfos[lineIndex].Bounds.X + (xAt[stopX] - xAt[line.Start])
+                + (pads?.InsidePad[line.Start] ?? 0)
+                - NextFragmentLeftPad(styled, line, stopX, pads?.InsidePad);
         }
 
         var caretsByLine = BuildLineCarets(lines, lineInfos, graphemeStarts, caretXs, text);
@@ -352,6 +419,132 @@ internal sealed class RichTextLayoutBuilder
             caretsByLine,
             rasterBounds,
             backend);
+    }
+
+    /// <summary>
+    /// 按行计算 style-range 片段级 padShift：每个带 hPad 的样式区间与每行取交，
+    /// 交区间的首个 boundary +pad、末尾 boundary +pad（片段级一次，非每字素）。
+    /// padShift[b] = 边界 b 处盒坐标相对字形坐标的偏移；ApplyPadShift 把它并入
+    /// xAt 与 glyph points 后，xAt[b] = 原始字形 X + padShift[b]。
+    /// </summary>
+    private static double[]? ComputeLineFragmentPadShift(StyledText styled, List<LineRecord> lines)
+    {
+        double[]? shift = null;
+        var ranges = styled.Ranges;
+        if (ranges.Count == 0)
+        {
+            return null;
+        }
+
+        for (var lineIndex = 0; lineIndex < lines.Count; lineIndex++)
+        {
+            var line = lines[lineIndex];
+            foreach (var range in ranges)
+            {
+                var pad = range.Style?.InlineCodePaddingHorizontal ?? 0;
+                if (pad <= 0)
+                {
+                    continue;
+                }
+
+                // 该 style range 与当前行的交区间 = 本行内该 range 的片段。
+                var fragStart = Math.Max(range.Start, line.Start);
+                var fragEnd = Math.Min(range.End, line.TrimEnd);
+                if (fragStart >= fragEnd)
+                {
+                    continue;
+                }
+
+                shift ??= new double[styled.Text.Length + 1];
+                shift[fragStart] += pad;
+                shift[fragEnd] += pad;
+            }
+        }
+
+        return shift;
+    }
+
+    /// <summary>
+    /// 把 padShift 并入 xAt 与全部 GlyphRun.Points（同一逻辑坐标系）。
+    /// padShift[b] 是 boundary b 处所有 line-fragment pad 之和——行共享边界上
+    /// 会同时含上行片段右 pad 与本行片段左 pad，逐行累计时须拆开：
+    /// 本行行首只计左 pad（insidePad[b]，覆盖即片段起），
+    /// 本行片段末只计右 pad（insidePad[b-1]，前一边界仍被覆盖即片段止）。
+    /// </summary>
+    private static void ApplyPadShift(double[] padShift, double[] xAt, List<GlyphRun> glyphRuns, List<LineRecord> lines, double[] insidePad)
+    {
+        // 逐行累计：行首 boundary 是盒原点（不移——左 pad 只把其后的字形/边界右推），
+        // 行内其余 boundary 计 padShift（行内 range Start/End 事件），行尾计片段右 pad。
+        var lineIndex = 0;
+        var cumulative = 0.0;
+        for (var i = 0; i < xAt.Length; i++)
+        {
+            while (lineIndex + 1 < lines.Count && i > lines[lineIndex].TrimEnd)
+            {
+                lineIndex++;
+                cumulative = 0;
+            }
+
+            var line = lines[lineIndex];
+            double delta;
+            if (i == line.Start && i == line.TrimEnd)
+            {
+                delta = insidePad[i] + (i > 0 ? insidePad[i - 1] : 0);
+            }
+            else if (i == line.Start)
+            {
+                delta = insidePad[i];
+            }
+            else if (i == line.TrimEnd)
+            {
+                delta = insidePad[i - 1];
+            }
+            else
+            {
+                delta = padShift[i];
+            }
+            cumulative += delta;
+            xAt[i] += cumulative;
+        }
+
+        // glyph 画布偏移 = 原始字形 X + 其所在字素边界的行内累计 shift（同 xAt 路径）。
+        foreach (var run in glyphRuns)
+        {
+            for (var i = 0; i < run.Points.Length; i++)
+            {
+                var cluster = run.Clusters[i];
+                var li = 0;
+                var acc = 0.0;
+                for (var b = 0; b <= cluster; b++)
+                {
+                    while (li + 1 < lines.Count && b > lines[li].TrimEnd)
+                    {
+                        li++;
+                        acc = 0;
+                    }
+
+                    var line = lines[li];
+                    if (b == line.Start && b == line.TrimEnd)
+                    {
+                        acc += insidePad[b] + (b > 0 ? insidePad[b - 1] : 0);
+                    }
+                    else if (b == line.Start)
+                    {
+                        acc += insidePad[b];
+                    }
+                    else if (b == line.TrimEnd)
+                    {
+                        acc += insidePad[b - 1];
+                    }
+                    else
+                    {
+                        acc += padShift[b];
+                    }
+                }
+
+                run.Points[i] = new SKPoint(run.Points[i].X + (float)acc, run.Points[i].Y);
+            }
+        }
     }
 
     /// <summary>
@@ -472,15 +665,19 @@ internal sealed class RichTextLayoutBuilder
         return result;
     }
 
-    /// <summary>逐行 metrics：行高 = max(显式 LineHeight, 行内 max(ascent)+max(descent))；baseline 对齐。</summary>
-    private List<LineMetrics> ComputeLineMetrics(List<LineRecord> lines, List<FontRun> fontRuns, RichTextLayoutRequest request)
+    /// <summary>逐行 metrics：行高 = max(显式 LineHeight, 行内 max(ascent)+max(descent)+2×max(vPad))；
+    /// baseline 按不含 vPad 的字高定位（vPad 只抬高行盒、不改字形基线）。</summary>
+    private List<LineMetrics> ComputeLineMetrics(List<LineRecord> lines, List<FontRun> fontRuns, StyledText styled, RichTextLayoutRequest request)
     {
         var result = new List<LineMetrics>(lines.Count);
         var runIndex = 0;
+        var rangeIndex = 0;
+        var ranges = styled.Ranges;
         foreach (var line in lines)
         {
             var maxAscent = 0.0;
             var maxDescent = 0.0;
+            var maxVPad = 0.0;
             var any = false;
             while (runIndex < fontRuns.Count && fontRuns[runIndex].End <= line.Start)
             {
@@ -495,15 +692,31 @@ internal sealed class RichTextLayoutBuilder
                 any = true;
             }
 
+            while (rangeIndex < ranges.Count && ranges[rangeIndex].End <= line.Start)
+            {
+                rangeIndex++;
+            }
+
+            for (var i = rangeIndex; i < ranges.Count && ranges[i].Start < line.TrimEnd; i++)
+            {
+                var vPad = ranges[i].Style?.InlineCodePaddingVertical ?? 0;
+                if (vPad > maxVPad)
+                {
+                    maxVPad = vPad;
+                }
+            }
+
             if (!any)
             {
                 var metrics = _fonts.GetFontInstance(request.ParagraphFont).Font.Metrics;
                 maxAscent = Math.Max(0.1, -metrics.Ascent);
                 maxDescent = Math.Max(0.1, metrics.Descent);
             }
-
             var fontHeight = maxAscent + maxDescent;
-            var height = request.LineHeight > 0 ? Math.Max(request.LineHeight, fontHeight) : Math.Max(1.0, fontHeight);
+            var paddedHeight = fontHeight + (2 * maxVPad);
+            var height = request.LineHeight > 0 ? Math.Max(request.LineHeight, paddedHeight) : Math.Max(1.0, paddedHeight);
+            // vPad 上下对称分在字形上下（top+bottom 均可见留白，非全堆 bottom）：
+            // baseline 仍按 (height - fontHeight)/2 + ascent 定位，即字形在行盒内居中。
             var baseline = (height - fontHeight) / 2 + maxAscent;
             result.Add(new LineMetrics(height, baseline));
         }
@@ -519,7 +732,9 @@ internal sealed class RichTextLayoutBuilder
         List<LineRecord> lines,
         List<TextLineInfo> lineInfos,
         List<FontRun> fontRuns,
-        double[] xAt)
+        double[] xAt,
+        double[]? insidePad,
+        StyledText styled)
     {
         var result = new List<RichTextSegment>();
         var runIndex = 0;
@@ -543,12 +758,80 @@ internal sealed class RichTextLayoutBuilder
                 {
                     continue;
                 }
-
-                result.Add(new RichTextSegment(i, start, end, run.FontId, offsetX + (xAt[start] - xAt[line.Start]), xAt[end] - xAt[start], baseline));
+                // inset = 本段自身 style pad，仅当 start/end 恰为片段边界：
+                // 片段边界 = 行首/TrimEnd 或该段模型段的 Start/End（style range 边界）。
+                // padShift[b] 不能直接用——相邻行片段在同一 boundary 各计一次会翻倍。
+                var modelSeg = styled.Segments[ModelSegmentAt(styled, start)];
+                var segPad = modelSeg.FontSignature.InlineCodePaddingHorizontal ?? 0;
+                var insetLeft = segPad > 0 && (start == line.Start || start == modelSeg.Start) ? segPad : 0;
+                var insetRight = segPad > 0 && (end == line.TrimEnd || end == modelSeg.End) ? segPad : 0;
+                // Width = 盒右缘 − 字形起点：xAt[end] 的累计 shift 含本片段右 pad
+                // 与下一片段（相邻 range 起点或下行续片段）的左 pad——只保留本片段
+                // 右 pad，下一片段的左 pad 属于下一盒（否则相邻盒重叠一个 pad）。
+                var nextLeft = NextFragmentLeftPad(styled, line, end, insidePad);
+                result.Add(new RichTextSegment(
+                    i, start, end, run.FontId,
+                    offsetX + (xAt[start] - xAt[line.Start]) + (insidePad?[line.Start] ?? 0),
+                    xAt[end] - xAt[start] - nextLeft,
+                    baseline,
+                    insetLeft,
+                    insetRight));
             }
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// 边界 <paramref name="end"/> 处属于"下一片段"的左 pad：
+    /// 下一行续片段（end == line.TrimEnd 且被 padded range 覆盖）或同行内
+    /// 恰有 padded range 以 end 为 Start——该 pad 进 advance 但不属于本段盒宽。
+    /// </summary>
+    private static double NextFragmentLeftPad(StyledText styled, LineRecord line, int end, double[]? insidePad)
+    {
+        if (insidePad is null || insidePad[end] <= 0)
+        {
+            return 0;
+        }
+
+        if (end == line.TrimEnd)
+        {
+            return insidePad[end];
+        }
+
+        foreach (var range in styled.Ranges)
+        {
+            if (range.Start == end && (range.Style?.InlineCodePaddingHorizontal ?? 0) > 0)
+            {
+                return range.Style!.InlineCodePaddingHorizontal!.Value;
+            }
+        }
+
+        return 0;
+    }
+
+    /// <summary>该 UTF-16 偏移所在的模型段下标（StyledText.Segments 升序，二分定位）。</summary>
+    private static int ModelSegmentAt(StyledText styled, int offset)
+    {
+        var segments = styled.Segments;
+        var low = 0;
+        var high = segments.Count - 1;
+        var candidate = 0;
+        while (low <= high)
+        {
+            var mid = low + ((high - low) / 2);
+            if (segments[mid].Start <= offset)
+            {
+                candidate = mid;
+                low = mid + 1;
+            }
+            else
+            {
+                high = mid - 1;
+            }
+        }
+
+        return candidate;
     }
 
     // —— 与 TextLayoutBuilder 同域的工具（私有复制；不公开第二套排版 API）。 ——
@@ -627,7 +910,9 @@ internal sealed class RichTextLayoutBuilder
         int[] graphemeStarts,
         int[] trimBoundaries,
         double[] xAt,
-        List<Paragraph> paragraphs)
+        List<Paragraph> paragraphs,
+        double[]? insidePad,
+        double[]? cumPadAt)
     {
         var lines = new List<LineRecord>();
         var wrap = request.Wrapping == TextWrapping.Wrap && !double.IsPositiveInfinity(request.MaxWidth);
@@ -654,8 +939,7 @@ internal sealed class RichTextLayoutBuilder
                     {
                         break;
                     }
-
-                    if (MeasuredWidth(text, graphemeStarts, trimBoundaries, xAt, lineStart, cursor + 1) > maxWidth)
+                    if (MeasuredWidth(text, graphemeStarts, trimBoundaries, xAt, insidePad, cumPadAt, lineStart, cursor + 1) > maxWidth)
                     {
                         break;
                     }
@@ -725,11 +1009,30 @@ internal sealed class RichTextLayoutBuilder
         return boundary < paragraph.ContentEnd && Graphemes.IsBreakableScript(Graphemes.CodepointAt(text, boundary));
     }
 
-    private static double MeasuredWidth(string text, int[] graphemeStarts, int[] trimBoundaries, double[] xAt, int lineStart, int boundaryIndex)
+    private static double MeasuredWidth(
+        string text,
+        int[] graphemeStarts,
+        int[] trimBoundaries,
+        double[] xAt,
+        double[]? insidePad,
+        double[]? cumPadAt,
+        int lineStart,
+        int boundaryIndex)
     {
         var boundary = graphemeStarts[boundaryIndex];
         var trimmed = Math.Max(lineStart, graphemeStarts[trimBoundaries[boundaryIndex]]);
-        return xAt[trimmed] - xAt[lineStart];
+        var width = xAt[trimmed] - xAt[lineStart];
+        if (insidePad is not null && cumPadAt is not null)
+        {
+            // 行首续片段左 pad（行首被 padding 区间覆盖时计一次）+
+            // (lineStart, trimmed] 内的 range Start/End pad 事件 +
+            // 行尾若仍被区间覆盖，行尾 fragment 的右 pad。
+            width += insidePad[lineStart]
+                + (cumPadAt[trimmed] - cumPadAt[lineStart])
+                + insidePad[trimmed];
+        }
+
+        return width;
     }
 
     private static int LineIndexForStop(List<LineRecord> lines, int stop)

@@ -62,6 +62,14 @@ public sealed record TextStyle
 
     /// <summary>删除线；<c>null</c> 继承段落默认。</summary>
     public bool? Strikethrough { get; init; }
+
+    /// <summary>行内元素背景矩形左右单侧内边距（逻辑像素）；<c>null</c> 或 <c>0</c> 表示无。
+    /// 参与分段几何签名——同文本同字体仅 padding 不同的两请求排版重解。</summary>
+    public double? InlineCodePaddingHorizontal { get; init; }
+
+    /// <summary>行内元素背景矩形上下单侧内边距（逻辑像素）；<c>null</c> 或 <c>0</c> 表示无。
+    /// 参与分段几何签名——同文本同字体仅 padding 不同的两请求排版重解。</summary>
+    public double? InlineCodePaddingVertical { get; init; }
 }
 
 /// <summary>
@@ -84,13 +92,19 @@ public sealed record TextPaintStyle
 }
 
 /// <summary>
-/// 一段展示文本的几何相关样式字段签名（Family/Size/Weight/Italic）。
+/// 一段展示文本的几何相关样式字段签名（Family/Size/Weight/Italic/行内 padding）。
 /// 颜色、装饰与 payload 不在其中——只含会改变 shape/几何的字段。
 /// </summary>
-internal readonly record struct StyledTextFontSignature(FontFamily? Family, double? Size, FontWeight? Weight, bool? Italic)
+internal readonly record struct StyledTextFontSignature(
+    FontFamily? Family,
+    double? Size,
+    FontWeight? Weight,
+    bool? Italic,
+    double? InlineCodePaddingHorizontal,
+    double? InlineCodePaddingVertical)
 {
     /// <summary>全部字段继承段落默认的签名。</summary>
-    public static readonly StyledTextFontSignature Inherit = new(null, null, null, null);
+    public static readonly StyledTextFontSignature Inherit = new(null, null, null, null, null, null);
 }
 
 /// <summary>
@@ -355,7 +369,13 @@ public sealed class StyledText : IEquatable<StyledText>
             segments[i] = new StyledTextSegment(
                 start,
                 boundaries[i + 1],
-                new StyledTextFontSignature(style?.Family, style?.Size, style?.Weight, style?.Italic));
+                new StyledTextFontSignature(
+                    style?.Family,
+                    style?.Size,
+                    style?.Weight,
+                    style?.Italic,
+                    style?.InlineCodePaddingHorizontal,
+                    style?.InlineCodePaddingVertical));
         }
 
         return segments;

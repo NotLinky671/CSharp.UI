@@ -679,13 +679,49 @@ public sealed class StubTextService : ITextService, IRichTextService
             return seg;
         }
 
+        // 行内 padding（几何，与真实排版同源）：每个带 hPad 的样式区间在 Start/End 各一次。
+        // insidePad[b] = 覆盖 b 的区间 pad 值（行首续片段左 pad）；cumPadAt[b] =
+        // Start/End +pad 事件前缀和（行内事件区间和）。无 padding 区间为 null——
+        // 零分配；差分写入后原地转前缀和，stub 与 Skia builder 共用同一几何契约。
+        double[]? insidePad = null;
+        double[]? cumPadAt = null;
+        foreach (var range in styled.Ranges)
+        {
+            var pad = range.Style?.InlineCodePaddingHorizontal ?? 0;
+            if (pad <= 0)
+            {
+                continue;
+            }
+
+            insidePad ??= new double[text.Length + 1];
+            cumPadAt ??= new double[text.Length + 1];
+            insidePad[range.Start] += pad;
+            insidePad[range.End] -= pad;
+            cumPadAt[range.Start] += pad;
+            cumPadAt[range.End] += pad;
+        }
+
+        if (insidePad is not null)
+        {
+            var cover = 0.0;
+            var cum = 0.0;
+            for (var b = 0; b <= text.Length; b++)
+            {
+                cover += insidePad[b];
+                cum += cumPadAt![b];
+                insidePad[b] = cover;
+                cumPadAt[b] = cum;
+            }
+        }
+
+        // vPad 在行 metrics 处按行内覆盖 style range 的最大 Vertical 值进入行高。
         double WidthOfSegment(int modelSegment)
         {
             var size = styled.Segments[modelSegment].FontSignature.Size ?? request.ParagraphFont.Size;
             return Math.Max(1, size * CharWidthScale);
         }
-
         // 断行：wrap 时按累计宽贪心切；硬换行切段落（\r\n 计一个 terminator）。
+
         var lines = new List<(int Start, int End, int TrimEnd)>();
         var lineStart = 0;
         var lineWidth = 0.0;
@@ -709,22 +745,53 @@ public sealed class StubTextService : ITextService, IRichTextService
                 continue;
             }
 
+            // 候选行宽 = 字素宽累计 + 行内 pad 事件（与真实 MeasuredWidth 同源：
+            // 行首续片段左 pad + (lineStart, b] 内 Start/End 事件 + 行尾 fragment 右 pad）。
             var w = WidthOfSegment(SegmentAt(start));
+            var candidate = lineWidth + w;
+            if (insidePad is not null && cumPadAt is not null)
+            {
+                candidate += insidePad[lineStart]
+                    + (cumPadAt[start] - cumPadAt[lineStart])
+                    + insidePad[start];
+            }
+
             if (request.Wrapping == TextWrapping.Wrap && !double.IsPositiveInfinity(request.MaxWidth)
-                && i > lineFirst && lineWidth + w > request.MaxWidth)
+                && i > lineFirst && candidate > request.MaxWidth)
             {
                 lines.Add((lineStart, start, start));
                 lineStart = start;
                 lineWidth = 0;
-                lineFirst = i;
             }
-
             lineWidth += w;
         }
+
 
         if (lineStart < text.Length || lines.Count == 0)
         {
             lines.Add((lineStart, text.Length, text.Length));
+        }
+        // 行内盒 padding（盒坐标偏移，与真实排版 padShift 同源）：
+        // 每行内该 style range 的片段（line fragment）首 boundary +pad、末 boundary +pad。
+        var padShift = new double[text.Length + 1];
+        foreach (var range in styled.Ranges)
+        {
+            var pad = range.Style?.InlineCodePaddingHorizontal ?? 0;
+            if (pad <= 0)
+            {
+                continue;
+            }
+
+            foreach (var (ls, le, ltrim) in lines)
+            {
+                var fragStart = Math.Max(range.Start, ls);
+                var fragEnd = Math.Min(range.End, ltrim);
+                if (fragStart < fragEnd)
+                {
+                    padShift[fragStart] += pad;
+                    padShift[fragEnd] += pad;
+                }
+            }
         }
 
         // 行/segment/caret 生成。
@@ -749,9 +816,17 @@ public sealed class StubTextService : ITextService, IRichTextService
                     maxSize = Math.Max(maxSize, styled.Segments[SegmentAt(clusters[i])].FontSignature.Size ?? request.ParagraphFont.Size);
                 }
             }
-
             var fontHeight = maxSize * 1.25;
-            var lineHeight = request.LineHeight > 0 ? Math.Max(request.LineHeight, fontHeight) : fontHeight;
+            var maxVPad = 0.0;
+            foreach (var range in styled.Ranges)
+            {
+                if (range.Start < ltrim && range.End > ls)
+                {
+                    maxVPad = Math.Max(maxVPad, range.Style?.InlineCodePaddingVertical ?? 0);
+                }
+            }
+            var paddedHeight = fontHeight + (2 * maxVPad);
+            var lineHeight = request.LineHeight > 0 ? Math.Max(request.LineHeight, paddedHeight) : paddedHeight;
             var baseline = top + ((lineHeight - fontHeight) / 2) + (fontHeight * 0.8);
 
             // 行内 segment：同模型段的连续簇聚合；X 从行起点累计（含字距）。
@@ -785,10 +860,15 @@ public sealed class StubTextService : ITextService, IRichTextService
                     fontIds[font] = fontId;
                 }
 
-                segments.Add(new RichTextSegment(li, runStart, boundary, fontId, runX, runW, baseline));
+                // inset = 本段自身 style pad，仅当 runStart/boundary 恰为片段边界
+                // （行首/TrimEnd 或模型段 Start/End）——padShift[b] 相邻行片段会翻倍。
+                var segPad = modelSeg.FontSignature.InlineCodePaddingHorizontal ?? 0;
+                var insetLeft = segPad > 0 && (runStart == ls || runStart == modelSeg.Start) ? segPad : 0;
+                var insetRight = segPad > 0 && (boundary == ltrim || boundary == modelSeg.End) ? segPad : 0;
+                segments.Add(new RichTextSegment(li, runStart, boundary, fontId, runX, runW + insetRight, baseline, insetLeft, insetRight));
                 runStart = -1;
+                x += insetRight; // 右 pad 是真实 advance——后续字形/caret/行宽都要含。
             }
-
             for (var i = 0; i + 1 < clusters.Count; i++)
             {
                 var cs = clusters[i];
@@ -816,6 +896,11 @@ public sealed class StubTextService : ITextService, IRichTextService
                     FlushRun(cs);
                     runStart = cs;
                     runSeg = seg;
+                    // 左 padding：advance 只加本片段自己的左 pad（上行尾片段右 pad
+                    // 已由上一片段的 FlushRun insetRight 计入 x，不重复）。
+                    var segPad = styled.Segments[seg].FontSignature.InlineCodePaddingHorizontal ?? 0;
+                    var leftPad = segPad > 0 && (cs == ls || cs == styled.Segments[seg].Start) ? segPad : 0;
+                    x += leftPad;
                     runX = x;
                     runW = 0;
                 }
@@ -829,7 +914,6 @@ public sealed class StubTextService : ITextService, IRichTextService
                 stops.Add(next);
                 xs.Add(x);
             }
-
             FlushRun(ltrim);
 
             // 软换行共享 offset / 行尾：行末 stop 若已在字素循环写过（next==le 且下一行 Start==le），

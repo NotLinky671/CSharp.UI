@@ -510,6 +510,99 @@ public class RichTextServiceTests
         Assert.True(spaced.Size.Width >= tight.Size.Width + (3 * 4) - 1);
     }
 
+    // ---------------------------------------------------------------- 行内 code padding（真实 Skia）
+
+    [Fact]
+    public void 行内Padding_pure英文_token宽增两倍pad()
+    {
+        // 'Subagent' 纯 ASCII：pad=0 与 hPad=5 的 code 段盒宽差 = 左右 pad 各 5。
+        const double pad = 5;
+        var plain = StyledText.Create("Subagent");
+        var padded = new StyledText("Subagent",
+            [new TextStyleRange(0, 8, new TextStyle { InlineCodePaddingHorizontal = pad })], null);
+        using var service = new SkiaTextService();
+        using var layoutPlain = service.Layout(Request(plain));
+        using var layoutPadded = service.Layout(Request(padded));
+
+        var segPlain = Assert.Single(layoutPlain.Segments);
+        var segPadded = Assert.Single(layoutPadded.Segments);
+
+        // segment.X = 盒原点起算的字形 X（左 pad 在其左侧）；Width 已含右 pad——
+        // 盒 = [X − IL, X + W)：盒左缘不变、盒右缘 +2×pad。
+        Assert.Equal(pad, segPadded.X - segPlain.X, 3);
+        Assert.Equal(pad, segPadded.Width - segPlain.Width, 3);
+        Assert.Equal(pad, segPadded.InsetLeft, 3);
+        Assert.Equal(pad, segPadded.InsetRight, 3);
+
+        var boxLeftDelta = (segPadded.X - segPadded.InsetLeft) - (segPlain.X - segPlain.InsetLeft);
+        var boxRightDelta = (segPadded.X + segPadded.Width) - (segPlain.X + segPlain.Width);
+        Assert.Equal(0, boxLeftDelta, 3);
+        Assert.Equal(2 * pad, boxRightDelta - boxLeftDelta, 3);
+    }
+
+    [Fact]
+    public void 行内Padding_中英混排_token宽同样增两倍pad()
+    {
+        // '中Subagent文'：CJK/拉丁混排同 face 或跨 face——盒宽差仍是 2×pad。
+        const double pad = 5;
+        var plain = StyledText.Create("中Subagent文");
+        var padded = new StyledText("中Subagent文",
+            [new TextStyleRange(0, 10, new TextStyle { InlineCodePaddingHorizontal = pad })], null);
+        using var service = new SkiaTextService();
+        using var layoutPlain = service.Layout(Request(plain));
+        using var layoutPadded = service.Layout(Request(padded));
+
+        // 盒几何与 face 分次无关：段合并/拆分不影响盒左右缘——按行盒缘求并。
+        static (double Left, double Right) Box(RichTextLayoutResult layout)
+        {
+            var left = layout.Segments.Min(s => s.X - s.InsetLeft);
+            var right = layout.Segments.Max(s => s.X + s.Width);
+            return (left, right);
+        }
+
+        var plainBox = Box(layoutPlain);
+        var paddedBox = Box(layoutPadded);
+        Assert.Equal(plainBox.Left, paddedBox.Left, 3);
+        Assert.Equal(2 * pad, paddedBox.Right - plainBox.Right, 3);
+    }
+
+    [Fact]
+    public void 行内Padding_wrap预算_行盒宽不越MaxWidth()
+    {
+        // MaxWidth < token 宽 但 > 单 glyph + 2×pad：每行 fragment 盒宽含完整
+        // 左右 pad 且不越 MaxWidth（否则 box 溢出是几何 bug）。
+        const double pad = 5;
+        var styled = new StyledText("codecode",
+            [new TextStyleRange(0, 8, new TextStyle { InlineCodePaddingHorizontal = pad })], null);
+        using var service = new SkiaTextService();
+
+        // 先量出全 token 的 advance 与单 glyph 宽，选 MaxWidth 介于两者之间。
+        using var full = service.Layout(Request(styled));
+        var tokenAdvance = full.Lines[0].Bounds.Width;
+        var glyphAdvance = full.CaretXs[1] - full.CaretXs[0];
+        var maxWidth = glyphAdvance + (2 * pad) + 2;
+        Assert.True(maxWidth < tokenAdvance, "MaxWidth 必须小于整 token 宽以触发拆行。");
+        Assert.True(maxWidth > glyphAdvance + (2 * pad), "MaxWidth 必须容下单 glyph 盒（含完整 pad）。");
+
+        using var layout = service.Layout(Request(styled, maxWidth: maxWidth, wrapping: TextWrapping.Wrap));
+        Assert.True(layout.Lines.Count > 1, "窄宽应触发断行。");
+
+        for (var lineIndex = 0; lineIndex < layout.Lines.Count; lineIndex++)
+        {
+            var frags = layout.Segments.Where(s => s.LineIndex == lineIndex).ToArray();
+            if (frags.Length == 0)
+            {
+                continue;
+            }
+
+            var boxLeft = frags.Min(s => s.X - s.InsetLeft);
+            var boxRight = frags.Max(s => s.X + s.Width);
+            Assert.True(boxRight - boxLeft <= maxWidth + 0.5,
+                $"第{lineIndex}行盒宽 {boxRight - boxLeft} 应 ≤ MaxWidth {maxWidth}。");
+        }
+    }
+
+
     // ---------------------------------------------------------------- 辅助
 
     private static Color FindDominantNonTransparent(PixelBuffer buffer, RichTextSegment segment, TextLineInfo line)

@@ -76,8 +76,9 @@ var view = new ScrollView(
 |---|---|---|
 | `HeadingSizes` | `[28,24,20,18,16,14]` | H1–H6 字号（逻辑像素） |
 | `CodeFontFamily` | `DefaultCodeFontFamily` = `FontFamily.FromName("Cascadia Mono").WithFallbacks("Consolas","Menlo","monospace")` | 行内/围栏代码字体；null → 默认链 |
-| `CodeBackground` | `Color(128,128,128,40)` | `null` → 代码块无底色矩形 |
+| `CodeBackground` | `Color(128,128,128,40)` | 行内/围栏代码底色；`null` → 无底色矩形（**盒几何仍保留**——padding/圆角/advance/行高不变，只不画背景；CSS 语义：background 与 padding 正交） |
 | `CodePadding` / `CodeCornerRadius` | `8` / `8` | 代码块内边距 / 背景圆角（逻辑像素） |
+| `InlineCodePaddingHorizontal` / `InlineCodePaddingVertical` | `5` / `2` | 行内代码盒内边距（**单侧**，逻辑像素）；进入真实排版——advance/wrap 预算/caret/行高，不是把背景矩形外扩；`0` → 紧凑（无内边距，退回纯字形宽） |
 | `InlineCodeCornerRadius` | `4` | **行内**代码背景圆角（逻辑像素），与块级独立 |
 | `InlineCodeForeground` | `null` | 行内代码前景色；`null` → Emit 时解 `theme.Accent`（light/dark 感知），显式色覆盖 |
 | `ShowCodeCopyButton` / `CodeCopyLabel` | `true` / `"Copy"` | 右上工具行复制按钮（写系统剪贴板）/ 标签文本 |
@@ -108,6 +109,23 @@ Style = new MarkdownStyleOptions { ShowCodeCopyButton = false, CodeCornerRadius 
 // 换标签文案（本地化）。
 Style = new MarkdownStyleOptions { CodeCopyLabel = "复制" }
 ```
+
+## 行内代码（`` `code` ``)
+
+行内代码渲染为带内边距的盒：背景矩形左右/上下各扩
+`InlineCodePaddingHorizontal`（默认 5)/`InlineCodePaddingVertical`（默认 2)——
+padding 进入真实排版盒几何（advance、wrap 预算、caret、行高），不是把
+`RectangleCommand` 外扩。折行时每个行内片段（line fragment）独立成盒，各自带
+完整左右 pad，盒宽不越 `MaxWidth`（单字形盒装不下时硬断，属边界情形）。
+
+`CodeBackground = null` 时盒几何保留（padding/advance/行高不变）只不画背景——
+background 与 padding 正交，与 CSS 盒语义一致。
+`InlineCodePaddingHorizontal = 0` / `InlineCodePaddingVertical = 0` → 紧凑
+（无内边距，退回纯字形宽/行高）。
+
+默认外观对齐常见 Markdown 参考效果：主题感知 accent 前景
+（`InlineCodeForeground = null` → `theme.Accent`)、中性半透明灰底
+（`CodeBackground`)、圆角 4（`InlineCodeCornerRadius`)——非硬编码高亮色。
 
 ## 图片策略（`MarkdownImagePolicy`)
 

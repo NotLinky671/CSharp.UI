@@ -31,6 +31,13 @@ public sealed record MarkdownStyleOptions
     /// （主题感知，随 light/dark 与外层 theme 切换）。显式色覆盖 accent。</summary>
     public Color? InlineCodeForeground { get; init; }
 
+    /// <summary>行内代码背景矩形左右单侧内边距（逻辑像素）；进入排版 advance/wrap/caret/行高，
+    /// 不是单纯把背景矩形外扩。0 → 无内边距。</summary>
+    public double InlineCodePaddingHorizontal { get; init; } = 5;
+
+    /// <summary>行内代码背景矩形上下单侧内边距（逻辑像素）；进入行高。0 → 无内边距。</summary>
+    public double InlineCodePaddingVertical { get; init; } = 2;
+
     /// <summary>代码块右上"复制"按钮：<c>true</c> → 工具行含复制按钮（写真实系统剪贴板）；<c>false</c> → 不产按钮行。</summary>
     public bool ShowCodeCopyButton { get; init; } = true;
 

@@ -60,7 +60,18 @@ public sealed record ResolvedFontIdentity
 /// <param name="X">段在行内的水平起点（已含对齐偏移）。</param>
 /// <param name="Width">段宽（advance 之和）。</param>
 /// <param name="Baseline">该段绘制基线 Y（不同字号段各自有基线，行盒内对齐到行基线）。</param>
-public readonly record struct RichTextSegment(int LineIndex, int Start, int End, int FontId, double X, double Width, double Baseline);
+/// <param name="InsetLeft">行内左内边距（逻辑像素）；pill 背景向左延伸该量。0 为默认。</param>
+/// <param name="InsetRight">行内右内边距（逻辑像素）；pill 背景向右延伸该量。0 为默认。</param>
+public readonly record struct RichTextSegment(
+    int LineIndex,
+    int Start,
+    int End,
+    int FontId,
+    double X,
+    double Width,
+    double Baseline,
+    double InsetLeft = 0,
+    double InsetRight = 0);
 
 /// <summary>
 /// 一次富文本排版请求（GeometryKey）：几何相关字段全值相等即排版缓存命中；
@@ -473,11 +484,13 @@ public sealed class RichTextLayoutResult : IDisposable
             {
                 var left = core.LocalCaretXInLine(lineIndex, selStart) ?? line.Bounds.X;
                 var right = core.LocalCaretXInLine(lineIndex, selEnd) ?? line.Bounds.Right;
+                // caret X = 字形起点（盒左缘 + 左 pad）：段起于片段边界时左缘再减
+                // 该段 InsetLeft，命中/选择矩形与 Emit pill 的盒几何同源。
+                left -= LeftInsetAtStart(core, lineIndex, selStart);
                 if (right < left)
                 {
                     (left, right) = (right, left);
                 }
-
                 rects.Add(new Rect(left, line.Bounds.Y, Math.Max(0, right - left), line.Bounds.Height));
             }
 
@@ -498,6 +511,50 @@ public sealed class RichTextLayoutResult : IDisposable
         }
 
         return rects;
+    }
+
+    /// <summary>
+    /// selStart 恰为某 canonical segment 起点时返回其 InsetLeft（片段左 pad），否则 0；
+    /// 用于把命中/选择矩形左缘扩到与 Emit pill 相同的盒左缘。
+    /// </summary>
+    private static double LeftInsetAtStart(RichLayoutCore core, int lineIndex, int selStart)
+    {
+        var segments = core.Segments;
+        // canonical segments 按行分组且行内升序——行内二分定位含 selStart 的段。
+        var low = 0;
+        var high = segments.Count - 1;
+        while (low <= high)
+        {
+            var mid = low + ((high - low) / 2);
+            var seg = segments[mid];
+            if (seg.LineIndex != lineIndex)
+            {
+                if (seg.LineIndex < lineIndex)
+                {
+                    low = mid + 1;
+                }
+                else
+                {
+                    high = mid - 1;
+                }
+                continue;
+            }
+
+            if (selStart < seg.Start)
+            {
+                high = mid - 1;
+            }
+            else if (selStart >= seg.End)
+            {
+                low = mid + 1;
+            }
+            else
+            {
+                return seg.Start == selStart ? seg.InsetLeft : 0;
+            }
+        }
+
+        return 0;
     }
 
     /// <summary>返回 [start, end) 范围内文本的包围矩形；范围为空时返回零宽矩形。</summary>

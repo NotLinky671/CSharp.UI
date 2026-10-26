@@ -1,0 +1,12 @@
+﻿run=run1 2026-10-26T17:28:10.8472689+08:00
+build exit=0
+offscreen exit=1
+run=run2 2026-10-26T17:33:29.4042276+08:00
+build exit=0
+offscreen exit=1
+run=run3 2026-10-26T17:34:54.7694620+08:00
+build exit=0
+offscreen exit=1
+run=run4 2026-10-26T17:46:00.2698013+08:00
+build exit=0
+offscreen exit=0

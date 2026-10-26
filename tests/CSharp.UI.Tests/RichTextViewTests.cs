@@ -205,6 +205,158 @@ public class RichTextViewTests
             "首个 code 片段不应覆盖前导 'aaaa ' 段。");
     }
 
+    [Fact]
+    public void 行内代码_几何Padding_进LineAdvance与Height()
+    {
+        // padding 是排版几何：段 advance 扩 padding×2、行高扩 2×vPad（不进 paint），
+        // 相邻普通字被真实推开、非覆盖式背景扩。code 在 [5, 9) "code"。
+        var codeBg = new Color(128, 128, 128, 60);
+        var styled = Styled(
+            "aaaa code bbbb",
+            new TextStyleRange(5, 9, new TextStyle
+            {
+                Background = codeBg,
+                CornerRadius = 4,
+                ForegroundIsAccent = true,
+                InlineCodePaddingHorizontal = 5,
+                InlineCodePaddingVertical = 2,
+            }));
+        var app = App(new RichText(styled));
+        var node = RichNode(app);
+        var commands = app.Frame();
+
+        var layout = ((RichText.RichTextViewCache)node.ViewCache!).Layout!;
+        var codeSegment = Assert.Single(layout.Segments, s => s.Start >= 5 && s.Start < 9 && s.End <= 9);
+        var plainSegment = Assert.Single(layout.Segments, s => s.End <= 5 && s.Start < 5);
+        var bgRect = Assert.Single(commands.OfType<RectangleCommand>(), c => c.Fill == codeBg);
+
+        // code 段盒宽 = glyph + 10（左右 pad 各 5）；InsetLeft/Right 各 = 5；
+        // caret 差含 pad 增量（左 pad 推 caret、右 pad 收 caret）。
+        Assert.Equal(5, codeSegment.InsetLeft, 3);
+        Assert.Equal(5, codeSegment.InsetRight, 3);
+        var codeGlyphWidth = layout.GetCaretX(9) - layout.GetCaretX(5);
+        Assert.True(codeSegment.Width >= codeGlyphWidth - 0.5,
+            $"段宽 {codeSegment.Width} 应含左右 pad（caret 差 {codeGlyphWidth}）。");
+        // pill 左缘 = code 段盒左缘（左 pad 含在盒内）：左 padding 是真实 advance，
+        // 前导普通段右缘之后才有 code 段起点——pill 覆盖整个盒，字形不被覆盖。
+        var pill = bgRect.Bounds;
+        Assert.True(pill.X <= codeSegment.X + 0.5 && pill.Right >= codeSegment.X + codeSegment.Width - 0.5,
+            $"pill {pill} 应外扩含 inset（segment [{codeSegment.X}, {codeSegment.X + codeSegment.Width}]）。");
+        Assert.True(codeSegment.X >= plainSegment.X + plainSegment.Width - 0.5,
+            $"code 段起点 {codeSegment.X} 应被左 pad 推到前导段右缘 {plainSegment.X + plainSegment.Width} 之后。");
+
+        // vPad 进 line height：行盒高 = 字高 + 2×2（不断言具体字高，断言 pill 高度
+        // ≥ code 段 baseline-descent 的字高加 4 左右——用真实 caret/line 关系）。
+        var line = layout.Lines[codeSegment.LineIndex];
+        Assert.True(pill.Height >= line.Bounds.Height - 0.5, $"pill 高度应≈行盒高 {line.Bounds.Height}。");
+    }
+
+    [Fact]
+    public void 行内代码_几何Padding_跨行每行独立Inset()
+    {
+        // 长 code 窄宽折行：每行一个独立 pill，各自带 inset；不是一整个大矩形跨行。
+        var codeBg = new Color(128, 128, 128, 60);
+        var styled = Styled(
+            "aaaa code code code code",
+            new TextStyleRange(5, 24, new TextStyle
+            {
+                Background = codeBg,
+                CornerRadius = 4,
+                ForegroundIsAccent = true,
+                InlineCodePaddingHorizontal = 5,
+                InlineCodePaddingVertical = 2,
+            }));
+        var app = App(new RichText(styled).Frame(width: 70));
+        var node = RichNode(app);
+        var commands = app.Frame();
+
+        var backgrounds = commands.OfType<RectangleCommand>().Where(c => c.Fill == codeBg)
+            .OrderBy(c => c.Bounds.Y).ToArray();
+        Assert.True(backgrounds.Length >= 2, "跨行 code 至少两个 pill。");
+
+        var layout = ((RichText.RichTextViewCache)node.ViewCache!).Layout!;
+        var codeSegments = layout.Segments.Where(s => s.Start >= 5).ToArray();
+        Assert.True(codeSegments.Length >= 2);
+
+        // 每行 pill 比其 code 片段宽（左右各扩 inset），跨行各片段独立成 pill
+        // 不共享背景矩形；frame 内不越界。
+        var frame = node.Frame;
+        const double eps = 0.5;
+        for (var i = 0; i < backgrounds.Length; i++)
+        {
+            var rect = backgrounds[i].Bounds;
+            Assert.True(rect.X >= frame.X - eps && rect.Right <= frame.Right + eps,
+                $"第{i}行 pill {rect} 应在 frame 有效宽内 {frame}（盒宽含左右 pad）。");
+            Assert.True(rect.Width > 10, "跨行 pill 应有真实宽度（非退化）。");
+            if (i > 0)
+            {
+                Assert.True(rect.Y >= backgrounds[i - 1].Bounds.Bottom - eps, "行间不重叠。");
+            }
+        }
+    }
+
+    [Fact]
+    public void 行内代码_几何Padding_cache按GeometryKey()
+    {
+        // padding 是 GeometryKey 成分：同文本同字体仅 padding 不同 → 重排版；
+        // padding 相同 → 复用（不触发 Layout 重算）。
+        var codeBg = new Color(128, 128, 128, 60);
+        var styled = Styled(
+            "a code b",
+            new TextStyleRange(2, 6, new TextStyle
+            {
+                Background = codeBg,
+                InlineCodePaddingHorizontal = 5,
+            }));
+        var app = App(new RichText(styled));
+        var node = RichNode(app);
+        app.Frame();
+
+        var cache = (RichText.RichTextViewCache)node.ViewCache!;
+        var layout1 = cache.Layout!;
+
+        // 同 topology 仅改 padding 值 → 新 GeometryKey → 重排版。
+        var styled2 = Styled(
+            "a code b",
+            new TextStyleRange(2, 6, new TextStyle
+            {
+                Background = codeBg,
+                InlineCodePaddingHorizontal = 8,
+            }));
+        app = App(new RichText(styled2));
+        node = RichNode(app);
+        app.Frame();
+        var layout2 = ((RichText.RichTextViewCache)node.ViewCache!).Layout!;
+
+        Assert.NotSame(layout1, layout2);
+        var codeSeg1 = layout1.Segments.First(s => s.Start >= 2 && s.Start < 6);
+        var codeSeg2 = layout2.Segments.First(s => s.Start >= 2 && s.Start < 6);
+        Assert.True(codeSeg2.Width > codeSeg1.Width, "padding 增加段宽应真实变大。");
+    }
+
+    [Fact]
+    public void 行内代码_CodeBackgroundNull_几何Padding保留()
+    {
+        // 盒语义：CodeBackground=null 不画矩形，但 padding 仍计入 advance/行高——
+        // 与 CSS 一致（background 与 padding 正交）。相邻字被真实推开。
+        var styled = Styled(
+            "a code b",
+            new TextStyleRange(2, 6, new TextStyle
+            {
+                ForegroundIsAccent = true,
+                InlineCodePaddingHorizontal = 5,
+            }));
+        var app = App(new RichText(styled));
+        var node = RichNode(app);
+        app.Frame();
+
+        var layout = ((RichText.RichTextViewCache)node.ViewCache!).Layout!;
+        var codeSegment = Assert.Single(layout.Segments, s => s.Start >= 2 && s.Start < 6);
+        var codeGlyphWidth = layout.GetCaretX(6) - layout.GetCaretX(2);
+        Assert.True(codeSegment.Width >= codeGlyphWidth - 0.5,
+            "无背景时 padding 仍应真实占位——段宽含左右 pad。");
+    }
+
 
     [Fact]
     public void 换前景只重栅格化_不重排版_纹理键变化()

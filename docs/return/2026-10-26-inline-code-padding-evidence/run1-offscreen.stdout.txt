@@ -1,0 +1,197 @@
+﻿PASS evidence-dir-real-repo C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence
+ASM CSharp.UI C:\Users\nothh\AppData\Local\Temp\inline-code-padding-smoke\app\bin\Release\net10.0\win-x64\CSharp.UI.dll sha256=19C4365A3EF60756
+ASM CSharp.UI.Markdown C:\Users\nothh\AppData\Local\Temp\inline-code-padding-smoke\app\bin\Release\net10.0\win-x64\CSharp.UI.Markdown.dll sha256=27D022C280AD6EC5
+ASM CSharp.UI.OpenTK C:\Users\nothh\AppData\Local\Temp\inline-code-padding-smoke\app\bin\Release\net10.0\win-x64\CSharp.UI.OpenTK.dll sha256=60FCA20F1D8A7C99
+ASM CSharp.UI.Text C:\Users\nothh\AppData\Local\Temp\inline-code-padding-smoke\app\bin\Release\net10.0\win-x64\CSharp.UI.Text.dll sha256=9D532D4335C8689E
+STYLE-PROPS HeadingSizes,CodeFontFamily,CodeBackground,CodePadding,CodeCornerRadius,InlineCodeCornerRadius,InlineCodeForeground,InlineCodePaddingHorizontal,InlineCodePaddingVertical,ShowCodeCopyButton,CodeCopyLabel,UnorderedMarker,ListMarkerGap,QuoteBarWidth,QuoteBarColor,QuotePadding,CellPadding,CellVerticalPadding,BlockSpacing,HeadingSpacingBefore,HeadingSpacingAfter,ListItemSpacing,ThematicBreakColor,ThematicBreakHeight,LinkForeground,LinkHoverStyle,UnsupportedNodeStyle
+TEXTSTYLE-PROPS Family,Size,Weight,Italic,Foreground,Background,CornerRadius,ForegroundIsAccent,Underline,Strikethrough,InlineCodePaddingHorizontal,InlineCodePaddingVertical
+PAD-PROPS md=[InlineCodePaddingHorizontal,InlineCodePaddingVertical]
+PAD-PROPS textstyle=[InlineCodePaddingHorizontal:Nullable`1,InlineCodePaddingVertical:Nullable`1]
+PASS padding-prop-md-exists need writable double *Inline*Padding* on MarkdownStyleOptions
+HOST 3.3.0 - Build 32.0.101.6790 / Intel(R) RaptorLake-S Mobile Graphics Controller / Intel
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-A-light-ps1-top.png 640x900
+PASS A-light-ps1-rich-行内代码 
+PASS A-light-ps1-行内代码-rects n=1
+PASS A-light-ps1-行内代码-hpad-measurable 
+FAIL A-light-ps1-行内代码-lpad>=min leftPad=0.00 bgL=223.00 inkL=223.00
+FAIL A-light-ps1-行内代码-rpad>=min rightPad=0.00 bgR=224.00 inkR=224.00
+PASS A-light-ps1-行内代码-vpad-measurable 
+FAIL A-light-ps1-行内代码-vpad-visible top=0.00 bottom=0.00
+FAIL A-light-ps1-行内代码-rounded corner=#E3E3E5FF inside=#E3E3E5FF
+PASS A-light-ps1-rich-Subagent 
+PASS A-light-ps1-Subagent-rects n=1
+PASS A-light-ps1-Subagent-hpad-measurable 
+PASS A-light-ps1-Subagent-lpad>=min leftPad=2.00 bgL=318.00 inkL=320.00
+FAIL A-light-ps1-Subagent-rpad>=min rightPad=0.00 bgR=321.00 inkR=321.00
+PASS A-light-ps1-Subagent-vpad-measurable 
+FAIL A-light-ps1-Subagent-vpad-visible top=0.00 bottom=0.00
+FAIL A-light-ps1-Subagent-rounded corner=#E3E3E5FF inside=#E3E3E5FF
+PASS A-light-ps1-baseline-shared code=62.107421875 plain=62.107421875
+=== A-light-ps1 done ===
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-A-dark-ps1-top.png 640x900
+PASS A-dark-ps1-rich-行内代码 
+PASS A-dark-ps1-行内代码-rects n=1
+PASS A-dark-ps1-行内代码-hpad-measurable 
+FAIL A-dark-ps1-行内代码-lpad>=min leftPad=0.00 bgL=223.00 inkL=223.00
+FAIL A-dark-ps1-行内代码-rpad>=min rightPad=0.00 bgR=224.00 inkR=224.00
+PASS A-dark-ps1-行内代码-vpad-measurable 
+FAIL A-dark-ps1-行内代码-vpad-visible top=0.00 bottom=0.00
+FAIL A-dark-ps1-行内代码-rounded corner=#26272CFF inside=#26272CFF
+PASS A-dark-ps1-rich-Subagent 
+PASS A-dark-ps1-Subagent-rects n=1
+PASS A-dark-ps1-Subagent-hpad-measurable 
+PASS A-dark-ps1-Subagent-lpad>=min leftPad=2.00 bgL=318.00 inkL=320.00
+FAIL A-dark-ps1-Subagent-rpad>=min rightPad=0.00 bgR=321.00 inkR=321.00
+PASS A-dark-ps1-Subagent-vpad-measurable 
+FAIL A-dark-ps1-Subagent-vpad-visible top=0.00 bottom=0.00
+FAIL A-dark-ps1-Subagent-rounded corner=#26272CFF inside=#26272CFF
+PASS A-dark-ps1-baseline-shared code=62.107421875 plain=62.107421875
+=== A-dark-ps1 done ===
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-A-light-ps1.5-top.png 960x1350
+PASS A-light-ps1.5-rich-行内代码 
+PASS A-light-ps1.5-行内代码-rects n=1
+PASS A-light-ps1.5-行内代码-hpad-measurable 
+FAIL A-light-ps1.5-行内代码-lpad>=min leftPad=0.00 bgL=214.00 inkL=214.00
+FAIL A-light-ps1.5-行内代码-rpad>=min rightPad=1.33 bgR=236.00 inkR=234.67
+PASS A-light-ps1.5-行内代码-vpad-measurable 
+FAIL A-light-ps1.5-行内代码-vpad-visible top=0.00 bottom=0.00
+FAIL A-light-ps1.5-行内代码-rounded corner=#E3E3E5FF inside=#E3E3E5FF
+PASS A-light-ps1.5-rich-Subagent 
+PASS A-light-ps1.5-Subagent-rects n=1
+PASS A-light-ps1.5-Subagent-hpad-measurable 
+FAIL A-light-ps1.5-Subagent-lpad>=min leftPad=0.00 bgL=320.00 inkL=320.00
+FAIL A-light-ps1.5-Subagent-rpad>=min rightPad=0.00 bgR=322.67 inkR=322.67
+PASS A-light-ps1.5-Subagent-vpad-measurable 
+FAIL A-light-ps1.5-Subagent-vpad-visible top=0.00 bottom=0.00
+FAIL A-light-ps1.5-Subagent-rounded corner=#E3E3E5FF inside=#E3E3E5FF
+PASS A-light-ps1.5-baseline-shared code=62.440755208333336 plain=62.440755208333336
+=== A-light-ps1.5 done ===
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-A-dark-ps1.5-top.png 960x1350
+PASS A-dark-ps1.5-rich-行内代码 
+PASS A-dark-ps1.5-行内代码-rects n=1
+PASS A-dark-ps1.5-行内代码-hpad-measurable 
+FAIL A-dark-ps1.5-行内代码-lpad>=min leftPad=0.00 bgL=216.67 inkL=216.67
+FAIL A-dark-ps1.5-行内代码-rpad>=min rightPad=1.33 bgR=236.00 inkR=234.67
+PASS A-dark-ps1.5-行内代码-vpad-measurable 
+FAIL A-dark-ps1.5-行内代码-vpad-visible top=0.00 bottom=0.00
+FAIL A-dark-ps1.5-行内代码-rounded corner=#26272CFF inside=#26272CFF
+PASS A-dark-ps1.5-rich-Subagent 
+PASS A-dark-ps1.5-Subagent-rects n=1
+PASS A-dark-ps1.5-Subagent-hpad-measurable 
+FAIL A-dark-ps1.5-Subagent-lpad>=min leftPad=0.00 bgL=320.00 inkL=320.00
+FAIL A-dark-ps1.5-Subagent-rpad>=min rightPad=0.00 bgR=322.67 inkR=322.67
+PASS A-dark-ps1.5-Subagent-vpad-measurable 
+FAIL A-dark-ps1.5-Subagent-vpad-visible top=0.00 bottom=0.00
+FAIL A-dark-ps1.5-Subagent-rounded corner=#26272CFF inside=#26272CFF
+PASS A-dark-ps1.5-baseline-shared code=62.440755208333336 plain=62.440755208333336
+=== A-dark-ps1.5 done ===
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-A-light-ps2-top.png 1280x1800
+PASS A-light-ps2-rich-行内代码 
+PASS A-light-ps2-行内代码-rects n=1
+PASS A-light-ps2-行内代码-hpad-measurable 
+FAIL A-light-ps2-行内代码-lpad>=min leftPad=0.00 bgL=223.50 inkL=223.50
+FAIL A-light-ps2-行内代码-rpad>=min rightPad=0.00 bgR=224.00 inkR=224.00
+PASS A-light-ps2-行内代码-vpad-measurable 
+FAIL A-light-ps2-行内代码-vpad-visible top=0.00 bottom=0.00
+FAIL A-light-ps2-行内代码-rounded corner=#E3E3E5FF inside=#E3E3E5FF
+PASS A-light-ps2-rich-Subagent 
+PASS A-light-ps2-Subagent-rects n=1
+PASS A-light-ps2-Subagent-hpad-measurable 
+FAIL A-light-ps2-Subagent-lpad>=min leftPad=0.00 bgL=320.00 inkL=320.00
+FAIL A-light-ps2-Subagent-rpad>=min rightPad=0.00 bgR=323.50 inkR=323.50
+PASS A-light-ps2-Subagent-vpad-measurable 
+FAIL A-light-ps2-Subagent-vpad-visible top=0.00 bottom=0.00
+FAIL A-light-ps2-Subagent-rounded corner=#E3E3E5FF inside=#E3E3E5FF
+PASS A-light-ps2-baseline-shared code=62.107421875 plain=62.107421875
+=== A-light-ps2 done ===
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-A-dark-ps2-top.png 1280x1800
+PASS A-dark-ps2-rich-行内代码 
+PASS A-dark-ps2-行内代码-rects n=1
+PASS A-dark-ps2-行内代码-hpad-measurable 
+FAIL A-dark-ps2-行内代码-lpad>=min leftPad=0.00 bgL=223.50 inkL=223.50
+FAIL A-dark-ps2-行内代码-rpad>=min rightPad=0.00 bgR=224.00 inkR=224.00
+PASS A-dark-ps2-行内代码-vpad-measurable 
+FAIL A-dark-ps2-行内代码-vpad-visible top=0.00 bottom=0.00
+FAIL A-dark-ps2-行内代码-rounded corner=#26272CFF inside=#26272CFF
+PASS A-dark-ps2-rich-Subagent 
+PASS A-dark-ps2-Subagent-rects n=1
+PASS A-dark-ps2-Subagent-hpad-measurable 
+FAIL A-dark-ps2-Subagent-lpad>=min leftPad=0.00 bgL=320.00 inkL=320.00
+FAIL A-dark-ps2-Subagent-rpad>=min rightPad=0.00 bgR=323.50 inkR=323.50
+PASS A-dark-ps2-Subagent-vpad-measurable 
+FAIL A-dark-ps2-Subagent-vpad-visible top=0.00 bottom=0.00
+FAIL A-dark-ps2-Subagent-rounded corner=#26272CFF inside=#26272CFF
+PASS A-dark-ps2-baseline-shared code=62.107421875 plain=62.107421875
+=== A-dark-ps2 done ===
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-A-custom-ps1.5-top.png 960x1350
+PASS A-custom-ps1.5-rich-行内代码 
+PASS A-custom-ps1.5-行内代码-rects n=1
+PASS A-custom-ps1.5-行内代码-hpad-measurable 
+FAIL A-custom-ps1.5-行内代码-lpad>=min leftPad=0.00 bgL=216.67 inkL=216.67
+FAIL A-custom-ps1.5-行内代码-rpad>=min rightPad=0.00 bgR=236.00 inkR=236.00
+PASS A-custom-ps1.5-行内代码-vpad-measurable 
+FAIL A-custom-ps1.5-行内代码-vpad-visible top=0.00 bottom=0.00
+FAIL A-custom-ps1.5-行内代码-rounded corner=#E3E3E5FF inside=#E3E3E5FF
+PASS A-custom-ps1.5-rich-Subagent 
+PASS A-custom-ps1.5-Subagent-rects n=1
+PASS A-custom-ps1.5-Subagent-hpad-measurable 
+FAIL A-custom-ps1.5-Subagent-lpad>=min leftPad=0.00 bgL=320.00 inkL=320.00
+FAIL A-custom-ps1.5-Subagent-rpad>=min rightPad=0.00 bgR=322.67 inkR=322.67
+PASS A-custom-ps1.5-Subagent-vpad-measurable 
+FAIL A-custom-ps1.5-Subagent-vpad-visible top=0.00 bottom=0.00
+FAIL A-custom-ps1.5-Subagent-rounded corner=#E3E3E5FF inside=#E3E3E5FF
+PASS A-custom-ps1.5-baseline-shared code=62.440755208333336 plain=62.440755208333336
+=== A-custom-ps1.5 done ===
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-B-neighbour.png 960x1350
+PASS B-neighbour-rich 
+PASS B-neighbour-rects a=1 s=1 m=1
+FAIL B-neighbour-mid-ink-not-covered ink=214 bgInMid=303 bgTarget=#E3E3E5FF
+FAIL B-neighbour-start-ink-not-covered ink=258 bgInStart=314
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-C-wrap.png 480x1350
+PASS C-wrap-rich 
+PASS C-wrap-layout 
+PASS C-wrap-fragments>=2 n=2
+PASS C-wrap-multiline lines=2
+PASS C-wrap-frag0-band-filled page=0 bg=7773 interior=(9, 123.288, 300.516×16.27)
+FAIL C-wrap-frag0-l+r-pad l=0.00 r=0.00 rect=(5, 121.288, 308.516×20.27)
+PASS C-wrap-frag1-band-filled page=0 bg=2460 interior=(9, 143.557, 77.234×18.621)
+FAIL C-wrap-frag1-l+r-pad l=0.67 r=0.67 rect=(5, 141.557, 85.234×22.621)
+PASS C-wrap-frag-within-maxwidth fragRight-rel=313.52 layoutW=313.52
+PASS C-wrap-frag-within-maxwidth fragRight-rel=90.23 layoutW=313.52
+PASS C-wrap-after-not-covered ink=229 bg=12
+PASS C-wrap-pad-enters-geometry padW=315.52 zeroW=319.92 padSeg=5 zeroSeg=5
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-D-linkpad.png 1200x1350
+PASS D-linkpad-link-rich 
+PASS D-linkpad-rects 
+PASS D-linkpad-hpad l=2.00 r=0.00
+PASS D-linkpad-leftpad-activates activated=MarkdownLinkPayload { Url = https://example.test/x, Title =  } clickX=171.00
+PASS D-linkpad-secondlink-correct activated=MarkdownLinkPayload { Url = https://example.test/y, Title =  }
+PASS D-linkpad-gap-rect need gap word in link paragraph
+PASS D-linkpad-gap-no-link activated=
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-E-mix.png 1200x1350
+FAIL E-mix-boldcode-pad l=0.00 r=0.00
+FAIL E-mix-粗体代码-pad l=0.00 r=0.00
+FAIL E-mix-混合code测试-pad l=0.00 r=0.00
+FAIL E-mix-中Subagent文-pad l=0.00 r=0.00
+PASS E2-fallback-width-total-width-delta w0=100.21 w5=110.21 delta=10.00 (expect ~10)
+PASS E2-fallback-width-geometry-key-differs id0=RichLayoutIdentity { Value = 79 } id5=RichLayoutIdentity { Value = 80 }
+FAIL E2-fallback-width-span-delta-once spanDelta=5.00 (expect ~10, not 10×runs)
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-F-trailing.png 960x1350
+PASS F-trailing-rich 
+PASS F-trailing-rects 
+FAIL F-trailing-rightpad-complete r=0.00
+PASS F-trailing-rasterbounds-covers rb.Right=105.76 segRight=105.76
+PASS G-cache-rich 
+PASS G-cache-layout-handle 
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-G-cache-pad8.png 960x1350
+PASS G-cache-pad-new-identity id0=RichLayoutIdentity { Value = 87 } idP=RichLayoutIdentity { Value = 93 }
+PASS G-cache-pad-width-change w0=344.75 wP=408.75
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-G-cache-radius.png 960x1350
+PASS G-cache-radius-same-identity idP=RichLayoutIdentity { Value = 93 } idR=RichLayoutIdentity { Value = 93 } layouts=0
+PASS G-cache-radius-no-raster rasters=0
+PNG C:\Users\nothh\code\C#\CSharp.UI\docs\return\2026-10-26-inline-code-padding-evidence\run1-H-block-copy.png 960x1350
+PASS H-block-copy-block-found 
+PASS H-block-copy-btn 
+PASS H-block-copy-copy-payload got=  block-lead = true;
+PASS H-block-copy-inline-no-copy writes=0
+=== RESULT pass=101 fail=64 ===

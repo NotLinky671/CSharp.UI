@@ -294,18 +294,25 @@ public sealed class RichText : View
         var fonts = layout.ResolvedFonts;
         var runs = paint.Runs;
         var origin = TextPainter.ResolveOrigin(frame, layout.Size, Alignment, layout.PixelScale);
-        // 1. 背景：同一行内相邻同色 segment 合并为一次矩形命令；圆角从 TextStyle.CornerRadius
-        // 按段取（paint-only 视图元数据，不进 glyph raster 键），同色+同半径才合并。
+        // 1. 背景：同一行内相邻同色+同半径且同属一个逻辑盒的 segment 合并为一次
+        // 矩形命令。逻辑盒 = 同一带 padding 的 TextStyleRange 内的所有 face/script
+        // 子段（fallback 切段不拆盒）；无 padding 段按旧 inset 等值规则合并。
         var pendingStart = -1;
         var pendingColor = Color.Transparent;
         var pendingRadius = 0.0;
         var pendingLine = -1;
+        var pendingInsetLeft = 0.0;
+        var pendingInsetRight = 0.0;
+        var pendingGroup = -2;
         var rangeIndex = 0;
         var ranges = Content.Ranges;
         for (var i = 0; i <= segments.Count; i++)
         {
             var current = Color.Transparent;
             var currentRadius = 0.0;
+            var currentInsetLeft = 0.0;
+            var currentInsetRight = 0.0;
+            var currentGroup = -2;
             var lineIndex = -1;
             if (i < segments.Count)
             {
@@ -315,26 +322,47 @@ public sealed class RichText : View
                 {
                     current = candidate;
                     var segment = segments[i];
+                    currentInsetLeft = segment.InsetLeft;
+                    currentInsetRight = segment.InsetRight;
                     while (rangeIndex < ranges.Count && ranges[rangeIndex].End <= segment.Start)
                     {
                         rangeIndex++;
                     }
 
-                    currentRadius = rangeIndex < ranges.Count && ranges[rangeIndex].Start <= segment.Start
-                        ? ranges[rangeIndex].Style?.CornerRadius ?? 0
-                        : 0;
+                    if (rangeIndex < ranges.Count && ranges[rangeIndex].Start <= segment.Start)
+                    {
+                        var style = ranges[rangeIndex].Style;
+                        currentRadius = style?.CornerRadius ?? 0;
+                        // 段被带 hPad 的 range 覆盖且未越出（face 子段在 range 内部）→
+                        // 同属该 range 的逻辑盒，用 range 下标做合并组键。
+                        currentGroup = (style?.InlineCodePaddingHorizontal ?? 0) > 0
+                            && segment.End <= ranges[rangeIndex].End
+                                ? rangeIndex
+                                : -1;
+                    }
                 }
             }
 
-            // 在行边界、颜色变化或圆角变化处收尾（相邻定义 = 同一行内连续且同样式）。
-            if (pendingStart >= 0 && (lineIndex != pendingLine || current != pendingColor || currentRadius != pendingRadius))
+            // 在行边界、颜色/圆角或逻辑盒身份变化处收尾；无 padding 段回退到
+            // inset 等值（旧合并兼容——普通无 padding 的相邻同底色段仍合并）。
+            var sameBox = currentGroup == pendingGroup && currentGroup >= 0
+                || currentGroup < 0 && pendingGroup < 0
+                    && currentInsetLeft == pendingInsetLeft && currentInsetRight == pendingInsetRight;
+            if (pendingStart >= 0
+                && (lineIndex != pendingLine || current != pendingColor || currentRadius != pendingRadius || !sameBox))
             {
                 var line = lines[pendingLine];
-                var left = segments[pendingStart].X;
+                // segment.X = 盒左缘 + 左 pad（字形起点），Width 已含右 pad；
+                // pill 左缘 = X − InsetLeft，右缘 = X + Width（盒几何）。
+                var left = segments[pendingStart].X - pendingInsetLeft;
                 var last = segments[i - 1];
                 var right = last.X + last.Width;
                 context.Commands.Add(new RectangleCommand(
-                    new Rect(origin.X + left, origin.Y + line.Bounds.Y, Math.Max(0, right - left), line.Bounds.Height),
+                    new Rect(
+                        origin.X + left,
+                        origin.Y + line.Bounds.Y,
+                        Math.Max(0, right - left),
+                        line.Bounds.Height),
                     pendingColor,
                     pendingRadius,
                     Opacity: opacity));
@@ -348,6 +376,9 @@ public sealed class RichText : View
                     pendingStart = i;
                     pendingColor = current;
                     pendingRadius = currentRadius;
+                    pendingInsetLeft = currentInsetLeft;
+                    pendingInsetRight = currentInsetRight;
+                    pendingGroup = currentGroup;
                     pendingLine = lineIndex;
                 }
             }
@@ -638,7 +669,9 @@ public sealed class RichText : View
                 if (seg.Start >= range.Start && seg.Start < range.End)
                 {
                     var line = lines[seg.LineIndex];
-                    var rect = new Rect(seg.X, line.Bounds.Y, seg.Width, line.Bounds.Height);
+                    // 命中矩形与 Emit pill 盒几何一致：seg.Width 已含右 pad，
+                    // 左缘再扩 InsetLeft——左 pad 条带可点击，不额外加 InsetRight。
+                    var rect = new Rect(seg.X - seg.InsetLeft, line.Bounds.Y, seg.Width + seg.InsetLeft, line.Bounds.Height);
                     if (rect.Contains(local))
                     {
                         return range.Id;
