@@ -1,0 +1,26 @@
+launched pid=90860 exe=C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.ControlGallery\bin\Release\net10.0\ControlGallery.exe cwd=C:\Users\nothh\code\C#\CSharp.UI\samples\CSharp.UI.Samples.ControlGallery\bin\Release\net10.0
+hwnd=150258 client=900x700 origin=(210,281) dpi=144 dpiScale=1.5 input/logical=900x700 foreground=yes
+standard bar: contentLogical=2884.086 thumbLen=168.927 maxOffset=2184.086 travel=527.073 coldThumbCenterY=86.464
+cold gesture screen start=(1104,367)
+capture 01-before-cold.bmp
+cursor=(x0,y0) foreground=yes; sending LEFTDOWN as first mouse input
+capture 02-cold-down.bmp diff-vs-prev=0
+capture 03-cold-move1.bmp diff-vs-prev=155195
+move1 cursor=(1104,422) foreground=yes
+capture 04-cold-move2.bmp diff-vs-prev=292199
+move2 cursor=(1104,477) foreground=yes
+capture 05-cold-move3.bmp diff-vs-prev=335768
+move3 cursor=(1104,532) foreground=yes
+capture 06-cold-up.bmp diff-vs-prev=0
+second gesture: offsetAfterFirst=683.727 recomputed thumbCenterY=251.464
+cursor=(x0,532) foreground=yes; sending LEFTDOWN
+capture 07-second-down.bmp diff-vs-prev=0
+capture 08-second-move1.bmp diff-vs-prev=205231
+second move1 cursor=(1104,572) foreground=yes
+capture 09-second-move2.bmp diff-vs-prev=127719
+second move2 cursor=(1104,612) foreground=yes
+capture 010-second-move3.bmp diff-vs-prev=153030
+second move3 cursor=(1104,652) foreground=yes
+capture 11-second-up.bmp diff-vs-prev=0
+post-run alive=True
+gallery exit code=0

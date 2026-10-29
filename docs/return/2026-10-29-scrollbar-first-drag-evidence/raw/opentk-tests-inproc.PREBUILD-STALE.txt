@@ -1,0 +1,14 @@
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+[RL-08] 宿主连续 resize 7 步全部一致；构建 0，布局轮 16，帧 15
+[RL-08]   300→逻辑 300×760 fb(450, 1140) renderer450×1140 frames1->3 pending0
+[RL-08]   520→逻辑 520×760 fb(780, 1140) renderer780×1140 frames3->5 pending0
+[RL-08]   620→逻辑 620×760 fb(930, 1140) renderer930×1140 frames5->7 pending0
+[RL-08]   900→逻辑 900×760 fb(1350, 1140) renderer1350×1140 frames7->9 pending0
+[RL-08]   1120→逻辑 1120×760 fb(1680, 1140) renderer1680×1140 frames9->11 pending0
+[RL-08]   340→逻辑 340×760 fb(510, 1140) renderer510×1140 frames11->13 pending0
+[RL-08]   820→逻辑 820×760 fb(1230, 1140) renderer1230×1140 frames13->15 pending0
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '714a3074ee569785d367205ccd5169b581c32843b564799c8c2e18419f7bcb8d')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 47, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2.344s

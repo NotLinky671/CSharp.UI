@@ -381,6 +381,10 @@ internal sealed class ScrollbarState
         DragTrackRect = trackRect;
         DragContentExtent = contentExtent;
         DragViewportExtent = viewportExtent;
+        // state 惰性创建于首个指针事件，晚于节点首次 Arrange——LastGeometry 可能尚无基线。
+        // gesture 起始即写当前签名：首次拖拽不再被下一次 Arrange 的 SyncGeometry 误判为
+        // 几何变化而取消；gesture 期间真实 resize/内容漂移仍因签名不同被检出取消。
+        LastGeometry = (axis, trackRect, contentExtent, viewportExtent);
     }
 
 

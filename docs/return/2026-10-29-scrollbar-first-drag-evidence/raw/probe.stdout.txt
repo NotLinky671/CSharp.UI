@@ -1,0 +1,39 @@
+=== Scenario 1: fresh process cold first drag (Down -> Move x3 with pump) then second gesture at current thumb ===
+root frame=(0, 0, 900×700) contentHeight=2884.086
+[initial] offsetY=0 state=null
+geometry: thumbCenterFirst=86.464 thumbLen=168.927 maxOffset=2184.086 travel=527.073
+[cold Down @(894,86.464)] offsetY=0 PressKind=Thumb IsDraggingBar=True Anchor=84.46350257203457 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 86.464)
+CHECK PASS: cold Down must establish LastGeometry baseline
+CHECK PASS: cold Down must enter PressKind=Thumb
+[move1 +55 then pump] offsetY=227.909 PressKind=Thumb IsDraggingBar=True Anchor=84.46350257203457 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 141.464)
+CHECK PASS: after move1+pump gesture must remain Thumb
+CHECK PASS: offset must advance after move1+pump (227.909)
+[move2 +110 then pump] offsetY=455.818 PressKind=Thumb IsDraggingBar=True Anchor=84.46350257203457 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 196.464)
+CHECK PASS: after move2+pump gesture must remain Thumb
+CHECK PASS: offset must advance after move2+pump (227.909,455.818)
+[move3 +165 then pump] offsetY=683.727 PressKind=Thumb IsDraggingBar=True Anchor=84.46350257203457 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 251.464)
+CHECK PASS: after move3+pump gesture must remain Thumb
+CHECK PASS: offset must advance after move3+pump (227.909,455.818,683.727)
+[Up] offsetY=683.727 PressKind=None IsDraggingBar=False Anchor=0 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 251.464)
+[move after Up] offsetY=683.727 PressKind=None IsDraggingBar=False Anchor=0 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 306.464)
+CHECK PASS: offset must stay frozen after Up
+second gesture: current offset=683.727 -> thumbCenter=251.464
+[down2 @(894,251.464)] offsetY=683.727 PressKind=Thumb IsDraggingBar=True Anchor=84.46350257203457 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 251.464)
+[move2.1 +40 then pump] offsetY=849.479 PressKind=Thumb IsDraggingBar=True Anchor=84.46350257203457 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 291.464)
+CHECK PASS: second gesture move1 must advance offset
+[move2.2 +80 then pump] offsetY=1015.231 PressKind=Thumb IsDraggingBar=True Anchor=84.46350257203457 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 331.464)
+CHECK PASS: second gesture move2 must advance offset
+[move2.3 +120 then pump] offsetY=1180.983 PressKind=Thumb IsDraggingBar=True Anchor=84.46350257203457 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 371.464)
+CHECK PASS: second gesture move3 must advance offset
+[Up2] offsetY=1180.983 PressKind=None IsDraggingBar=False Anchor=0 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 371.464)
+=== Scenario 2: first drag progresses, real viewport resize cancels stale gesture, later Move stays frozen ===
+[Down] offsetY=0 PressKind=Thumb IsDraggingBar=True Anchor=84.46350257203457 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 86.464)
+[move1 then pump] offsetY=227.909 PressKind=Thumb IsDraggingBar=True Anchor=84.46350257203457 LastGeom=(Vertical, (888, 0, 12×700), 2884.0859375, 700) LastPt=(894, 141.464)
+CHECK PASS: first Move must advance offset before resize
+[resize 760x640 then pump] offsetY=227.909 PressKind=None IsDraggingBar=False Anchor=0 LastGeom=(Vertical, (748, 0, 12×640), 2921.328125, 640) LastPt=(894, 141.464)
+CHECK PASS: resize must cancel in-flight gesture
+[move after resize] offsetY=227.909 PressKind=None IsDraggingBar=False Anchor=0 LastGeom=(Vertical, (748, 0, 12×640), 2921.328125, 640) LastPt=(894, 226.464)
+CHECK PASS: stale drag must not scroll after resize
+[fresh gesture after resize] offsetY=434.607 PressKind=Thumb IsDraggingBar=True Anchor=69.66694301072393 LastGeom=(Vertical, (748, 0, 12×640), 2921.328125, 640) LastPt=(754, 166.285)
+CHECK PASS: fresh gesture on resized geometry must scroll
+RESULT=PASS

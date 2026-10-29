@@ -1,0 +1,15 @@
+content vertical displacement between consecutive captures (bitmap px; MAE minimizer over x=40..850)
+Rendering scale observed by driver: DPI=144 (1.5x). Driver input/logical space: 900x700.
+Expected offset per first-gesture move: 55/527.073*2184.086 = 227.909 logical -> 341.86 bitmap px @1.5.
+Expected offset per second-gesture move: 40/527.073*2184.086 = 165.752 logical -> 248.63 bitmap px @1.5.
+
+01-before-cold -> 02-cold-down: dy=0 px (MAE=0.000)  logical_offset_delta=0.00
+02-cold-down -> 03-cold-move1: dy=339 px (MAE=1.981)  logical_offset_delta=226.00
+03-cold-move1 -> 04-cold-move2: dy=344 px (MAE=0.064)  logical_offset_delta=229.33
+04-cold-move2 -> 05-cold-move3: dy=340 px (MAE=0.220)  logical_offset_delta=226.67
+05-cold-move3 -> 06-cold-up: dy=0 px (MAE=0.000)  logical_offset_delta=0.00
+06-cold-up -> 07-second-down: dy=0 px (MAE=0.000)  logical_offset_delta=0.00
+07-second-down -> 08-second-move1: dy=249 px (MAE=0.390)  logical_offset_delta=166.00
+08-second-move1 -> 09-second-move2: dy=248 px (MAE=0.959)  logical_offset_delta=165.33
+09-second-move2 -> 010-second-move3: dy=249 px (MAE=2.641)  logical_offset_delta=166.00
+010-second-move3 -> 11-second-up: dy=0 px (MAE=0.000)  logical_offset_delta=0.00
