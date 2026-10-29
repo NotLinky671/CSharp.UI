@@ -39,7 +39,7 @@ UiApplication.Run(new Counter());
 | `tests/` | Core unit tests, text tests, graphics integration tests (xUnit v3) |
 | `tools/CSharp.UI.AssetGenerator` | Generates the sample image assets so they stay reproducible |
 | `docs/guide` | Getting started, API, state, modifiers, keys, components, platform, and testing guides |
-| `docs/task` | Current rich-text and Markdown planning tasks; completed task sets live in `docs/archive/` |
+| `docs/task` | Current Popup-overlay and Select planning tasks; completed task sets live in `docs/archive/` |
 
 Historical IME tools and their three test projects are preserved at tag `archive/tools-before-removal`. Restore them in a separate checkout using `git worktree add --detach ../CSharp.UI-ime-archive archive/tools-before-removal`; existing acceptance evidence remains under `docs/`.
 
@@ -67,7 +67,7 @@ See the [getting started guide](docs/guide/getting-started.md) for details.
 - [Platform, fonts, and native dependencies](docs/guide/platform-notes.md)
 - [Markdown module (optional)](docs/guide/markdown.md)
 - [Testing guide](docs/guide/testing.md)
-- Design and tasks: [first-release plan](docs/plan/2026-10-14-declarative-ui-framework-plan.md), [responsive-layout plan](docs/plan/2026-10-16-responsive-layout-plan.md), [text-editor plan](docs/plan/2026-10-23-text-editor-plan.md), [scrollbar plan](docs/plan/2026-10-23-scrollbar-plan.md), [floating-scrollbar plan](docs/plan/2026-10-23-floating-scrollbar-plan.md), [rich-text and Markdown plan](docs/plan/2026-10-25-rich-text-and-markdown-plan.md) (all accepted — RT-01~04 styled-text/`IRichTextService`/`RichText`/link-hit and MD-01~06 Markdig pipeline, block adapter, table, asset/link policy, Gallery sample+docs, delivery — see [delivery record](docs/delivery/2026-10-26-rich-text-markdown-delivery.md)), [current tasks](docs/task/README.md), [archived task groups](docs/archive/), [first-release acceptance record](docs/archive/2026-10-14-framework-tasks/README.md), [responsive-layout delivery record](docs/delivery/2026-10-16-responsive-layout-delivery.md)
+- Design and tasks: [first-release plan](docs/plan/2026-10-14-declarative-ui-framework-plan.md), [responsive-layout plan](docs/plan/2026-10-16-responsive-layout-plan.md), [text-editor plan](docs/plan/2026-10-23-text-editor-plan.md), [scrollbar plan](docs/plan/2026-10-23-scrollbar-plan.md), [floating-scrollbar plan](docs/plan/2026-10-23-floating-scrollbar-plan.md), [rich-text and Markdown plan](docs/plan/2026-10-25-rich-text-and-markdown-plan.md) (all accepted — RT-01~04 styled-text/`IRichTextService`/`RichText`/link-hit and MD-01~06 Markdig pipeline, block adapter, table, asset/link policy, Gallery sample+docs, delivery — see [delivery record](docs/delivery/2026-10-26-rich-text-markdown-delivery.md)), [Popup overlay and Select plan](docs/plan/2026-10-29-popup-and-select-plan.md) (planning — not yet implemented), [current tasks](docs/task/README.md), [archived task groups](docs/archive/), [first-release acceptance record](docs/archive/2026-10-14-framework-tasks/README.md), [responsive-layout delivery record](docs/delivery/2026-10-16-responsive-layout-delivery.md)
 
 ## Responsive layout
 

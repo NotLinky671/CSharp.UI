@@ -1,7 +1,7 @@
 # RT-02 交付记录：富文本排版服务（IRichTextService + Skia 实现 + Stub）
 
 日期：2026-10-25
-任务：[docs/task/02-rich-text-service.md](../task/02-rich-text-service.md)
+任务：[docs/task/02-rich-text-service.md](../archive/2026-10-29-rich-text-markdown-tasks/02-rich-text-service.md)
 证据目录：[2026-10-25-rt02-rich-text-service-evidence/](2026-10-25-rt02-rich-text-service-evidence/)
 
 ## 本轮公开 API

@@ -1,7 +1,7 @@
 # MD-03 复审返修记录
 
 返修日期：2026-10-26
-对应任务：[07-markdown-table.md](../task/07-markdown-table.md)
+对应任务：[07-markdown-table.md](../archive/2026-10-29-rich-text-markdown-tasks/07-markdown-table.md)
 主审轮次：第二轮（fast 完成 MD-04 image 后）
 
 ## 主审命中并修复的缺陷

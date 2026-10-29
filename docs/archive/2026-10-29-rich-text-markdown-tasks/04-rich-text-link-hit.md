@@ -6,7 +6,7 @@
 
 阶段：B（G1 出口）
 
-设计依据：[计划](../plan/2026-10-25-rich-text-and-markdown-plan.md) §决策六。
+设计依据：[计划](../../plan/2026-10-25-rich-text-and-markdown-plan.md) §决策六。
 
 [返回任务索引](README.md)
 

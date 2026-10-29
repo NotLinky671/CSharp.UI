@@ -6,7 +6,7 @@
 
 阶段：D
 
-设计依据：[计划](../plan/2026-10-25-rich-text-and-markdown-plan.md) §范围三档/验收要点。
+设计依据：[计划](../../plan/2026-10-25-rich-text-and-markdown-plan.md) §范围三档/验收要点。
 
 [返回任务索引](README.md)
 

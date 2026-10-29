@@ -6,7 +6,7 @@
 
 阶段：C
 
-设计依据：[计划](../plan/2026-10-25-rich-text-and-markdown-plan.md) §决策十一/十二。
+设计依据：[计划](../../plan/2026-10-25-rich-text-and-markdown-plan.md) §决策十一/十二。
 
 [返回任务索引](README.md)
 

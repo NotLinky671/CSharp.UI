@@ -1,7 +1,7 @@
 # Markdown 默认排版间距增量计划
 
 日期：2026-10-26
-基线：RT-01~04、MD-01~06 全部完成（docs/task/README.md 状态不变，不改历史已完成任务）。
+基线：RT-01~04、MD-01~06 全部完成（任务组已归档至 docs/archive/2026-10-29-rich-text-markdown-tasks/；不改历史已完成任务）。
 
 ## 背景
 

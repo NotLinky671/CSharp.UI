@@ -1,6 +1,6 @@
 # RT-01 StyledText 模型实施记录
 
-日期：2026-10-25。任务：[`docs/task/01-styled-text-model.md`](../task/01-styled-text-model.md)。
+日期：2026-10-25。任务：[`docs/task/01-styled-text-model.md`](../archive/2026-10-29-rich-text-markdown-tasks/01-styled-text-model.md)。
 
 ## 变更文件
 
