@@ -214,6 +214,7 @@ public sealed class GalleryApp : Component
                         new Text($"当前文本长度：{editDemo.Value.Length}")
                             .WithFont(FontDescription.Default.WithSize(12)))
                         .Spacing(6)),
+                    Section("弹出与选择", new PopupSelectDemo(theme)),
                     Section("Markdown", new MarkdownDemo(logoPath)))
                 .Spacing(18)
                 .Padding(20))

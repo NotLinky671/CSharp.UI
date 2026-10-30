@@ -1,0 +1,30 @@
+P06/P07 Release gate — actual observed command results (not inferred).
+
+Build:
+  dotnet build CSharp.UI.slnx -c Release --no-incremental -m:1 -nodeReuse:false
+  Observed shell exit code: 0. Log tail: 已成功生成。0 个警告。0 个错误。
+  stdout: build-release.stdout.txt; stderr: build-release.stderr.txt (empty).
+
+Test suites (each run directly as the generated .exe, stdout/stderr captured):
+  CSharp.UI.Tests.exe            -> observed shell exit 0; log: Total 787, Failed 0
+  CSharp.UI.Text.Tests.exe       -> observed shell exit 0; log: Total 112, Failed 0
+  CSharp.UI.Integration.Tests.exe-> observed shell exit 0; log: Total 56,  Failed 0
+  CSharp.UI.Markdown.Tests.exe   -> observed shell exit 0; log: Total 50,  Failed 0
+  CSharp.UI.OpenTK.Tests.exe     -> observed shell exit 0; log: Total 683, Failed 0
+  All five stderr files empty.
+
+GL harness:
+  glsmoke (harness/glsmoke-Program.cs) run with P06_EV=<this dir> P06_PREFIX=gl-
+  Observed process exit code: 0. stdout ends "RESULT PASS".
+  grep -c '^PASS' glsmoke.stdout.txt = 78; grep FAIL = 0.
+  35 PNGs written (gl-*.png).
+
+OS driver:
+  os-driver against fresh Release ControlGallery.exe (own PID only).
+  Observed process exit code: 1.
+  stdout: 16 BMP written lines; PIXEL light=FFF5F6F8 dark=FFF5F6F8;
+          FAIL theme-darkened; RESULT FAIL (1); GALLERY-EXIT code=-1
+          (driver killed own gallery PID as designed; -1 = terminated before exit).
+  The single FAIL is theme-darkened only; no interaction verdict either way —
+  see README "OS driver" section: undetermined whether cause is capture channel
+  or input not reaching the app. NOT passed.

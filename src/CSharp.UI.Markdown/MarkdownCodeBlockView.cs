@@ -59,7 +59,9 @@ internal sealed class MarkdownCodeBlockView : View
                 MinHeight = 0,
                 OnClickContext = ctx => ctx.Runtime.Services.Clipboard?.SetText(_text),
             };
-            var header = new HStack(new Spacer(), copy)
+            // 极窄视口（如 80px）或本地化长标签时，工具行必须让按钮可收缩而不是越出代码块矩形：
+            // 自身不增长、可压缩到 0 最小宽度，并对绘制做裁剪（文字随 Frame 被截断，按钮仍可点复制）。
+            var header = new HStack(new Spacer(), copy.Flex(grow: 0, shrink: 1, min: 0).Clip())
                 .Padding(left: 0, top: 4, right: 6, bottom: 4);
             _inner = new VStack(header, scroll);
         }

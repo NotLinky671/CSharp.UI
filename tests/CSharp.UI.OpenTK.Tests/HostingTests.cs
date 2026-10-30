@@ -320,6 +320,57 @@ public sealed class OpenTkInputAdapterTests
     }
 
     [Fact]
+    public void Esc完整DownUp关闭popup不退出_第二次无popupEsc才退出()
+    {
+        // 真实 UiRuntime + Overlay + adapter 完整 Down/Up 序列（非 wiring/mock）：
+        // 根因回归 —— DeliverCapturedCore 的退出快捷键此前未限定 KeyDown，
+        // popup 消费 Esc-Down 后同一手势的 Esc-Up 仍触发宿主退出。
+        var exits = 0;
+        var isOpen = false;
+        var popup = new Popup(
+            new Button("anchor", () => { }),
+            new Text("popup content"),
+            new Binding<bool>(() => isOpen, v => isOpen = v));
+        var dispatcher = new HeadlessUiDispatcher();
+        using var runtime = new UiRuntime(new VStack(popup), new UiRuntimeServices
+        {
+            Dispatcher = dispatcher,
+            TextService = new StubTextService(),
+        });
+        runtime.SetViewport(new Size(400, 300), 1);
+        runtime.Start();
+        runtime.ProcessPendingWork();
+        runtime.BuildFrame();
+        var adapter = new OpenTkInputAdapter(runtime, () => exits++, exitOnEscape: true, exitOnCloseShortcut: true);
+
+        // owner 通过 binding 置 true 打开 popup。
+        isOpen = true;
+        runtime.ProcessPendingWork();
+        runtime.BuildFrame();
+        Assert.True(runtime.Overlay.HasActiveEntry);
+
+        // 第一对完整 Down+Up：popup 消费 Esc 关闭、IsOpen 写 false，宿主不退出。
+        adapter.HandleKeyDown(new KeyboardKeyEventArgs(Keys.Escape, 0, GlfwNoModifiers.Value, false));
+        adapter.HandleKeyUp(new KeyboardKeyEventArgs(Keys.Escape, 0, GlfwNoModifiers.Value, false));
+        runtime.ProcessPendingWork();
+        Assert.False(runtime.Overlay.HasActiveEntry);
+        Assert.False(isOpen);
+        Assert.Equal(0, exits);
+
+        // 第二对完整 Down+Up（无 popup）：宿主正常退出一次；KeyUp 不得再退。
+        adapter.HandleKeyDown(new KeyboardKeyEventArgs(Keys.Escape, 0, GlfwNoModifiers.Value, false));
+        adapter.HandleKeyUp(new KeyboardKeyEventArgs(Keys.Escape, 0, GlfwNoModifiers.Value, false));
+        runtime.ProcessPendingWork();
+        Assert.Equal(1, exits);
+
+        // 单独的 KeyUp 永远不能触发退出。
+        adapter.HandleKeyUp(new KeyboardKeyEventArgs(Keys.Escape, 0, GlfwNoModifiers.Value, false));
+        adapter.HandleKeyUp(new KeyboardKeyEventArgs(Keys.Q, 0, GlfwKeyModifiers.Control, false));
+        runtime.ProcessPendingWork();
+        Assert.Equal(1, exits);
+    }
+
+    [Fact]
     public void 文本输入过滤控制字符()
     {
         var (adapter, _, _) = CreateAdapter();

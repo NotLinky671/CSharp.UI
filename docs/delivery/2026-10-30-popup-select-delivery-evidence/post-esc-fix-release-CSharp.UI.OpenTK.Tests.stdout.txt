@@ -1,0 +1,106 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+[P2b] store has no sink before CreateContext
+[P2b] hidden window + store ready (no sink)
+[P2b] TF_CreateThreadMgr hr=0x00000000
+[P2b] Activate hr=0x00000000 clientId=32
+[P2b] CreateContext hr=0x00000000 cookie=1 storeHasSink=False
+[P2b] after CreateContext+Push: storeHasSink=True mask=0x1F
+[P2b] Push hr=0x00000000 lock hr=0x00000000 session=0x00000000
+[P2b] wiring probe completed, failures=0
+[conn] contextA advised hr=0x00000000 cookie=1
+[conn] repeated advise idempotent, same cookie=1
+[conn] contextA unadvised hr=0x00000000 state cleared
+[conn] contextB advised hr=0x00000000 cookie=1
+[conn] contextB unadvised hr=0x00000000 state cleared
+[conn] real contextA→contextB connection lifecycle verified
+[life] TryCreate#1 succeeded=True failure=None reason=
+[life] lease after create#1 = lease#1 Tsf hwnd=0xD30E98
+[life] Focus#1 hr=0x00000000 Focus#2 hr=0x00000000 alreadyApplied=1 pushed=True focused=True
+[life] GetTop hr=0x00000000 topIsOwnContext=True
+[life] Blur hr=0x00000000 (S_OK) focused=False pushed=True blurFailures=0 foreignRejects=0
+[life] thread focus ownership after Blur = OwnParking (blurHr=0x00000000 S_OK)
+[life] resume Focus hr=0x00000000 pushed=True focused=True
+[life] cross-thread Dispose rejected=1 disposed=False leaseStillHeld=True
+[life] Dispose#1 disposed=True leaseReleased=True pushed=False teardownPopHr=0x00000000 popFailures=0 unadviseFailures=0
+[life] Dispose#1 repeated; wrongThread=1
+[life] TryCreate#2 succeeded=True failure=None reason=
+[life] second Focus hr=0x00000000 pushed=True focused=True
+[life] stale Blur hr=0x00000000 (first disposed=True) secondFocusOwnership=Own secondFocused=True
+[life] Dispose#2 disposed=True leaseReleased=True pushed=False teardownPopHr=0x00000000 popFailures=0
+[life] final registeredWindows=1
+[smoke] store exposes owner composition sink before CreateContext
+[smoke] context ok cookie=1 storeSink=True
+[smoke] SetFocus hr=0x00000000
+[smoke] AssociateFocus hr=0x00000000
+[smoke] edit sink advised cookie=2
+[smoke] composition started, product Start callbacks=1 range=(2, 0) diag=QI=ok GetExtent hr=0x00000000 anchor=2 cch=0 rangeFailures=0
+[smoke] captured ACP range anchor=2 cch=0
+[smoke] preedit drain applied=True actions=[Preedit] writes=0
+[smoke] preedit state display="ABCD" preeditLen=0 repl=[2,2)
+[smoke] native insert hr=0x00000000 nativeText="ABnihaoCD"
+[smoke] post-insert drain actions=[Preedit] preedit="nihao" writes=0
+[smoke] ShiftEnd hr=0x00000000 product Update callbacks=2 (before=1) range=(2, 5)
+[smoke] after ShiftEnd: writes=0 (expected 0)
+[smoke] EndComposition hr=0x00000000 product End callbacks=1
+[smoke] after End: writes=1 actions=[Preedit,Ignore,Commit] endEditCallbacks=2
+[smoke] completed-edit drain applied=False committed=False writes=1 text="ABnihaoCD"
+[smoke] product OnEndEdit callbacks=2 start=1 update=2 end=1 rangeFailures=0
+[smoke] final writes=1 text="ABnihaoCD"
+[cancel] focus hr=0x00000000 assoc hr=0x00000000
+[cancel] start-diag request=0x00000000 session=0x00000000 CreateAcpRangePointer(4,4)=0x2399517D3F8 storeLen=4 StartComposition hr=0x00000000 created=ok
+[cancel] composition started start=1 range=(4, 0)
+[cancel] preedit display="ABCDnihao" writes=0
+[cancel] RequestCancel applied=True terminateCalls=1 attempted=True lastHr=0x00000000(S_OK) endCallbacks=1(before=0) terminalObserved=True unavailable=0 failures=0
+[cancel] after-cancel drain applied=True committed=False writes=0 text="ABCD" pending=2 resync=False
+[cancel] second composition end hr=0x00000000
+[cancel] final writes=1 text="ABCD好" terminate=1 failures=0 unavailable=0 resync=False
+[RL-08] Gallery 内层裁剪 DPI=1：clip=(300.625, 519.004, 286.75×120) 越界像素=0 边界内墨迹=222
+[RL-08] Gallery 内层裁剪 DPI=1.5：clip=(300.625, 519.004, 286.75×120) 越界像素=0 边界内墨迹=282
+[RL-08] 连续 41 档宽度：最大测量 609，存活纹理峰值 256，回落 256/256，构建 0，布局轮 83
+[RL-08] 同运行时 1024@1：排版 358.477×37.242 2 行，纹理 359×38，RGB mean=0.0992 max=2，墨迹像素 2905
+[RL-08] 同运行时 320@1：排版 238×55.863 3 行，纹理 238×56，RGB mean=0.1015 max=2，墨迹像素 2905
+[RL-08] 同运行时 320@1.25：排版 238×55.863 3 行，纹理 298×70，RGB mean=0.0851 max=2，墨迹像素 4268
+[RL-08] 同运行时 320@1.5：排版 238×55.863 3 行，纹理 357×84，RGB mean=0.0791 max=2，墨迹像素 5573
+[RL-08] 同运行时 320@2：排版 238×55.863 3 行，纹理 476×112，RGB mean=0.0620 max=2，墨迹像素 10588
+[RL-08] 同运行时 768@1.5：排版 358.477×37.242 2 行，纹理 538×56，RGB mean=0.0788 max=2，墨迹像素 5573
+[RL-08] 同运行时 480@1.5：排版 358.477×37.242 2 行，纹理 538×56，RGB mean=0.0788 max=2，墨迹像素 5573
+[RL-08] Gallery 文字 DPI=1.25：mean=0.1029 max=2 墨迹 (0, 3, 438×20)
+[RL-08] Gallery 文字 DPI=1.5：mean=0.1016 max=2 墨迹 (0, 4, 525×24)
+[RL-08] Gallery 文字 DPI=2：mean=0.0778 max=2 墨迹 (0, 5, 700×31)
+[RL-08] 宿主连续 resize 7 步全部一致；构建 0，布局轮 16，帧 15
+[RL-08]   300→逻辑 300×760 fb(450, 1140) renderer450×1140 frames1->3 pending0
+[RL-08]   520→逻辑 520×760 fb(780, 1140) renderer780×1140 frames3->5 pending0
+[RL-08]   620→逻辑 620×760 fb(930, 1140) renderer930×1140 frames5->7 pending0
+[RL-08]   900→逻辑 900×760 fb(1350, 1140) renderer1350×1140 frames7->9 pending0
+[RL-08]   1120→逻辑 1120×760 fb(1680, 1140) renderer1680×1140 frames9->11 pending0
+[RL-08]   340→逻辑 340×760 fb(510, 1140) renderer510×1140 frames11->13 pending0
+[RL-08]   820→逻辑 820×760 fb(1230, 1140) renderer1230×1140 frames13->15 pending0
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 深字浅底：颜色感知遮罩 mean=0.1015 max=2
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 深字浅底：旧白字遮罩 mean=10.1257 max=84（参考遮罩差异 max=99）。
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 浅字深底：颜色感知遮罩 mean=0.1192 max=2
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 浅字深底：参考遮罩与白字遮罩一致（max=0），跳过负对照。
+[R17] "Hello, CSharp.UI!" 12px DPI=1 深字浅底：颜色感知遮罩 mean=0.1201 max=2
+[R17] "Hello, CSharp.UI!" 12px DPI=1 深字浅底：旧白字遮罩 mean=10.0368 max=84（参考遮罩差异 max=98）。
+[R17] "Hello, CSharp.UI!" 16px DPI=1.25 浅字深底：颜色感知遮罩 mean=0.1178 max=2
+[R17] "Hello, CSharp.UI!" 16px DPI=1.25 浅字深底：参考遮罩与白字遮罩一致（max=0），跳过负对照。
+[R17] "Hello, CSharp.UI!" 28px DPI=2 深字浅底：颜色感知遮罩 mean=0.0339 max=2
+[R17] "Hello, CSharp.UI!" 28px DPI=2 深字浅底：旧白字遮罩 mean=3.4801 max=84（参考遮罩差异 max=99）。
+[R17] "中文 English 混排" 14px DPI=1.5 深字浅底：颜色感知遮罩 mean=0.1141 max=2
+[R17] "中文 English 混排" 14px DPI=1.5 深字浅底：旧白字遮罩 mean=10.3365 max=84（参考遮罩差异 max=99）。
+[R17] "中文 English 混排" 16px DPI=2 浅字深底：颜色感知遮罩 mean=0.0891 max=2
+[R17] "中文 English 混排" 16px DPI=2 浅字深底：参考遮罩与白字遮罩一致（max=0），跳过负对照。
+[R17] "llllllllllll" 14px DPI=1.5 深字浅底：颜色感知遮罩 mean=0.2581 max=2
+[R17] "llllllllllll" 14px DPI=1.5 深字浅底：旧白字遮罩 mean=17.6221 max=82（参考遮罩差异 max=97）。
+[R17] "llllllllllll" 28px DPI=1 浅字深底：颜色感知遮罩 mean=0.1887 max=2
+[R17] "llllllllllll" 28px DPI=1 浅字深底：参考遮罩与白字遮罩一致（max=0），跳过负对照。
+[R17] 禁用按钮标签 mean=0.0570 max=2
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 alpha=128 opacity=1：mean=0.2199 max=2
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 alpha=255 opacity=0.5：mean=0.2266 max=2
+[R17] "Hello, CSharp.UI!" 14px DPI=1.5 alpha=128 opacity=0.5：mean=0.1577 max=2
+[R17] "中文边缘 English 123" 14px DPI=1.25 alpha=128 opacity=0.63：mean=0.1016 max=2
+  Finished:    CSharp.UI.OpenTK.Tests (ID = '714a3074ee569785d367205ccd5169b581c32843b564799c8c2e18419f7bcb8d')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 684, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 11.905s

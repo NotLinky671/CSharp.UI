@@ -1,0 +1,17 @@
+P06 os-driver status (2026-10-30):
+- All 16 SendInput steps execute, gallery stays alive, driver kills own PID only.
+- Capture path (PrintWindow OR direct screen BitBlt — both tested) returns an
+  identical, byte-identical static image across all 16 steps in every run
+  (sha256 equal). Gallery renders via OpenGL swap-chain; GDI captures show the
+  last GDI-painted frame and do not observe GL presents or input effects.
+- Consequence: OS acceptance status = NOT VERIFIED (FAIL preserved). Cause is
+  undetermined: the GDI capture path demonstrably returns a stale static frame
+  for a swap-chain window (all BMPs sha256-identical), but this alone does NOT
+  prove inputs arrived — SendInput counts and 'app alive' are not interaction
+  evidence, and identical frames also cannot rule out missed clicks / wrong
+  coords / DPI / foreground. theme-darkened FAIL is kept verbatim; it is NOT a
+  product-defect exoneration and NOT a pass.
+- What IS verifiable from this channel: window launch, title match, app stays
+  alive through all gestures incl. Esc, no crash on outside press or rapid
+  theme toggle. Real interaction assertions remain covered by glsmoke (real
+  GlRenderer + real DispatchPointer/Key) which produced 78 PASS + 35 PNGs.

@@ -19,7 +19,7 @@ internal sealed class FocusManager
     public IReadOnlyList<ViewNode> BuildOrder()
     {
         var order = new List<ViewNode>();
-        Collect(_runtime.Root, order);
+        Collect(_runtime.TraversalRoot, order);
         return order;
     }
 
@@ -235,6 +235,10 @@ internal sealed class InputRouter
         switch (e.Kind)
         {
             case PointerEventKind.Down:
+                // 外点吞并：命中判定必须早于 hover/press/capture。判定为外点时 popup 关闭请求入队，
+                // 同时立即挂载全屏 dismiss-target —— 本次 Down 及后续 Move/Up/Cancel 只落在它身上，
+                // 下层用户树（Button 激活、ScrollView 拖动）不会收到任何事件。
+                _runtime.Overlay.TryBeginOutsidePress(HitTest(e.Position));
                 UpdateHover(e, context);
                 _pressed = _hovered;
                 _captured = _hovered;
@@ -296,6 +300,9 @@ internal sealed class InputRouter
                 }
 
                 ClearPressState(context);
+
+                // 吞并手势在 Up 之后结束：先让 Up 只落在 dismiss-target 上，再卸载它并重算 hover。
+                _runtime.Overlay.EndSwallowGesture();
                 UpdateHover(e, context);
                 break;
             }
@@ -310,6 +317,7 @@ internal sealed class InputRouter
 
                 ClearPressState(context);
                 ClearHover(context);
+                _runtime.Overlay.EndSwallowGesture();
                 break;
             }
         }
@@ -325,6 +333,14 @@ internal sealed class InputRouter
         _lastPointerEvent = pointerEvent;
         UpdateHover(pointerEvent, context);
         var target = _captured ?? _hovered;
+
+        // 滚轮不参与外点吞并：吞并期的 dismiss-target 会让真实 hover 链停在它身上，
+        // 这里跳过它重新按同一位置在真实树里命中（弹层外滚轮照常滚内容、不关不吞）。
+        if (target is not null && _runtime.Overlay.IsDismissTarget(target))
+        {
+            target = HitTest(e.Position, _runtime.Overlay.DismissTargetNode);
+        }
+
         if (target is not null)
         {
             Route<WheelEvent>(target, context, static (node, ctx, wheel) => node.View.OnWheel(ctx, node, wheel), e);
@@ -353,6 +369,18 @@ internal sealed class InputRouter
         if (_focus.Focused is not null)
         {
             handled = Route<KeyEvent>(_focus.Focused, context, (node, ctx, key) => e.Kind == KeyEventKind.Down ? node.View.OnKeyDown(ctx, node, key) : node.View.OnKeyUp(ctx, node, key), e);
+        }
+
+        // Esc：焦点控件先路由（组合期取消/自处理 Esc 的控件已消费 → 这里不动作）。
+        // 未消费且存在可关闭 entry、owner 允许 Esc 时关闭并恢复焦点，然后才走 Tab fallback。
+        if (!handled
+            && e.Kind == KeyEventKind.Down
+            && e.Key == UiKey.Escape
+            && _runtime.Overlay.TryRequestEscapeClose(out var restoreFocus))
+        {
+            _focus.SetFocus(restoreFocus);
+            _runtime.InvalidateRender();
+            handled = true;
         }
 
         if (!handled && e.Kind == KeyEventKind.Down && e.Key == UiKey.Tab)
@@ -426,15 +454,18 @@ internal sealed class InputRouter
     }
 
     /// <summary>命中测试：按逆绘制顺序查找最上层可见、未被裁剪、未被禁用的目标。</summary>
-    public ViewNode? HitTest(Point position)
+    public ViewNode? HitTest(Point position) => HitTest(position, null);
+
+    /// <summary>命中测试，跳过指定子树（滚轮不得被吞并期的 dismiss-target 截获）。</summary>
+    private ViewNode? HitTest(Point position, ViewNode? skip)
     {
         var clip = new Rect(0, 0, _runtime.ViewportSize.Width, _runtime.ViewportSize.Height);
-        return HitTest(_runtime.Root, position, clip);
+        return HitTest(_runtime.TraversalRoot, position, clip, skip);
     }
 
-    private static ViewNode? HitTest(ViewNode node, Point position, Rect clip)
+    private static ViewNode? HitTest(ViewNode node, Point position, Rect clip, ViewNode? skip)
     {
-        if (!node.IsMounted || !node.View.IsHitTestVisible(node))
+        if (!node.IsMounted || ReferenceEquals(node, skip) || !node.View.IsHitTestVisible(node))
         {
             return null;
         }
@@ -461,7 +492,7 @@ internal sealed class InputRouter
             // 逆序：后绘制的子项在上层，优先命中。
             for (var i = node.ChildList.Count - 1; i >= 0; i--)
             {
-                var hit = HitTest(node.ChildList[i], position, effectiveClip);
+                var hit = HitTest(node.ChildList[i], position, effectiveClip, skip);
                 if (hit is not null)
                 {
                     return hit;

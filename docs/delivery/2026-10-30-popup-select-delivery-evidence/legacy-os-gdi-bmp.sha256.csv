@@ -1,0 +1,17 @@
+name,originalSha256,zipMember,bytes
+00-initial-light.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/00-initial-light.bmp,2520054
+01-scrolled-to-section.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/01-scrolled-to-section.bmp,2520054
+02-select-open.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/02-select-open.bmp,2520054
+03-select-committed.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/03-select-committed.bmp,2520054
+04-disabled-click.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/04-disabled-click.bmp,2520054
+05-longlist-open.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/05-longlist-open.bmp,2520054
+06-longlist-end.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/06-longlist-end.bmp,2520054
+07-longlist-committed.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/07-longlist-committed.bmp,2520054
+08-settings-open.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/08-settings-open.bmp,2520054
+09-settings-typed.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/09-settings-typed.bmp,2520054
+10-settings-esc.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/10-settings-esc.bmp,2520054
+11-settings-closebtn.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/11-settings-closebtn.bmp,2520054
+12-reopen-before-outside.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/12-reopen-before-outside.bmp,2520054
+13-outside-closed.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/13-outside-closed.bmp,2520054
+14-esc-closed.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/14-esc-closed.bmp,2520054
+15-dark-theme.bmp,b26cab4401e1ded56e08767ff31be89e391de6d535ef8086da7ee2d6e7b8c4fd,os/15-dark-theme.bmp,2520054

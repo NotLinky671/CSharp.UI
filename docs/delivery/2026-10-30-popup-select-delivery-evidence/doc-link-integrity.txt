@@ -1,0 +1,33 @@
+Local-link integrity | 26 files | targets: relative file/dir, fragment stripped, URL-decoded | ignored: http(s), mailto, anchors-only, fenced code, non-link text
+
+checked README.md  local-targets=38
+checked README.zh-CN.md  local-targets=38
+checked docs/guide/api-reference.md  local-targets=5
+checked docs/plan/2026-10-29-popup-and-select-plan.md  local-targets=1
+checked docs/task/README.md  local-targets=16
+checked docs/task\01-overlay-manager.md  local-targets=3
+checked docs/task\02-popup-placement.md  local-targets=2
+checked docs/task\03-popup-view.md  local-targets=3
+checked docs/task\04-popup-input.md  local-targets=3
+checked docs/task\05-select-control.md  local-targets=2
+checked docs/task\06-gallery-integration.md  local-targets=4
+checked docs/task\07-docs-delivery.md  local-targets=2
+checked docs/delivery/2026-10-30-popup-select-delivery.md  local-targets=2
+checked docs\delivery\2026-10-30-popup-select-delivery-evidence\README.md  local-targets=0
+checked docs\delivery\2026-10-30-popup-select-delivery-evidence\native-observed-producer\README.md  local-targets=0
+checked docs\delivery\2026-10-30-popup-select-delivery-evidence\native-outer\README.md  local-targets=0
+checked docs\delivery\2026-10-30-popup-select-delivery-evidence\native-widths\README.md  local-targets=0
+checked docs/return\2026-10-29-popup-select-p01-dev.md  local-targets=2
+checked docs/return\2026-10-29-popup-select-p01-safety.md  local-targets=3
+checked docs/return\2026-10-29-popup-select-p02-dev.md  local-targets=2
+checked docs/return\2026-10-29-popup-select-p03-design.md  local-targets=3
+checked docs/return\2026-10-29-popup-select-p03.md  local-targets=3
+checked docs/return\2026-10-29-popup-select-p04.md  local-targets=2
+checked docs/return\2026-10-29-popup-select-p05.md  local-targets=2
+checked docs/return\2026-10-29-popup-select-p06-dev.md  local-targets=1
+checked docs/return\2026-10-30-popup-select-p06-native-tooling-review.md  local-targets=9
+checked docs/return\2026-10-30-popup-select-p06-portal-compat.md  local-targets=0
+
+files=27 local-targets=146 broken=0
+
+Command (verbatim): python3 script — Pillow decode pass (image-integrity.txt) and link pass; link pass iterated the named set + evidence READMEs + return 2026-10-29/30-popup-select*.md; per line fenced-code skipped; targets taken from [text](tgt)/src|href, fragment+query stripped, urllib.parse.unquote, schemeless non-// resolved against file parent.

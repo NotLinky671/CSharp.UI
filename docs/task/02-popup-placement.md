@@ -1,32 +1,33 @@
-# P-02 PopupPlacement 纯算法与有效可视区契约
+# P-02 PopupPlacementCalculator 纯算法与有效可视区契约
 
 依据：[plan v3](../plan/2026-10-29-popup-and-select-plan.md) §3。
-前置：P-01。状态：待授权实施。
+前置：P-01（已主审通过）。状态：**已实现并经主审独立复核通过**（记录见 [P-02 开发记录](../return/2026-10-29-popup-select-p02-dev.md)，原始输出在 `2026-10-29-popup-select-p02-evidence/`）。
 
 ## 目标
 
-internal 纯计算 `PopupPlacement`：输入锚矩形/期望尺寸/有效可视区/边距/方向偏好/最大尺寸，
-输出 popup 绝对 Frame 或"关闭"信号——独立单测，同时供 `OverlayHost.Arrange` 与
+internal 纯计算 `PopupPlacementCalculator`：输入锚矩形/期望尺寸/已内缩 margin 的可用边界/方向偏好/最大高度，
+输出 popup 绝对 Frame 或"关闭"信号——独立单测，同时供 `OverlayManager.ArrangeEntry` 与
 `Select` 限高契约复用。
 
 ## 契约
 
 ```csharp
-internal static class PopupPlacement
+internal static class PopupPlacementCalculator
 {
-    // popupBounds = viewport.Inset(margin)（popup 可用边界——placement 的宽/高
-    //   上限与 clamp 范围；caller 预先算好；锚祖先 clip 不参与，否则 popup
-    //   逃不出 ScrollView clip）；
-    // contentDesired = popup 节点 Measure 结果（caller 以 popupBounds 宽为约束测过）；
-    // maxSize: Select 传 MaxPopupHeight；通用 Popup 默认 PositiveInfinity。
+    // popupBounds = viewport.Inset(margin)（caller 已内缩；本函数不再二次扣 margin）；
+    //   锚祖先 clip 不参与，否则 popup 逃不出 ScrollView clip。
+    // contentDesired = popup 节点在 popupBounds 宽约束下 Measure 得到的尺寸。
+    // maxHeight: Select 传 MaxPopupHeight；通用 Popup 默认 PositiveInfinity。
     // 返回 null = 无有效空间可定位 → caller 关闭 popup（绝不产 NaN/负/部分越界 Frame）。
     internal static Rect? Resolve(
         Rect anchorRect, Size contentDesired, Rect popupBounds,
-        double margin = 4, PopupPlacementSide preference = PopupPlacementSide.Auto,
-        double maxSize = double.PositiveInfinity);
+        PopupPlacementSide preference, double maxHeight);
 }
 internal enum PopupPlacementSide { Auto, Above, Below }
 ```
+
+实现位置：`src/CSharp.UI/Runtime/PopupPlacementCalculator.cs`；`OverlayManager.ArrangeEntry`
+只做两阶段 measure + Arrange，不再内联定位公式。
 
 算法（plan v3 §3 冻结，两阶段有界 measure）：
 
@@ -41,14 +42,20 @@ internal enum PopupPlacementSide { Auto, Above, Below }
     : preference`——`Above`/`Below` **强制**方向（不足按该侧限高、不翻转；
     `Auto` 才两向 flip）；
   - `sideAvail = side==Below ? spaceBelow : spaceAbove`；
-  - `h = min(desiredH, maxSize, sideAvail, popupBounds.Height)`；
+  - `h = min(desiredH, maxHeight, sideAvail, popupBounds.Height)`（side 可用高度
+    优先于通用 maxHeight/边界，B5）；
   - `h ≤ 0 || w ≤ 0` → `null`（关闭）；
+  - 非有限输入（anchor/desired/bounds 含 NaN/Inf）→ `null`，保证返回值恒有限；
   - `top = side==Below ? anchor.Bottom : anchor.Y - h`，clamp `[popupBounds.Top, popupBounds.Bottom-h]`；
   - `left = anchor.X`，clamp `[popupBounds.Left, popupBounds.Right-w]`；
 - **阶段 3（有界二次 measure，至多一次）**：最终 `(w,h)` ≠ 阶段 1
   `DesiredSize` → 用约束上限 `(w,h)` 再 Measure 一次（仍超限 → Arrange 按
   `(w,h)`、内容经 `PopupSurface` clip——Select 内套 `ScrollView` 拿到最终
   有限高后可视区/thumb 正确）；
+- **零空间关闭纪律**：`Resolve` 返回 `null` 时 `ArrangeEntry` 只把 surface
+  Arrange 成 `Rect.Empty` 并置 geometry-invalid 意图；不在 Arrange 内
+  unmount。安全阶段 `ConsumePending` 看到该意图后关闭并卸载 entry
+  （`ProcessPendingWork` 返回后 `HasActiveEntry=false`）。
 - 返回有限 `Rect(left, top, w, h)`，`w/h ≥ 0`；Anchor 滚动/Frame 变化 →
   下轮重算（popup 跟随）。
 
@@ -67,8 +74,9 @@ clip 交；P-01 实现或本任务内补 helper，写注释）；popup 内容超
 - B3：两侧都不足（Auto）→ 取空间大的一侧 + h 限该侧可用 → 结果仍在 popupBounds 内
   （可截内容高度）。
 - B4：锚贴 popupBounds 左/右/上/下边缘 → clamp margin 内。
-- B5：`desiredW > popupBounds.W` → w=popupBounds 宽；`desiredH > maxSize` → h=maxSize；
-  `desiredH > popupBounds.H` → h=popupBounds 高；popup 不穿 anchor（side 正确）。
+- B5：`desiredW > popupBounds.W` → w=popupBounds 宽；`h = min(desiredH, maxHeight,
+  sideAvail, popupBounds.H)`——side 可用高度优先（该侧 60 时即使 maxHeight 400 也取 60）；
+  popup 不穿 anchor（side 正确）。
 - B6：`popupBounds` 零宽/零高/空 → `null`（关闭信号，非异常）。
 - B7：`preference=Above` 而上方空间不足但下方充足 → **仍 Above**、按上方可用
   限高（强制、不翻转）；`Below` 对称——与 `Auto` 的 flip 区分开。

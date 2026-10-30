@@ -1,0 +1,8 @@
+PopupSurface (96, 526.883, 760×88) focusable=False scrollY=0
+  PopupContent (96, 526.883, 760×88) focusable=False scrollY=0
+    SelectPopup (96, 526.883, 760×88) focusable=False scrollY=0
+      ScrollView(Vertical) (98, 528.883, 756×84) focusable=False scrollY=0
+        VStack(1) (98, 528.883, 744×84) focusable=False scrollY=0
+          SelectOption (98, 528.883, 744×28) focusable=False scrollY=0
+          SelectOption (98, 556.883, 744×28) focusable=False scrollY=0
+          SelectOption (98, 584.883, 744×28) focusable=False scrollY=0

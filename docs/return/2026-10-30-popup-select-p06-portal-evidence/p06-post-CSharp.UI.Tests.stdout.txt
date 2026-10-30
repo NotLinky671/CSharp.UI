@@ -1,0 +1,15 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.Tests
+  Discovered:  CSharp.UI.Tests
+  Starting:    CSharp.UI.Tests
+    CSharp.UI.Tests.OverlayRootTests.A4_PopupUsesAnchorCurrentEnvironment_NotSnapshot [FAIL]
+      Assert.Same() Failure: Values are not the same instance
+      Expected: Theme { Background = #15171CFF, Surface = #1D2026FF, Foreground = #E8EAEDFF, MutedForeground = #9AA1ADFF, Accent = #4C8DFFFF, AccentForeground = #0B1220FF, Border = #333842FF, ControlBackground = #24272FFF, ControlHoverBackground = #2C313AFF, ControlPressedBackground = #3A404BFF, DisabledForeground = #5C626DFF, DisabledBackground = #22252BFF, SelectionBackground = #2F4B7CFF, Danger = #F87171FF, FocusRing = #4C8DFFFF, IsDark = True }
+      Actual:   Theme { Background = #F5F6F8FF, Surface = #FFFFFFFF, Foreground = #1B1D21FF, MutedForeground = #6B7280FF, Accent = #2563EBFF, AccentForeground = #FFFFFFFF, Border = #D6DAE1FF, ControlBackground = #FFFFFFFF, ControlHoverBackground = #EDF1F7FF, ControlPressedBackground = #DCE3EDFF, DisabledForeground = #A3A9B5FF, DisabledBackground = #EDEFF3FF, SelectionBackground = #BBD3FBFF, Danger = #DC2626FF, FocusRing = #2563EBFF, IsDark = False }
+      Stack Trace:
+        tests\CSharp.UI.Tests\OverlayRootTests.cs(152,0): at CSharp.UI.Tests.OverlayRootTests.A4_PopupUsesAnchorCurrentEnvironment_NotSnapshot()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    CSharp.UI.Tests (ID = '47b51e4c25395a5b04e646c4c96a60918fb6bab65d6c621ff4209fae5289dd48')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.Tests  Total: 787, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 1.553s

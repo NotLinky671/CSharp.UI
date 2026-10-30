@@ -1,0 +1,16 @@
+EVIDENCE C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-29-popup-select-p06-evidence
+PASS single.select
+PASS single.open
+INFO single.popupFrame :: (12, 52, 296×60)
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-29-popup-select-p06-evidence\afterfix-single-open-open-background.png 320x240
+PASS panel.select
+PASS panel.open
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-29-popup-select-p06-evidence\afterfix-single-panel-open-panel.png 320x240
+INFO panel.pixel :: #FFFFFFFF surface=#FFFFFFFF at=(302,96)
+PASS panel.opaque-surface
+PASS opacity0.select
+PASS opacity0.open
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-29-popup-select-p06-evidence\afterfix-single-opacity0-opacity0.png 320x240
+INFO opacity0.pixel :: #F5F6F8FF underlay=#FF00AAFF at=(302,96)
+FAIL opacity0.no-panel-ink :: pixel=#F5F6F8FF underlay=#FF00AAFF
+RESULT FAIL (1)

@@ -1,6 +1,6 @@
 # 2026-10-29 Popup 覆盖层与 Select 控件实施计划
 
-基线：`60ec40c`（含 `c704c20` scrollbar first-drag 修复）。本文件只做设计；全部任务标记"待授权实施/未开始"。
+基线：`60ec40c`（含 `c704c20` scrollbar first-drag 修复）。本文件只做设计。**状态：全部 P-01~P-07 主审验收通过、代码与文档收口完成（交付记录见 [2026-10-30-popup-select-delivery](../delivery/2026-10-30-popup-select-delivery.md)；提交信息见 git 历史）。**
 
 ## 问题
 

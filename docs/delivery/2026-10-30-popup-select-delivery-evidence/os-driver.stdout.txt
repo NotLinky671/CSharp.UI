@@ -1,0 +1,23 @@
+WINDOW pid=7592 hwnd=0x530E6E
+CLIENT 900x700 scale=1 (logical 900x700)
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\00-initial-light.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\01-scrolled-to-section.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\02-select-open.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\03-select-committed.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\04-disabled-click.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\05-longlist-open.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\06-longlist-end.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\07-longlist-committed.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\08-settings-open.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\09-settings-typed.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\10-settings-esc.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\11-settings-closebtn.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\12-reopen-before-outside.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\13-outside-closed.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\14-esc-closed.bmp 900x700
+BMP C:\Users\nothh\code\C#\CSharp.UI\docs\delivery\2026-10-30-popup-select-delivery-evidence\os\15-dark-theme.bmp 900x700
+PIXEL light=FFF5F6F8 dark=FFF5F6F8
+FAIL theme-darkened :: light=FFF5F6F8 dark=FFF5F6F8
+PASS app-alive
+RESULT FAIL (1)
+GALLERY-EXIT code=-1

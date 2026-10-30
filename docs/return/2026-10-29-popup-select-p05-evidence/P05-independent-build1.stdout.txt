@@ -1,0 +1,13 @@
+  正在确定要还原的项目…
+  已还原 C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\selectprobe\PopupSelectProbe.csproj (用时 78 毫秒)。
+  1 个项目(共 2 个)是最新的，无法还原。
+  CSharp.UI -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\bin\Release\net10.0\CSharp.UI.dll
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\selectprobe\Program.cs(98,21): error CS0411: 无法从用法中推断出方法“Component.UseState<T>(string, T)”的类型参数。请尝试显式指定类型参数。 [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\selectprobe\PopupSelectProbe.csproj]
+
+生成失败。
+
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\selectprobe\Program.cs(98,21): error CS0411: 无法从用法中推断出方法“Component.UseState<T>(string, T)”的类型参数。请尝试显式指定类型参数。 [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\selectprobe\PopupSelectProbe.csproj]
+    0 个警告
+    1 个错误
+
+已用时间 00:00:01.53

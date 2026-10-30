@@ -18,6 +18,8 @@
 | `UiDispatcher.Post(Action)` | 把后台结果投递到 UI 线程 |
 | `UiHostContext` | 通过 `UiApplicationOptions.Started/FrameRendered` 观察运行时、调度器、DPI 与帧计数 |
 
+> **退出快捷键语义**：默认 `ExitOnEscape`（Esc）与 `ExitOnCloseShortcut`（Ctrl/Cmd+Q）**只在未被 UI 或 IME 消费的 `KeyEventKind.Down` 上**判定。同一手势的 `KeyUp` 不会单独触发退出——例如 Esc-Down 被弹层消费关闭后，配对的 Esc-Up 不会再退出应用；仅当 UI 与 IME 均未消费该 Down 时才执行宿主退出快捷键。
+
 ## 视图描述
 
 | 类型 | 说明 |
@@ -119,6 +121,69 @@
 |---|---|
 | `State<T>` | `Value` 读写；读取登记依赖（组件 `Build` 与 `Responsive` builder 各自独立作用域），写入时把变化派发到对应更新目标；`PeekValue()` 不登记依赖 |
 | `Binding<T>` | `Value` 双向读写；`Binding.From(get, set)`、`Binding.Constant(value)`、`Binding.Select(...)`；`State<T>` 可隐式转换为 `Binding<T>`；`Read(node)` 在构建之外补登记长期依赖，读取它的节点卸载或被替换描述时释放 |
+
+## 弹出层 Popup 与单选 Select
+
+| 类型 | 说明 |
+|---|---|
+| `Popup(View anchor, View content, Binding<bool> isOpen, PopupPlacement preference = PopupPlacement.Auto)` | 锚定弹层。`anchor` 在主树中正常布局/命中；`content` 挂到根级 overlay（真实视图树，不参与主树布局）；`IsOpen` 双向，内部关闭写回 false 一次 |
+| `Popup.Anchor` / `Content` / `IsOpen` | 构造参数的公开只读视图/绑定；`Anchor` 支持 `ForEach`/多条目（归一化为单一锚子树） |
+| `Popup.Preference` | `PopupPlacement.Auto`（默认，可翻转）/ `Above` / `Below`（强制方向，按该侧可用高度截断，不翻转） |
+| `Popup.Margin` / `MaxHeight` | 视口边缘间距（有限非负，默认 4）；高度上限（有限正数或正无穷，默认无上限） |
+| `Popup.CloseOnOutsidePress` / `CloseOnEscape` | 默认 true；false 时对应路径不拦截、不关闭 |
+| `Select<T>(Binding<T> value, IReadOnlyList<SelectItem<T>> items, string? placeholder = null)` | 单选下拉。`Value` 双向；`Items` 构造时快照且按 `EqualityComparer<T>.Default` 唯一，重复值抛 `ArgumentException` |
+| `Select<T>.Value` / `Items` / `Placeholder` | 构造后只读属性；`MaxPopupHeight` 为 init 可配置（有限正数，默认 240），超出时列表内部滚动 |
+| `SelectItem<T>(T Value, string? Label = null, bool Disabled = false)` | 选项值、显示标签（null 回退 `Value?.ToString() ?? ""`）、是否禁用；被选中且禁用时仍显示其 Label |
+
+`T` 由调用方决定是否可空（例如 `Select<string?>` 且 `SelectItem<string?>(null, "无")` 合法）。
+
+```csharp
+public sealed class PopupSelectExample : Component
+{
+    protected override View Build()
+    {
+        var mode = UseState("mode", "标准模式");
+        var settingsOpen = UseState("settingsOpen", false);
+        var settingsText = UseState("settingsText", string.Empty);
+        var theme = UseState("theme", Theme.Light);
+        var current = theme.Value;
+
+        var content = new VStack(
+                new TextField(settingsText.ToBinding(), "输入设置").FillWidth(),
+                new Button("关闭", () => settingsOpen.Value = false))
+            .Spacing(8)
+            .Padding(12)
+            .Background(current.Surface)      // Popup 不自动画内容底色，由调用方按主题提供
+            .Border(current.Border, 1, 8);
+
+        return new VStack(
+                new Select<string>(
+                    mode.ToBinding(),
+                    [new("标准模式"), new("紧凑模式"), new SelectItem<string>("禁用项", Disabled: true)],
+                    "请选择模式"),
+                new Text($"当前选择：{mode.Value}"),
+                new Popup(
+                    new Button("打开设置", () => settingsOpen.Value = !settingsOpen.Value),
+                    content,
+                    settingsOpen.ToBinding()))
+            .Spacing(8)
+            .Padding(16);
+    }
+}
+```
+
+交互与生命周期：
+
+- **打开**：`Select` 在 trigger 上 pointer Up（同点）打开，Down 不打开；关闭态 `Enter`/`Space`/方向键也打开。弹层打开时焦点留在 trigger，选项行不进入 Tab 顺序。
+- **选择**：指针 Up 落在同一行提交；`Enter`/`Space` 提交 active 行；`Up`/`Down` 跳过 disabled 项，`Home`/`End` 到首/末可用项；`Escape` 取消不写，`Tab`/`Shift+Tab` 先关闭再按声明顺序移到下/上一个焦点。重复的 `Enter`/`Space` 被忽略，重复方向键可继续导航。
+- **提交纪律**：`Select.Value` 只在选后路径写绑定一次；同值重选仍写一次；打开/关闭/`Escape`/`Tab`/外点/失活不写（`Popup.IsOpen` 不同：其**内部关闭路径会写回 `false` 一次**，见上表）。空列表或全 disabled 不打开；已选 disabled 项仍显示 Label；当前值不在列表时显示 placeholder 且不写回。
+- **定位**：`Auto` 下方优先、空间不足翻转；最终 Frame 始终限制在视口内。锚滚动/窗口 resize 时弹层跟随；锚被裁出、禁用、卸载或窗口失活时关闭（写回 false 一次）。
+- **单活动弹层**：同一时间至多一个 popup。嵌套打开（弹层内容里再请求打开）被拒绝并产生运行时诊断，外层保持打开。非 modal：无遮罩/焦点陷阱。
+- **外点**：按下弹层外关闭并吞并整次指针手势（Down/Move/Up 不触达下层控件）；落在当前锚子树内不算外点。点击另一个 `Select` 的锚时，第一次手势只关闭旧弹层，第二次才打开新弹层。
+- **绑定边沿**：内部关闭后再观察到一次新的 false→true 才会重开；`Binding<bool>.Constant(true)` 不会每轮重新打开。每次 `Build` 新建 `State.ToBinding()` 实例不会重置已打开状态。
+- **主题/环境**：弹层内容继承锚**当前**的 Theme/Font/Disabled/Opacity；`Popup` 不自动绘制内容背景，需要时由调用方用 `Background`/`Border`（按当前主题）。
+- **兼容性**：`UiRuntime.Root` 仍返回用户根节点，但其 `Parent` 现为非 null 的内部层、`Depth` +1；弹层内容位于用户根子树之外的独立 overlay 树，仅受视口裁剪。根级普通控件布局与输入行为不变。
+- 不包含：可键入过滤的 ComboBox、多选、typeahead、分组头、item 自定义模板；`Alt+Down` 不在承诺范围；`Select` 不把 `Ctrl`/`Meta` 组合键当作导航或确认（不承诺框架级全局快捷键语义）。
 
 ## 输入事件（平台无关）
 

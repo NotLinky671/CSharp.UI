@@ -1,0 +1,9 @@
+Unhandled exception. System.InvalidOperationException: You need to initialize the OpenGL binding first by calling LoadBindings() or creating a compatible OpenGL window.
+   at OpenTK.Graphics.BindingsBase.Uninitialized()
+   at OpenTK.Graphics.OpenGL4.GL.CreateShader(ShaderType type)
+   at CSharp.UI.OpenTK.GlShaderProgram.CompileStage(ShaderType type, String source, String stageName) in C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.OpenTK\Rendering\GlShaderProgram.cs:line 152
+   at CSharp.UI.OpenTK.GlShaderProgram.Compile(String vertexSource, String fragmentSource, String name) in C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.OpenTK\Rendering\GlShaderProgram.cs:line 74
+   at CSharp.UI.OpenTK.GlRenderer..ctor(IGlTextureProvider textures) in C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.OpenTK\Rendering\GlRenderer.cs:line 120
+   at Program.<<Main>$>g__NewRun|0_2(String tag, View root, Double width, Double height, Theme theme, Double scale) in C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs:line 37
+   at Program.<<Main>$>g__ScenarioSingleOpenBackground|0_14(<>c__DisplayClass0_0&) in C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs:line 247
+   at Program.<Main>$(String[] args) in C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs:line 261

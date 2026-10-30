@@ -1,0 +1,37 @@
+INFO M0.show :: ok=True active=False anchor=(12, 12, 276×33.5)
+INFO M0.after :: active=True hostChildren=1
+PASS M0.mounted
+PASS S1.foreach-root-item-count
+PASS S1.foreach-root-frames
+PASS S1.foreach-root-stacked
+INFO S1.root-depth :: Root.Parent=layer Root.Depth=1 (public change, recorded only)
+PASS S2.button-found
+PASS S2.empty-host-hit-passthrough
+INFO S2.host-wiring :: IsHitTestVisible=False HitTestSelf=False (internal wiring, not consumer proof)
+PASS S2.empty-host-button-click
+PASS S3.anchor-found
+INFO S3.anchor-partial :: anchor=(140, -8.75, 228×33.5) scroll=(140, 8, 240×120) offset=16.75
+PASS S3.anchor-partially-clipped
+PASS S3.show-accepted
+PASS S3.popup-mounted
+PASS S3.popup-frame-finite
+PASS S3.popup-not-clipped-by-scroll
+PASS S3.popup-has-area-outside-scroll-clip
+PASS S3.popup-hits-outside-scroll
+PASS S3.env-follows-anchor
+INFO S4.after-show :: acceptedActive=False anchor=(12, 12, 336×33.5)
+INFO S4.after-pump :: active=True hostChildren=1
+PASS S4.popup-mounted
+PASS S4.capture-inside-popup
+PASS S4.popup-unmounted
+PASS S4.capture-cleared
+PASS S4.stale-up-safe
+PASS S5.zero-bounds-refuse
+PASS S5.reopen-after-bounds
+PASS S5.dispose-unmounts-popup
+PASS S5.dispose-unmounts-root
+INFO S6.raw :: Show-from-OnMount accepted=True active=False
+INFO S6.state :: nestedAccepted=True active=True surfaceChild=Frame(100×100)
+FAIL S6.nested-show-from-mount-rejected :: Show accepted during Mount before _active assignment (nesting guard bypass)
+FAIL S6.outer-popup-remains :: surfaceChild=Frame(100×100)
+RESULT FAIL (2)

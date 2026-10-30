@@ -1,0 +1,64 @@
+PASS D1.opened
+PASS D1.content-click-once
+PASS D1.content-focused
+PASS D2.opened
+PASS D2.point-outside-popup
+PASS D2.closed
+PASS D2.false-once
+PASS D2.under-not-clicked-by-open-gesture
+PASS D2.next-click-works
+PASS D2b.point-outside-popup
+PASS D2b.stays-open
+PASS D2b.under-receives-click
+PASS D2b.no-close-write
+PASS D3.two-anchors
+PASS D3.a-open
+PASS D3.first-point-outside-popup
+PASS D3.first-gesture-closes-only
+PASS D3.a-false-once
+PASS D3.b-not-activated
+PASS D3.second-gesture-opens-b
+PASS D4.open
+PASS D4.track-point-outside-popup
+PASS D4.track-click-closes
+PASS D4.track-click-does-not-scroll
+PASS D4.false-once
+PASS D4.next-gesture-drags-thumb
+PASS D5.open
+PASS D5.inside-click-works
+PASS D5.popup-not-dismissed
+PASS D5.no-false-write
+PASS D6.open
+PASS D6.saved-focus-nonnull
+PASS D6.content-focused
+PASS D6.closed
+PASS D6.false-once
+PASS D6.focus-restored-to-saved
+PASS D6b.saved-focus-nonnull
+PASS D6b.open
+PASS D6b.content-mounted
+INFO D6b.pre :: frame=(82, 65.5, 0×0) focus=null
+FAIL D6b.content-focused :: focused=null
+INFO D6b.raw :: focus=Button("anchor") handled=True active=False
+FAIL D6b.self-handled-keeps-open
+PASS D6b.second-esc-closes
+PASS D6c.flag-false-stays-open
+PASS D6c.no-false-write
+PASS D7.open
+PASS D7.closed
+PASS D7.false-once
+PASS D7.input-works-after-reactivate
+PASS D8.opened-midgesture
+PASS D8.anchor-got-up
+PASS D8.new-content-not-clicked
+PASS D9.point-outside-popup
+INFO D9.during :: hit=OverlayDismissTarget
+PASS D9.during-not-underlying
+PASS D9.closed-after-gesture
+PASS D9.no-stale-blocker
+PASS D9.next-click-lands
+PASS D10.open
+PASS D10.wheel-point-outside-popup
+PASS D10.wheel-scrolls
+PASS D10.popup-stays-open
+RESULT FAIL (2)

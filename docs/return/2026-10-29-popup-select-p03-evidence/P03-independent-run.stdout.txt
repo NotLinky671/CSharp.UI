@@ -1,0 +1,48 @@
+PASS M1.initially-closed
+FAIL M1.false-to-true-opens
+PASS M1.true-to-false-closes
+FAIL M1.no-internal-write-on-user-close :: writes=1
+FAIL M2.content-mounted
+FAIL M3.initial-true-opens
+PASS M3.closed
+PASS M3.no-self-excite
+PASS M3.false-written-once
+PASS M4.single-active
+PASS M4.last-declaration-wins
+PASS M4.first-false-written-once
+PASS M4.second-not-written
+FAIL M5.open
+FAIL M5.open-after-rebuild-0
+FAIL M5.open-after-rebuild-1
+FAIL M5.open-after-rebuild-2
+PASS M6.open
+PASS M6.closed-on-scroll-out
+PASS M6.false-written-once
+FAIL M7.open
+PASS M7.closed-on-disable
+PASS M7.false-written-once
+FAIL M8.open
+PASS M8.closed-on-deactivate
+PASS M8.false-written-once
+FAIL M8.reopened-on-edge
+INFO M9.raw :: nested accepted=False
+PASS M9.nested-rejected
+FAIL M9.outer-still-open
+FAIL M9.outer-content
+FAIL M10.open
+PASS M11.closed-zero-size
+PASS M11.false-written-once
+PASS M11.no-reopen-loop
+INFO M12.plain-root :: active=False (no Component dependency; info only)
+PASS M13.first-active
+INFO M13.raw :: exception=none firstWrites=[False] other=1 active=second
+PASS M13.no-exception
+PASS M13.old-owner-false-once
+PASS M13.setter-state-applied
+PASS M13.new-owner-active
+PASS M13.stable-after-reentry
+INFO M14.rows :: (0, 0, 360×320) | (0, 0, 360×320)
+PASS M14.two-rows
+FAIL M14.rows-stacked :: row0=(0, 0, 360×320) row1=(0, 0, 360×320)
+FAIL M14.popup-open
+RESULT FAIL (16)

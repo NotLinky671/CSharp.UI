@@ -1,0 +1,141 @@
+EV=C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out
+CONTEXT scale=1.5 logical=900x700 fb=1350x1050 frames=0
+PASS hwnd
+HWND pid=6344 hwnd=0x1030ECC
+WAIT first-frames frames=1
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-00-initial-light.png 1350x1050
+PASS theme-button-found
+themeBtn frame=(784, 20, 84×34.621)
+PASS themeBtn-visible
+CLICK logical=(826.0,37.3) screen=(1516,439)
+WAIT theme-toggle frames=3
+PASS theme-toggled
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-00b-theme-dark.png 1350x1050
+PASS demo-found
+WAIT wheel0 frames=4
+WAIT wheel1 frames=5
+WAIT wheel2 frames=6
+WAIT wheel3 frames=7
+WAIT wheel4 frames=8
+WAIT wheel5 frames=9
+WAIT wheel6 frames=10
+WAIT wheel7 frames=11
+WAIT wheel8 frames=12
+WAIT wheel9 frames=13
+WAIT wheel10 frames=14
+WAIT wheel11 frames=15
+WAIT wheel12 frames=16
+WAIT wheel13 frames=17
+WAIT wheel14 frames=18
+WAIT wheel15 frames=19
+WAIT wheel16 frames=20
+scroll 0 -> 1920
+PASS scroll-moved
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-01-scrolled-to-section.png 1350x1050
+PASS select-found
+select frame=(96, 494.883, 760×32)
+CLICK logical=(476.0,510.9) screen=(991,1149)
+WAIT select-open frames=22
+PASS select-open
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-02-select-open.png 1350x1050
+KEY vk=0x28 sc=0x50 ext=1 sent=2
+KEY vk=0xD sc=0x1C ext=0 sent=2
+WAIT select-commit frames=24
+PASS select-committed
+PASS select-value
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-03-select-committed.png 1350x1050
+PASS disabled-found
+CLICK logical=(476.0,578.8) screen=(991,1251)
+WAIT disabled-click frames=26
+PASS disabled-no-open
+PASS disabled-no-write
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-04-disabled-click.png 1350x1050
+PASS longlist-found
+CLICK logical=(520.5,620.8) screen=(1058,1314)
+WAIT longlist-open frames=28
+PASS longlist-open
+longlist anchor=(184.922, 604.844, 671.078×32) popup=(184.922, 484.844, 671.078×120)
+PASS longlist-flip-above
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-05-longlist-open.png 1350x1050
+KEY vk=0x23 sc=0x4F ext=1 sent=2
+WAIT longlist-end frames=29
+PASS longlist-still-open
+longlist inner-scroll offset=724
+PASS longlist-scrolled
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-06-longlist-end.png 1350x1050
+PASS lastrow-found
+item-30 row frame=(186.922, 574.844, 655.078×28) clip=(186.922, 486.844, 667.078×116) vis=(186.922, 574.844, 655.078×28)
+PASS lastrow-visible
+CLICK logical=(514.5,588.8) screen=(1049,1266)
+WAIT longlist-commit frames=31
+PASS longlist-committed
+popupSelectLong actual=选项 30 · 长列表项标签
+PASS longlist-value
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-07-longlist-committed.png 1350x1050
+PASS popup-button-found
+WAIT ensure0 frames=33
+popupBtn frame=(96, 630.805, 84×34.621)
+CLICK logical=(138.0,648.1) screen=(484,1355)
+WAIT popup-open frames=35
+PASS popup-open
+PASS popup-isopen-true
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-08-popup-open.png 1350x1050
+PASS textfield-found
+CLICK logical=(178.0,560.2) screen=(544,1223)
+WAIT tf-focus frames=54
+PASS textfield-focused
+WAIT tf-typed frames=88
+PASS textfield-text
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-09-popup-typed.png 1350x1050
+CLICK logical=(450.0,694.0) screen=(952,1424)
+WAIT popup-outside frames=469
+PASS popup-outside-closed
+PASS popup-isopen-false
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-10-popup-closed.png 1350x1050
+CLICK logical=(138.0,648.1) screen=(484,1355)
+WAIT reopen frames=471
+PASS reopened
+CLICK logical=(476.0,318.9) screen=(991,861)
+WAIT outside-dismiss frames=473
+PASS outside-dismissed-only
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-11-outside-dismissed.png 1350x1050
+CLICK logical=(476.0,318.9) screen=(991,861)
+WAIT second-open frames=474
+PASS second-gesture-opens
+CLICK logical=(450.0,692.0) screen=(952,1421)
+WAIT outside-close frames=476
+PASS outside-closed
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-12-second-gesture.png 1350x1050
+PASS inner-select-found
+inner reset offset=0.0
+inner anchor=(238, 480.805, 400×32) innerClip=(238, 480.805, 412×140)
+CLICK logical=(438.0,496.8) screen=(934,1128)
+WAIT inner-open frames=478
+PASS inner-open
+anchor top=480.805 bottom=512.8050000000001 popup top=512.8050000000001 bottom=628.8050000000001 innerClip=(238, 480.805, 412×140)
+PASS inner-popup-in-viewport
+PASS inner-popup-escapes-clip
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-13-inner-open-flipped.png 1350x1050
+PASS inner-scroll-found
+inner-wheel point (646,551) popup=(238, 512.805, 400×116) scroll=(238, 480.805, 412×140) inside=True
+PASS inner-wheel-point-ok
+WAIT inner-wheel-A frames=480
+A off 0->24 anchorTop 480.8->456.8 popTop 512.8->488.8 open=True
+PASS inner-follows
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-14-inner-followed.png 1350x1050
+WAIT inner-wheel-B0 frames=481
+B off 24->216 anchor=(238, 264.805, 400×32) clip=(238, 480.805, 412×140) clipped=True open=False
+PASS inner-clip-closes
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-15-inner-clipped.png 1350x1050
+PASS app-alive-before-esc
+CLICK logical=(138.0,648.1) screen=(484,1355)
+WAIT esc-reopen frames=483
+PASS esc-reopen
+KEY vk=0x1B sc=0x1 ext=0 sent=2
+UiApplication.Run exit=0
+WAIT esc-close-popup frames=483
+PASS esc-closed-popup
+PASS esc-isopen-false
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-observed\out\native-16-esc-closed.png 1350x1050
+final frames=483 host-exited=True
+RESULT PASS

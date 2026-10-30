@@ -1,0 +1,26 @@
+Post-Esc-fix final gate — actual observed commands/exits (2026-10-30, after host Esc fix + 1 new regression Fact).
+
+Builds:
+  dotnet build CSharp.UI.slnx -c Debug   --no-incremental -m:1 -nodeReuse:false -> shell exit 0; 0 警告 0 错误
+  dotnet build CSharp.UI.slnx -c Release --no-incremental -m:1 -nodeReuse:false -> shell exit 0; 0 警告 0 错误
+  logs: post-esc-fix-build-{debug,release}.{stdout,stderr}.txt (stderr empty)
+
+Test suites (direct generated .exe, stdout/stderr captured per file):
+  Debug   CSharp.UI.Tests.exe            exit 0  Total 787  Failed 0
+  Debug   CSharp.UI.Text.Tests.exe       exit 0  Total 112  Failed 0
+  Debug   CSharp.UI.Integration.Tests.exe exit 0 Total 56   Failed 0
+  Debug   CSharp.UI.Markdown.Tests.exe   exit 0  Total 50   Failed 0
+  Debug   CSharp.UI.OpenTK.Tests.exe     exit 0  Total 684  Failed 0   (683 pre-fix + 1 new Esc regression)
+  Release CSharp.UI.Tests.exe            exit 0  Total 787  Failed 0
+  Release CSharp.UI.Text.Tests.exe       exit 0  Total 112  Failed 0
+  Release CSharp.UI.Integration.Tests.exe exit 0 Total 56   Failed 0
+  Release CSharp.UI.Markdown.Tests.exe   exit 0  Total 50   Failed 0
+  Release CSharp.UI.OpenTK.Tests.exe     exit 0  Total 684  Failed 0
+  All ten stderr files empty.
+
+Native independent run: see native-independent/ + native-independent.stdout.txt.
+
+Native independent (E5, frozen harness):
+  CSharp.UI.OpenTK.Tests.exe (native-observed apphost) -> observed shell exit 0
+  PASS=47 FAIL=0 RESULT PASS; app-alive-after-esc PASS; host-exited=False;
+  UiApplication.Run exit=0 after own RequestExit(0). See native-independent-run.md.

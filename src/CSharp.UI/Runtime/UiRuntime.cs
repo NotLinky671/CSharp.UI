@@ -88,6 +88,8 @@ public sealed class UiRuntime : IDisposable
     private readonly FocusManager _focus;
     private readonly InputRouter _router;
     private readonly TextInputServiceSession _textInput;
+    private readonly OverlayManager _overlay;
+    private readonly ViewNode _layer;
     private readonly List<TimedWake> _timedWakes = [];
     private bool _timedWakeDispatching;
     private bool _layoutDirty = true;
@@ -116,8 +118,12 @@ public sealed class UiRuntime : IDisposable
         _router = new InputRouter(this, _focus);
         _textInput = new TextInputServiceSession(this);
         _layoutDiagnostics = new LayoutDiagnostics(ReportDiagnostic);
-        Root = Reconciler.MountRoot(this, root);
-        Root.Parent = null;
+        _overlay = new OverlayManager(this);
+
+        // 单次挂载根层：[userRoot, OverlayHost]；公共 Root 返回其中用户节点。
+        _layer = Reconciler.MountRoot(this, new UiRootLayerView(root, _overlay.HostView));
+        Root = _layer.ChildList[0];
+        _overlay.AttachHost(_layer.ChildList[1]);
     }
 
     /// <summary>运行时的服务集合。</summary>
@@ -129,8 +135,19 @@ public sealed class UiRuntime : IDisposable
     /// <summary>时钟。</summary>
     public IUiClock Clock => Services.Clock;
 
-    /// <summary>根节点。根视图为 <c>ForEach</c> 时会包一层隐式容器。</summary>
+    /// <summary>根节点：用户根视图对应的节点。根视图为 <c>ForEach</c> 时会包一层隐式容器。</summary>
+    /// <remarks>
+    /// 运行时在用户根外固定包一层内部 overlay 根层（<c>[用户根, overlay 宿主]</c> 两子），
+    /// 因此本节点的 <see cref="ViewNode.Parent"/> 不为 null、<see cref="ViewNode.Depth"/> 为 1。
+    /// 布局、绘制、命中与焦点遍历的内部起点是根层，用户树与 overlay 子树同层隔离。
+    /// </remarks>
     public ViewNode Root { get; }
+
+    /// <summary>内部遍历起点：固定根层（用户树 + overlay 宿主）。</summary>
+    internal ViewNode TraversalRoot => _layer;
+
+    /// <summary>overlay 管理器（内部弹层生命周期与命中/焦点协作）。</summary>
+    internal OverlayManager Overlay => _overlay;
 
     /// <summary>根环境（主题、默认字体、默认前景色）。修改后需要重新布局。</summary>
     public EnvironmentValues Environment { get; private set; } = new() { Theme = Theme.Light };
@@ -191,7 +208,7 @@ public sealed class UiRuntime : IDisposable
     {
         ArgumentNullException.ThrowIfNull(environment);
         Environment = environment;
-        InvalidateLayout(Root);
+        InvalidateLayout(_layer);
     }
 
     /// <summary>更新视口尺寸与 DPI；尺寸变化触发布局失效，DPI 变化同时使文本与纹理缓存失效。</summary>
@@ -200,7 +217,7 @@ public sealed class UiRuntime : IDisposable
         var scaleChanged = Math.Abs(pixelScale - PixelScale) > 0.0001;
         ViewportSize = new Size(Math.Max(0, viewportSize.Width), Math.Max(0, viewportSize.Height));
         PixelScale = pixelScale <= 0 ? 1.0 : pixelScale;
-        InvalidateLayout(Root);
+        InvalidateLayout(_layer);
         if (scaleChanged)
         {
             Services.TextService.ClearCaches();
@@ -227,7 +244,7 @@ public sealed class UiRuntime : IDisposable
             _registered = true;
         }
 
-        InvalidateLayout(Root);
+        InvalidateLayout(_layer);
         Dispatcher.RequestRedraw();
     }
 
@@ -432,7 +449,8 @@ public sealed class UiRuntime : IDisposable
             _componentQueue.Clear();
             _componentSet.Clear();
             _responsiveTransactions.Clear();
-            InvalidateLayout(Root);
+            _overlay.DropPendingRequests();
+            InvalidateLayout(_layer);
             throw;
         }
         finally
@@ -485,6 +503,14 @@ public sealed class UiRuntime : IDisposable
                 var afterLayout = _responsiveTransactions.Consume(this, passId, ref responsiveBudget);
                 LastResponsiveTransactionCount += afterLayout;
                 progressed |= afterLayout > 0;
+            }
+
+            // overlay 打开/关闭请求只在布局之后的安全阶段消费（Measure/Arrange/Emit 内不 reconcile）：
+            // 消费即改变子树时重新布局到稳定；消费次数按轮预算，回调自激会在预算耗尽时诊断并抛出，
+            // 由下方异常路径丢弃挂起请求后恢复，不会无界 drain。
+            if (_overlay.ConsumePending(passId))
+            {
+                progressed = true;
             }
 
             if (!progressed)
@@ -590,7 +616,7 @@ public sealed class UiRuntime : IDisposable
 
             var options = new RenderFrameOptions(ViewportSize, PixelScale, ClearColor);
             var context = new DrawContext(this, Services.TextService, Services.TextureService, Services.ImageService, PixelScale, options);
-            Root.View.Emit(Root, context);
+            _layer.View.Emit(_layer, context);
             // 帧末追加内容（TI-07 候选 overlay）：在内容之后、命令快照之前执行。
             // 核心不认识候选类型；回调必须只追加绘制命令，不得再次生成帧或重开纹理帧。
             FrameOverlay?.Invoke(context);
@@ -893,6 +919,7 @@ public sealed class UiRuntime : IDisposable
         _windowActive = active;
         if (!active)
         {
+            _overlay.OnWindowDeactivated();
             _focus.CancelTextInput();
 
             // 窗口失活是分组边界：打断合并，但不清空历史（重新激活后仍可撤销）。
@@ -994,6 +1021,7 @@ public sealed class UiRuntime : IDisposable
     /// <summary>节点卸载前由协调器调用，清理焦点、交互状态与未消费的响应式请求。</summary>
     internal void OnNodeUnmounting(ViewNode node)
     {
+        _overlay.OnNodeUnmounting(node);
         _focus.OnNodeUnmounting(node);
         _router.OnNodeUnmounting(node);
         CancelTimedWake(node);
@@ -1009,8 +1037,8 @@ public sealed class UiRuntime : IDisposable
         LastArrangeCount = 0;
         _layoutDiagnostics.BeginPass();
         var context = new LayoutContext(this, Services.TextService, Services.ImageService, PixelScale, _layoutDiagnostics);
-        context.Measure(Root, LayoutConstraints.Tight(ViewportSize));
-        context.Arrange(Root, new Rect(0, 0, ViewportSize.Width, ViewportSize.Height));
+        context.Measure(_layer, LayoutConstraints.Tight(ViewportSize));
+        context.Arrange(_layer, new Rect(0, 0, ViewportSize.Width, ViewportSize.Height));
         LastMeasureCount = context.MeasureCount;
         LastArrangeCount = context.ArrangeCount;
         LayoutPassCount++;
@@ -1029,7 +1057,7 @@ public sealed class UiRuntime : IDisposable
 
         // 先撤销文本输入归属（旧 epoch/旧客户端立即失效），再卸载树并通知服务，避免服务回调串写到已移除节点。
         ReleaseTextInputLeases();
-        Reconciler.Unmount(Root);
+        Reconciler.Unmount(_layer);
         _componentQueue.Clear();
         _componentSet.Clear();
         if (_registered)

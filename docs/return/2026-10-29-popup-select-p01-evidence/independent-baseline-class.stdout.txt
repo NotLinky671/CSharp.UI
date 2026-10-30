@@ -1,0 +1,14 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.OpenTK.Tests
+  Discovered:  CSharp.UI.OpenTK.Tests
+  Starting:    CSharp.UI.OpenTK.Tests
+    CSharp.UI.OpenTK.Tests.GalleryIdleAndBoundsTests.极窄视口有确定几何与溢出诊断 [FAIL]
+      GalleryApp[GalleryApp] / Font(default 14) / Theme(light) / Foreground(#1B1D21FF) / Background(#F5F6F8FF) / ScrollView(Vertical) / Padding((20, 20, 20, 20)) / VStack(12) / Border(#88888844, 1) / Padding((12, 12, 12, 12)) / VStack(2) / MarkdownDemo[MarkdownDemo] / VStack(4) / FillWidth / Frame(-×360) / ScrollView(Vertical) / MarkdownBlockView[MarkdownBlockView] / VStack(39) / MarkdownCodeBlockView / VStack(2) / Padding((0, 4, 6, 4)) / HStack(2) / Button("Copy") 越过极窄视口：(32, 17565.747, 51.883×24.621)。
+      Stack Trace:
+        tests\CSharp.UI.OpenTK.Tests\GalleryIdleAndBoundsTests.cs(108,0): at CSharp.UI.OpenTK.Tests.GalleryIdleAndBoundsTests.极窄视口有确定几何与溢出诊断()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[RL-08] 连续 41 档宽度：最大测量 539，存活纹理峰值 256，回落 256/256，构建 0，布局轮 83
+  Finished:    CSharp.UI.OpenTK.Tests (ID = 'c41a56e01c49ba0f2f2fa2ec08ba8592372861cafc4ccc4769cfa4c28550dee8')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.OpenTK.Tests  Total: 5, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 1.723s

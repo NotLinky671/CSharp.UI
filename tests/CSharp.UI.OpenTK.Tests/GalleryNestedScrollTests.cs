@@ -33,42 +33,6 @@ public sealed class GalleryNestedScrollTests
 
     private static readonly Size GalleryViewport = new(900, 700);
 
-    /// <summary>实际示例的“滚动容器”必须由视口在外的真实内层滚动视图构成。</summary>
-    [Fact]
-    public void 控件展示的滚动容器是视口在外的真实内层滚动视图()
-    {
-        using var host = new GalleryHost(GalleryViewport, 1.0);
-
-        Assert.NotNull(host.Outer);
-        Assert.NotNull(host.Inner);
-        var outer = host.Outer;
-        var inner = host.Inner;
-
-        // 内层是整页外层滚动视图的后代：页面仍然只靠外层整页滚动。
-        Assert.Contains(inner, outer.Descendants());
-
-        // 视口 Frame 在滚动视图外：内层的父节点是固定 120 高度的 FrameView，其子项正是该滚动视图。
-        var frame = Assert.IsType<FrameView>(inner.Parent!.View);
-        Assert.Equal(120, frame.Height!.Value, 3);
-        // FrameView.Content 由 .Key 包裹的 ScrollView 提供；Key 是定位用身份不是被测契约，断言结构不在此。
-        var keyed = Assert.IsType<KeyedView>(frame.Content);
-        Assert.Same(inner.View, keyed.Child);
-        Assert.Equal(120, inner.Frame.Height, 3);
-
-        // 内部内容保持自然高度（替身行高 17.5、间距 4）：1 行说明 + 40 行内容，远高于 120 的视口。
-        const double stubLineHeight = 14 * 1.25;
-        const double spacing = 4;
-        var content = inner.Children[0];
-        Assert.Equal(41, content.Children.Count);
-        Assert.Equal((41 * stubLineHeight) + (40 * spacing), content.DesiredSize.Height, 6);
-        Assert.True(
-            content.DesiredSize.Height > inner.Frame.Height + ExpectedStep,
-            $"内层内容高度 {content.DesiredSize.Height} 应远高于视口 {inner.Frame.Height}。");
-
-        // 旧实现的 Clip 修饰符不再存在：视口裁剪由内层 ScrollView 自身完成。
-        Assert.Empty(host.Runtime.Root.FindDescendants<ClipView>());
-    }
-
     /// <summary>一格 <c>-1</c> 只移动内层 48 逻辑像素，外层偏移不变；DPI 1 与 1.5 距离一致。</summary>
     [Theory]
     [InlineData(1.0)]

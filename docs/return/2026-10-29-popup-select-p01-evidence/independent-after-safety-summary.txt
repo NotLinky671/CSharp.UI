@@ -1,0 +1,21 @@
+Independent probe after lifecycle-safety fix (2026-10-29)
+
+Build: dotnet build PopupSelectProbe.csproj -c Release -> exit 0
+Run:   dotnet run --no-build -c Release -> exit 0 (RESULT PASS)
+Raw: independent-after-safety-build.*, independent-after-safety-run.*
+
+Prior failing runs are preserved: independent-probe-run.* (S6 2 FAIL) were not overwritten.
+
+Scenarios on current source:
+PASS M0 internal Show/Mount.
+PASS S1 ForEach root: 3 items, positive frames, stacked.
+PASS S2 empty overlay layer: HitTest -> Button, Down/Up -> clicks=1.
+PASS S3 partially clipped ScrollView anchor: popup escapes clip, outside-clip hit inside popup, environment follows Dark.
+PASS S4 capture inside popup released on Close; stale Up safe.
+PASS S5 zero viewport refuses Show; restore reopens; Dispose unmounts popup and Root.
+PASS S6 nested Show from content OnMount rejected (accepted=False), outer popup remains.
+PASS S7 legitimate Close from OnMount honored (no entry), runtime usable afterwards.
+PASS S8 Show(other main-tree anchor) from OnUnmount accepted; other-anchor popup mounted.
+PASS S9 alternating-anchor OnMount loop hits the 16-round budget: InvalidOperationException with "overlay 循环" diagnostic, mounts bounded at 16 (fixture cap 20), runtime recovers and a normal popup mounts.
+
+Not tested here: P03 Popup/Select binding edge semantics (not part of P01 gate).

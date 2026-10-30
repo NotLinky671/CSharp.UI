@@ -4,7 +4,7 @@
 
 设计依据：[Popup 与 Select 实施计划](../plan/2026-10-29-popup-and-select-plan.md)。
 
-状态：**待授权实施，全部未开始**。前一任务组（RT-01~04、MD-01~06 富文本与 Markdown）已完成并归档至
+状态：**P-01~P-07 全部主审验收通过，代码与文档收口完成**（P-06 原生验收见 [P-06 审查记录](../return/2026-10-30-popup-select-p06-native-tooling-review.md)；交付记录见 [2026-10-30-popup-select-delivery](../delivery/2026-10-30-popup-select-delivery.md)；提交信息见 git 历史）。前一任务组（RT-01~04、MD-01~06 富文本与 Markdown）已完成并归档至
 [docs/archive/2026-10-29-rich-text-markdown-tasks/](../archive/2026-10-29-rich-text-markdown-tasks/README.md)。
 
 ## 核心决策（计划 v3 已冻结，以下为摘要——细节以 plan 为准）
@@ -60,15 +60,24 @@
 
 | 完成 | ID | 任务 | 前置依赖 | 阶段 |
 |---|---|---|---|---|
-| ☐ | P-01 | [UiRootLayerView + OverlayManager：挂载/锚环境现值/关闭规则](01-overlay-manager.md) | 无 | A |
-| ☐ | P-02 | [PopupPlacement 纯算法与有效可视区契约](02-popup-placement.md) | P-01 | A |
-| ☐ | P-03 | [Popup 公开 view 与 IsOpen 双向纪律](03-popup-view.md) | P-02 | A |
-| ☐ | P-04 | [输入语义：外点吞并+锚豁免、Esc、失活、capture/Up-activation](04-popup-input.md) | P-03 | A |
-| ☐ | P-05 | [Select\<T\> 控件](05-select-control.md) | P-04 | B |
-| ☐ | P-06 | [Gallery 集成与窄宽/DPI/主题核对](06-gallery-integration.md) | P-05 | B |
-| ☐ | P-07 | [文档与交付验收](07-docs-delivery.md) | P-06 | C |
+| ☑ | P-01 | [UiRootLayerView + OverlayManager：挂载/锚环境现值/关闭规则](01-overlay-manager.md) | 无 | A |
+| ☑ | P-02 | [PopupPlacementCalculator 纯算法与有效可视区契约](02-popup-placement.md) | P-01 | A |
+| ☑ | P-03 | [Popup 公开 view 与 IsOpen 双向纪律](03-popup-view.md) | P-02 | A |
+| ☑ | P-04 | [输入语义：外点吞并+锚豁免、Esc、失活、capture/Up-activation](04-popup-input.md) | P-03 | A |
+| ☑ | P-05 | [Select\<T\> 控件](05-select-control.md) | P-04 | B |
+| ☑ | P-06 | [Gallery 集成与窄宽/DPI/主题核对](06-gallery-integration.md) | P-05 | B |
+| ☑ | P-07 | [文档与交付验收](07-docs-delivery.md) | P-06 | C |
 
 依赖链：P-01 → P-02 → P-03 → P-04 → P-05 → P-06 → P-07（串行）。
+
+- P-01 主审通过（独立快照证据：[independent-after-safety-summary.txt](../return/2026-10-29-popup-select-p01-evidence/independent-after-safety-summary.txt)；
+  修复前失败快照保留在同一目录 `independent-probe-run.*`）。
+- P-02 主审已 read 接受（含主工作流复审：`Resolve` 无 margin 形参、null 语义、preference 接线）。
+- P-03 主审通过（4C09 source + 独立 public probe M1..M14 PASS，含 ForEach 锚返修：两行不重叠、按整棵锚子树定位）。
+- P-04 主审通过（独立 probe D1..D10 PASS + 组合期 Esc 真实 TextField 回归；宿主子项改为 0/1/2 单次快照）。
+- P-05 主审通过（公开 `Select<T>`：打开/键选/提交/取消/disabled/placeholder/限高滚动/焦点恒在 trigger/重建后写当前绑定；独立 P05 probe S1..S15 PASS，Core786/Integration56/Markdown50 绿，详见 [P-05 记录](../return/2026-10-29-popup-select-p05.md)）。
+- P-06 主审验收通过：`PopupSelectDemo` Gallery 集成 + 兼容修（portal `PopupContentScope` 缓存 Binding 反应性、80px Markdown Copy `.Flex(0,1).Clip()`、按规范删过度结构 pin 测试）；原生 900 47 PASS、窄宽 320/1024×light/dark 4 run、外层滚动跟随/裁出关闭实证，详见 [P-06 审查记录](../return/2026-10-30-popup-select-p06-native-tooling-review.md) 与[交付](../delivery/2026-10-30-popup-select-delivery.md)。
+- P-07 主审验收通过：双配置 Debug/Release 各 1689 项 0w0e（修复后 post-esc-fix），交付记录与证据见 [2026-10-30-popup-select-delivery](../delivery/2026-10-30-popup-select-delivery.md)；提交信息见 git 历史。
 
 ## 阶段门槛
 

@@ -1,0 +1,19 @@
+Process-cleanup audit — by-name taskkill, 6 PIDs (2026-10-30)
+Method: file read-only search only (shell grep/find over existing logs/jsonl); no process termination, no system changes, no git.
+Session file referenced by path only: ~/.omp/agent/sessions/-code-C#-CSharp.UI/2026-10-21T14-31-28-793Z_01a15edf-d119-73ea-8de3-1386427f9b6e/texteditor-plan.jsonl (line numbers below).
+
+One by-name taskkill batch terminated six PIDs during development:
+  38968 / 40664 / 8600 / 23260 / 29216 / 40892
+
+Per-PID verdict:
+
+- 38968  — DIRECTLY PROVEN ours. `HWND pid=38968 hwnd=0x680FEC`, texteditor-plan.jsonl line 3163 (job bg_27).
+- 40664  — DIRECTLY PROVEN ours. `HWND pid=40664 hwnd=0xEB0EC0`, jsonl line 3174 (bg_28).
+- 29216  — DIRECTLY PROVEN ours. `HWND pid=29216 hwnd=0x390B0A`, jsonl line 3194 (bg_29).
+- 8600   — DIRECTLY PROVEN ours. `HWND pid=8600 hwnd=0x380B0E`, jsonl line 3208 (bg_30).
+- 23260  — CANNOT PROVE ours. Only surviving mention is the MSBuild file-lock line, jsonl line 3344: `文件被“CSharp.UI.OpenTK.Tests (23260)”锁定` (it was holding our own harness exe path). No `HWND pid=23260`, no tasklist row, no run-log pid survives — that run's out/driver.stdout.txt was deleted by `rm -rf out` before the pid was read back. Not found in the records accessible to this audit.
+- 40892  — CANNOT PROVE ours. Only surviving mention is the kill output, jsonl line 3400: `SUCCESS: The process with PID 40892 has been terminated.` Same wiped-out/driver.stdout.txt situation; no hwnd/pid line found in the records accessible to this audit.
+Conclusion: 4 of 6 provably our own harness instances; 23260 is only referenced by a file-lock line and 40892 only by a termination output — neither can be proven self-spawned. We do not infer external damage and we do not claim all six were ours.
+Forward rule (already in effect): never kill by process name. Only processes explicitly started this session and recorded with PID + exe path may be terminated; own-PID verification required before any cleanup.
+
+Note on earlier README wording in this evidence set: the claim that all six were recorded in run-log hwnd/pid lines is accurate only for the four proven PIDs above; the two unknowns have no surviving hwnd/pid line.

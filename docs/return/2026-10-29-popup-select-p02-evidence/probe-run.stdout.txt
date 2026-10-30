@@ -1,0 +1,31 @@
+INFO M0.show :: ok=True active=False anchor=(12, 12, 276×33.5)
+INFO M0.after :: active=True hostChildren=1
+PASS M0.mounted
+PASS S1.foreach-root-item-count
+PASS S1.foreach-root-frames
+PASS S1.foreach-root-stacked
+INFO S1.root-depth :: Root.Parent=layer Root.Depth=1 (public change, recorded only)
+PASS S2.button-found
+PASS S2.empty-host-hit-passthrough
+INFO S2.host-wiring :: IsHitTestVisible=False HitTestSelf=False (internal wiring, not consumer proof)
+PASS S2.empty-host-button-click
+PASS S3.anchor-found
+INFO S3.anchor-partial :: anchor=(140, -8.75, 228×33.5) scroll=(140, 8, 240×120) offset=16.75
+PASS S3.anchor-partially-clipped
+INFO ADAPTER_MISSING :: OverlayManager has no Show(ViewNode, View[, maxHeight, owner, margin]) method (adapt OverlayAccess.Show)
+INFO ADAPTER_MISSING :: OverlayManager has no Show(ViewNode, View[, maxHeight, owner, margin]) method (adapt OverlayAccess.Show)
+INFO ADAPTER_MISSING :: OverlayManager has no Show(ViewNode, View[, maxHeight, owner, margin]) method (adapt OverlayAccess.Show)
+INFO ADAPTER_MISSING :: OverlayManager has no Show(ViewNode, View[, maxHeight, owner, margin]) method (adapt OverlayAccess.Show)
+INFO S7.raw :: Close-from-OnMount active=False
+PASS S7.close-from-mount-honored
+PASS S7.runtime-usable-after-close
+PASS S8.anchors
+PASS S8.first-popup
+INFO S8.raw :: Show-other-anchor-from-OnUnmount accepted=True
+PASS S8.show-from-onunmount-accepted
+PASS S8.other-anchor-popup-mounted
+INFO S9.raw :: mounts=16 thrown=检测到 overlay 循环：单轮更新内 overlay 打开/关闭请求已消费 16 次（上限 16）。popup 内容的 OnMount/OnUnmount 反复请求打开或关闭会无限切换entry；请让弹层打开状态收敛（例如只在用户交互中请求打开，或让资格变化有序停止）。 active=True
+PASS S9.budget-throws
+PASS S9.budget-bounded
+PASS S9.runtime-recovers
+RESULT ADAPTER_MISSING (source adapter must be updated at P01 freeze; not a product verdict)

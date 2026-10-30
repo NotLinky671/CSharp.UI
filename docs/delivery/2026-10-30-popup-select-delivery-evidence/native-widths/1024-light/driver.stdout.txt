@@ -1,0 +1,51 @@
+EV=C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-widths\1024-light WIDTH=1024 THEME=light
+CONTEXT scale=1.5 logical=1024x700 fb=1536x1050 frames=0 requestedW=1024
+PASS logical-width
+PASS pixel-scale-1.5
+PASS framebuffer-width
+PASS hwnd
+WAIT first-frames frames=1
+SHOT 00-initial :: no frame captured
+theme already light (no toggle needed)
+WAIT scroll0 frames=2
+WAIT scroll1 frames=3
+WAIT scroll2 frames=4
+WAIT scroll3 frames=5
+WAIT scroll4 frames=6
+WAIT scroll5 frames=7
+WAIT scroll6 frames=8
+WAIT scroll7 frames=9
+WAIT scroll8 frames=10
+WAIT scroll9 frames=11
+WAIT scroll10 frames=12
+WAIT scroll11 frames=13
+WAIT scroll12 frames=14
+WAIT scroll13 frames=15
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-widths\1024-light\native-01-scrolled.png 1536x1050
+PASS select-found
+select frame=(96, 584.398, 884×32) viewport W=1024
+CLICK logical=(538.0,600.4) screen=(1008,1208)
+WAIT select-open frames=17
+PASS select-open-anchored
+PASS popup-node
+popup frame=(96, 496.398, 884×88) viewport=(1024x700)
+PASS popup-in-width-band
+PASS popup-in-viewport-y
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-widths\1024-light\native-02-select-open.png 1536x1050
+KEY vk=0x28 sc=0x50 ext=1 sent=2
+KEY vk=0xD sc=0x1C ext=0 sent=2
+WAIT select-commit frames=19
+select value 标准模式 -> 紧凑模式（窄屏）
+PASS select-committed
+PASS select-value
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-widths\1024-light\native-03-select-committed.png 1536x1050
+PASS disabled-found
+WAIT ensure0 frames=21
+CLICK logical=(538.0,476.4) screen=(1008,1022)
+WAIT disabled-click frames=23
+PASS disabled-no-open
+PASS disabled-no-write
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-widths\1024-light\native-04-light.png 1536x1050
+final frames=23 host-exited=False
+UiApplication.Run exit=0
+RESULT PASS

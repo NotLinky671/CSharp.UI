@@ -565,7 +565,11 @@ internal sealed class OpenTkInputAdapter
                 var handled = _runtime.DispatchKeyHandled(keyEvent, key.KeyToken);
 
                 // 与立即路径完全一致的退出语义（使用捕获时的消费标志）。
+                // 退出快捷键只在 KeyDown 判定：同一手势的 KeyUp 在 popup/控件已
+                // 消费 Down（如 Esc 关弹层）后到达，若 Up 也判退出会让“已消费
+                // 的 Esc”仍触发宿主退出（真实 bug：popup Esc 关闭后 app 退出）。
                 if (!handled
+                    && key.Kind == KeyEventKind.Down
                     && !key.ConsumedByIme
                     && ((key.Key == UiKey.Escape && _exitOnEscape)
                         || (key.Key == UiKey.Q && _exitOnCloseShortcut && keyEvent.IsCommandPressed

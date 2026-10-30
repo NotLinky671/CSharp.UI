@@ -1,0 +1,56 @@
+PASS M1.initially-closed
+PASS M1.false-to-true-opens
+PASS M1.true-to-false-closes
+PASS M1.no-internal-write-on-user-close
+PASS M2.content-mounted
+PASS M2.node-identity-preserved
+PASS M2.child-state-preserved
+PASS M2.popup-stays-open
+PASS M3.initial-true-opens
+PASS M3.closed
+PASS M3.no-self-excite
+PASS M3.false-written-once
+PASS M4.single-active
+PASS M4.last-declaration-wins
+PASS M4.first-false-written-once
+PASS M4.second-not-written
+PASS M5.open
+PASS M5.open-after-rebuild-0
+PASS M5.open-after-rebuild-1
+PASS M5.open-after-rebuild-2
+PASS M6.open
+PASS M6.closed-on-scroll-out
+PASS M6.false-written-once
+PASS M7.open
+PASS M7.closed-on-disable
+PASS M7.false-written-once
+PASS M8.open
+PASS M8.closed-on-deactivate
+PASS M8.false-written-once
+PASS M8.reopened-on-edge
+INFO M9.raw :: nested accepted=False
+PASS M9.nested-rejected
+PASS M9.outer-still-open
+PASS M9.outer-content
+PASS M10.open
+PASS M10.stays-mounted
+PASS M10.frame-recomputed
+PASS M10.child-state-preserved
+PASS M11.closed-zero-size
+PASS M11.false-written-once
+PASS M11.no-reopen-loop
+INFO M12.plain-root :: active=True (no Component dependency; info only)
+PASS M13.first-active
+INFO M13.raw :: exception=none firstWrites=[False] other=1 active=second
+PASS M13.no-exception
+PASS M13.old-owner-false-once
+PASS M13.setter-state-applied
+PASS M13.new-owner-active
+PASS M13.stable-after-reentry
+INFO M14.rows :: (8, 8, 344×17.5) | (8, 8, 344×17.5)
+PASS M14.two-rows
+FAIL M14.rows-stacked :: row0=(8, 8, 344×17.5) row1=(8, 8, 344×17.5)
+PASS M14.popup-open
+INFO M14.popup :: frame=(8, 25.5, 109.2×17.5) anchorBottom=25.5
+PASS M14.anchored-to-whole-anchor
+RESULT FAIL (1)

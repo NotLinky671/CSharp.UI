@@ -1,0 +1,5 @@
+CSharp.UI.Tests EXIT=0
+CSharp.UI.Integration.Tests EXIT=0
+CSharp.UI.Markdown.Tests EXIT=0
+EXIT=0
+# 末行 EXIT=0 为删除 throwaway smoke 后的 Integration 重跑（见 CSharp.UI.Integration.Tests.after-smoke.*）

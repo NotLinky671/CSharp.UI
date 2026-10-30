@@ -1,0 +1,117 @@
+EVIDENCE C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence
+PASS select-320-light-1.select-found
+PASS select-320-light-1.open
+PASS select-320-light-1.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-light-1-open.png 320x600
+PASS select-320-light-1.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-light-1-committed.png 320x600
+PASS select-320-light-1.5.select-found
+PASS select-320-light-1.5.open
+PASS select-320-light-1.5.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-light-1.5-open.png 480x900
+PASS select-320-light-1.5.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-light-1.5-committed.png 480x900
+PASS select-320-light-2.select-found
+PASS select-320-light-2.open
+PASS select-320-light-2.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-light-2-open.png 640x1200
+PASS select-320-light-2.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-light-2-committed.png 640x1200
+PASS select-320-dark-1.select-found
+PASS select-320-dark-1.open
+PASS select-320-dark-1.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-dark-1-open.png 320x600
+PASS select-320-dark-1.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-dark-1-committed.png 320x600
+PASS select-320-dark-1.5.select-found
+PASS select-320-dark-1.5.open
+PASS select-320-dark-1.5.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-dark-1.5-open.png 480x900
+PASS select-320-dark-1.5.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-dark-1.5-committed.png 480x900
+PASS select-320-dark-2.select-found
+PASS select-320-dark-2.open
+PASS select-320-dark-2.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-dark-2-open.png 640x1200
+PASS select-320-dark-2.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-320-dark-2-committed.png 640x1200
+PASS select-1024-light-1.select-found
+PASS select-1024-light-1.open
+PASS select-1024-light-1.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-light-1-open.png 1024x600
+PASS select-1024-light-1.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-light-1-committed.png 1024x600
+PASS select-1024-light-1.5.select-found
+PASS select-1024-light-1.5.open
+PASS select-1024-light-1.5.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-light-1.5-open.png 1536x900
+PASS select-1024-light-1.5.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-light-1.5-committed.png 1536x900
+PASS select-1024-light-2.select-found
+PASS select-1024-light-2.open
+PASS select-1024-light-2.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-light-2-open.png 2048x1200
+PASS select-1024-light-2.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-light-2-committed.png 2048x1200
+PASS select-1024-dark-1.select-found
+PASS select-1024-dark-1.open
+PASS select-1024-dark-1.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-dark-1-open.png 1024x600
+PASS select-1024-dark-1.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-dark-1-committed.png 1024x600
+PASS select-1024-dark-1.5.select-found
+PASS select-1024-dark-1.5.open
+PASS select-1024-dark-1.5.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-dark-1.5-open.png 1536x900
+PASS select-1024-dark-1.5.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-dark-1.5-committed.png 1536x900
+PASS select-1024-dark-2.select-found
+PASS select-1024-dark-2.open
+PASS select-1024-dark-2.popup-inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-dark-2-open.png 2048x1200
+PASS select-1024-dark-2.commit-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-select-1024-dark-2-committed.png 2048x1200
+PASS bottom-light.open
+PASS bottom-light.flips-above
+PASS bottom-light.inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-bottom-light-above.png 480x390
+PASS bottom-dark.open
+PASS bottom-dark.flips-above
+PASS bottom-dark.inside-viewport
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-bottom-dark-above.png 480x390
+PASS scrollclip-320.nodes
+PASS scrollclip-320.open
+PASS scrollclip-320.escapes-scroll-clip
+PASS scrollclip-320.popup-hit-outside-scroll
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-scrollclip-320-outside-scroll.png 480x480
+PASS scrollclip-1024.nodes
+PASS scrollclip-1024.open
+PASS scrollclip-1024.escapes-scroll-clip
+PASS scrollclip-1024.popup-hit-outside-scroll
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-scrollclip-1024-outside-scroll.png 1536x480
+PASS longlist-320.open
+PASS longlist-320.popup-scroll
+INFO longlist-320.offset :: offset=724
+PASS longlist-320.scrolled-open
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-longlist-320-end-scrolled.png 480x600
+PASS longlist-320.end-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-longlist-320-committed.png 480x600
+PASS longlist-1024.open
+PASS longlist-1024.popup-scroll
+INFO longlist-1024.offset :: offset=724
+PASS longlist-1024.scrolled-open
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-longlist-1024-end-scrolled.png 1536x600
+PASS longlist-1024.end-payload
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-longlist-1024-committed.png 1536x600
+PASS popup-textfield.anchor
+PASS popup-textfield.open
+PASS popup-textfield.content
+PASS popup-textfield.field-focused
+PASS popup-textfield.text-state
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-popup-textfield-typing.png 750x510
+PASS popup-textfield.closed
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-popup-textfield-closed.png 750x510
+PASS local-theme.open
+PASS local-theme.owner-env-dark
+PNG C:/Users/nothh/code/C#/CSharp.UI/docs/delivery/2026-10-30-popup-select-delivery-evidence\gl-local-theme-dark.png 630x480
+RESULT PASS

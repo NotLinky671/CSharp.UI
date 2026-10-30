@@ -1,0 +1,13 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.11)
+  Discovering: CSharp.UI.Tests
+  Discovered:  CSharp.UI.Tests
+  Starting:    CSharp.UI.Tests
+    CSharp.UI.Tests.TempPortalReactivityProbe.PortalCachedBindingDrivesRedrawAndDisplayText [FAIL]
+      外部状态变化应经稳定依赖登记驱动重绘。
+      Stack Trace:
+        tests\CSharp.UI.Tests\TempPortalReactivityProbe.cs(28,0): at CSharp.UI.Tests.TempPortalReactivityProbe.PortalCachedBindingDrivesRedrawAndDisplayText()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    CSharp.UI.Tests (ID = '47b51e4c25395a5b04e646c4c96a60918fb6bab65d6c621ff4209fae5289dd48')
+=== TEST EXECUTION SUMMARY ===
+   CSharp.UI.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 0.164s

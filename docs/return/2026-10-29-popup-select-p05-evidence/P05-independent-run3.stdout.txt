@@ -1,0 +1,83 @@
+PASS S1.duplicates-throw
+PASS S2.down-does-not-open
+PASS S2.up-opens
+PASS S2.opening-up-no-write
+PASS S3.row-found
+PASS S3.writes-once
+PASS S3.closed
+PASS S3.trigger-label
+PASS S4.escape-closes
+PASS S4.escape-zero-write
+PASS S4.tab-closes
+PASS S4.tab-zero-write
+PASS S4.tab-moves-focus
+PASS S5.space-opens
+PASS S5.enter-opens
+PASS S5.arrow-opens
+PASS S5.no-open-write
+PASS S6.down-skips-disabled
+PASS S6.end-commits-last
+PASS S6.home-commits-first
+PASS S7.repeat-open-does-not-commit
+PASS S7.repeat-arrow-navigates
+PASS S8.empty-no-open
+PASS S8.all-disabled-no-open
+PASS S8.selected-disabled-label
+PASS S8.selected-disabled-opens
+PASS S8.active-skips-disabled
+PASS S8b.open
+PASS S8b.row-found
+PASS S8b.popup-stays-open
+PASS S8b.value-unchanged
+PASS S8b.focus-still-trigger
+PASS S8b.keyboard-selects-enabled
+PASS S9.missing-placeholder
+PASS S9.missing-no-write
+PASS S9.missing-opens
+PASS S9.new-binding-keeps-open
+PASS S9.null-item-label
+PASS S10.reorder-keeps-active-value
+PASS S10.disabled-active-falls-to-first-enabled
+PASS S11.open
+PASS S11.popup
+PASS S11.popup-scroll
+INFO S11.offset :: offset=764
+PASS S11.ensure-visible-scrolled
+PASS S11.last-row-node
+PASS S11.last-row-inside-viewport
+PASS S11.last-row-hit
+PASS S11.end-selects-last
+PASS S11.closed-after-click
+PASS S12.row
+PASS S12.same-value-writes-once
+PASS S12.external-display
+PASS S13b.row-found
+INFO S13.remove :: writes=[]
+PASS S13.remove-no-new-item-commit
+PASS S13d.row-found
+INFO S13.disable :: writes=[]
+PASS S13.disable-no-disabled-commit
+PASS S14.popup
+PASS S14.first-open-scroll
+INFO S14.first-open-offset :: offset=764
+PASS S14.first-open-selected-visible
+PASS S14.first-open-last-row
+PASS S14.first-open-row-inside
+PASS S14.first-open-row-hit
+PASS S14.reorder-popup
+PASS S14.reorder-scroll
+INFO S14.reorder-offset :: offset=764
+PASS S14.reorder-selected-visible
+PASS S14.reorder-row
+PASS S14.reorder-row-inside
+PASS S15.select
+PASS S15.open
+PASS S15.popup
+INFO S15.before :: trigger=336 popup=336
+PASS S15.stays-open-700
+INFO S15.after700 :: trigger=676 popup=676
+PASS S15.width-follows-700
+PASS S15.stays-open-900
+INFO S15.after900 :: trigger=876 popup=876
+PASS S15.width-follows-900
+RESULT PASS

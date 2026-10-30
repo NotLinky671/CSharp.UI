@@ -1,7 +1,7 @@
 # P-01 UiRootLayerView + OverlayManager + PopupSurface：挂载、资格门、锚环境现值、关闭规则
 
 依据：[plan v3](../plan/2026-10-29-popup-and-select-plan.md) §1/§2/§4/§5/§9。
-前置：无。状态：待授权实施。
+前置：无。状态：**已实现并经主审独立复核通过**（记录见 [P-01 开发记录](../return/2026-10-29-popup-select-p01-dev.md) 与 [安全独立复审](../return/2026-10-29-popup-select-p01-safety.md)，原始输出在同名 `-evidence` 目录）。
 
 ## 目标
 
@@ -41,6 +41,11 @@
   - **嵌套 `Show` 请求**（entry 存在期间 popup content 内再 `Show`）→
     **拒绝、输出 runtime 诊断，外层保持开且不改外层/选择值**——
     nested `Show` 返回 false（不开、不抛）；非本轮目标边界。
+    **内容 `OnMount` 期同样拒绝**：此时挂载尚未完成（`_active` 尚空），锚还未
+    链接到父节点，按“正在协调 popup 子树 + 锚未挂接”判定嵌套并返回 false，
+    外层 popup 保持打开（不能等消费时再关外层去挂载已卸载锚）。
+    合法回调请求不丢：内容 `OnMount` 的 `Close()`（本次 entry）与旧 popup
+    `OnUnmount` 的 `Show(主树另一锚)` 都进入安全阶段有序消费到稳定。
   - `Close()`/`CloseAll()`（单槽同义）：正常 unmount popup 子树——
     `FocusManager.OnNodeUnmounting`/capture 清理走既有路径。
   - **关闭规则**（每轮布局后校验；pending 关闭走下条安全阶段）：
@@ -60,9 +65,10 @@
     unmount/写 binding（`ProcessPendingWork` 不可重入）——open/close 请求登记
     pending，在**本轮布局之后**的安全阶段消费：消费 → InvalidateLayout →
     下一轮 `RunLayout` 应用，**`ProcessPendingWork` 返回前收敛稳定**
-    （有界：关闭请求本身不再产新请求——一轮消费完即停；不开 async/thread/
-    无界 drain）；binding 写回调重入由 manager request-generation + 既有
-    guard 覆盖（复用纪律不直接引私有 focus 字段）。
+    （同一阶段多次请求取最后一次；关闭请求带挂载代际，只作用于请求时存在的
+    entry；单轮实际消费次数有固定预算，回调自激 → 诊断 + 异常 → 运行时丢弃
+    挂起请求后恢复；不开 async/thread/无界 drain）；binding 写回调重入由
+    manager 自己的代际/请求序列覆盖（不直接引私有 focus 字段）。
   - `OverlayHost`（internal `View` 子类）：`Children` = entry 的 popup 描述
     （至多 1，由 manager 提供）；`GetChildClip → null`；
     **`IsHitTestVisible = (entry != null || swallowGestureActive)`** 且
@@ -127,6 +133,14 @@ placement 算法抽出（P-02）；`HitTestOverlay`/`FrameOverlay` 不动；
   "Arrange 内即时"。
 - A12：嵌套 `Show`（popup content 内再请求开 popup/Select）→ **拒绝**
   （诊断/异常断言）、外层 popup 保持开、无第二 entry。
+- A13：内容 `OnMount` 中的嵌套 `Show`（挂载尚未完成、无活动 entry）→ 返回
+  false + 诊断、外层 popup 与其内容保持挂载；下轮消费不替换外层。
+- A14：内容 `OnMount` 主动 `Close()` → 挂载完成后关闭并卸载内容，稳定不复开。
+- A15：旧 popup 内容 `OnUnmount` 请求 `Show(主树另一锚)` → 旧 entry 卸载、
+  新 entry 挂载并稳定；旧关闭请求不误关新 entry。
+- A16：内容每次挂载都重开同一主树锚（自激）→ 单轮消费预算耗尽时
+  `InvalidOperationException` + runtime 诊断；挂起请求丢弃、已挂载 entry 稳定、
+  后续 `ProcessPendingWork`/`Close` 正常（不无限循环）。
 - 断言走 `HitTest`/`FocusedNode`/`IsMounted`/`DrawCommand` 序/`Environment`/
   reconcile 计数等可观察面，不 pin `OverlayManager`/`UiRootLayerView`/
   `PopupSurfaceView` 字段名。

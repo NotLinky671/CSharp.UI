@@ -1,0 +1,19 @@
+  正在确定要还原的项目…
+  已还原 C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\src\CSharp.UI\CSharp.UI.csproj (用时 101 毫秒)。
+  已还原 C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\src\CSharp.UI.Markdown\CSharp.UI.Markdown.csproj (用时 217 毫秒)。
+  已还原 C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\src\CSharp.UI.Text\CSharp.UI.Text.csproj (用时 226 毫秒)。
+  已还原 C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\src\CSharp.UI.OpenTK\CSharp.UI.OpenTK.csproj (用时 228 毫秒)。
+  已还原 C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\samples\CSharp.UI.Samples.ControlGallery\CSharp.UI.Samples.ControlGallery.csproj (用时 228 毫秒)。
+  已还原 C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\tests\CSharp.UI.OpenTK.Tests\CSharp.UI.OpenTK.Tests.csproj (用时 250 毫秒)。
+  CSharp.UI -> C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\src\CSharp.UI\bin\Debug\net10.0\CSharp.UI.dll
+  CSharp.UI.Markdown -> C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\src\CSharp.UI.Markdown\bin\Debug\net10.0\CSharp.UI.Markdown.dll
+  CSharp.UI.Text -> C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\src\CSharp.UI.Text\bin\Debug\net10.0\CSharp.UI.Text.dll
+  CSharp.UI.OpenTK -> C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\src\CSharp.UI.OpenTK\bin\Debug\net10.0\CSharp.UI.OpenTK.dll
+  CSharp.UI.Samples.ControlGallery -> C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\samples\CSharp.UI.Samples.ControlGallery\bin\Debug\net10.0\ControlGallery.dll
+  CSharp.UI.OpenTK.Tests -> C:\Users\nothh\AppData\Local\Temp\csui-baseline-p01\tests\CSharp.UI.OpenTK.Tests\bin\Debug\net10.0\CSharp.UI.OpenTK.Tests.dll
+
+已成功生成。
+    0 个警告
+    0 个错误
+
+已用时间 00:00:04.67

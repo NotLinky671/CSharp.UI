@@ -1,0 +1,92 @@
+Image integrity decode check — Pillow Image.open().load() | root=docs\delivery\2026-10-30-popup-select-delivery-evidence | total=82
+
+[(root)] 35 png
+     480x390  OK      gl-bottom-dark-above.png
+     480x390  OK      gl-bottom-light-above.png
+     630x480  OK      gl-local-theme-dark.png
+    1536x600  OK      gl-longlist-1024-committed.png
+    1536x600  OK      gl-longlist-1024-end-scrolled.png
+     480x600  OK      gl-longlist-320-committed.png
+     480x600  OK      gl-longlist-320-end-scrolled.png
+     750x510  OK      gl-popup-textfield-closed.png
+     750x510  OK      gl-popup-textfield-typing.png
+    1536x480  OK      gl-scrollclip-1024-outside-scroll.png
+     480x480  OK      gl-scrollclip-320-outside-scroll.png
+    1024x600  OK      gl-select-1024-dark-1-committed.png
+    1024x600  OK      gl-select-1024-dark-1-open.png
+    1536x900  OK      gl-select-1024-dark-1.5-committed.png
+    1536x900  OK      gl-select-1024-dark-1.5-open.png
+   2048x1200  OK      gl-select-1024-dark-2-committed.png
+   2048x1200  OK      gl-select-1024-dark-2-open.png
+    1024x600  OK      gl-select-1024-light-1-committed.png
+    1024x600  OK      gl-select-1024-light-1-open.png
+    1536x900  OK      gl-select-1024-light-1.5-committed.png
+    1536x900  OK      gl-select-1024-light-1.5-open.png
+   2048x1200  OK      gl-select-1024-light-2-committed.png
+   2048x1200  OK      gl-select-1024-light-2-open.png
+     320x600  OK      gl-select-320-dark-1-committed.png
+     320x600  OK      gl-select-320-dark-1-open.png
+     480x900  OK      gl-select-320-dark-1.5-committed.png
+     480x900  OK      gl-select-320-dark-1.5-open.png
+    640x1200  OK      gl-select-320-dark-2-committed.png
+    640x1200  OK      gl-select-320-dark-2-open.png
+     320x600  OK      gl-select-320-light-1-committed.png
+     320x600  OK      gl-select-320-light-1-open.png
+     480x900  OK      gl-select-320-light-1.5-committed.png
+     480x900  OK      gl-select-320-light-1.5-open.png
+    640x1200  OK      gl-select-320-light-2-committed.png
+    640x1200  OK      gl-select-320-light-2-open.png
+[native-esc-before] 1 png
+   1350x1050  OK      native-esc-before/native-16-esc-closed.png
+[native-independent] 18 png
+   1350x1050  OK      native-independent/native-00-initial-light.png
+   1350x1050  OK      native-independent/native-00b-theme-dark.png
+   1350x1050  OK      native-independent/native-01-scrolled-to-section.png
+   1350x1050  OK      native-independent/native-02-select-open.png
+   1350x1050  OK      native-independent/native-03-select-committed.png
+   1350x1050  OK      native-independent/native-04-disabled-click.png
+   1350x1050  OK      native-independent/native-05-longlist-open.png
+   1350x1050  OK      native-independent/native-06-longlist-end.png
+   1350x1050  OK      native-independent/native-07-longlist-committed.png
+   1350x1050  OK      native-independent/native-08-popup-open.png
+   1350x1050  OK      native-independent/native-09-popup-typed.png
+   1350x1050  OK      native-independent/native-10-popup-closed.png
+   1350x1050  OK      native-independent/native-11-outside-dismissed.png
+   1350x1050  OK      native-independent/native-12-second-gesture.png
+   1350x1050  OK      native-independent/native-13-inner-open-flipped.png
+   1350x1050  OK      native-independent/native-14-inner-followed.png
+   1350x1050  OK      native-independent/native-15-inner-clipped.png
+   1350x1050  OK      native-independent/native-16-esc-closed.png
+[native-outer] 4 png
+   1350x1050  OK      native-outer/native-01-select-in-view.png
+   1350x1050  OK      native-outer/native-02-popup-open.png
+   1350x1050  OK      native-outer/native-03-outer-follow.png
+   1350x1050  OK      native-outer/native-04-outer-clipped-closed.png
+[native-widths] 19 png
+   1536x1050  OK      native-widths/1024-dark/native-00-initial.png
+   1536x1050  OK      native-widths/1024-dark/native-01-scrolled.png
+   1536x1050  OK      native-widths/1024-dark/native-02-select-open.png
+   1536x1050  OK      native-widths/1024-dark/native-03-select-committed.png
+   1536x1050  OK      native-widths/1024-dark/native-04-dark.png
+   1536x1050  OK      native-widths/1024-light/native-01-scrolled.png
+   1536x1050  OK      native-widths/1024-light/native-02-select-open.png
+   1536x1050  OK      native-widths/1024-light/native-03-select-committed.png
+   1536x1050  OK      native-widths/1024-light/native-04-light.png
+    480x1050  OK      native-widths/320-dark/native-00-initial.png
+    480x1050  OK      native-widths/320-dark/native-01-scrolled.png
+    480x1050  OK      native-widths/320-dark/native-02-select-open.png
+    480x1050  OK      native-widths/320-dark/native-03-select-committed.png
+    480x1050  OK      native-widths/320-dark/native-04-dark.png
+    480x1050  OK      native-widths/320-light/native-00-initial.png
+    480x1050  OK      native-widths/320-light/native-01-scrolled.png
+    480x1050  OK      native-widths/320-light/native-02-select-open.png
+    480x1050  OK      native-widths/320-light/native-03-select-committed.png
+    480x1050  OK      native-widths/320-light/native-04-light.png
+[os] 5 png
+     900x700  OK      os/00-initial-light.png
+     900x700  OK      os/01-scrolled-to-section.png
+     900x700  OK      os/02-select-open.png
+     900x700  OK      os/09-settings-typed.png
+     900x700  OK      os/15-dark-theme.png
+
+Summary: 82 files, 0 failed

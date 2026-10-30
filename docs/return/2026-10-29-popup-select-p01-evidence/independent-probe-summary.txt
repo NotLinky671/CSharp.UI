@@ -1,0 +1,29 @@
+P01 independent probe - raw results (2026-10-29)
+
+Environment: Windows x64, .NET 10.0.11, Debug/Release no-rebuild flags as noted.
+Probe project: CSharp.UI.Tests (friend assembly name; no product IVT change), ProjectReference to src/CSharp.UI.
+Manager API used: UiRuntime.Overlay + OverlayManager.Show(anchor, content, maxHeight, owner=null, margin=4).
+
+Build: dotnet build PopupSelectProbe.csproj -c Release -> exit 0 (build4.stdout.txt/build4.stderr.txt)
+Run:   dotnet run --no-build -c Release -> exit 1 (run4.stdout.txt/run4.stderr.txt)
+
+PASS
+- M0 internal Show queues, mounts on ProcessPendingWork (active=True, host child=1).
+- S1 ForEach root: 3 items retained, positive frames, stacked. Root.Parent=layer, Root.Depth=1 (INFO).
+- S2 empty overlay layer: HitTest resolves to Button; real Down/Up -> clicks=1. Host IsHitTestVisible=False/HitTestSelf=False (INFO wiring).
+- S3 anchor partially clipped inside ScrollView: popup mounted, finite frame, popup.Bottom > ScrollView.Bottom, outside-clip area exists and HitTest resolves inside popup; SetEnvironment(Dark) -> popup Environment Dark.
+- S4 Down/Move inside popup captures; Close + ProcessPendingWork unmounts, capture cleared; stale Up safe.
+- S5 viewport 0x0 refuses Show; restore reopens; Dispose unmounts popup and Root.
+
+FAIL
+- S6 nested Show from content OnMount:
+  raw: "Show-from-OnMount accepted=True active=False"; after pump nestedAccepted=True, active=True, surfaceChild=Frame(100x100).
+  Expected: nested request rejected and outer popup stays. Actual: outer replaced by inner.
+  Cause visible in source: OverlayManager.Mount assigns _active only after Reconciler.ReconcileDescriptors, so the pre-Show nested guard (`_active is { PopupNode: ... }`) is bypassed; ConsumePending has no budget, so a content that calls Show on every mount would loop. Fixture is bounded by a static one-shot gate; no infinite run performed.
+
+Baseline OpenTK check (targeted worktree 249ca96, removed after):
+- Build: dotnet build tests/CSharp.UI.OpenTK.Tests -c Debug -> exit 0.
+- Run: dotnet run --no-build ... -- -class "CSharp.UI.OpenTK.Tests.GalleryIdleAndBoundsTests" -> exit 1, Total 5, Failed 1.
+- Same test, same numbers: Button "Copy" 越过极窄视口：(32, 17565.747, 51.883x24.621), same stack line GalleryIdleAndBoundsTests.cs(108).
+- Only deltas vs current P01: diagnostic path has no "RootLayer / " prefix; [RL-08] max measure 539 vs 541. Geometry/assertion identical -> pre-existing limitation, not introduced by new root layer.
+- Raw: evidence/baseline-class.stdout.txt / .stderr.txt / baseline-build.*.

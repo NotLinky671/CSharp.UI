@@ -1,7 +1,7 @@
 # P-07 文档与交付验收
 
 依据：[Popup 与 Select 实施计划](../plan/2026-10-29-popup-and-select-plan.md) §6。
-前置：P-06。状态：待授权实施。
+前置：P-06。状态：**代码与文档验收通过**（交付记录见 [2026-10-30-popup-select-delivery](../delivery/2026-10-30-popup-select-delivery.md)；提交信息见 git 历史）。
 
 ## 目标
 

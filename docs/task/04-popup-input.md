@@ -1,7 +1,7 @@
 # P-04 输入语义：外点吞并+锚豁免、Esc、失活、capture/Up-activation
 
 依据：[plan v3](../plan/2026-10-29-popup-and-select-plan.md) §5。
-前置：P-03。状态：待授权实施。
+前置：P-03（已主审通过）。状态：**已实现并经主审独立复核通过**（记录见 [P-04 审核](../return/2026-10-29-popup-select-p04.md) 与 [组合后复核证据](../return/2026-10-29-popup-select-p04-post-composition-evidence/)）。
 
 ## 目标
 
@@ -20,9 +20,11 @@
     1. 写 `IsOpen=false` → `CloseAll()`；
     2. **该 gesture Down/Move/Up/Cancel/capture 全部归 internal
        dismiss-target**（全屏命中、`Handled` owner 标）——`IsMounted=true`
-       至 gesture 结束（Up/Cancel）后释放清除；**只在吞并 gesture 期间存在**——
-       非吞并期 `OverlayHost.IsHitTestVisible=false`（恒 `HitTestSelf=false`——
-       显式覆写，非默认）。
+       至 gesture 结束（Up/Cancel、失活或目标失效）后释放清除；**只在吞并
+       gesture 期间存在**。宿主命中纪律与 P-01 一致：`OverlayHost.IsHitTestVisible
+       = (entry != null || swallowGestureActive)`（非吞并期且无 entry 才整支被跳），
+       自身命中恒 `HitTestSelf=false`（显式覆写，非默认）——dismiss-target 是吞并期
+       唯一有 self-hit 的临时节点。
   - 落**另一个 popup 锚**上仍是外点：只关旧、吞并；第二次按下才作用新锚。
     （嵌套 `Show` 在 P-03 已拒——popup content 内不再 `Show`）。
 - **Esc**：复用 `DispatchKey` 现有顺序（`InputRouter.cs:353-366`）——`Route` 已先把
@@ -58,9 +60,10 @@
     overlay 子树、序在主树后）；**不做 trap**、不拦 Tab——非 modal。
 - **wheel**：弹层外 wheel 不关闭不吞并（按真实 hover 分发；锚出有效可视区由
   P-01 关闭规则兜底）；弹层内 wheel 内容消费、到边冒泡。
-- **`Popup` 外点/内点判定与 anchor 的关系**：`entry.Anchor` 是 `Popup` 节点
-  （非 anchor 子树的某个叶子）——锚子树整体豁免；`entry.PopupNode` 是
-  OverlayHost 下的 popup 根——含其全部后代。
+- **`Popup` 外点/内点判定与 anchor 的关系**：`entry.AnchorNode` 是**锚的实际
+  view 子树根节点**（`Popup` 的 Anchor 子节点；ForEach/多条目锚在 P-03 已归一化为
+  一棵锚子树，身份即该子树根）——锚子树整体豁免；`entry.PopupNode` 是
+  OverlayHost 下的 popup 根（`PopupSurface` 节点）——含其全部后代。
 
 ## 不做
 

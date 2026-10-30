@@ -38,6 +38,22 @@ internal static class Reconciler
         return CreateNode(runtime, descriptors[0]);
     }
 
+    /// <summary>
+    /// 按根语义归一化用户根描述：集合视图（<c>ForEach</c>）或多条目仍包一层隐式容器，
+    /// 保证用户根只有一个节点、全部条目参与布局（与 <see cref="MountRoot"/> 的根规则一致）。
+    /// </summary>
+    internal static View NormalizeRootView(View root)
+    {
+        ArgumentNullException.ThrowIfNull(root);
+        var descriptors = Expand(root);
+        if (IsCollectionView(root) || descriptors.Count != 1)
+        {
+            return new ImplicitRootContainer(descriptors);
+        }
+
+        return descriptors[0].View;
+    }
+
     /// <summary>把视图（可能已被 Key / ForEach 包装）展开为同级条目。</summary>
     public static List<ChildDescriptor> Expand(View view)
     {
@@ -215,8 +231,14 @@ internal static class Reconciler
         ReconcileDescriptors(parent, descriptors);
     }
 
-    /// <summary>按展开后的条目协调子节点。</summary>
-    public static void ReconcileDescriptors(ViewNode parent, List<ChildDescriptor> descriptors)
+    /// <summary>
+    /// 按展开后的条目协调子节点。
+    /// </summary>
+    /// <remarks>
+    /// 描述集合按<b>只读快照</b>读取：调用方可以传数组/集合表达式（单次分配、协调期间不可变）。
+    /// 协调期间触发的 OnMount/OnUnmount/owner 回调可能在别处改树，不能用复用的可变缓冲。
+    /// </remarks>
+    public static void ReconcileDescriptors(ViewNode parent, IReadOnlyList<ChildDescriptor> descriptors)
     {
         ValidateKeys(parent, descriptors);
 
@@ -327,7 +349,7 @@ internal static class Reconciler
         }
     }
 
-    private static void ValidateKeys(ViewNode parent, List<ChildDescriptor> descriptors)
+    private static void ValidateKeys(ViewNode parent, IReadOnlyList<ChildDescriptor> descriptors)
     {
         if (descriptors.Count < 2)
         {

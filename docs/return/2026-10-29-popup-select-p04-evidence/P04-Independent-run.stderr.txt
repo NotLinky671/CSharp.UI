@@ -1,0 +1,4 @@
+Unhandled exception. System.NullReferenceException: Object reference not set to an instance of an object.
+   at PopupP04Probe.Program.Center(ViewNode node) in C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\p04probe\Program.cs:line 42
+   at PopupP04Probe.Program.D1_InsideClickAndFocus() in C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\p04probe\Program.cs:line 145
+   at PopupP04Probe.Program.Main() in C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\p04probe\Program.cs:line 90

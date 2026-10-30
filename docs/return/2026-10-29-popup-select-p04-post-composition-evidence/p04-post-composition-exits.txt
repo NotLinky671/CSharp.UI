@@ -1,0 +1,4 @@
+CSharp.UI.Tests EXIT=0
+CSharp.UI.Integration.Tests EXIT=0
+CSharp.UI.Markdown.Tests EXIT=0
+CORE_EXIT=0

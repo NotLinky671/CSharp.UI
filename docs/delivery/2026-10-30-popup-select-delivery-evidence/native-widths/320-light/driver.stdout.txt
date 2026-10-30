@@ -1,0 +1,59 @@
+EV=C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-widths\320-light WIDTH=320 THEME=light
+CONTEXT scale=1.5 logical=320x700 fb=480x1050 frames=0 requestedW=320
+PASS logical-width
+PASS pixel-scale-1.5
+PASS framebuffer-width
+PASS hwnd
+WAIT first-frames frames=1
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-widths\320-light\native-00-initial.png 480x1050
+theme already light (no toggle needed)
+WAIT scroll0 frames=3
+WAIT scroll1 frames=4
+WAIT scroll2 frames=5
+WAIT scroll3 frames=6
+WAIT scroll4 frames=7
+WAIT scroll5 frames=8
+WAIT scroll6 frames=9
+WAIT scroll7 frames=10
+WAIT scroll8 frames=11
+WAIT scroll9 frames=12
+WAIT scroll10 frames=13
+WAIT scroll11 frames=14
+WAIT scroll12 frames=15
+WAIT scroll13 frames=16
+WAIT scroll14 frames=17
+WAIT scroll15 frames=18
+WAIT scroll16 frames=19
+WAIT scroll17 frames=20
+WAIT scroll18 frames=21
+WAIT scroll19 frames=22
+WAIT scroll20 frames=23
+WAIT scroll21 frames=24
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-widths\320-light\native-01-scrolled.png 480x1050
+PASS select-found
+select frame=(32, 606.875, 244×32) viewport W=320
+CLICK logical=(154.0,622.9) screen=(356,1165)
+WAIT select-open frames=26
+PASS select-open-anchored
+PASS popup-node
+popup frame=(32, 518.875, 246×88) viewport=(320x700)
+PASS popup-in-width-band
+PASS popup-in-viewport-y
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-widths\320-light\native-02-select-open.png 480x1050
+KEY vk=0x28 sc=0x50 ext=1 sent=2
+KEY vk=0xD sc=0x1C ext=0 sent=2
+WAIT select-commit frames=28
+select value 标准模式 -> 紧凑模式（窄屏）
+PASS select-committed
+PASS select-value
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-widths\320-light\native-03-select-committed.png 480x1050
+PASS disabled-found
+WAIT ensure0 frames=30
+CLICK logical=(154.0,523.5) screen=(356,1016)
+WAIT disabled-click frames=32
+PASS disabled-no-open
+PASS disabled-no-write
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-widths\320-light\native-04-light.png 480x1050
+final frames=32 host-exited=False
+UiApplication.Run exit=0
+RESULT PASS

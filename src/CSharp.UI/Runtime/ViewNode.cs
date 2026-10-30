@@ -20,7 +20,7 @@ public sealed class ViewNode
     /// <summary>当前视图描述。协调更新后会指向最新的描述对象。</summary>
     public View View { get; internal set; }
 
-    /// <summary>父节点；根节点为 null。</summary>
+    /// <summary>父节点；内部根层节点为 null（用户根 <see cref="UiRuntime.Root"/> 的父为内部根层）。</summary>
     public ViewNode? Parent { get; internal set; }
 
     /// <summary>子节点（按描述顺序，也是绘制顺序）。</summary>
@@ -64,7 +64,7 @@ public sealed class ViewNode
     /// <summary>节点是否仍挂载在运行时树上。</summary>
     public bool IsMounted { get; internal set; }
 
-    /// <summary>节点深度（根为 0）。</summary>
+    /// <summary>节点深度（内部根层为 0；用户根 <see cref="UiRuntime.Root"/> 为 1）。</summary>
     public int Depth => Parent is null ? 0 : Parent.Depth + 1;
 
     internal bool MeasureValid { get; set; }

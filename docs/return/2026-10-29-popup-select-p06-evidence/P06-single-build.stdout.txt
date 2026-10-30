@@ -1,0 +1,35 @@
+  正在确定要还原的项目…
+  已还原 C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj (用时 1.42 秒)。
+  3 个项目(共 4 个)是最新的，无法还原。
+  CSharp.UI -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI\bin\Release\net10.0\CSharp.UI.dll
+  CSharp.UI.Text -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.Text\bin\Release\net10.0\CSharp.UI.Text.dll
+  CSharp.UI.OpenTK -> C:\Users\nothh\code\C#\CSharp.UI\src\CSharp.UI.OpenTK\bin\Release\net10.0\CSharp.UI.OpenTK.dll
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(297,17): error CS0411: 无法从用法中推断出方法“Component.UseState<T>(string, T)”的类型参数。请尝试显式指定类型参数。 [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(336,17): error CS0411: 无法从用法中推断出方法“Component.UseState<T>(string, T)”的类型参数。请尝试显式指定类型参数。 [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(99,31): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(127,31): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(150,31): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(176,31): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(208,38): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(209,27): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(225,41): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(236,27): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(252,27): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+
+生成失败。
+
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(297,17): error CS0411: 无法从用法中推断出方法“Component.UseState<T>(string, T)”的类型参数。请尝试显式指定类型参数。 [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(336,17): error CS0411: 无法从用法中推断出方法“Component.UseState<T>(string, T)”的类型参数。请尝试显式指定类型参数。 [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(99,31): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(127,31): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(150,31): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(176,31): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(208,38): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(209,27): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(225,41): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(236,27): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\Program.cs(252,27): error CS1061: “UiRuntime”未包含“Overlay”的定义，并且找不到可接受第一个“UiRuntime”类型参数的可访问扩展方法“Overlay”(是否缺少 using 指令或程序集引用?) [C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\glsmoke\glsmoke.csproj]
+    0 个警告
+    11 个错误
+
+已用时间 00:00:04.72

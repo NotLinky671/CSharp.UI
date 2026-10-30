@@ -1,0 +1,6 @@
+EVIDENCE /c/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-29-popup-select-p06-evidence
+PASS single.select
+PASS single.open
+INFO single.popupFrame :: (12, 52, 296×56)
+PNG /c/Users/nothh/code/C#/CSharp.UI/docs/return/2026-10-29-popup-select-p06-evidence\single-open-open-background.png 320x240
+RESULT PASS

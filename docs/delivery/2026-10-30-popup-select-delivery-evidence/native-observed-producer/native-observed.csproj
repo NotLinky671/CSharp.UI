@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>14.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>CSharp.UI.OpenTK.Tests</AssemblyName>
+    <RootNamespace>NativeObserved</RootNamespace>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:/Users/nothh/code/C#/CSharp.UI/src/CSharp.UI/CSharp.UI.csproj" />
+    <ProjectReference Include="C:/Users/nothh/code/C#/CSharp.UI/src/CSharp.UI.Text/CSharp.UI.Text.csproj" />
+    <ProjectReference Include="C:/Users/nothh/code/C#/CSharp.UI/src/CSharp.UI.OpenTK/CSharp.UI.OpenTK.csproj" />
+    <ProjectReference Include="C:/Users/nothh/code/C#/CSharp.UI/samples/CSharp.UI.Samples.ControlGallery/CSharp.UI.Samples.ControlGallery.csproj" />
+  </ItemGroup>
+</Project>

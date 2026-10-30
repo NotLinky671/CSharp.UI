@@ -1,0 +1,50 @@
+EV=C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-outer\out WIDTH=900 (outer-scroll-while-popup-open proof)
+CONTEXT scale=1.5 logical=900x700 fb=1350x1050 frames=0
+PASS hwnd
+WAIT first-frames frames=1
+SHOT 00-initial :: no frame captured
+PASS select-found
+PASS outer-page-found
+WAIT outer-pos0 frames=2
+WAIT outer-pos1 frames=3
+WAIT outer-pos2 frames=4
+WAIT outer-pos3 frames=5
+WAIT outer-pos4 frames=6
+WAIT outer-pos5 frames=7
+WAIT outer-pos6 frames=8
+WAIT outer-pos7 frames=9
+WAIT outer-pos8 frames=10
+WAIT outer-pos9 frames=11
+WAIT outer-pos10 frames=12
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-outer\out\native-01-select-in-view.png 1350x1050
+CLICK logical=(476.0,318.9) screen=(763,633)
+WAIT select-open frames=14
+PASS select-open-anchored
+PASS popup-node
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-outer\out\native-02-popup-open.png 1350x1050
+BEFORE off=2112.0 anchor=(96, 302.883, 760×32) popup=(96, 334.883, 760×88) value=标准模式
+wheel point=(880,350) insidePopup=False p0=(96, 334.883, 760×88)
+WAIT outer-follow frames=16
+AFTER1 off=2124.0 anchor=(96, 290.883, 760×32) popup=(96, 322.883, 760×88) open=True
+PASS outer-offset-rose
+PASS popup-still-open
+PASS popup-follows-anchor
+PASS binding-unchanged
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-outer\out\native-03-outer-follow.png 1350x1050
+WAIT outer-clip0 frames=17
+WAIT outer-clip1 frames=18
+WAIT outer-clip2 frames=19
+WAIT outer-clip3 frames=20
+WAIT outer-clip4 frames=21
+WAIT outer-clip5 frames=22
+WAIT outer-clip6 frames=23
+CLIP off=2460.0 anchor=(96, -45.117, 760×32) intersectsRoot=False open=False
+PASS outer-offset-kept-rising
+PASS anchor-fully-clipped
+PASS overlay-closed-on-clipout
+PASS binding-still-unchanged
+PNG C:\Users\nothh\AppData\Local\Temp\popup-select-acceptance\native-outer\out\native-04-outer-clipped-closed.png 1350x1050
+PASS host-alive
+final frames=23 host-exited=False
+UiApplication.Run exit=0
+RESULT PASS
