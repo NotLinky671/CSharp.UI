@@ -1,97 +1,59 @@
-# Popup 覆盖层与 Select 控件任务索引
+# Panel 容器与 Sidebar 导航任务索引
 
-创建日期：2026-10-29
+创建日期：2026-10-31
 
-设计依据：[Popup 与 Select 实施计划](../plan/2026-10-29-popup-and-select-plan.md)。
+设计依据：[Panel 与 Sidebar 实施计划](../plan/2026-10-31-panel-sidebar-plan.md)。
 
-状态：**P-01~P-07 全部主审验收通过，代码与文档收口完成**（P-06 原生验收见 [P-06 审查记录](../return/2026-10-30-popup-select-p06-native-tooling-review.md)；交付记录见 [2026-10-30-popup-select-delivery](../delivery/2026-10-30-popup-select-delivery.md)；提交信息见 git 历史）。前一任务组（RT-01~04、MD-01~06 富文本与 Markdown）已完成并归档至
-[docs/archive/2026-10-29-rich-text-markdown-tasks/](../archive/2026-10-29-rich-text-markdown-tasks/README.md)。
+状态：**PS-01~PS-05 全部主审验收通过，代码与文档收口完成**（复核：[计划](../return/2026-10-31-panel-sidebar-plan-review.md)、[Panel](../return/2026-10-31-panel-review.md)、[Sidebar](../return/2026-10-31-sidebar-review.md)、[Gallery](../return/2026-10-31-gallery-review.md)；交付：[2026-10-31-panel-sidebar-delivery](../delivery/2026-10-31-panel-sidebar-delivery.md)；提交信息见 git 历史）。前一任务组（P-01~P-07 Popup/Select）已完成并归档至
+[docs/archive/2026-10-31-popup-select-tasks/](../archive/2026-10-31-popup-select-tasks/README.md)。
 
-## 核心决策（计划 v3 已冻结，以下为摘要——细节以 plan 为准）
+## 核心决策（计划已冻结，以下为摘要——细节以 plan 为准）
 
-- **Root 层结构**：`UiRuntime` 内部固定 `UiRootLayerView`（[userRoot, OverlayHost]
-  两子，经 `Reconciler.MountRoot` 单次挂载——`Root` public 返回其中 userNode，
-  runtime traversal 起点为 `_layer`）；**`Root.Parent` 现为 `_layer`（非 null）、
-  `Depth` +1——兼容风险如实记录**；overlay 子树与用户树隔离，用户 Root 可为
-  `ClipView`/`ScrollView` 无影响。
-  **命中纪律**：RootLayer `IsHitTestVisible=true` + 显式 `HitTestSelf=false`；
-  Host `IsHitTestVisible=(entry!=null||swallow active)` + 显式 `HitTestSelf=false`——
-  `IsHitTestVisible=false` 剪整棵子树（RootLayer 必须恒 true），自身无命中靠
-  `HitTestSelf` 显式覆写（默认 `Frame.Contains` 会命中）。
-- **公开 `Popup`**：`Popup(View anchor, View content, Binding<bool> isOpen,
-  PopupPlacement preference = Auto)`——`Margin`/`MaxHeight`/
-  `CloseOnOutsidePress`/`CloseOnEscape` 为 init 属性（非构造参数）；
-  `IsOpen` 双向：资格门（mounted/enabled/`anchorVisible` 非空/`popupBounds`
-  非空/窗口激活）先判；**owner open-request 状态机**（从未开/已打开/已内部关闭
-  待 false→true 边沿）——内部关闭写 false 一次后记待边沿，binding 恒 true
-  不再 `Show`、无自激；binding 读取走 `Binding.Read(node)`；
-  **嵌套 `Show` 拒绝**（诊断——外层保持开）。
-- **单 popup**：`OverlayManager.ActiveEntry` 单槽，`Show` 先 `CloseAll()`；
-  不建 Entries 列表假多层。
-- **环境**：popup content 的父为 `PopupSurface`（`ResolveEnvironment` 返回**锚当前
-  `Environment`**——非快照，每轮读现值）；`GetChildClip`/`Emit` 按最终 Frame
-  裁剪；锚 `IsEffectivelyDisabled` → 关闭；窗口失活 → 关。
-- **placement（两阶段有界，双矩形）**：主树 measure+arrange → overlay measure
-  （约束 `(0..popupBounds.W, 0..popupBounds.H)`，`popupBounds=viewport.Inset(Margin)`，
-  **不与锚祖先 clip 交**——否则 popup 逃不出 ScrollView clip）→ 纯计算 Resolve
-  （w clamp→`Above`/`Below` 强制/`Auto` 两向 flip→h=min(desired,maxSize,
-  sideAvail,popupBounds.H)；h≤0||w≤0→null 关）→ 最终尺寸≠DesiredSize 则
-  **有界二次 measure 至多一次** → arrange；锚 Frame（非可见交）为定位参考；
-  **`anchorVisible`=anchor.Frame∩viewport∩各祖先 GetChildClip 只用于锚可见资格**
-  （空→关、部分非空→保持），与 `popupBounds` 独立。
-- **外点 = dismiss + 吞并整次 gesture**：dismiss-target 只在吞并 gesture 期间
-  存在（Up/Cancel 后释放；**无 entry 且非吞并期** `OverlayHost.IsHitTestVisible=false`
-  不拦 wheel/hover；entry 存在 → true 但 `HitTestSelf=false`、popup 子节点可点）；
-- **Esc**：复用 `DispatchKey` 现有顺序——Route 先给 focused 节点（composition-
-  cancel/自处理控件/Select trigger 先消费），未 handled + entry 存在才拦截；
-  无 IME 特判。焦点恢复：Esc/选后→SavedFocus→锚子树首 focusable→null；
-  外点/外写/替换/失活/挤占→不主动设焦。
-- **Up-activation**：弹层在 Up(同点) 打开，opening gesture 完整落 trigger；
-  binding 中途变 true → 本轮收敛开，**当前 gesture 仍按 captured/pressed
-  原目标路由**，下一 Down 才按新 hit 判——不误选。
-- **Select**：`Select<T>(Binding<T>, IReadOnlyList<SelectItem<T>>, placeholder)`——
-  items `Value` **唯一**（duplicate→`ArgumentException`，非静默 first-wins）；
-  值在但项 disabled → 仍显示该项 Label；items 空/全 disabled/Select disabled →
-  不打开（pointer/键盘统一判）；同值重选仍写一次；active stable-by-value；
-  **内部关闭（manager `Close`）→ Select 同步清 open flag**；
-  `Value` 读取走 `Binding.Read(node)` 登记依赖；完整键盘表见 plan §6。
+- **`Panel(View content)`**：单子装饰容器；init `ContentPadding`(默认 `Thickness(12)`)、
+  `BackgroundColor`/`BorderColor`（nullable → 当前 `Theme.Surface`/`Theme.Border`）、
+  `BorderThickness`（默认 1）、`CornerRadius`（默认 8）。无边框用 `BorderThickness=0`；
+  无 header/footer（调用方 `VStack`）；**无新增圆角内容裁剪**（装饰圆角同 `Border` 语义，
+  遵守父 clip 与显式 `.Clip()`）。绘制：背景 → 子 → 边框。
+- **`Sidebar<T>(Binding<T>, IReadOnlyList<SidebarItem<T>>, string? header = null)`**：
+  `SidebarItem<T>(T Value, string? Label = null, bool Disabled = false)` 与 `Select` 同
+  快照/唯一值/可空纪律；`Width` init 默认 200 为**自然偏好**非硬宽；label 单行 ellipsis，
+  行高 min 32（字体大可增）；单 focus owner、行非 focusable；pointer Up 同行 /
+  `Enter`/`Space` 提交一次（同值重选一次）；`Up`/`Down`/`Home`/`End` 跳 disabled 只
+  move active；`Tab` 不消费；`Ctrl`/`Meta`/`Alt` 不当导航/确认；重复 `Enter`/`Space`
+  不重复提交；未知值无高亮不自动纠正；items 替换按 `Value` 保身份、`Binding` 更换写当前。
+- **滚动**：超高交调用方 `ScrollView`；仅键盘 active 移动触发 ensure-visible
+  （实现挂点由 good 用既有 runtime 安全边界证明，不写死未证方案）；
+  无公共滚动 API。
+- **不做**：drawer/modal/Router/Shell/页面栈/内置折叠断点/图标/动画/多子 Panel/
+  分组 header 列表/多选/层级树——不实现不 stub 不假渲染。
+- **模块所有权**：good 负责 src/tests/samples 产品面；docs 规划由本索引维护者负责；
+  main 每任务独立 read 复审。
 
 ## 任务与依赖
 
 | 完成 | ID | 任务 | 前置依赖 | 阶段 |
 |---|---|---|---|---|
-| ☑ | P-01 | [UiRootLayerView + OverlayManager：挂载/锚环境现值/关闭规则](01-overlay-manager.md) | 无 | A |
-| ☑ | P-02 | [PopupPlacementCalculator 纯算法与有效可视区契约](02-popup-placement.md) | P-01 | A |
-| ☑ | P-03 | [Popup 公开 view 与 IsOpen 双向纪律](03-popup-view.md) | P-02 | A |
-| ☑ | P-04 | [输入语义：外点吞并+锚豁免、Esc、失活、capture/Up-activation](04-popup-input.md) | P-03 | A |
-| ☑ | P-05 | [Select\<T\> 控件](05-select-control.md) | P-04 | B |
-| ☑ | P-06 | [Gallery 集成与窄宽/DPI/主题核对](06-gallery-integration.md) | P-05 | B |
-| ☑ | P-07 | [文档与交付验收](07-docs-delivery.md) | P-06 | C |
+| ☑ | PS-01 | [容器/导航契约与布局准则](01-contract-and-layout-rules.md) | 无 | A |
+| ☑ | PS-02 | [Panel 实现 + 消费者边界](02-panel-implementation.md) | PS-01 | B |
+| ☑ | PS-03 | [Sidebar\<T\> 实现](03-sidebar-implementation.md) | PS-02 | B |
+| ☑ | PS-04 | [Gallery 真实集成与原生实证](04-gallery-integration.md) | PS-02、PS-03 | C |
+| ☑ | PS-05 | [文档收口与交付验收](05-docs-delivery.md) | PS-04 | C |
 
-依赖链：P-01 → P-02 → P-03 → P-04 → P-05 → P-06 → P-07（串行）。
-
-- P-01 主审通过（独立快照证据：[independent-after-safety-summary.txt](../return/2026-10-29-popup-select-p01-evidence/independent-after-safety-summary.txt)；
-  修复前失败快照保留在同一目录 `independent-probe-run.*`）。
-- P-02 主审已 read 接受（含主工作流复审：`Resolve` 无 margin 形参、null 语义、preference 接线）。
-- P-03 主审通过（4C09 source + 独立 public probe M1..M14 PASS，含 ForEach 锚返修：两行不重叠、按整棵锚子树定位）。
-- P-04 主审通过（独立 probe D1..D10 PASS + 组合期 Esc 真实 TextField 回归；宿主子项改为 0/1/2 单次快照）。
-- P-05 主审通过（公开 `Select<T>`：打开/键选/提交/取消/disabled/placeholder/限高滚动/焦点恒在 trigger/重建后写当前绑定；独立 P05 probe S1..S15 PASS，Core786/Integration56/Markdown50 绿，详见 [P-05 记录](../return/2026-10-29-popup-select-p05.md)）。
-- P-06 主审验收通过：`PopupSelectDemo` Gallery 集成 + 兼容修（portal `PopupContentScope` 缓存 Binding 反应性、80px Markdown Copy `.Flex(0,1).Clip()`、按规范删过度结构 pin 测试）；原生 900 47 PASS、窄宽 320/1024×light/dark 4 run、外层滚动跟随/裁出关闭实证，详见 [P-06 审查记录](../return/2026-10-30-popup-select-p06-native-tooling-review.md) 与[交付](../delivery/2026-10-30-popup-select-delivery.md)。
-- P-07 主审验收通过：双配置 Debug/Release 各 1689 项 0w0e（修复后 post-esc-fix），交付记录与证据见 [2026-10-30-popup-select-delivery](../delivery/2026-10-30-popup-select-delivery.md)；提交信息见 git 历史。
+依赖链：PS-01 → PS-02 → PS-03 → PS-04 → PS-05（串行）。
 
 ## 阶段门槛
 
-- A：overlay 真实挂载/命中/绘制/焦点可验；placement 翻转/clamp/有效可视区成立；
-  `Popup` API 与 IsOpen 纪律闭合；外点吞并/Esc/失活/Up-activation 成立。
-- B：Select 消费者行为完整（打开/键选/提交/取消/disabled/placeholder/Tab/回调次数/
-  限高滚动/ensure-visible）。
-- C：Gallery 演示 + 文档；双 config 构建 + 套件 + 真实 GL/窗口 smoke + 交付记录。
+- A：契约清单经主审确认无歧义，PS-02/PS-03 可直接照契约实现。
+- B：`Panel`/`Sidebar` API 与行为契约闭合；永久测试断言消费者可观察行为全绿。
+- C：Gallery 集成 + 原生实证 raw；双 config 0w0e；五套件 fresh 全绿；文档更新；
+  交付记录；主审门 → 单次英文 commit/push。
 
 ## 执行约定
 
 - 每个任务经主审独立复审通过才开依赖任务；返修写 `docs/return/` 带日期文件。
 - 永久测试只承诺消费者可观察行为与既有计数器，不 pin 内部字段名/常量字面/源码字符串；
   不引入 wiring/mockecho 测试。
-- 范围外：modal/focus trap/dialog/context menu/tooltip/多层 popup、可编辑 ComboBox、多选、
-  远程搜索、虚拟化、动画、公共滚动 API、多窗口、**popup 内嵌 popup（嵌套 open
-  拒绝 + runtime 诊断，外层保持开）**——不实现、不 stub、不假渲染。
+- 范围外：drawer/modal/Router/Shell/折叠断点/图标/动画/多子 Panel/分组/多选/层级树、
+  公共滚动 API——不实现、不 stub、不假渲染。
+- 原生实证用 own PID/own window 并记录；禁止按名称 kill；截图走既有
+  ZLib/`GL.ReadPixels(FRONT)`，不用 GDI 未知通道。

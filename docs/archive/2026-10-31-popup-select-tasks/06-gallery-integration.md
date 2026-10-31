@@ -1,7 +1,7 @@
 # P-06 Gallery 集成与窄宽/DPI/主题核对
 
-依据：[plan v3](../plan/2026-10-29-popup-and-select-plan.md) §8。
-前置：P-05。状态：**主审验收通过**（详见 [P-06 原生验收工具审查记录](../return/2026-10-30-popup-select-p06-native-tooling-review.md) 与[交付记录](../delivery/2026-10-30-popup-select-delivery.md)）。
+依据：[plan v3](../../plan/2026-10-29-popup-and-select-plan.md) §8。
+前置：P-05。状态：**主审验收通过**（详见 [P-06 原生验收工具审查记录](../../return/2026-10-30-popup-select-p06-native-tooling-review.md) 与[交付记录](../../delivery/2026-10-30-popup-select-delivery.md)）。
 
 ## 目标
 
@@ -42,4 +42,4 @@
   `0→24 随动、24→216 裁空关`。
 - **E5（真实 fast 独立复跑）**：fast 独立 native900 47 PASS 0 FAIL（
   `native-independent.stdout.txt`），debug/release 各 1689 项 0w0e。
-- 证据目录（按交付实际日期）：[docs/delivery/2026-10-30-popup-select-delivery-evidence/](../delivery/2026-10-30-popup-select-delivery-evidence/README.md)。
+- 证据目录（按交付实际日期）：[docs/delivery/2026-10-30-popup-select-delivery-evidence/](../../delivery/2026-10-30-popup-select-delivery-evidence/README.md)。

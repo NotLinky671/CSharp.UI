@@ -1,7 +1,7 @@
 # P-04 输入语义：外点吞并+锚豁免、Esc、失活、capture/Up-activation
 
-依据：[plan v3](../plan/2026-10-29-popup-and-select-plan.md) §5。
-前置：P-03（已主审通过）。状态：**已实现并经主审独立复核通过**（记录见 [P-04 审核](../return/2026-10-29-popup-select-p04.md) 与 [组合后复核证据](../return/2026-10-29-popup-select-p04-post-composition-evidence/)）。
+依据：[plan v3](../../plan/2026-10-29-popup-and-select-plan.md) §5。
+前置：P-03（已主审通过）。状态：**已实现并经主审独立复核通过**（记录见 [P-04 审核](../../return/2026-10-29-popup-select-p04.md) 与 [组合后复核证据](../../return/2026-10-29-popup-select-p04-post-composition-evidence/)）。
 
 ## 目标
 

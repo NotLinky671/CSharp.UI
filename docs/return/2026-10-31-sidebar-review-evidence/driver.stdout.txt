@@ -1,0 +1,26 @@
+EVIDENCE C:/Users/nothh/AppData/Local/Temp/sb-smoke-ev
+PASS light.mounted
+PASS light.select-write
+PNG C:/Users/nothh/AppData/Local/Temp/sb-smoke-ev\a-light-selected.png 360x450
+PASS light.selected-fill
+PASS light.disabled-not-sel
+PASS light.kbd-commit
+PNG C:/Users/nothh/AppData/Local/Temp/sb-smoke-ev\a-light-active.png 360x450
+PNG C:/Users/nothh/AppData/Local/Temp/sb-smoke-ev\a-light-end-visible.png 360x450
+PASS light.end-frame-visible
+PASS light.end-row-drawn
+PASS light.wheel-moved-up
+PNG C:/Users/nothh/AppData/Local/Temp/sb-smoke-ev\a-light-wheel-browse.png 360x450
+PASS dark.mounted
+PASS dark.select-write
+PNG C:/Users/nothh/AppData/Local/Temp/sb-smoke-ev\a-dark-selected.png 360x450
+PASS dark.selected-fill
+PASS dark.disabled-not-sel
+PASS dark.kbd-commit
+PNG C:/Users/nothh/AppData/Local/Temp/sb-smoke-ev\a-dark-active.png 360x450
+PNG C:/Users/nothh/AppData/Local/Temp/sb-smoke-ev\a-dark-end-visible.png 360x450
+PASS dark.end-frame-visible
+PASS dark.end-row-drawn
+PASS dark.wheel-moved-up
+PNG C:/Users/nothh/AppData/Local/Temp/sb-smoke-ev\a-dark-wheel-browse.png 360x450
+RESULT PASS

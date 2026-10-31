@@ -1,0 +1,86 @@
+EV=C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\320-dark WIDTH=320 THEME=dark PID=9788 EXE=C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\app\bin\Release\net10.0\win-x64\CSharp.UI.OpenTK.Tests.exe
+CONTEXT scale=1.5 logical=320x700 fb=480x1050 frames=0 requestedW=320
+PASS logical-width
+PASS pixel-scale-1.5
+PASS hwnd
+WAIT first-frames frames=1
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\320-dark\native-00-initial.png 480x1050
+PASS theme-button-found
+CLICK logical=(62.0,85.2) screen=(218,359)
+WAIT theme-toggle frames=3
+PASS theme-toggled
+PASS demo-mounted
+PASS sidebar-mounted
+WAIT ensure0 frames=5
+WAIT ensure1 frames=6
+WAIT ensure2 frames=7
+WAIT ensure3 frames=8
+WAIT ensure4 frames=9
+WAIT ensure5 frames=10
+WAIT ensure6 frames=11
+WAIT ensure7 frames=12
+WAIT ensure8 frames=13
+WAIT ensure9 frames=14
+WAIT ensure10 frames=15
+WAIT ensure11 frames=16
+WAIT ensure12 frames=17
+WAIT ensure13 frames=18
+WAIT ensure14 frames=19
+WAIT ensure15 frames=20
+WAIT ensure16 frames=21
+WAIT ensure17 frames=22
+WAIT ensure18 frames=23
+WAIT ensure19 frames=24
+WAIT ensure20 frames=25
+WAIT ensure21 frames=26
+WAIT ensure22 frames=27
+WAIT ensure23 frames=28
+WAIT ensure24 frames=29
+WAIT ensure25 frames=30
+WAIT ensure26 frames=31
+WAIT ensure27 frames=32
+WAIT ensure28 frames=33
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\320-dark\native-01-section.png 480x1050
+PASS panel-mounted
+PASS row-settings-found
+CLICK logical=(132.0,433.0) screen=(323,880)
+WAIT click-settings frames=35
+PASS click-commit-settings
+PASS click-focuses-owner
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\320-dark\native-02-selected.png 480x1050
+PASS row-security-found
+CLICK logical=(132.0,497.0) screen=(323,976)
+WAIT click-security frames=37
+PASS disabled-no-write
+STATE kbd-pre-up hasActive=True active=settings focused=owner
+KEY vk=0x26 sc=0x48 ext=1 sent=2
+STATE kbd-post-up hasActive=True active=reports focused=owner
+KEY vk=0xD sc=0x1C ext=0 sent=2
+STATE kbd-post-enter hasActive=True active=reports focused=owner
+WAIT kbd-commit frames=39
+PASS kbd-commit-value
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\320-dark\native-03-kbd.png 480x1050
+KEY vk=0x9 sc=0xF ext=0 sent=2
+WAIT tab frames=51
+PASS tab-leaves-sidebar
+PASS long-sidebar-mounted
+WAIT ensure0 frames=82
+WAIT ensure1 frames=109
+PASS long-first-row-visible
+CLICK logical=(148.0,539.3) screen=(347,1040)
+WAIT focus-long frames=527
+PASS long-click-focuses-owner
+KEY vk=0x23 sc=0x4F ext=1 sent=2
+WAIT long-end frames=528
+PASS end-last-visible
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\320-dark\native-04-end-visible.png 480x1050
+CLICK logical=(148.0,612.6) screen=(347,1150)
+WAIT click-last frames=530
+PASS last-commit
+WAIT wheel-up frames=532
+PASS wheel-no-snapback
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\320-dark\native-05-wheel-browse.png 480x1050
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\320-dark\native-06-dark-final.png 480x1050
+final frames=532 host-exited=False
+UiApplication.Run exit=0
+RESULT PASS

@@ -1,6 +1,6 @@
 # P-04 开发记录：输入语义（外点吞并、锚豁免、Esc、失活、Up-activation、滚轮）
 
-任务：[P-04 输入语义](../task/04-popup-input.md)
+任务：[P-04 输入语义](../archive/2026-10-31-popup-select-tasks/04-popup-input.md)
 计划：[2026-10-29 Popup 覆盖层与 Select 实施计划](../plan/2026-10-29-popup-and-select-plan.md) §5
 前置：P-03（主审通过：4C09 source + 独立 public probe M1..M14 PASS）
 状态：**实施完成，冻结待主审 read + fast 独立 probe；未勾选验收、未提交。**

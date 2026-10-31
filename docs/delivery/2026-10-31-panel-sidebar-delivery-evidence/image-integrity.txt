@@ -1,0 +1,85 @@
+# Image Integrity (Pillow Image.open + load full decode)
+# date 2026-10-31 scope: panel-sidebar delivery + return GL evidence
+# total_png=52 decoded_ok=52 decoded_fail=0
+
+## docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent (7 files)
+OK 1536x1050 RGBA sha:16f235cfbe74d617 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent/native-00-initial.png
+OK 1536x1050 RGBA sha:2af2c5f5c3bcdfaa docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent/native-01-section.png
+OK 1536x1050 RGBA sha:e281be3df6140d38 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent/native-02-selected.png
+OK 1536x1050 RGBA sha:f35056c0c0aa09a1 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent/native-03-kbd.png
+OK 1536x1050 RGBA sha:be07a9ecd5856f66 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent/native-04-end-visible.png
+OK 1536x1050 RGBA sha:c149d120c9663983 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent/native-05-wheel-browse.png
+OK 1536x1050 RGBA sha:c149d120c9663983 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent/native-06-dark-final.png
+
+## docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent-down (8 files)
+OK 1536x1050 RGBA sha:16f235cfbe74d617 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent-down/native-00-initial.png
+OK 1536x1050 RGBA sha:2af2c5f5c3bcdfaa docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent-down/native-01-section.png
+OK 1536x1050 RGBA sha:e281be3df6140d38 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent-down/native-02-selected.png
+OK 1536x1050 RGBA sha:f35056c0c0aa09a1 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent-down/native-03-kbd.png
+OK 1536x1050 RGBA sha:e281be3df6140d38 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent-down/native-03b-kbd-space.png
+OK 1536x1050 RGBA sha:761b2ec2a6477024 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent-down/native-04-end-visible.png
+OK 1536x1050 RGBA sha:c3151ba0c909505e docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent-down/native-05-wheel-browse.png
+OK 1536x1050 RGBA sha:c3151ba0c909505e docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-independent-down/native-06-dark-final.png
+
+## docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self (26 files)
+OK 1536x1050 RGBA sha:2af2c5f5c3bcdfaa docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-dark/native-01-section.png
+OK 1536x1050 RGBA sha:e281be3df6140d38 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-dark/native-02-selected.png
+OK 1536x1050 RGBA sha:f35056c0c0aa09a1 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-dark/native-03-kbd.png
+OK 1536x1050 RGBA sha:be07a9ecd5856f66 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-dark/native-04-end-visible.png
+OK 1536x1050 RGBA sha:c149d120c9663983 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-dark/native-05-wheel-browse.png
+OK 1536x1050 RGBA sha:c149d120c9663983 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-dark/native-06-dark-final.png
+OK 1536x1050 RGBA sha:5c466a271a72bc85 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-light/native-01-section.png
+OK 1536x1050 RGBA sha:4bc6c9b461f23242 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-light/native-02-selected.png
+OK 1536x1050 RGBA sha:01e928d0ce4bd715 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-light/native-03-kbd.png
+OK 1536x1050 RGBA sha:28be79a58899a035 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-light/native-04-end-visible.png
+OK 1536x1050 RGBA sha:29ef6c1d250a9a4a docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-light/native-05-wheel-browse.png
+OK 1536x1050 RGBA sha:29ef6c1d250a9a4a docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/1024-light/native-06-light-final.png
+OK 480x1050 RGBA sha:ddf43803c05fe145 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-dark/native-00-initial.png
+OK 480x1050 RGBA sha:ad911d768d18aab2 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-dark/native-01-section.png
+OK 480x1050 RGBA sha:e4a0a850af3b27cf docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-dark/native-02-selected.png
+OK 480x1050 RGBA sha:1bc2b1699b11c208 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-dark/native-03-kbd.png
+OK 480x1050 RGBA sha:ef1bcfc5224a5712 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-dark/native-04-end-visible.png
+OK 480x1050 RGBA sha:5427c02ccb3659bd docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-dark/native-05-wheel-browse.png
+OK 480x1050 RGBA sha:5427c02ccb3659bd docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-dark/native-06-dark-final.png
+OK 480x1050 RGBA sha:ddf43803c05fe145 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-light/native-00-initial.png
+OK 480x1050 RGBA sha:1382319d9ff22514 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-light/native-01-section.png
+OK 480x1050 RGBA sha:a613b6c9a76be127 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-light/native-02-selected.png
+OK 480x1050 RGBA sha:e7f3fa71089d0c52 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-light/native-03-kbd.png
+OK 480x1050 RGBA sha:253398073472f4a1 docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-light/native-04-end-visible.png
+OK 480x1050 RGBA sha:81a279793f601ddf docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-light/native-05-wheel-browse.png
+OK 480x1050 RGBA sha:81a279793f601ddf docs/delivery/2026-10-31-panel-sidebar-delivery-evidence/native-self/320-light/native-06-light-final.png
+
+## docs/return/2026-10-31-panel-review-evidence/ps02-dpi15-scaled.png (1 files)
+OK 300x180 RGBA sha:c30e8852ae48cbc0 docs/return/2026-10-31-panel-review-evidence/ps02-dpi15-scaled.png
+
+## docs/return/2026-10-31-panel-review-evidence/ps02-light-dark.png (1 files)
+OK 320x240 RGBA sha:f9d3f2e89a0d9546 docs/return/2026-10-31-panel-review-evidence/ps02-light-dark.png
+
+## docs/return/2026-10-31-panel-review-evidence/ps02-light-themed.png (1 files)
+OK 320x240 RGBA sha:f6d806814f85dc2d docs/return/2026-10-31-panel-review-evidence/ps02-light-themed.png
+
+## docs/return/2026-10-31-sidebar-review-evidence/a-dark-active.png (1 files)
+OK 360x450 RGBA sha:f7219407b69a8165 docs/return/2026-10-31-sidebar-review-evidence/a-dark-active.png
+
+## docs/return/2026-10-31-sidebar-review-evidence/a-dark-end-visible.png (1 files)
+OK 360x450 RGBA sha:a428d28224699abe docs/return/2026-10-31-sidebar-review-evidence/a-dark-end-visible.png
+
+## docs/return/2026-10-31-sidebar-review-evidence/a-dark-selected.png (1 files)
+OK 360x450 RGBA sha:c87f23afca003f78 docs/return/2026-10-31-sidebar-review-evidence/a-dark-selected.png
+
+## docs/return/2026-10-31-sidebar-review-evidence/a-dark-wheel-browse.png (1 files)
+OK 360x450 RGBA sha:311ab0166258f946 docs/return/2026-10-31-sidebar-review-evidence/a-dark-wheel-browse.png
+
+## docs/return/2026-10-31-sidebar-review-evidence/a-light-active.png (1 files)
+OK 360x450 RGBA sha:fe0b5ffd31f71331 docs/return/2026-10-31-sidebar-review-evidence/a-light-active.png
+
+## docs/return/2026-10-31-sidebar-review-evidence/a-light-end-visible.png (1 files)
+OK 360x450 RGBA sha:90e3169c903776d7 docs/return/2026-10-31-sidebar-review-evidence/a-light-end-visible.png
+
+## docs/return/2026-10-31-sidebar-review-evidence/a-light-selected.png (1 files)
+OK 360x450 RGBA sha:04903ec7d1dbbc8f docs/return/2026-10-31-sidebar-review-evidence/a-light-selected.png
+
+## docs/return/2026-10-31-sidebar-review-evidence/a-light-wheel-browse.png (1 files)
+OK 360x450 RGBA sha:9efe9b161fa84ab2 docs/return/2026-10-31-sidebar-review-evidence/a-light-wheel-browse.png
+
+SUMMARY total=52 ok=52 fail=0

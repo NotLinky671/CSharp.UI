@@ -1,0 +1,2 @@
+f045f7d7b780e1cb7008a12187e76c57e7d7c1f2c8ee3c42b4eb36859b4da56a  producer/Program.cs
+4e7e0ebffe29eef35160dd69a7db4da9e93d2d83ed0d7c670595a4766261b507  producer/panel-sidebar-native.csproj

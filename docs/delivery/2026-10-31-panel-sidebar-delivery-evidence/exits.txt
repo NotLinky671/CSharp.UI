@@ -1,0 +1,43 @@
+# Final gate 命令与真实 shell 退出码汇总（2026-10-31）
+
+退出码为本代理执行时 `echo "EXIT=$?"` 的实时观察值；bash 工具未对每次
+命令单独保存 shell receipt 文件——下表为标准输出中直接观察到的退出码，
+非由 RESULT 文本反推。self 四组为 good 实施期执行，其进程级 shell 退出码
+未单独留存（raw stdout 内 `UiApplication.Run exit=0` 为应用内退出码，见
+README 边界声明）。
+
+## 构建（cwd: repo 根）
+
+| 命令 | shell exit |
+|---|---|
+| `dotnet build CSharp.UI.slnx -c Debug --no-incremental -m:1 -nodeReuse:false` | 0 |
+| `dotnet build CSharp.UI.slnx -c Release --no-incremental -m:1 -nodeReuse:false` | 0 |
+
+## 五套件 direct-exe（cwd: repo 根；各一次，stdout/stderr 分文件保存）
+
+| 配置 | 工程 | 命令 | shell exit | Total |
+|---|---|---|---|---:|
+| Debug | CSharp.UI.Tests | `tests/CSharp.UI.Tests/bin/Debug/net10.0/CSharp.UI.Tests.exe` | 0 | 822 |
+| Debug | CSharp.UI.Text.Tests | `tests/CSharp.UI.Text.Tests/bin/Debug/net10.0/CSharp.UI.Text.Tests.exe` | 0 | 112 |
+| Debug | CSharp.UI.Integration.Tests | `tests/CSharp.UI.Integration.Tests/bin/Debug/net10.0/CSharp.UI.Integration.Tests.exe` | 0 | 56 |
+| Debug | CSharp.UI.Markdown.Tests | `tests/CSharp.UI.Markdown.Tests/bin/Debug/net10.0/CSharp.UI.Markdown.Tests.exe` | 0 | 50 |
+| Debug | CSharp.UI.OpenTK.Tests | `tests/CSharp.UI.OpenTK.Tests/bin/Debug/net10.0/CSharp.UI.OpenTK.Tests.exe` | 0 | 684 |
+| Release | CSharp.UI.Tests | `tests/CSharp.UI.Tests/bin/Release/net10.0/CSharp.UI.Tests.exe` | 0 | 822 |
+| Release | CSharp.UI.Text.Tests | `tests/CSharp.UI.Text.Tests/bin/Release/net10.0/CSharp.UI.Text.Tests.exe` | 0 | 112 |
+| Release | CSharp.UI.Integration.Tests | `tests/CSharp.UI.Integration.Tests/bin/Release/net10.0/CSharp.UI.Integration.Tests.exe` | 0 | 56 |
+| Release | CSharp.UI.Markdown.Tests | `tests/CSharp.UI.Markdown.Tests/bin/Release/net10.0/CSharp.UI.Markdown.Tests.exe` | 0 | 50 |
+| Release | CSharp.UI.OpenTK.Tests | `tests/CSharp.UI.OpenTK.Tests/bin/Release/net10.0/CSharp.UI.OpenTK.Tests.exe` | 0 | 684 |
+
+## 独立原生（final gate，本代理执行）
+
+| 命令 | env | shell exit | 结果 |
+|---|---|---|---|
+| `CSharp.UI.OpenTK.Tests.exe`（self producer 原字节，cwd=`%TEMP%/panel-sidebar-native/app`） | `P_EV=<evidence>/native-independent P_WIDTH=1024 P_THEME=dark` | 0 | 21 项 `^PASS ` 检查 + RESULT PASS、`host-exited=False`、`UiApplication.Run exit=0` |
+| `CSharp.UI.OpenTK.Tests.exe`（扩展 producer，cwd=`%TEMP%/panel-sidebar-native-independent/app`） | `P_EV=<evidence>/native-independent-down P_WIDTH=1024 P_THEME=dark` | 0 | 23 项 `^PASS ` 检查 + RESULT PASS、`host-exited=False`、`UiApplication.Run exit=0` |
+
+备注：check 计数口径为 `^PASS ` 行首锚定（`RESULT PASS` 不是 check）——
+self 四组 19/21/19/21、独立 21、扩展 23（anchored grep 实测核准，早前
+"20/22/20/22/22" 为含 RESULT 的宽松口径，已统一修正）。扩展 producer 构建一次
+（`dotnet build panel-sidebar-native.csproj -c
+Release`，1 警告 CA1416 平台标注、0 错误）——为仓库外 Temp 工程，不计入
+仓库产品双配置 0w0e 统计。

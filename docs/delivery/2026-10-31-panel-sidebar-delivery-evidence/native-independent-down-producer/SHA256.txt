@@ -1,0 +1,4 @@
+ae6f6ceee385f8481cb8638b32b60395f1cc6fe417c092964fffc6aa4b1348ee  native-independent-down-producer/Program.cs
+4e7e0ebffe29eef35160dd69a7db4da9e93d2d83ed0d7c670595a4766261b507  native-independent-down-producer/panel-sidebar-native.csproj
+fcb204f1047cb8ad42fa7359454720775e6b80197f0e9d3d33b3c50cf514b792  native-independent-down.stdout.txt
+3214061e097868cbe91d411b52b83a6221fbc10927ae98e65c5ed0864ab2e001  native-independent.stdout.txt

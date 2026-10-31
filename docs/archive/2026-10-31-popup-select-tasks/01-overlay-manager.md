@@ -1,7 +1,7 @@
 # P-01 UiRootLayerView + OverlayManager + PopupSurface：挂载、资格门、锚环境现值、关闭规则
 
-依据：[plan v3](../plan/2026-10-29-popup-and-select-plan.md) §1/§2/§4/§5/§9。
-前置：无。状态：**已实现并经主审独立复核通过**（记录见 [P-01 开发记录](../return/2026-10-29-popup-select-p01-dev.md) 与 [安全独立复审](../return/2026-10-29-popup-select-p01-safety.md)，原始输出在同名 `-evidence` 目录）。
+依据：[plan v3](../../plan/2026-10-29-popup-and-select-plan.md) §1/§2/§4/§5/§9。
+前置：无。状态：**已实现并经主审独立复核通过**（记录见 [P-01 开发记录](../../return/2026-10-29-popup-select-p01-dev.md) 与 [安全独立复审](../../return/2026-10-29-popup-select-p01-safety.md)，原始输出在同名 `-evidence` 目录）。
 
 ## 目标
 

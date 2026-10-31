@@ -1,6 +1,6 @@
 # P-02 开发记录（2026-10-29）
 
-任务：[P-02 PopupPlacementCalculator](../task/02-popup-placement.md)
+任务：[P-02 PopupPlacementCalculator](../archive/2026-10-31-popup-select-tasks/02-popup-placement.md)
 计划：[2026-10-29 Popup 覆盖层与 Select 实施计划](../plan/2026-10-29-popup-and-select-plan.md) §3
 基线：P-01 主审通过（独立证据见 `docs/return/2026-10-29-popup-select-p01-evidence/`）。
 状态：**已实施、自测通过，待主审验收**；未提交、未推送、未勾 P-02。

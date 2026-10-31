@@ -1,6 +1,6 @@
 # Popup 覆盖层与 Select 控件交付记录（2026-10-30）
 
-日期：2026-10-30。任务组：[P-01~P-07](../task/README.md)（计划 [2026-10-29-popup-and-select-plan](../plan/2026-10-29-popup-and-select-plan.md)）。
+日期：2026-10-30。任务组：[P-01~P-07](../archive/2026-10-31-popup-select-tasks/README.md)（计划 [2026-10-29-popup-and-select-plan](../plan/2026-10-29-popup-and-select-plan.md)）。
 
 **状态：验收通过（代码与文档收口完成；提交信息见 git 历史）。** 双配置 Debug/Release 各 1689 项、0 警告 0 错误；原生 900 47-case、窄宽 320/1024×light/dark 4 run、外层滚动跟随/裁出关闭均实证，raw 见 `docs/delivery/2026-10-30-popup-select-delivery-evidence/`。
 

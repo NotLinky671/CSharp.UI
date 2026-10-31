@@ -99,6 +99,7 @@ public sealed class UiRuntime : IDisposable
     private bool _registered;
     private bool _processingWork;
     private bool _pendingHoverRefresh;
+    private ViewNode? _pendingEnsureVisible;
     private bool _buildingFrame;
     private bool _windowActive = true;
     private int _nextTextInputEpoch;
@@ -513,9 +514,25 @@ public sealed class UiRuntime : IDisposable
                 progressed = true;
             }
 
+            // 键盘导航的 ensure-visible（Sidebar active 行进入最近祖先 ScrollView 视口）：
+            // 只在布局/响应式/overlay 请求全部收敛（!progressed）后消费一次；兑现设置偏移并
+            // 标脏布局，沿现有 progressed 链回到 RunLayout——第二个 pass 使用已写入的偏移重排，
+            // 消费端不再重新请求，保证单次有界不回弹。无请求时仅一次 null 检查。
             if (!progressed)
             {
-                break;
+                var ensureOwner = _pendingEnsureVisible;
+                _pendingEnsureVisible = null;
+                var ensureTarget = ensureOwner is { IsMounted: true }
+                    ? ensureOwner.View.ResolveEnsureVisibleTarget(ensureOwner)
+                    : null;
+                if (ensureTarget is { IsMounted: true } && TryScrollTargetIntoView(ensureTarget))
+                {
+                    progressed = true;   // 落到下方 _layoutDirty 标脏后回圈 RunLayout。
+                }
+                else
+                {
+                    break;
+                }
             }
 
             // 内容变化后必须重新测量、排列到稳定，之后才允许绘制（不提交半成品布局）。
@@ -833,6 +850,70 @@ public sealed class UiRuntime : IDisposable
     /// 本方法只标记，由 <see cref="ProcessPendingWork"/> 在全部布局+交互校验后的安全阶段统一 flush 一次。
     /// </summary>
     internal void QueueHoverRefresh() => _pendingHoverRefresh = true;
+
+    /// <summary>
+    /// 键盘导航请求把 owner 的内容节点带入最近祖先 <see cref="ScrollView"/> 的视口（仅键盘路径调用）。
+    /// </summary>
+    /// <remarks>
+    /// 单槽位覆盖语义：连续导航只保留最新 owner 的请求（End→Home 不插帧时 Home 生效）。
+    /// 具体目标由 owner 的 <see cref="View.ResolveEnsureVisibleTarget"/> 在消费时（布局已收敛）
+    /// 按当前描述与已挂载子树惰性解析——items 被替换/重排/卸载后按值重定位，不持有陈旧行节点。
+    /// 滚轮/平移/外部值变化不调用本入口，因此不会回弹。
+    /// </remarks>
+    internal void RequestEnsureVisible(ViewNode ownerNode)
+    {
+        ArgumentNullException.ThrowIfNull(ownerNode);
+        _pendingEnsureVisible = ownerNode;
+    }
+
+    /// <summary>若目标行在最近的垂直 <see cref="ScrollView"/> 祖先视口之外，把偏移调整最小量使其可见。</summary>
+    /// <returns>是否写入了偏移（需要再走一轮布局兑现）；目标已可见/无祖先/空视口为 false。</returns>
+    private static bool TryScrollTargetIntoView(ViewNode target)
+    {
+        for (var current = target.Parent; current is not null; current = current.Parent)
+        {
+            if (current.View is ScrollView { Axis: ScrollAxis.Vertical })
+            {
+                var viewport = current.Frame;
+                if (viewport.IsEmpty)
+                {
+                    return false;
+                }
+
+                var row = target.Frame;
+                double delta = 0;
+                if (row.Bottom > viewport.Bottom)
+                {
+                    delta = row.Bottom - viewport.Bottom;
+                }
+                else if (row.Y < viewport.Y)
+                {
+                    delta = row.Y - viewport.Y;
+                }
+
+                if (Math.Abs(delta) < 0.5)
+                {
+                    return false;
+                }
+
+                var child = current.ChildList.Count > 0 ? current.ChildList[0] : null;
+                var maxOffset = Math.Max(0, (child?.DesiredSize.Height ?? 0) - viewport.Height);
+                var next = Math.Clamp(current.ScrollOffsetY + delta, 0, maxOffset);
+                if (Math.Abs(next - current.ScrollOffsetY) < 0.001)
+                {
+                    return false;
+                }
+
+                current.ScrollOffsetY = next;
+                current.InvalidateLayout();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
 
 
     /// <summary>分发指针事件。</summary>

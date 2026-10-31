@@ -243,6 +243,16 @@ public abstract class View
     /// <summary>子项的被裁剪区域；返回非 null 表示该视图把子项裁剪到指定矩形（ScrollView、Clip）。</summary>
     internal virtual Rect? GetChildClip(ViewNode node) => null;
 
+    /// <summary>
+    /// 键盘 ensure-visible 消费端（<see cref="UiRuntime.RequestEnsureVisible"/>）布局收敛后调用：
+    /// 返回当前应被带进最近祖先 <see cref="ScrollView"/> 视口的子树节点，或 null（无目标/无需滚动）。
+    /// </summary>
+    /// <remarks>
+    /// 默认无目标（大多数视图不实现键盘滚动语义）。实现必须按<b>当前</b>描述与已挂载子树求值——
+    /// 不得返回缓存的、可能已重排/卸载的行节点（Sidebar 按 active 值在现有子树中重查）。
+    /// </remarks>
+    internal virtual ViewNode? ResolveEnsureVisibleTarget(ViewNode node) => null;
+
     /// <summary>在堆叠容器主轴上吸收剩余空间的权重；0 表示不吸收。</summary>
     internal virtual double FlexGrow(ViewNode node, bool horizontal) => 0;
 

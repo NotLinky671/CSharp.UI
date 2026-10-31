@@ -1,7 +1,7 @@
 # P-03 Popup 公开 view 与 IsOpen 双向纪律
 
-依据：[plan v3](../plan/2026-10-29-popup-and-select-plan.md) §2。
-前置：P-02（已主审通过）。状态：**已实现并经主审独立复核通过**（记录见 [P-03 审核](../return/2026-10-29-popup-select-p03.md) 与 [锚定后复核证据](../return/2026-10-29-popup-select-p03-post-anchor-evidence/)）。
+依据：[plan v3](../../plan/2026-10-29-popup-and-select-plan.md) §2。
+前置：P-02（已主审通过）。状态：**已实现并经主审独立复核通过**（记录见 [P-03 审核](../../return/2026-10-29-popup-select-p03.md) 与 [锚定后复核证据](../../return/2026-10-29-popup-select-p03-post-anchor-evidence/)）。
 
 ## 目标
 

@@ -1,0 +1,74 @@
+EV=C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\1024-dark WIDTH=1024 THEME=dark PID=20920 EXE=C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\app\bin\Release\net10.0\win-x64\CSharp.UI.OpenTK.Tests.exe
+CONTEXT scale=1.5 logical=1024x700 fb=1536x1050 frames=0 requestedW=1024
+PASS logical-width
+PASS pixel-scale-1.5
+PASS hwnd
+WAIT first-frames frames=1
+SHOT 00-initial :: no frame captured
+PASS theme-button-found
+CLICK logical=(950.0,37.3) screen=(1474,211)
+WAIT theme-toggle frames=3
+PASS theme-toggled
+PASS demo-mounted
+PASS sidebar-mounted
+WAIT ensure0 frames=5
+WAIT ensure1 frames=6
+WAIT ensure2 frames=7
+WAIT ensure3 frames=8
+WAIT ensure4 frames=9
+WAIT ensure5 frames=10
+WAIT ensure6 frames=11
+WAIT ensure7 frames=12
+WAIT ensure8 frames=13
+WAIT ensure9 frames=14
+WAIT ensure10 frames=15
+WAIT ensure11 frames=16
+WAIT ensure12 frames=17
+WAIT ensure13 frames=18
+WAIT ensure14 frames=19
+WAIT ensure15 frames=20
+WAIT ensure16 frames=21
+WAIT ensure17 frames=22
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\1024-dark\native-01-section.png 1536x1050
+PASS panel-mounted
+PASS row-settings-found
+CLICK logical=(132.0,480.8) screen=(247,876)
+WAIT click-settings frames=24
+PASS click-commit-settings
+PASS click-focuses-owner
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\1024-dark\native-02-selected.png 1536x1050
+PASS row-security-found
+CLICK logical=(132.0,544.8) screen=(247,972)
+WAIT click-security frames=26
+PASS disabled-no-write
+STATE kbd-pre-up hasActive=True active=settings focused=owner
+KEY vk=0x26 sc=0x48 ext=1 sent=2
+STATE kbd-post-up hasActive=True active=reports focused=owner
+KEY vk=0xD sc=0x1C ext=0 sent=2
+STATE kbd-post-enter hasActive=True active=reports focused=owner
+WAIT kbd-commit frames=28
+PASS kbd-commit-value
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\1024-dark\native-03-kbd.png 1536x1050
+KEY vk=0x9 sc=0xF ext=0 sent=2
+WAIT tab frames=37
+PASS tab-leaves-sidebar
+PASS long-sidebar-mounted
+WAIT ensure0 frames=65
+PASS long-first-row-visible
+CLICK logical=(500.0,551.3) screen=(799,982)
+WAIT focus-long frames=487
+PASS long-click-focuses-owner
+KEY vk=0x23 sc=0x4F ext=1 sent=2
+WAIT long-end frames=488
+PASS end-last-visible
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\1024-dark\native-04-end-visible.png 1536x1050
+CLICK logical=(500.0,624.7) screen=(799,1092)
+WAIT click-last frames=490
+PASS last-commit
+WAIT wheel-up frames=492
+PASS wheel-no-snapback
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\1024-dark\native-05-wheel-browse.png 1536x1050
+PNG C:\Users\nothh\AppData\Local\Temp\panel-sidebar-native\ev\1024-dark\native-06-dark-final.png 1536x1050
+final frames=492 host-exited=False
+UiApplication.Run exit=0
+RESULT PASS

@@ -1,6 +1,6 @@
 # P-05 开发记录：Select\<T\> 控件（2026-10-29）
 
-任务：[P-05 Select\<T\> 控件](../task/05-select-control.md)
+任务：[P-05 Select\<T\> 控件](../archive/2026-10-31-popup-select-tasks/05-select-control.md)
 计划：[2026-10-29 Popup 覆盖层与 Select 实施计划](../plan/2026-10-29-popup-and-select-plan.md) §6
 前置：P-04（主审通过：独立 probe D1..D10 PASS + 组合期回归批次）
 状态：**实施完成，冻结待主审 read + fast 独立 probe；未勾选验收、未提交。**

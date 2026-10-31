@@ -1,6 +1,6 @@
 # P-03 设计准备：公开 Popup 与 IsOpen 双向纪律（待 P-02 通过后实施）
 
-依据：[plan v3 §4](../plan/2026-10-29-popup-and-select-plan.md) + [P-03 task](../task/03-popup-view.md)。
+依据：[plan v3 §4](../plan/2026-10-29-popup-and-select-plan.md) + [P-03 task](../archive/2026-10-31-popup-select-tasks/03-popup-view.md)。
 前置：P-02（fast 实施中，本文件在 P-02 主审通过、主工作流 read 接口后才变成实施依据）。
 状态：**已实施（2026-10-29），实现记录见 [2026-10-29-popup-select-p03.md](2026-10-29-popup-select-p03.md)；
 本文件保留设计依据，实施中的偏差（surface 用 `UpdateNode` 而非 `ReconcileDescriptors`）已在 §5 更正。**

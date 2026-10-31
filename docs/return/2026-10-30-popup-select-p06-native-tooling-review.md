@@ -1,6 +1,6 @@
 # P-06 原生验收工具审查记录（通过——保留历史返修轮次）
 
-日期：2026-10-30。任务：[P-06 Gallery 集成](../task/06-gallery-integration.md)；依据：[计划](../plan/2026-10-29-popup-and-select-plan.md) §8。
+日期：2026-10-30。任务：[P-06 Gallery 集成](../archive/2026-10-31-popup-select-tasks/06-gallery-integration.md)；依据：[计划](../plan/2026-10-29-popup-and-select-plan.md) §8。
 
 本轮 main 对实机验收 harness 的审查记录。**以下问题均属于验收工具（harness）层面，未据此改动产品源码**；`PopupSelectDemo`（samples/CSharp.UI.Samples.ControlGallery/PopupSelectDemo.cs）与产品实现保持冻结。
 
@@ -41,7 +41,7 @@
 
 ## 关联
 
-- 任务与计划：[P-06](../task/06-gallery-integration.md)、[计划](../plan/2026-10-29-popup-and-select-plan.md)、demo 源 `samples/CSharp.UI.Samples.ControlGallery/PopupSelectDemo.cs`。
+- 任务与计划：[P-06](../archive/2026-10-31-popup-select-tasks/06-gallery-integration.md)、[计划](../plan/2026-10-29-popup-and-select-plan.md)、demo 源 `samples/CSharp.UI.Samples.ControlGallery/PopupSelectDemo.cs`。
 - 证据目录（旧 GDI 轮 + GL 轮）：[2026-10-30-popup-select-delivery-evidence](../delivery/2026-10-30-popup-select-delivery-evidence/README.md)。
 
 

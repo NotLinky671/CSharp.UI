@@ -1,7 +1,7 @@
 # P-05 Select\<T\> 控件
 
-依据：[plan v3](../plan/2026-10-29-popup-and-select-plan.md) §6。
-前置：P-04（已主审通过）。状态：**已实现并经主审独立复核通过**（记录见 [P-05 审核](../return/2026-10-29-popup-select-p05.md)，原始输出在 `2026-10-29-popup-select-p05-evidence/`）。
+依据：[plan v3](../../plan/2026-10-29-popup-and-select-plan.md) §6。
+前置：P-04（已主审通过）。状态：**已实现并经主审独立复核通过**（记录见 [P-05 审核](../../return/2026-10-29-popup-select-p05.md)，原始输出在 `2026-10-29-popup-select-p05-evidence/`）。
 
 ## 目标
 

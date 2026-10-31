@@ -1,6 +1,6 @@
 # P-01 安全阶段返修记录（2026-10-29，safety）
 
-任务：[P-01 UiRootLayerView + OverlayManager + PopupSurface](../task/01-overlay-manager.md)
+任务：[P-01 UiRootLayerView + OverlayManager + PopupSurface](../archive/2026-10-31-popup-select-tasks/01-overlay-manager.md)
 计划：[2026-10-29 Popup 覆盖层与 Select 实施计划](../plan/2026-10-29-popup-and-select-plan.md) §1/§4/§5
 基线：`249ca96 docs: plan popup and select controls`（工作区含初版 P-01 实现，未提交）
 状态：**返修完成，待主审 read + fast 复验；仍未勾选 P-01 验收，未提交/推送。**

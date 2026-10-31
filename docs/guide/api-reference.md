@@ -114,6 +114,76 @@
 - **内容切换沿用协调规则**：同父级同 Key/类型的节点复用；跨父级或类型变化会真正卸载并清理焦点、指针捕获、选区与
   布局/绘制阶段补登记的绑定依赖。需要跨分支保持输入焦点和本地编辑状态时优先使用 `AdaptiveStack`；
   持久数据放在外层 `State`/`Binding`，框架不承诺跨父级迁移焦点或本地编辑状态。
+## 面板 Panel 与侧栏导航 Sidebar
+
+| 类型 | 说明 |
+|---|---|
+| `Panel(View content)` | 单子装饰容器：内容按 `ContentPadding + BorderThickness` 内缩；`Content` 只读 |
+| `Panel.ContentPadding` | init，默认 `Thickness(12)`；参与布局（与 `BorderThickness` 一起计入 Desired/Arrange） |
+| `Panel.BackgroundColor` / `BorderColor` | init，可空；`null` 时取当前 `Theme.Surface` / `Theme.Border`（按轮读现值） |
+| `Panel.BorderThickness` / `CornerRadius` | init，默认 1 / 8；有限非负校验；`BorderThickness = 0` 即无边框（无 `ShowBorder`） |
+| `Sidebar<T>(Binding<T> value, IReadOnlyList<SidebarItem<T>> items, string? header = null)` | 常驻纵向单选导航。`Value` 双向；`Items` 构造时快照且 `Value` 按 `EqualityComparer<T>.Default` 唯一，重复抛 `ArgumentException` |
+| `Sidebar<T>.Value` / `Items` / `Header` | 构造后只读；`Header` 为可选文本头，不是选中行、不参与导航 |
+| `Sidebar<T>.Width` | init，默认 200，为**自然偏好宽度**而非硬宽：父约束更窄可缩小，可被 `Frame`/`Flex`/`FillWidth` 覆盖；须有限正数 |
+| `SidebarItem<T>(T Value, string? Label = null, bool Disabled = false)` | 导航项：值、标签（`null` 回退 `Value?.ToString() ?? ""`）、禁用；`T` 可空合法（如 `Sidebar<string?>`） |
+
+Panel 行为：
+
+- **布局与绘制**：`ContentPadding`/`BorderThickness` 参与布局；`BackgroundColor`/`BorderColor`/`CornerRadius` 只影响绘制
+  （变更只重绘、不 re-layout）。绘制顺序：背景 → 子内容 → 边框。
+- **圆角是装饰不是裁剪**：`CornerRadius` 只画圆角边框/背景，**不裁剪子内容**（无 rounded mask）；`ContentPadding` 为 0 时
+  子内容可能覆盖圆角像素——需要硬裁剪时用 `.Clip()`（矩形）或保证 padding ≥ 半径效果。标题/分组由调用方 `VStack` 组合。
+
+Sidebar 行为：
+
+- **布局**：自然高 = header + 各行（行高 min 32 逻辑像素，字号更大时增高）；label 单行 ellipsis；超高内容滚动由**调用方
+  `ScrollView`** 提供，控件不内置滚动容器。
+- **active 初始化**：首次键盘交互时以有效 enabled 的当前绑定值初始化 active；值未知或全 disabled 时不自动选择、不写回。
+- **提交**：pointer `Up` 落在同一行 / `Enter`/`Space` 提交 active——写 `Value` 一次；同值重选仍写一次；重复 `Enter`/`Space`
+  忽略。`Up`/`Down`/`Home`/`End` 只移动 active（跳过 disabled、两端停不环绕），不写值；`Tab`/`Shift+Tab` 不消费、正常
+  焦点遍历；`Ctrl`/`Meta`/`Alt` 组合键不作导航/确认。
+- **不写路径**：items 空 / 全 disabled / Sidebar disabled → 不提交；导航、焦点进出、失焦、外部绑定变化均不写。
+- **键盘 ensure-visible**：键盘移动 active 时把目标行带入调用方 `ScrollView` 可视区（内部请求，无公共滚动 API）；
+  用户滚轮、内容平移、外部写值**不**触发 ensure，不会回弹。
+- **焦点**：控件本体可聚焦；选项行不是 focusable、不入 Tab 顺序（同 `Select` 选项行纪律）。
+
+```csharp
+public sealed class PanelSidebarExample : Component
+{
+    protected override View Build()
+    {
+        // 持久状态外持于组件；不引入 Router/Shell。
+        var page = UseState<string?>("page", "home");
+
+        var sidebar = new Sidebar<string?>(
+            page.ToBinding(),
+            [
+                new("home", "主页"),
+                new("settings", "设置"),
+                new SidebarItem<string?>("admin", "管理（禁用）", Disabled: true),
+            ],
+            header: "导航");
+
+        var content = new Panel(
+                new VStack(
+                    new Text($"当前页：{page.Value ?? "无"}").Wrap(),
+                    new Button("回到主页", () => page.Value = "home"))
+                    .Spacing(8))
+            { CornerRadius = 10 };
+
+        return new AdaptiveStack(
+                640,                        // 父级可用宽度 < 640 时纵排，>= 640 横排
+                sidebar,
+                content.Flex(1))            // 内容区占剩余宽度
+            .Spacing(12)
+            .Padding(16);
+    }
+}
+```
+
+不包含：drawer/modal 侧栏、路由/页面栈、内置折叠断点（窄宽分支用 `Responsive`/`AdaptiveStack` 组合）、图标、动画、
+多选与层级树、`Panel` 多子叠放（用 `ZStack`）。
+
 
 ## 状态与绑定
 

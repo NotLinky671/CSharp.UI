@@ -1,7 +1,7 @@
 # P-02 PopupPlacementCalculator 纯算法与有效可视区契约
 
-依据：[plan v3](../plan/2026-10-29-popup-and-select-plan.md) §3。
-前置：P-01（已主审通过）。状态：**已实现并经主审独立复核通过**（记录见 [P-02 开发记录](../return/2026-10-29-popup-select-p02-dev.md)，原始输出在 `2026-10-29-popup-select-p02-evidence/`）。
+依据：[plan v3](../../plan/2026-10-29-popup-and-select-plan.md) §3。
+前置：P-01（已主审通过）。状态：**已实现并经主审独立复核通过**（记录见 [P-02 开发记录](../../return/2026-10-29-popup-select-p02-dev.md)，原始输出在 `2026-10-29-popup-select-p02-evidence/`）。
 
 ## 目标
 

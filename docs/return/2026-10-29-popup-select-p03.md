@@ -1,6 +1,6 @@
 # P-03 开发记录：公开 Popup 与 IsOpen 双向纪律（2026-10-29）
 
-任务：[P-03 Popup 公开 view 与 IsOpen 双向纪律](../task/03-popup-view.md)
+任务：[P-03 Popup 公开 view 与 IsOpen 双向纪律](../archive/2026-10-31-popup-select-tasks/03-popup-view.md)
 计划：[2026-10-29 Popup 覆盖层与 Select 实施计划](../plan/2026-10-29-popup-and-select-plan.md) §4
 前置：P-02（主审已 read 接受；本工作流复审结论见下）
 设计依据：[2026-10-29-popup-select-p03-design.md](2026-10-29-popup-select-p03-design.md)

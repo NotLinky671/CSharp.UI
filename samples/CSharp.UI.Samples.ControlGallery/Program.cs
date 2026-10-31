@@ -215,6 +215,7 @@ public sealed class GalleryApp : Component
                             .WithFont(FontDescription.Default.WithSize(12)))
                         .Spacing(6)),
                     Section("弹出与选择", new PopupSelectDemo(theme)),
+                    Section("面板与导航", new PanelSidebarDemo()),
                     Section("Markdown", new MarkdownDemo(logoPath)))
                 .Spacing(18)
                 .Padding(20))

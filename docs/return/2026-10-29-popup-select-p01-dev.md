@@ -1,6 +1,6 @@
 # P-01 开发记录（2026-10-29）
 
-任务：[P-01 UiRootLayerView + OverlayManager + PopupSurface](../task/01-overlay-manager.md)
+任务：[P-01 UiRootLayerView + OverlayManager + PopupSurface](../archive/2026-10-31-popup-select-tasks/01-overlay-manager.md)
 计划：[2026-10-29 Popup 覆盖层与 Select 实施计划](../plan/2026-10-29-popup-and-select-plan.md)
 基线：`249ca96 docs: plan popup and select controls`（工作区起始干净，`git status --porcelain` 为空）
 状态：**P-01 实施完成，待主审 + fast 独立复审；未提交、未推送、未勾选验收。**

@@ -1,0 +1,5 @@
+# Doc Link Integrity (local markdown links only, code fences + http ignored)
+# date 2026-10-31 scope: README x2 / guide / new plan / new 5 task / archive 8 popup tasks / 4 returns / delivery
+# files_checked=23 local_links_checked=157 broken=0
+
+## all local links resolve — no broken links

@@ -1,6 +1,6 @@
 # P-06 Gallery 集成开发记录（2026-10-29）
 
-任务：[P-06 Gallery 集成](../task/06-gallery-integration.md)
+任务：[P-06 Gallery 集成](../archive/2026-10-31-popup-select-tasks/06-gallery-integration.md)
 状态：**源码已写，未构建、未运行、未验收**。等待主审核查后唯一 Release 构建/GL/OS 门。
 
 ## 改动
